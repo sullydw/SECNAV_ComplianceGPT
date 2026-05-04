@@ -162,10 +162,6 @@ def draw_body_block(c, left_margin_pt, y, leading, normalized, page_height, top_
         # Estimate space needed: at least one line for marker+text
         min_space_needed = leading * 2  # marker line + blank line after
 
-        # Add one blank line before this paragraph (except for first paragraph)
-        if i > 0:
-            y -= leading
-
         # If reserving signature space, check if we need to force a new page
         # to ensure signature fits with at least 2 body lines before it
         if reserve_signature_space and i >= len(body_lines) - 2:
@@ -227,6 +223,10 @@ def draw_body_block(c, left_margin_pt, y, leading, normalized, page_height, top_
 
         # Debug: y position after this body record
         print(f"DEBUG y_position after level {level} marker '{marker}': {y:.1f}")
+
+        # One blank line after this paragraph (except for last paragraph)
+        if i < len(body_lines) - 1:
+            y -= leading
 
         prev_level = level
 
@@ -367,11 +367,11 @@ def main():
 
     # Font-size-aware typography calculations
     font_size = 12  # body font size
-    leading = font_size * 1.2  # line spacing with 20% extra
-    blank_line = leading  # one blank line
-    signature_gap = leading * 4  # 4 lines below text before signature
-    copy_gap = leading * 2  # 2 lines below signature before copy_to
-    page_break_buffer = leading * 4  # minimum space before signature
+    leading = font_size * 1.0  # line spacing (single-spaced baseline)
+    blank_line = font_size * 1.0  # one blank line (12 pt)
+    signature_gap = font_size * 4.0  # 4 lines below text before signature
+    copy_gap = font_size * 2.0  # 2 lines below signature before copy_to
+    page_break_buffer = font_size * 4.0  # minimum space before signature
 
     # Load H-series letterhead rules
     h_series_path = os.path.join(base_dir, "H-series.json")
