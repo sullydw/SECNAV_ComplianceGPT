@@ -1,0 +1,13 @@
+{
+ "doc_type": "DT_STD_LTR",
+ "ssic": 5216,
+ "date": "1 May 2026",
+ "from": "Commanding Officer, 3d Battalion, 6th Marines",
+ "to": "Commanding Officer, 2d Marine Division",
+ "subj": "INVALID SINGLE SUBPARAGRAPH TEST",
+ "body": [
+ "1. Purpose.",
+ "a. Only one subparagraph under paragraph 1."
+ ],
+ "signature": "DARL SULLIVAN"
+}

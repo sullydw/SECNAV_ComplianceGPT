@@ -1,0 +1,8 @@
+id,type,dt,sec,condition,action,target,severity,source,status,enabled,notes
+SRC-0001,SRC,DT_STD_LTR,SEC_PAGE,manual_reference,ACT_SOURCE,chapter_7_page_format,REQ,SECNAV_M5216_5_CH2,ACT,true,"Standard letter page formatting authority."
+SRC-0002,SRC,DT_STD_LTR,SEC_HEADER,manual_reference,ACT_SOURCE,chapter_7_header_block,REQ,SECNAV_M5216_5_CH2,ACT,true,"Header block authority for From/To/Via/Subj/Ref/Encl."
+SRC-0003,SRC,DT_STD_LTR,SEC_BODY,manual_reference,ACT_SOURCE,chapter_7_body_text,REQ,SECNAV_M5216_5_CH2,ACT,true,"Body text spacing and paragraph authority."
+SRC-0004,SRC,DT_STD_LTR,SEC_REF,manual_reference,ACT_SOURCE,chapter_7_references,REQ,SECNAV_M5216_5_CH2,ACT,true,"Reference formatting authority."
+SRC-0005,SRC,DT_STD_LTR,SEC_ENCL,manual_reference,ACT_SOURCE,chapter_7_enclosures,REQ,SECNAV_M5216_5_CH2,ACT,true,"Enclosure formatting authority."
+SRC-0006,SRC,DT_STD_LTR,SEC_VIA,manual_reference,ACT_SOURCE,chapter_2_routing_via,REQ,SECNAV_M5216_5_CH2,ACT,true,"Via routing and chain-of-command authority."
+SRC-0007,SRC,DT_STD_LTR,SEC_PGNUM,manual_reference,ACT_SOURCE,chapter_7_page_numbering,REQ,SECNAV_M5216_5_CH2,ACT,true,"Second page and page numbering authority."

@@ -1,0 +1,20 @@
+{
+ "doc_type": "DT_STD_LTR",
+ "ssic": 5216,
+ "date": "1 May 2026",
+ "from": "Commanding Officer, 3d Battalion, 6th Marines",
+ "to": "Commanding Officer, 2d Marine Division",
+ "subj": "BODY PARAGRAPH STRUCTURE TEST",
+ "body": [
+ "1. Purpose. This paragraph introduces the test.",
+ "2. Discussion. This paragraph has subparagraphs.",
+ "a. First required subparagraph.",
+ "b. Second required subparagraph.",
+ "(1) First nested point.",
+ "(2) Second nested point.",
+ "(a) First fourth-level point.",
+ "(b) Second fourth-level point.",
+ "3. Summary. This paragraph closes the test."
+ ],
+ "signature": "DARL SULLIVAN"
+}

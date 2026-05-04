@@ -1,0 +1,48 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "date": "1 May 2026",
+  "unit_identity": {
+    "letterhead_family": "LH_USMC_ACTIVITY",
+    "UNIT_OR_ACTIVITY_NAME": "3D BATTALION 6TH MARINES",
+    "NEXT_ECHELON_OR_PARENT": "2D MARINE DIVISION",
+    "INSTALLATION_OR_LOCATION": "MCB CAMP LEJEUNE",
+    "STATE": "NC",
+    "ZIP9": "28542-0001",
+    "SUPPRESS_PARENT_LINE": true
+  },
+  "from": "Commanding Officer, 3d Battalion, 6th Marines",
+  "to": "Commanding Officer, 2d Marine Division",
+  "via": [
+    "(1) Commanding General, 2d Marine Division"
+  ],
+  "subj": "TEST OF V6 RULE ENGINE AND LETTER GENERATION",
+  "ref": [
+    "(a) SECNAV M-5216.5 Ch-2"
+  ],
+  "encl": [
+    "(1) Sample enclosure"
+  ],
+  "body": [
+    "1. First top-level paragraph. This line is intentionally long enough to wrap onto a continuation line so we can confirm continuation returns to the left margin.",
+    "a. First subparagraph. This line is intentionally long enough to wrap onto a continuation line so we can confirm subparagraph continuation returns to the left margin.",
+    "b. Second subparagraph required because if a subdivision is used, at least two are required.",
+    "(1) First nested paragraph. This line is intentionally long enough to wrap onto a continuation line for nested marker testing.",
+    "(2) Second nested paragraph required for paired subdivision validation.",
+    "(a) First fourth-level paragraph. This line is intentionally long enough to wrap onto a continuation line for fourth-level marker testing.",
+    "(b) Second fourth-level paragraph required for paired subdivision validation.",
+    "2. Second top-level paragraph after nested material.",
+    "3. Third top-level paragraph.",
+    "4. Fourth top-level paragraph.",
+    "5. Fifth top-level paragraph.",
+    "6. Sixth top-level paragraph.",
+    "7. Seventh top-level paragraph.",
+    "8. Eighth top-level paragraph.",
+    "9. Ninth top-level paragraph.",
+    "10. Tenth top-level paragraph. This line verifies that marker plus two spaces naturally pushes text farther right and paragraphs do not line up."
+  ],
+  "signature": "DARL SULLIVAN",
+  "copy_to": [
+    "Commanding General, II MEF"
+  ]
+}

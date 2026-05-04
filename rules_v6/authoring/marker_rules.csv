@@ -1,0 +1,4 @@
+id,type,dt,sec,condition,action,target,severity,source,status,enabled,notes
+MRK-0001,MRK,DT_STD_LTR,SEC_REF,ref_count>0,ACT_NUMBER,marker_style_alpha_paren,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Reference markers use lowercase letters in parentheses: (a), (b), (c)."
+MRK-0002,MRK,DT_STD_LTR,SEC_ENCL,encl_count>0,ACT_NUMBER,marker_style_numeric_paren,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Enclosure markers use numbers in parentheses: (1), (2), (3)."
+MRK-0003,MRK,DT_STD_LTR,SEC_VIA,via_count>0,ACT_NUMBER,marker_style_numeric_paren,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"VIA addressees use numbers in parentheses when multiple entries exist."
