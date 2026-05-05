@@ -224,14 +224,14 @@ def draw_body_block(c, left_margin_pt, y, leading, font_size, normalized, page_h
         # Debug: y position after this body record
         print(f"DEBUG y_position after level {level} marker '{marker}': {y:.1f}")
 
-        # Level-aware baseline adjustment after this paragraph (except for last paragraph)
-        # Level 1 (top-level): spacing = font_size (12 pt)
-        # Level 2+ (subparagraphs/nested): spacing = font_size * 0.70 (8.4 pt)
+        # Level-aware positive baseline adjustment after this paragraph (except for last paragraph)
+        # Level 1 (top-level): spacing = font_size (12 pt) → +2.4 pt correction
+        # Level 2+ (subparagraphs/nested): spacing = font_size * 0.90 (10.8 pt) → +3.6 pt correction
         if i < len(body_lines) - 1:
             if level == 1:
-                level_adjustment = -(leading - font_size)  # -2.4 pt → 12 pt spacing
+                level_adjustment = leading - font_size  # +2.4 pt → 12 pt spacing
             else:
-                level_adjustment = -(leading - (font_size * 0.70))  # -6.0 pt → 8.4 pt spacing
+                level_adjustment = leading - (font_size * 0.90)  # +3.6 pt → 10.8 pt spacing
             y += level_adjustment
 
         prev_level = level
