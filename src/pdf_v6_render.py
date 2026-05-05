@@ -107,20 +107,39 @@ def calculate_signature_space(normalized, leading, signature_gap, copy_gap):
     
     Includes:
     - signature_gap (space after body)
-    - 1 line for signature name
+    - all signature lines (name, title, authority)
     - copy_to gap (if copy_to present)
     - "Copy to:" label line (if copy_to present)
     - copy_to entry lines (if copy_to present)
     """
     space = signature_gap  # gap after body before signature
-    space += leading  # signature name line
     
+    # Calculate signature lines based on input format
+    signature_lines = 0
+    signature = normalized.get("signature", "")
+    
+    if isinstance(signature, dict):
+        # Structured signature: count non-empty fields
+        if signature.get("name"):
+            signature_lines += 1
+        if signature.get("title"):
+            signature_lines += 1
+        if signature.get("authority"):
+            signature_lines += 1
+    elif signature:
+        # Legacy string signature
+        signature_lines = 1
+    
+    space += signature_lines * leading
+    
+    # Copy-to section
     has_copy_to = normalized.get("copy_to")
     if has_copy_to:
         space += copy_gap  # gap after signature before copy_to
         space += leading  # "Copy to:" label line
         space += len(has_copy_to) * leading  # copy_to entry lines
     
+    print(f"DEBUG calculate_signature_space: {signature_lines} signature lines, total={space:.1f}pt")
     return space
 
 
@@ -129,27 +148,60 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
     Draw signature block as a single atomic unit.
     Returns new y position after rendering.
     
+    Supports both legacy string signatures and structured dictionaries.
+    Structured signature format: {"name": "...", "title": "...", "authority": "..."}
+    
     Signature block includes:
     - signature_gap blank lines after body
-    - signature name (centered)
+    - signature lines (centered, same x position)
     - copy_to section (if present)
     """
     # Four blank lines after final body text
     y -= signature_gap
-    signature_y = y
     print(f"DEBUG y after signature_gap before signature: {y:.1f}")
 
     # Signature block starts at center of page (no complimentary close)
     signature_x = page_width / 2
-    signature_text = normalized.get("signature", "")
-    # Fix signature spelling if needed
-    if signature_text == "DARL SULLIVAN":
-        signature_text = "DARRYL SULLIVAN"
-    c.drawString(signature_x, signature_y, signature_text)
-    print(f"DEBUG Signature drawn at x={signature_x:.1f}, y={signature_y:.1f}")
-    y = signature_y - copy_gap
+    signature = normalized.get("signature", "")
+    
+    # Handle both legacy string and structured signature formats
+    if isinstance(signature, dict):
+        # Structured signature - render lines in order: name, title, authority
+        signature_lines = []
+        
+        if signature.get("name"):
+            name_text = signature["name"]
+            # Fix signature spelling if needed
+            if name_text == "DARL SULLIVAN":
+                name_text = "DARRYL SULLIVAN"
+            signature_lines.append(name_text)
+        
+        if signature.get("title"):
+            signature_lines.append(signature["title"])
+        
+        if signature.get("authority"):
+            signature_lines.append(signature["authority"])
+        
+        # Draw all signature lines at same x position
+        for line in signature_lines:
+            c.drawString(signature_x, y, line)
+            print(f"DEBUG Signature line drawn at x={signature_x:.1f}, y={y:.1f}: '{line}'")
+            y -= leading
+            
+    elif signature:
+        # Legacy string signature
+        signature_text = signature
+        # Fix signature spelling if needed
+        if signature_text == "DARL SULLIVAN":
+            signature_text = "DARRYL SULLIVAN"
+        c.drawString(signature_x, y, signature_text)
+        print(f"DEBUG Signature drawn at x={signature_x:.1f}, y={y:.1f}")
+        y -= leading
 
-    # Copy to (if present) - starts at left margin, second line below signature
+    # Gap between signature and copy_to
+    y -= copy_gap
+
+    # Copy to (if present) - starts at left margin
     if normalized.get("copy_to"):
         copy_to_y = y
         c.drawString(left_margin_pt, copy_to_y, "Copy to:")
