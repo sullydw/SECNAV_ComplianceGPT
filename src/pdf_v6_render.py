@@ -714,17 +714,42 @@ def main():
             y -= get_boundary_spacing("LETTERHEAD", "SSIC_DATE", leading)
         print(f"DEBUG Letterhead block end y={y:.1f}")
 
-    # SSIC and date block - right-aligned, no "SSIC:" label
+    # SSIC/date sender-symbol block - longest-line left anchoring per H-series
+    # Build sender-symbol lines in order: SSIC, originator code/serial (if present), date
     ssic_val = str(normalized.get('ssic', ''))
+    originator_code = normalized.get('originator_code')
+    serial = normalized.get('serial')
     date_text = normalized.get('date', '')
-    ssic_y = y
+    
+    # Build lines, stripping empty/null
+    sender_symbol_lines = []
+    if ssic_val:
+        sender_symbol_lines.append(ssic_val)
+    if originator_code:
+        sender_symbol_lines.append(str(originator_code))
+    if serial:
+        sender_symbol_lines.append(str(serial))
+    if date_text:
+        sender_symbol_lines.append(date_text)
+    
+    # Calculate longest line width and block left anchor
     c.setFont("Helvetica", 10)
-    c.drawRightString(page_width - right_margin_pt, y, ssic_val)
-    print(f"DEBUG SSIC: '{ssic_val}' | y={ssic_y:.1f}")
-    y -= leading
-    date_y = y
-    c.drawRightString(page_width - right_margin_pt, y, date_text)
-    print(f"DEBUG Date: '{date_text}' | y={date_y:.1f}")
+    right_edge_x = page_width - right_margin_pt
+    longest_line_width = max(c.stringWidth(line, "Helvetica", 10) for line in sender_symbol_lines) if sender_symbol_lines else 0
+    block_left_x = right_edge_x - longest_line_width
+    
+    print(f"DEBUG === SENDER-SYMBOL BLOCK ===")
+    print(f"DEBUG sender symbol lines: {sender_symbol_lines}")
+    print(f"DEBUG longest line width: {longest_line_width:.1f}pt")
+    print(f"DEBUG right_edge_x: {right_edge_x:.1f}pt")
+    print(f"DEBUG block_left_x: {block_left_x:.1f}pt")
+    
+    # Draw all sender-symbol lines with shared left anchor
+    for line in sender_symbol_lines:
+        line_y = y
+        c.drawString(block_left_x, y, line)
+        print(f"DEBUG SSIC/date line '{line}' at x={block_left_x:.1f}, y={line_y:.1f}")
+        y -= leading
     
     # Boundary: SSIC_DATE -> HEADER
     y -= get_boundary_spacing("SSIC_DATE", "HEADER", leading)
