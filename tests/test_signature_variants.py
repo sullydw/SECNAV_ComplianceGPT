@@ -18,55 +18,119 @@ from pdf_v6_render import main as render_pdf
 
 # Test cases for each signature variant
 TEST_CASES = [
+    # Valid role-based signatures
     {
-        "name": "legacy_string",
-        "signature": "DARRYL SULLIVAN",
-        "description": "Legacy string signature (backward compatibility)"
-    },
-    {
-        "name": "standard_structured",
+        "name": "activity_head",
         "signature": {
-            "name": "DARRYL SULLIVAN",
-            "title": None,
-            "authority": None
+            "name": "D. SULLIVAN",
+            "role": "activity_head"
         },
-        "description": "Standard structured signature (name only)"
-    },
-    {
-        "name": "by_direction",
-        "signature": {
-            "name": "DARRYL SULLIVAN",
-            "title": None,
-            "authority": "By direction"
-        },
-        "description": "By direction authority"
-    },
-    {
-        "name": "acting",
-        "signature": {
-            "name": "DARRYL SULLIVAN",
-            "title": None,
-            "authority": "Acting"
-        },
-        "description": "Acting authority"
+        "description": "Activity head signature (name only)",
+        "expect_warning": False
     },
     {
         "name": "title_based",
         "signature": {
-            "name": "DARRYL SULLIVAN",
-            "title": "Deputy",
-            "authority": None
+            "name": "D. SULLIVAN",
+            "role": "principal_subordinate_by_title",
+            "title": "Deputy"
         },
-        "description": "Title-based signature"
+        "description": "Principal subordinate signing by title",
+        "expect_warning": False
     },
     {
-        "name": "title_plus_authority",
+        "name": "acting",
         "signature": {
-            "name": "DARRYL SULLIVAN",
-            "title": "Executive Officer",
-            "authority": "By direction"
+            "name": "D. SULLIVAN",
+            "role": "acting"
         },
-        "description": "Title plus authority"
+        "description": "Acting signature",
+        "expect_warning": False
+    },
+    {
+        "name": "acting_by_title",
+        "signature": {
+            "name": "D. SULLIVAN",
+            "role": "acting_by_title",
+            "title": "Executive Officer"
+        },
+        "description": "Acting by title",
+        "expect_warning": False
+    },
+    {
+        "name": "by_direction",
+        "signature": {
+            "name": "D. SULLIVAN",
+            "role": "by_direction"
+        },
+        "description": "By direction signature",
+        "expect_warning": False
+    },
+    {
+        "name": "by_direction_pay",
+        "signature": {
+            "name": "D. SULLIVAN",
+            "role": "by_direction_pay_allowance",
+            "title": "Executive Officer",
+            "activity_head_title": "Commanding Officer"
+        },
+        "description": "By direction (pay/allowance case)",
+        "expect_warning": False
+    },
+    {
+        "name": "legacy_string",
+        "signature": "D. SULLIVAN",
+        "description": "Legacy string signature (backward compatibility)",
+        "expect_warning": False
+    },
+    # Validation test cases (should warn but still render)
+    {
+        "name": "missing_title",
+        "signature": {
+            "name": "D. SULLIVAN",
+            "role": "principal_subordinate_by_title",
+            "title": None
+        },
+        "description": "Missing title for principal_subordinate_by_title (should warn + fallback)",
+        "expect_warning": True
+    },
+    {
+        "name": "missing_activity_head_title",
+        "signature": {
+            "name": "D. SULLIVAN",
+            "role": "by_direction_pay_allowance",
+            "title": "Executive Officer",
+            "activity_head_title": None
+        },
+        "description": "Missing activity_head_title for by_direction_pay_allowance (should warn + fallback)",
+        "expect_warning": True
+    },
+    {
+        "name": "invalid_role",
+        "signature": {
+            "name": "D. SULLIVAN",
+            "role": "unknown_role"
+        },
+        "description": "Invalid/unsupported role (should warn + name only)",
+        "expect_warning": True
+    },
+    {
+        "name": "invalid_name_format",
+        "signature": {
+            "name": "Darryl Sullivan",
+            "role": "by_direction"
+        },
+        "description": "Full first name instead of initial (should warn)",
+        "expect_warning": True
+    },
+    {
+        "name": "rank_included",
+        "signature": {
+            "name": "Col D. SULLIVAN USMC",
+            "role": "by_direction"
+        },
+        "description": "Rank and service in signature (should warn)",
+        "expect_warning": True
     }
 ]
 
@@ -82,6 +146,7 @@ def run_test(test_case):
     print(f"TEST: {test_case['name']}")
     print(f"Description: {test_case['description']}")
     print(f"Signature: {test_case['signature']}")
+    print(f"Expect warning: {test_case.get('expect_warning', False)}")
     print(f"{'='*60}")
     
     # Load base payload
@@ -116,7 +181,10 @@ def run_test(test_case):
         if os.path.exists(source_pdf):
             # Copy to test-specific name
             shutil.copy(source_pdf, test_output)
-            print(f"[PASS] PDF created at {test_output}")
+            if test_case.get('expect_warning', False):
+                print(f"[PASS] PDF created with expected warnings at {test_output}")
+            else:
+                print(f"[PASS] PDF created at {test_output}")
             return True
         else:
             print(f"[FAIL] PDF not created")
