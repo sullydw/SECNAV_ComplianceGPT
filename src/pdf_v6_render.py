@@ -732,10 +732,14 @@ def main():
     if date_text:
         sender_symbol_lines.append(date_text)
     
+    # SSIC/date sender-symbol block uses standard correspondence font unless an explicit rule override is later added
+    standard_font_name = "Times-Roman"
+    standard_font_size = font_size  # 12pt body font
+    
     # Calculate longest line width and block left anchor
-    c.setFont("Helvetica", 10)
+    c.setFont(standard_font_name, standard_font_size)
     right_edge_x = page_width - right_margin_pt
-    longest_line_width = max(c.stringWidth(line, "Helvetica", 10) for line in sender_symbol_lines) if sender_symbol_lines else 0
+    longest_line_width = max(c.stringWidth(line, standard_font_name, standard_font_size) for line in sender_symbol_lines) if sender_symbol_lines else 0
     block_left_x = right_edge_x - longest_line_width
     
     print(f"DEBUG === SENDER-SYMBOL BLOCK ===")
