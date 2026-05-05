@@ -106,7 +106,7 @@ def format_sender_symbol_date(date_text):
 BOUNDARY_SPACINGS = {
     # (from_block, to_block): spacing_in_leading_units
     ("LETTERHEAD", "SSIC_DATE"): 1,      # 1 line between letterhead and SSIC/date
-    ("SSIC_DATE", "HEADER"): 2,          # 2 lines between date and From block
+    ("SSIC_DATE", "HEADER"): 0,          # No additional gap - loop already provides 1 leading after last SSIC line
     ("HEADER", "BODY"): 0,               # 0 lines between Encl and first body paragraph
     ("BODY", "SIGNATURE"): 4,            # 4 lines (signature_gap) after final body text
     ("SIGNATURE", "COPY_TO"): 2,         # 2 lines (copy_gap) after signature
