@@ -175,6 +175,71 @@ def calculate_signature_space(normalized, leading, signature_gap, copy_gap):
     return space
 
 
+def _validate_structured_signature(signature):
+    """
+    Validate structured signature dict and print warnings for SECNAV compliance.
+    Does not stop execution - only warns and degrades safely.
+    
+    Args:
+        signature: Signature dict to validate
+    
+    Returns:
+        tuple: (is_valid, fallback_lines) where fallback_lines is list of lines to render if validation fails
+    """
+    name = signature.get("name") or ""
+    role = signature.get("role")
+    title = signature.get("title") or ""
+    activity_head_title = signature.get("activity_head_title") or ""
+    
+    # 1. Name format check - should use initials and last name
+    if name:
+        parts = name.split()
+        if len(parts) >= 2:
+            first_part = parts[0]
+            # Check if first part appears to be a full first name (not an initial)
+            # Initials are typically 1-2 chars or end with period
+            if len(first_part) > 2 and not first_part.endswith('.') and first_part.isalpha():
+                print(f"WARNING: Signature name should use initials and last name per SECNAV standard (got '{name}')")
+        
+        # 2. Rank/service detection
+        rank_service_keywords = ["USMC", "U.S.", "USN", "USA", "USAF", "USCG", "Colonel", "Captain", 
+                                  "Major", "General", "Admiral", "Lieutenant", "Sergeant", "Private"]
+        name_upper = name.upper()
+        for keyword in rank_service_keywords:
+            if keyword.upper() in name_upper:
+                print(f"WARNING: Do not include rank or service in standard letter signature line (detected '{keyword}' in '{name}')")
+                break
+    
+    # 3. Role-specific validation
+    if role == "principal_subordinate_by_title":
+        if not title:
+            print(f"ERROR: Role 'principal_subordinate_by_title' requires 'title' field. Falling back to name only.")
+            return False, [name] if name else []
+    
+    elif role == "acting_by_title":
+        if not title:
+            print(f"ERROR: Role 'acting_by_title' requires 'title' field. Falling back to name + Acting.")
+            fallback = [name] if name else []
+            fallback.append("Acting")
+            return False, fallback
+    
+    elif role == "by_direction_pay_allowance":
+        if not title or not activity_head_title:
+            print(f"ERROR: Role 'by_direction_pay_allowance' requires 'title' and 'activity_head_title' fields. Falling back to name + By direction.")
+            fallback = [name] if name else []
+            fallback.append("By direction")
+            return False, fallback
+    
+    # 4. Unsupported role check
+    valid_roles = ["activity_head", "principal_subordinate_by_title", "acting", "acting_by_title", 
+                   "by_direction", "by_direction_pay_allowance", None]
+    if role is not None and role not in valid_roles:
+        print(f"WARNING: Unsupported signature role '{role}'. Rendering name only.")
+        return False, [name] if name else []
+    
+    return True, None
+
+
 def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, signature_gap, copy_gap, bottom_margin_pt):
     """
     Draw signature block as a single atomic unit for SECNAV role-based signing.
@@ -198,7 +263,10 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
     
     # Handle both legacy string and structured signature formats
     if isinstance(signature, dict):
-        # Structured signature - extract components
+        # Structured signature - validate first
+        is_valid, fallback_lines = _validate_structured_signature(signature)
+        
+        # Extract components
         name = signature.get("name") or ""
         role = signature.get("role")
         title = signature.get("title") or ""
@@ -208,45 +276,47 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
         if name == "DARL SULLIVAN":
             name = "DARRYL SULLIVAN"
         
-        # Build signature lines based on role
-        signature_lines = []
-        
-        # Name is always first if present
-        if name:
-            signature_lines.append(name)
-        
-        # Add role-specific lines
-        if role == "activity_head":
-            # name only - nothing more to add
-            pass
-        elif role == "principal_subordinate_by_title":
-            if title:
-                signature_lines.append(title)
-        elif role == "acting":
-            signature_lines.append("Acting")
-        elif role == "acting_by_title":
-            if title:
-                signature_lines.append(title)
-            signature_lines.append("Acting")
-        elif role == "by_direction":
-            signature_lines.append("By direction")
-        elif role == "by_direction_pay_allowance":
-            if title:
-                signature_lines.append(title)
-            signature_lines.append("By direction of the")
-            if activity_head_title:
-                signature_lines.append(activity_head_title)
-        elif role is None:
-            # No role specified - fall back to old dict behavior
-            old_title = signature.get("title") or ""
-            old_authority = signature.get("authority") or ""
-            if old_title:
-                signature_lines.append(old_title)
-            if old_authority:
-                signature_lines.append(old_authority)
+        # If validation failed with fallback, use fallback lines
+        if not is_valid and fallback_lines is not None:
+            signature_lines = fallback_lines
         else:
-            # Unsupported role - warn and render name only
-            print(f"WARNING: Unsupported signature role '{role}'. Rendering name only.")
+            # Build signature lines based on role
+            signature_lines = []
+            
+            # Name is always first if present
+            if name:
+                signature_lines.append(name)
+            
+            # Add role-specific lines
+            if role == "activity_head":
+                # name only - nothing more to add
+                pass
+            elif role == "principal_subordinate_by_title":
+                if title:
+                    signature_lines.append(title)
+            elif role == "acting":
+                signature_lines.append("Acting")
+            elif role == "acting_by_title":
+                if title:
+                    signature_lines.append(title)
+                signature_lines.append("Acting")
+            elif role == "by_direction":
+                signature_lines.append("By direction")
+            elif role == "by_direction_pay_allowance":
+                if title:
+                    signature_lines.append(title)
+                signature_lines.append("By direction of the")
+                if activity_head_title:
+                    signature_lines.append(activity_head_title)
+            elif role is None:
+                # No role specified - fall back to old dict behavior
+                old_title = signature.get("title") or ""
+                old_authority = signature.get("authority") or ""
+                if old_title:
+                    signature_lines.append(old_title)
+                if old_authority:
+                    signature_lines.append(old_authority)
+            # else: unsupported role already handled by validation
         
         # Draw all signature lines at same x position
         for line in signature_lines:
