@@ -100,7 +100,7 @@ def draw_page_number(c, page_width, page_num, bottom_margin_pt):
     print(f"DEBUG Page number {page_num} drawn at x={page_num_x:.1f}, y={page_num_y:.1f}")
 
 
-def draw_body_block(c, left_margin_pt, y, leading, font_size, normalized, page_height, top_margin_pt, bottom_margin_pt, signature_gap, copy_gap, reserve_signature_space=False):
+def draw_body_block(c, left_margin_pt, y, leading, normalized, page_height, top_margin_pt, bottom_margin_pt, signature_gap, copy_gap, reserve_signature_space=False):
     """
     Draw body paragraphs with proper level-based indentation and word-wrap.
     Marker prints only on first line; continuation lines return to left margin.
@@ -224,15 +224,10 @@ def draw_body_block(c, left_margin_pt, y, leading, font_size, normalized, page_h
         # Debug: y position after this body record
         print(f"DEBUG y_position after level {level} marker '{marker}': {y:.1f}")
 
-        # Level-aware positive baseline adjustment after this paragraph (except for last paragraph)
-        # Level 1 (top-level): spacing = font_size (12 pt) → +2.4 pt correction
-        # Level 2+ (subparagraphs/nested): spacing = font_size * 0.90 (10.8 pt) → +3.6 pt correction
+        # Body record gap: one visible blank line after each paragraph (except last)
+        # Matches the Via-to-Subj spacing (one blank line = one leading unit)
         if i < len(body_lines) - 1:
-            if level == 1:
-                level_adjustment = leading - font_size  # +2.4 pt → 12 pt spacing
-            else:
-                level_adjustment = leading - (font_size * 0.90)  # +3.6 pt → 10.8 pt spacing
-            y += level_adjustment
+            y -= leading  # body_record_gap = leading
 
         prev_level = level
 
@@ -462,7 +457,7 @@ def main():
 
     # Body block - use dedicated function with level-based indentation and pagination
     y, page_count, body_lines_on_last_page = draw_body_block(
-        c, left_margin_pt, y, leading, font_size, normalized, page_height, top_margin_pt, bottom_margin_pt,
+        c, left_margin_pt, y, leading, normalized, page_height, top_margin_pt, bottom_margin_pt,
         signature_gap, copy_gap, reserve_signature_space=True
     )
     print(f"DEBUG Total pages generated: {page_count}")
