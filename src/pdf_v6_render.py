@@ -226,12 +226,12 @@ def draw_body_block(c, left_margin_pt, y, leading, font_size, normalized, page_h
 
         # Level-aware baseline adjustment after this paragraph (except for last paragraph)
         # Level 1 (top-level): spacing = font_size (12 pt)
-        # Level 2+ (subparagraphs): spacing = font_size * 0.75 (9 pt)
+        # Level 2+ (subparagraphs/nested): spacing = font_size * 0.70 (8.4 pt)
         if i < len(body_lines) - 1:
             if level == 1:
                 level_adjustment = -(leading - font_size)  # -2.4 pt → 12 pt spacing
             else:
-                level_adjustment = -(leading - (font_size * 0.75))  # -5.4 pt → 9 pt spacing
+                level_adjustment = -(leading - (font_size * 0.70))  # -6.0 pt → 8.4 pt spacing
             y += level_adjustment
 
         prev_level = level
