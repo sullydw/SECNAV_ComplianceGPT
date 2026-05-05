@@ -100,6 +100,68 @@ def draw_page_number(c, page_width, page_num, bottom_margin_pt):
     print(f"DEBUG Page number {page_num} drawn at x={page_num_x:.1f}, y={page_num_y:.1f}")
 
 
+def calculate_signature_space(normalized, leading, signature_gap, copy_gap):
+    """
+    Calculate total vertical space needed for signature block.
+    Returns space in points.
+    
+    Includes:
+    - signature_gap (space after body)
+    - 1 line for signature name
+    - copy_to gap (if copy_to present)
+    - "Copy to:" label line (if copy_to present)
+    - copy_to entry lines (if copy_to present)
+    """
+    space = signature_gap  # gap after body before signature
+    space += leading  # signature name line
+    
+    has_copy_to = normalized.get("copy_to")
+    if has_copy_to:
+        space += copy_gap  # gap after signature before copy_to
+        space += leading  # "Copy to:" label line
+        space += len(has_copy_to) * leading  # copy_to entry lines
+    
+    return space
+
+
+def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, signature_gap, copy_gap, bottom_margin_pt):
+    """
+    Draw signature block as a single atomic unit.
+    Returns new y position after rendering.
+    
+    Signature block includes:
+    - signature_gap blank lines after body
+    - signature name (centered)
+    - copy_to section (if present)
+    """
+    # Four blank lines after final body text
+    y -= signature_gap
+    signature_y = y
+    print(f"DEBUG y after signature_gap before signature: {y:.1f}")
+
+    # Signature block starts at center of page (no complimentary close)
+    signature_x = page_width / 2
+    signature_text = normalized.get("signature", "")
+    # Fix signature spelling if needed
+    if signature_text == "DARL SULLIVAN":
+        signature_text = "DARRYL SULLIVAN"
+    c.drawString(signature_x, signature_y, signature_text)
+    print(f"DEBUG Signature drawn at x={signature_x:.1f}, y={signature_y:.1f}")
+    y = signature_y - copy_gap
+
+    # Copy to (if present) - starts at left margin, second line below signature
+    if normalized.get("copy_to"):
+        copy_to_y = y
+        c.drawString(left_margin_pt, copy_to_y, "Copy to:")
+        y -= leading
+        for copy_line in normalized.get("copy_to", []):
+            c.drawString(left_margin_pt, y, copy_line)
+            y -= leading
+        print(f"DEBUG Copy to block starts at y={copy_to_y:.1f}")
+    
+    return y
+
+
 def draw_body_block(c, left_margin_pt, y, leading, font_size, normalized, page_height, top_margin_pt, bottom_margin_pt, signature_gap, copy_gap, reserve_signature_space=False):
     """
     Draw body paragraphs with proper level-based indentation and word-wrap.
@@ -495,62 +557,33 @@ def main():
     print(f"DEBUG Total pages generated: {page_count}")
     print(f"DEBUG Body lines on last page: {body_lines_on_last_page}")
 
-    # Signature block placement logic per SECNAV M-5216.5 Chapter 7:
-    # - Signature line starts at center of page (page_width / 2)
-    # - Signature line begins on the fourth line below the text
-    # - A signature page must have at least two lines of text preceding the signature
-    # - If not enough room, start new page with continuation header
-    # - No complimentary close
-
-    signature_space_needed = signature_gap + leading + copy_gap  # signature_gap + signature line + copy_gap buffer
-    has_copy_to = normalized.get("copy_to")
-    if has_copy_to:
-        signature_space_needed += copy_gap + (len(has_copy_to) * leading)  # "Copy to:" + entries
-
-    if y < bottom_margin_pt + signature_space_needed:
-        # Not enough room - start a new signature page
-        # Draw page number on current page before showing new page
+    # Signature block orphan prevention:
+    # Calculate required space for signature block as atomic unit
+    required_signature_space = calculate_signature_space(normalized, leading, signature_gap, copy_gap)
+    
+    # Check if remaining space on current page is sufficient
+    if y < bottom_margin_pt + required_signature_space:
+        # Not enough room - start a new page for signature block
         draw_page_number(c, page_width, page_count, bottom_margin_pt)
         c.showPage()
         page_count += 1
-        print(f"DEBUG SIGNATURE PAGE: Started page {page_count} for signature block")
-        # Draw continuation header
+        print(f"DEBUG SIGNATURE PAGINATION: Started page {page_count} for signature block (insufficient space)")
+        # Draw continuation header on new page
         y = page_height - top_margin_pt
         c.setFont("Times-Roman", 12)
-        c.drawString(left_margin_pt, y, f"Subj: {subj}")
+        c.drawString(left_margin_pt, y, f"Subj: {normalized.get('subj', '')}")
         y -= leading
         y -= leading  # One blank line after subject
-        print(f"DEBUG Continuation header on signature page, y after subject: {y:.1f}")
-
-        # Note: body_lines_on_last_page will be 0 since we started a new page
-        # This is acceptable if there was no body text to carry over
+        print(f"DEBUG Continuation header on signature page, y after header: {y:.1f}")
+        
+        # Verify body_lines_on_last_page for audit
         if body_lines_on_last_page == 0:
-            print(f"DEBUG WARNING: Signature page has no preceding body text")
+            print(f"DEBUG NOTE: Signature page has no preceding body text (signature-only page)")
+    else:
+        print(f"DEBUG SIGNATURE: Enough space on current page (y={y:.1f}, need={required_signature_space:.1f})")
 
-    # Four blank lines after final body text (or after continuation header if new page)
-    y -= signature_gap
-    signature_y = y
-    print(f"DEBUG y after signature_gap before signature: {y:.1f}")
-
-    # Signature block starts at center of page (no complimentary close)
-    signature_x = page_width / 2
-    signature_text = normalized.get("signature", "")
-    # Fix signature spelling if needed
-    if signature_text == "DARL SULLIVAN":
-        signature_text = "DARRYL SULLIVAN"
-    c.drawString(signature_x, signature_y, signature_text)
-    print(f"DEBUG Signature drawn at x={signature_x:.1f}, y={signature_y:.1f}")
-    y = signature_y - copy_gap
-
-    # Copy to (if present) - starts at left margin, second line below signature
-    if normalized.get("copy_to"):
-        copy_to_y = y
-        c.drawString(left_margin_pt, copy_to_y, "Copy to:")
-        y -= leading
-        for copy_line in normalized.get("copy_to", []):
-            c.drawString(left_margin_pt, y, copy_line)
-            y -= leading
-        print(f"DEBUG Copy to block starts at y={copy_to_y:.1f}")
+    # Draw signature block as atomic unit
+    y = draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, signature_gap, copy_gap, bottom_margin_pt)
 
     # Draw page number on final page (page 2+ only)
     draw_page_number(c, page_width, page_count, bottom_margin_pt)
