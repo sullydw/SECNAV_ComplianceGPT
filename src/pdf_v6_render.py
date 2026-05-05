@@ -234,7 +234,38 @@ def draw_body_block(c, left_margin_pt, y, leading, font_size, normalized, page_h
     return y, page_count, body_lines_on_last_page
 
 
-def draw_header_block(c, label_x, text_x, y, leading, normalized):
+def draw_wrapped_text(c, x, y, text, font_size, max_width, leading):
+    """
+    Draw text with word-wrapping at a fixed x position.
+    Continuation lines align under the first line (no hanging indent).
+    Returns new y position after all lines are drawn.
+    """
+    c.setFont("Times-Roman", font_size)
+    words = text.split()
+    lines = []
+    current_line = ""
+    
+    for word in words:
+        test_line = current_line + (" " if current_line else "") + word
+        test_width = c.stringWidth(test_line, "Times-Roman", font_size)
+        if test_width <= max_width:
+            current_line = test_line
+        else:
+            if current_line:
+                lines.append(current_line)
+            current_line = word
+    
+    if current_line:
+        lines.append(current_line)
+    
+    for line in lines:
+        c.drawString(x, y, line)
+        y -= leading
+    
+    return y
+
+
+def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, right_margin_pt):
     """
     Draw SECNAV header block with explicit two-column coordinates.
     Returns new y position after rendering.
@@ -274,10 +305,11 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized):
     # One blank line before Subj (24 pt total from last line)
     y -= leading
 
-    # Subj:
+    # Subj: with word-wrapping for long subject lines
     c.drawString(label_x, y, "Subj:")
-    c.drawString(text_x, y, normalized.get("subj", ""))
-    y -= leading
+    # Calculate max width for subject text (right margin - text_x)
+    subj_max_width = page_width - right_margin_pt - text_x
+    y = draw_wrapped_text(c, text_x, y, normalized.get("subj", ""), 12, subj_max_width, leading)
 
     # One blank line before Ref
     y -= leading
@@ -450,7 +482,7 @@ def main():
     label_x = left_margin_pt
     text_x = left_margin_pt + 43  # 43 pt offset for proper SECNAV alignment
 
-    y = draw_header_block(c, label_x, text_x, y, leading, normalized)
+    y = draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, right_margin_pt)
 
     # Boundary: HEADER -> BODY (centralized spacing control)
     y -= get_boundary_spacing("HEADER", "BODY", leading)
