@@ -51,5 +51,62 @@
     "continuation_header": true,
     "applies_to": "signature_page_logic",
     "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-007": {
+    "rule": "signature_name_format",
+    "description": "Signature line should use initials and last name format",
+    "notes": [
+      "First initial, middle initial (if applicable), and last name",
+      "Last name in uppercase",
+      "Prefix names (e.g., McNALLY) preserved"
+    ],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-008": {
+    "rule": "no_rank_or_service_in_signature",
+    "description": "Do not include rank or service identifiers in standard letter signature line",
+    "notes": [
+      "Applies to standard correspondence",
+      "Personnel identification rules apply elsewhere, not signature line"
+    ],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-009": {
+    "rule": "signature_role_activity_head",
+    "description": "Activity head signature contains name only",
+    "format": ["name"],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-010": {
+    "rule": "signature_role_title_based",
+    "description": "Principal subordinate signing by title includes title below name",
+    "format": ["name", "title"],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-011": {
+    "rule": "signature_role_acting",
+    "description": "Acting signatures include Acting below name or title",
+    "format": ["name", "Acting"],
+    "alt_format": ["name", "title", "Acting"],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-012": {
+    "rule": "signature_role_by_direction",
+    "description": "By direction signatures include authority line below name",
+    "format": ["name", "By direction"],
+    "notes": [
+      "Pay/allowance cases may require:",
+      "- name",
+      "- title",
+      "- By direction of the",
+      "- activity head title"
+    ],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
   }
 }
