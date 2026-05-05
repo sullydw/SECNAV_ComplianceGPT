@@ -21,6 +21,84 @@ from body_v6_parse import detect_marker_level
 
 
 # =============================================================================
+# Date Formatting Helper
+# SECNAV abbreviated date format for sender-symbol block
+# =============================================================================
+
+def format_sender_symbol_date(date_text):
+    """
+    Convert date to SECNAV abbreviated format: D Mon YY
+    
+    Accepts:
+    - "1 May 2026"
+    - "May 1, 2026"
+    - "2026-05-01"
+    - "7 Sep 06" (already correct, preserved)
+    
+    Returns:
+    - "1 May 26" format
+    """
+    import re
+    
+    if not date_text:
+        return date_text
+    
+    date_text = str(date_text).strip()
+    
+    # Month abbreviations mapping
+    month_map = {
+        'january': 'Jan', 'february': 'Feb', 'march': 'Mar', 'april': 'Apr',
+        'may': 'May', 'june': 'Jun', 'july': 'Jul', 'august': 'Aug',
+        'september': 'Sep', 'october': 'Oct', 'november': 'Nov', 'december': 'Dec',
+        'jan': 'Jan', 'feb': 'Feb', 'mar': 'Mar', 'apr': 'Apr',
+        'jun': 'Jun', 'jul': 'Jul', 'aug': 'Aug', 'sep': 'Sep',
+        'oct': 'Oct', 'nov': 'Nov', 'dec': 'Dec'
+    }
+    
+    # Pattern 1: D Mon YY (already correct format, e.g., "7 Sep 06" or "1 May 26")
+    already_correct = re.match(r'^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{2})$', date_text)
+    if already_correct:
+        day = int(already_correct.group(1))
+        mon = already_correct.group(2).capitalize()
+        yy = already_correct.group(3)
+        return f"{day} {mon} {yy}"
+    
+    # Pattern 2: D Mon YYYY (e.g., "1 May 2026")
+    pattern_full = re.match(r'^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$', date_text)
+    if pattern_full:
+        day = int(pattern_full.group(1))
+        month_name = pattern_full.group(2).lower()
+        year = int(pattern_full.group(3))
+        yy = str(year % 100).zfill(2)
+        mon = month_map.get(month_name, month_name[:3].capitalize())
+        return f"{day} {mon} {yy}"
+    
+    # Pattern 3: Mon D, YYYY (e.g., "May 1, 2026")
+    pattern_comma = re.match(r'^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$', date_text)
+    if pattern_comma:
+        month_name = pattern_comma.group(1).lower()
+        day = int(pattern_comma.group(2))
+        year = int(pattern_comma.group(3))
+        yy = str(year % 100).zfill(2)
+        mon = month_map.get(month_name, month_name[:3].capitalize())
+        return f"{day} {mon} {yy}"
+    
+    # Pattern 4: ISO format YYYY-MM-DD (e.g., "2026-05-01")
+    pattern_iso = re.match(r'^(\d{4})-(\d{2})-(\d{2})$', date_text)
+    if pattern_iso:
+        year = int(pattern_iso.group(1))
+        month_num = int(pattern_iso.group(2))
+        day = int(pattern_iso.group(3))
+        yy = str(year % 100).zfill(2)
+        months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        mon = months[month_num - 1]
+        return f"{day} {mon} {yy}"
+    
+    # Unknown format - return as-is
+    return date_text
+
+
+# =============================================================================
 # Layout Boundary Spacing Helper
 # Centralized spacing between major document blocks
 # =============================================================================
@@ -719,7 +797,11 @@ def main():
     ssic_val = str(normalized.get('ssic', ''))
     originator_code = normalized.get('originator_code')
     serial = normalized.get('serial')
-    date_text = normalized.get('date', '')
+    raw_date_text = normalized.get('date', '')
+    formatted_date = format_sender_symbol_date(raw_date_text)
+    
+    print(f"DEBUG raw date: {raw_date_text}")
+    print(f"DEBUG formatted sender-symbol date: {formatted_date}")
     
     # Build lines per SECNAV manual: SSIC, serial (with "Ser " prefix) or originator, date
     sender_symbol_lines = []
@@ -732,8 +814,8 @@ def main():
     elif originator_code:
         sender_symbol_lines.append(str(originator_code))
     
-    if date_text:
-        sender_symbol_lines.append(date_text)
+    if formatted_date:
+        sender_symbol_lines.append(formatted_date)
     
     # SSIC/date sender-symbol block uses standard correspondence font unless an explicit rule override is later added
     # Inherits BOTH font family and size from standard body/header settings
