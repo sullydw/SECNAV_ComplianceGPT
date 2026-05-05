@@ -100,7 +100,7 @@ def draw_page_number(c, page_width, page_num, bottom_margin_pt):
     print(f"DEBUG Page number {page_num} drawn at x={page_num_x:.1f}, y={page_num_y:.1f}")
 
 
-def draw_body_block(c, left_margin_pt, y, leading, normalized, page_height, top_margin_pt, bottom_margin_pt, signature_gap, copy_gap, reserve_signature_space=False):
+def draw_body_block(c, left_margin_pt, y, leading, normalized, page_height, top_margin_pt, bottom_margin_pt, signature_gap, copy_gap, paragraph_gap, reserve_signature_space=False):
     """
     Draw body paragraphs with proper level-based indentation and word-wrap.
     Marker prints only on first line; continuation lines return to left margin.
@@ -224,9 +224,9 @@ def draw_body_block(c, left_margin_pt, y, leading, normalized, page_height, top_
         # Debug: y position after this body record
         print(f"DEBUG y_position after level {level} marker '{marker}': {y:.1f}")
 
-        # One blank line after this paragraph (except for last paragraph)
+        # One paragraph gap after this paragraph (except for last paragraph)
         if i < len(body_lines) - 1:
-            y -= leading
+            y -= paragraph_gap
 
         prev_level = level
 
@@ -367,7 +367,8 @@ def main():
 
     # Font-size-aware typography calculations
     font_size = 12  # body font size
-    leading = font_size * 1.2  # line spacing with 20% extra
+    leading = font_size * 1.2  # line spacing with 20% extra (within paragraphs)
+    paragraph_gap = font_size  # gap between paragraphs (12 pt, scales with font)
     blank_line = font_size * 1.2  # one blank line
     signature_gap = font_size * 4.0  # 4 lines below text before signature
     copy_gap = font_size * 2.0  # 2 lines below signature before copy_to
@@ -457,7 +458,7 @@ def main():
     # Body block - use dedicated function with level-based indentation and pagination
     y, page_count, body_lines_on_last_page = draw_body_block(
         c, left_margin_pt, y, leading, normalized, page_height, top_margin_pt, bottom_margin_pt,
-        signature_gap, copy_gap, reserve_signature_space=True
+        signature_gap, copy_gap, paragraph_gap, reserve_signature_space=True
     )
     print(f"DEBUG Total pages generated: {page_count}")
     print(f"DEBUG Body lines on last page: {body_lines_on_last_page}")
