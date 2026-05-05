@@ -225,9 +225,9 @@ def draw_body_block(c, left_margin_pt, y, leading, font_size, normalized, page_h
         print(f"DEBUG y_position after level {level} marker '{marker}': {y:.1f}")
 
         # Body record gap: font-size-based spacing after each paragraph (except last)
-        # Final visual tuning: 0.9 * font_size for balanced paragraph spacing
+        # Final visual tuning: 0.85 * font_size for balanced paragraph spacing
         if i < len(body_lines) - 1:
-            y -= font_size * 0.9  # body_record_gap = 10.8 pt
+            y -= font_size * 0.85  # body_record_gap = 10.2 pt
 
         prev_level = level
 
