@@ -721,14 +721,17 @@ def main():
     serial = normalized.get('serial')
     date_text = normalized.get('date', '')
     
-    # Build lines, stripping empty/null
+    # Build lines per SECNAV manual: SSIC, serial (with "Ser " prefix) or originator, date
     sender_symbol_lines = []
     if ssic_val:
         sender_symbol_lines.append(ssic_val)
-    if originator_code:
-        sender_symbol_lines.append(str(originator_code))
+    
+    # Serial takes precedence over originator_code if both present
     if serial:
-        sender_symbol_lines.append(str(serial))
+        sender_symbol_lines.append("Ser " + str(serial))
+    elif originator_code:
+        sender_symbol_lines.append(str(originator_code))
+    
     if date_text:
         sender_symbol_lines.append(date_text)
     
