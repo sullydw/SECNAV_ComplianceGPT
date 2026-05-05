@@ -368,7 +368,7 @@ def main():
     # Font-size-aware typography calculations
     font_size = 12  # body font size
     leading = font_size * 1.2  # line spacing with 20% extra (within paragraphs)
-    paragraph_gap = font_size  # gap between paragraphs (12 pt, scales with font)
+    paragraph_gap = font_size * 0.5  # gap between paragraphs (6 pt, scales with font)
     blank_line = font_size * 1.2  # one blank line
     signature_gap = font_size * 4.0  # 4 lines below text before signature
     copy_gap = font_size * 2.0  # 2 lines below signature before copy_to
