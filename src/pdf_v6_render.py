@@ -107,7 +107,7 @@ def calculate_signature_space(normalized, leading, signature_gap, copy_gap):
     
     Includes:
     - signature_gap (space after body)
-    - all signature lines (name, title, authority)
+    - all signature lines (name, title, authority) based on role
     - copy_to gap (if copy_to present)
     - "Copy to:" label line (if copy_to present)
     - copy_to entry lines (if copy_to present)
@@ -119,13 +119,45 @@ def calculate_signature_space(normalized, leading, signature_gap, copy_gap):
     signature = normalized.get("signature", "")
     
     if isinstance(signature, dict):
-        # Structured signature: count non-empty fields
+        # Structured signature: count lines based on role
+        role = signature.get("role")
+        
+        # Name is always first line if present
         if signature.get("name"):
             signature_lines += 1
-        if signature.get("title"):
+        
+        # Count additional lines based on role
+        if role == "activity_head":
+            # name only
+            pass
+        elif role == "principal_subordinate_by_title":
+            # name + title
+            if signature.get("title"):
+                signature_lines += 1
+        elif role == "acting":
+            # name + Acting
             signature_lines += 1
-        if signature.get("authority"):
+        elif role == "acting_by_title":
+            # name + title + Acting
+            if signature.get("title"):
+                signature_lines += 2  # title + Acting
+        elif role == "by_direction":
+            # name + By direction
             signature_lines += 1
+        elif role == "by_direction_pay_allowance":
+            # name + title + By direction of the + activity_head_title
+            if signature.get("title") and signature.get("activity_head_title"):
+                signature_lines += 3  # title + By direction of the + activity_head_title
+            elif signature.get("title"):
+                signature_lines += 2  # title + By direction of the
+            elif signature.get("activity_head_title"):
+                signature_lines += 2  # By direction of the + activity_head_title
+        else:
+            # Backward compatibility: old format with title/authority fields
+            if signature.get("title"):
+                signature_lines += 1
+            if signature.get("authority"):
+                signature_lines += 1
     elif signature:
         # Legacy string signature
         signature_lines = 1
@@ -145,15 +177,15 @@ def calculate_signature_space(normalized, leading, signature_gap, copy_gap):
 
 def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, signature_gap, copy_gap, bottom_margin_pt):
     """
-    Draw signature block as a single atomic unit.
+    Draw signature block as a single atomic unit for SECNAV role-based signing.
     Returns new y position after rendering.
     
     Supports both legacy string signatures and structured dictionaries.
-    Structured signature format: {"name": "...", "title": "...", "authority": "..."}
+    Structured signature format: {"name": "...", "title": "...", "authority": "...", "role": "..."}
     
     Signature block includes:
     - signature_gap blank lines after body
-    - signature lines (centered, same x position)
+    - Role-aware signature rendering
     - copy_to section (if present)
     """
     # Four blank lines after final body text
@@ -166,26 +198,61 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
     
     # Handle both legacy string and structured signature formats
     if isinstance(signature, dict):
-        # Structured signature - render lines in order: name, title, authority
+        # Structured signature - extract components
+        name = signature.get("name") or ""
+        role = signature.get("role")
+        title = signature.get("title") or ""
+        activity_head_title = signature.get("activity_head_title") or ""
+        
+        # Fix signature spelling if needed
+        if name == "DARL SULLIVAN":
+            name = "DARRYL SULLIVAN"
+        
+        # Build signature lines based on role
         signature_lines = []
         
-        if signature.get("name"):
-            name_text = signature["name"]
-            # Fix signature spelling if needed
-            if name_text == "DARL SULLIVAN":
-                name_text = "DARRYL SULLIVAN"
-            signature_lines.append(name_text)
+        # Name is always first if present
+        if name:
+            signature_lines.append(name)
         
-        if signature.get("title"):
-            signature_lines.append(signature["title"])
-        
-        if signature.get("authority"):
-            signature_lines.append(signature["authority"])
+        # Add role-specific lines
+        if role == "activity_head":
+            # name only - nothing more to add
+            pass
+        elif role == "principal_subordinate_by_title":
+            if title:
+                signature_lines.append(title)
+        elif role == "acting":
+            signature_lines.append("Acting")
+        elif role == "acting_by_title":
+            if title:
+                signature_lines.append(title)
+            signature_lines.append("Acting")
+        elif role == "by_direction":
+            signature_lines.append("By direction")
+        elif role == "by_direction_pay_allowance":
+            if title:
+                signature_lines.append(title)
+            signature_lines.append("By direction of the")
+            if activity_head_title:
+                signature_lines.append(activity_head_title)
+        elif role is None:
+            # No role specified - fall back to old dict behavior
+            old_title = signature.get("title") or ""
+            old_authority = signature.get("authority") or ""
+            if old_title:
+                signature_lines.append(old_title)
+            if old_authority:
+                signature_lines.append(old_authority)
+        else:
+            # Unsupported role - warn and render name only
+            print(f"WARNING: Unsupported signature role '{role}'. Rendering name only.")
         
         # Draw all signature lines at same x position
         for line in signature_lines:
-            c.drawString(signature_x, y, line)
-            print(f"DEBUG Signature line drawn at x={signature_x:.1f}, y={y:.1f}: '{line}'")
+            if line.strip():
+                c.drawString(signature_x, y, line)
+                print(f"DEBUG Signature line drawn at x={signature_x:.1f}, y={y:.1f}: '{line}'")
             y -= leading
             
     elif signature:
