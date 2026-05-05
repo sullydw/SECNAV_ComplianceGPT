@@ -351,7 +351,7 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
     return y
 
 
-def draw_body_block(c, left_margin_pt, y, leading, font_size, normalized, page_height, top_margin_pt, bottom_margin_pt, signature_gap, copy_gap, reserve_signature_space=False):
+def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, page_height, top_margin_pt, bottom_margin_pt, signature_gap, copy_gap, reserve_signature_space=False):
     """
     Draw body paragraphs with proper level-based indentation and word-wrap.
     Marker prints only on first line; continuation lines return to left margin.
@@ -478,7 +478,7 @@ def draw_body_block(c, left_margin_pt, y, leading, font_size, normalized, page_h
         # Body record gap: font-size-based spacing after each paragraph (except last)
         # Visibly tighter spacing: 0.75 * font_size for improved visual balance
         if i < len(body_lines) - 1:
-            y -= font_size * 0.75  # body_record_gap = 9.0 pt
+            y -= body_font_size * 0.75  # body_record_gap = 9.0 pt
 
         prev_level = level
 
@@ -650,12 +650,12 @@ def main():
     bottom_margin_pt = 72.0
 
     # Font-size-aware typography calculations
-    font_size = 12  # body font size
-    leading = font_size * 1.2  # line spacing with 20% extra (within paragraphs)
-    blank_line = font_size * 1.2  # one blank line
-    signature_gap = font_size * 4.0  # 4 lines below text before signature
-    copy_gap = font_size * 2.0  # 2 lines below signature before copy_to
-    page_break_buffer = font_size * 4.0  # minimum space before signature
+    body_font_size = 12  # body font size
+    leading = body_font_size * 1.2  # line spacing with 20% extra (within paragraphs)
+    blank_line = body_font_size * 1.2  # one blank line
+    signature_gap = body_font_size * 4.0  # 4 lines below text before signature
+    copy_gap = body_font_size * 2.0  # 2 lines below signature before copy_to
+    page_break_buffer = body_font_size * 4.0  # minimum space before signature
 
     # Load H-series letterhead rules
     h_series_path = os.path.join(base_dir, "H-series.json")
@@ -693,19 +693,19 @@ def main():
         for i, lh_line in enumerate(letterhead_lines):
             if i == 0:
                 # First line: bold, larger font
-                font_name = h_rules["first_line_font"]
-                font_size = h_rules["first_line_size"]
+                lh_font_name = h_rules["first_line_font"]
+                lh_font_size = h_rules["first_line_size"]
             else:
                 # Subsequent lines: regular, smaller font
-                font_name = h_rules["subsequent_font"]
-                font_size = h_rules["subsequent_size"]
+                lh_font_name = h_rules["subsequent_font"]
+                lh_font_size = h_rules["subsequent_size"]
 
-            c.setFont(font_name, font_size)
-            lh_leading = font_size * 1.2  # Letterhead-specific leading
-            text_width = c.stringWidth(lh_line, font_name, font_size)
+            c.setFont(lh_font_name, lh_font_size)
+            lh_leading = lh_font_size * 1.2  # Letterhead-specific leading
+            text_width = c.stringWidth(lh_line, lh_font_name, lh_font_size)
             x_centered = (page_width - text_width) / 2
             c.drawString(x_centered, y, lh_line)
-            print(f"DEBUG LH line {i+1}: '{lh_line}' | font={font_name} {font_size}pt | x={x_centered:.1f} | y={y:.1f} | width={text_width:.1f}")
+            print(f"DEBUG LH line {i+1}: '{lh_line}' | font={lh_font_name} {lh_font_size}pt | x={x_centered:.1f} | y={y:.1f} | width={text_width:.1f}")
             y -= lh_leading
 
         # Spacing below letterhead per H-006
@@ -736,16 +736,26 @@ def main():
         sender_symbol_lines.append(date_text)
     
     # SSIC/date sender-symbol block uses standard correspondence font unless an explicit rule override is later added
+    # Inherits BOTH font family and size from standard body/header settings
     standard_font_name = "Times-Roman"
-    standard_font_size = font_size  # 12pt body font
+    standard_font_size = body_font_size  # 12pt body font
     
-    # Calculate longest line width and block left anchor
-    c.setFont(standard_font_name, standard_font_size)
-    right_edge_x = page_width - right_margin_pt
-    longest_line_width = max(c.stringWidth(line, standard_font_name, standard_font_size) for line in sender_symbol_lines) if sender_symbol_lines else 0
-    block_left_x = right_edge_x - longest_line_width
+    # Sender-symbol block inherits standard body font family and size
+    sender_symbol_font_name = standard_font_name
+    sender_symbol_font_size = standard_font_size
     
     print(f"DEBUG === SENDER-SYMBOL BLOCK ===")
+    print(f"DEBUG standard_font_name: {standard_font_name}")
+    print(f"DEBUG standard_font_size: {standard_font_size}pt")
+    print(f"DEBUG sender_symbol_font_name: {sender_symbol_font_name}")
+    print(f"DEBUG sender_symbol_font_size: {sender_symbol_font_size}pt")
+    
+    # Calculate longest line width and block left anchor
+    c.setFont(sender_symbol_font_name, sender_symbol_font_size)
+    right_edge_x = page_width - right_margin_pt
+    longest_line_width = max(c.stringWidth(line, sender_symbol_font_name, sender_symbol_font_size) for line in sender_symbol_lines) if sender_symbol_lines else 0
+    block_left_x = right_edge_x - longest_line_width
+    
     print(f"DEBUG sender symbol lines: {sender_symbol_lines}")
     print(f"DEBUG longest line width: {longest_line_width:.1f}pt")
     print(f"DEBUG right_edge_x: {right_edge_x:.1f}pt")
@@ -772,7 +782,7 @@ def main():
 
     # Body block - use dedicated function with level-based indentation and pagination
     y, page_count, body_lines_on_last_page = draw_body_block(
-        c, left_margin_pt, y, leading, font_size, normalized, page_height, top_margin_pt, bottom_margin_pt,
+        c, left_margin_pt, y, leading, body_font_size, normalized, page_height, top_margin_pt, bottom_margin_pt,
         signature_gap, copy_gap, reserve_signature_space=True
     )
     print(f"DEBUG Total pages generated: {page_count}")
