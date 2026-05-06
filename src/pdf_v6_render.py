@@ -422,7 +422,7 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
         c.drawString(left_margin_pt, y, "Distribution:")
         y -= leading
         for dist_entry in normalized.get("distribution", []):
-            c.drawString(left_margin_pt + 43, y, dist_entry)
+            c.drawString(left_margin_pt, y, dist_entry)
             y -= leading
         print(f"DEBUG Distribution block starts at y={dist_y:.1f}")
         # One blank line after Distribution before Copy to
