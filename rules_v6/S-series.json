@@ -51,5 +51,71 @@
     "continuation_header": true,
     "applies_to": "signature_page_logic",
     "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-007": {
+    "rule": "distribution_placement",
+    "description": "Distribution block renders after signature block and before Copy to block",
+    "placement": "after_signature_before_copy_to",
+    "applies_to": "distribution_block",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "S-008": {
+    "rule": "distribution_modes",
+    "description": "Distribution mode controls whether To line is rendered",
+    "supported_modes": ["distribution_only", "to_plus_distribution"],
+    "default": "distribution_only",
+    "behavior": {
+      "distribution_only": "To line omitted",
+      "to_plus_distribution": "To line rendered as group title"
+    },
+    "applies_to": "distribution_block",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "S-009": {
+    "rule": "distribution_layouts",
+    "description": "Distribution entries can be rendered in multiple layout formats",
+    "supported_layouts": ["single_column", "columns", "paragraph"],
+    "default": "single_column",
+    "behavior": {
+      "single_column": "Entries listed one per line at left margin",
+      "columns": "Entries arranged in two columns with balanced row order",
+      "paragraph": "Entries rendered as comma-separated wrapping text"
+    },
+    "applies_to": "distribution_block",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "S-010": {
+    "rule": "copy_to_placement",
+    "description": "Copy to block renders after Distribution block (if present) or after signature block",
+    "placement": "after_distribution_or_signature",
+    "applies_to": "copy_to_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-011": {
+    "rule": "copy_to_layouts",
+    "description": "Copy to entries can be rendered in multiple layout formats",
+    "supported_layouts": ["single_column", "columns", "paragraph"],
+    "default": "single_column",
+    "behavior": {
+      "single_column": "Entries listed one per line at left margin",
+      "columns": "Entries arranged in two columns with balanced row order",
+      "paragraph": "Entries rendered as comma-separated wrapping text"
+    },
+    "applies_to": "copy_to_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-012": {
+    "rule": "distribution_copy_to_ordering",
+    "description": "Distribution block always appears before Copy to block when both are present",
+    "order": "distribution_before_copy_to",
+    "applies_to": "distribution_block,copy_to_block",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "S-013": {
+    "rule": "copy_to_header_independence",
+    "description": "Copy to is informational only and never suppresses To, Via, Distribution, or other header fields",
+    "suppresses_header": false,
+    "applies_to": "copy_to_block",
+    "source": "SECNAV M-5216.5 Ch 7"
   }
 }
