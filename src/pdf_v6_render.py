@@ -420,6 +420,15 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
     if normalized.get("distribution"):
         dist_y = y
         dist_layout = normalized.get("distribution_layout", "single_column")
+        
+        # Validate distribution_layout
+        valid_distribution_layouts = ["single_column", "columns", "paragraph"]
+        if dist_layout not in valid_distribution_layouts:
+            print(f"WARNING: Invalid distribution_layout '{dist_layout}', falling back to 'single_column'")
+            dist_layout = "single_column"
+        
+        print(f"DEBUG distribution_layout: {dist_layout}")
+        
         c.drawString(left_margin_pt, y, "Distribution:")
         y -= leading
         
@@ -468,6 +477,15 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
     if normalized.get("copy_to"):
         copy_to_y = y
         copy_to_layout = normalized.get("copy_to_layout", "single_column")
+        
+        # Validate copy_to_layout
+        valid_copy_to_layouts = ["single_column", "columns", "paragraph"]
+        if copy_to_layout not in valid_copy_to_layouts:
+            print(f"WARNING: Invalid copy_to_layout '{copy_to_layout}', falling back to 'single_column'")
+            copy_to_layout = "single_column"
+        
+        print(f"DEBUG copy_to_layout: {copy_to_layout}")
+        
         c.drawString(left_margin_pt, copy_to_y, "Copy to:")
         y -= leading
         
@@ -685,8 +703,28 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, ri
     print(f"DEBUG From: '{normalized.get('from', '')}' | y={from_y:.1f}")
     y -= leading
 
+    # Validate and resolve distribution_mode
+    valid_distribution_modes = ["distribution_only", "to_plus_distribution"]
+    distribution_mode = normalized.get("distribution_mode")
+    has_distribution = bool(normalized.get("distribution"))
+    
+    if has_distribution:
+        if distribution_mode is None:
+            distribution_mode = "distribution_only"
+            print(f"WARNING: distribution_mode missing with distribution present, defaulting to 'distribution_only'")
+        elif distribution_mode not in valid_distribution_modes:
+            print(f"WARNING: Invalid distribution_mode '{distribution_mode}', falling back to 'distribution_only'")
+            distribution_mode = "distribution_only"
+        
+        if distribution_mode == "distribution_only" and normalized.get("to"):
+            print(f"WARNING: To field ignored because distribution_mode is 'distribution_only'")
+        elif distribution_mode == "to_plus_distribution" and not normalized.get("to"):
+            print(f"WARNING: distribution_mode is 'to_plus_distribution' but To field missing, falling back to 'distribution_only'")
+            distribution_mode = "distribution_only"
+    
+    print(f"DEBUG distribution_mode: {distribution_mode}")
+    
     # To: (omit only if distribution_mode is "distribution_only")
-    distribution_mode = normalized.get("distribution_mode", "distribution_only" if normalized.get("distribution") else None)
     if distribution_mode != "distribution_only":
         c.drawString(label_x, y, "To:")
         c.drawString(text_x, y, normalized.get("to", ""))
