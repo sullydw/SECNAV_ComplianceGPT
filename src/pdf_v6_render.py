@@ -611,10 +611,22 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, ri
     print(f"DEBUG From: '{normalized.get('from', '')}' | y={from_y:.1f}")
     y -= leading
 
-    # To:
-    c.drawString(label_x, y, "To:")
-    c.drawString(text_x, y, normalized.get("to", ""))
-    y -= leading
+    # Distribution: (if present, suppresses To:)
+    if normalized.get("distribution"):
+        # One blank line before Distribution block
+        y -= leading
+        c.drawString(label_x, y, "Distribution:")
+        y -= leading
+        for dist_entry in normalized.get("distribution", []):
+            c.drawString(text_x, y, dist_entry)
+            y -= leading
+        # One blank line after Distribution block
+        y -= leading
+    else:
+        # To: (only if distribution not present)
+        c.drawString(label_x, y, "To:")
+        c.drawString(text_x, y, normalized.get("to", ""))
+        y -= leading
 
     # Via: (if present)
     if normalized.get("via_count", 0) > 0:

@@ -13,7 +13,10 @@
     "SUPPRESS_PARENT_LINE": true
   },
   "from": "Commanding Officer, 3d Battalion, 6th Marines",
-  "to": "Commanding Officer, 2d Marine Division",
+  "distribution": [
+    "Commanding Officer, 2d Marine Division",
+    "Commanding General, II MEF"
+  ],
   "via": [
     "(1) Commanding General, 2d Marine Division"
   ],
