@@ -413,8 +413,20 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
         print(f"DEBUG Signature drawn at x={signature_x:.1f}, y={y:.1f}")
         y -= leading
 
-    # Gap between signature and copy_to
+    # Gap between signature and distribution/copy_to
     y -= copy_gap
+
+    # Distribution: (if present, renders after signature, before Copy to)
+    if normalized.get("distribution"):
+        dist_y = y
+        c.drawString(left_margin_pt, y, "Distribution:")
+        y -= leading
+        for dist_entry in normalized.get("distribution", []):
+            c.drawString(left_margin_pt + 43, y, dist_entry)
+            y -= leading
+        print(f"DEBUG Distribution block starts at y={dist_y:.1f}")
+        # One blank line after Distribution before Copy to
+        y -= leading
 
     # Copy to (if present) - starts at left margin
     if normalized.get("copy_to"):
@@ -611,19 +623,8 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, ri
     print(f"DEBUG From: '{normalized.get('from', '')}' | y={from_y:.1f}")
     y -= leading
 
-    # Distribution: (if present, suppresses To:)
-    if normalized.get("distribution"):
-        # One blank line before Distribution block
-        y -= leading
-        c.drawString(label_x, y, "Distribution:")
-        y -= leading
-        for dist_entry in normalized.get("distribution", []):
-            c.drawString(text_x, y, dist_entry)
-            y -= leading
-        # One blank line after Distribution block
-        y -= leading
-    else:
-        # To: (only if distribution not present)
+    # To: (only if distribution not present)
+    if not normalized.get("distribution"):
         c.drawString(label_x, y, "To:")
         c.drawString(text_x, y, normalized.get("to", ""))
         y -= leading
