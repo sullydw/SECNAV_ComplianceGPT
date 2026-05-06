@@ -417,9 +417,11 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
     y -= copy_gap
 
     # Distribution: (if present, renders after signature, before Copy to)
+    # Label and order are rule-driven from model if provided
     if normalized.get("distribution"):
         dist_y = y
         dist_layout = normalized.get("distribution_layout", "single_column")
+        dist_label = normalized.get("distribution_label", "Distribution:")
         
         # Validate distribution_layout
         valid_distribution_layouts = ["single_column", "columns", "paragraph"]
@@ -429,7 +431,7 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
         
         print(f"DEBUG distribution_layout: {dist_layout}")
         
-        c.drawString(left_margin_pt, y, "Distribution:")
+        c.drawString(left_margin_pt, y, dist_label)
         y -= leading
         
         if dist_layout == "single_column":
@@ -473,10 +475,13 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
         # One blank line after Distribution before Copy to
         y -= leading
 
-    # Copy to (if present) - starts at left margin
+    # Copy to (if present) - renders after Distribution if both exist
+    # Label is rule-driven from model if provided
+    # Copy to never affects header rendering
     if normalized.get("copy_to"):
         copy_to_y = y
         copy_to_layout = normalized.get("copy_to_layout", "single_column")
+        copy_to_label = normalized.get("copy_to_label", "Copy to:")
         
         # Validate copy_to_layout
         valid_copy_to_layouts = ["single_column", "columns", "paragraph"]
@@ -486,7 +491,7 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
         
         print(f"DEBUG copy_to_layout: {copy_to_layout}")
         
-        c.drawString(left_margin_pt, copy_to_y, "Copy to:")
+        c.drawString(left_margin_pt, copy_to_y, copy_to_label)
         y -= leading
         
         if copy_to_layout == "single_column":
