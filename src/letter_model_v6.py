@@ -22,14 +22,37 @@ def normalize_payload(payload):
     if "body" in payload and isinstance(payload["body"], str):
         payload["body"] = [payload["body"]]
     
+    # Ensure distribution and copy-to settings have explicit defaults
+    # distribution_mode
+    if "distribution_mode" not in payload:
+        payload["distribution_mode"] = "distribution_only" if payload.get("distribution") else None
+    
+    # distribution_layout
+    if "distribution_layout" not in payload:
+        payload["distribution_layout"] = "single_column"
+    
+    # copy_to_layout
+    if "copy_to_layout" not in payload:
+        payload["copy_to_layout"] = "single_column"
+    
+    # distribution_label
+    if "distribution_label" not in payload:
+        payload["distribution_label"] = "Distribution:"
+    
+    # copy_to_label
+    if "copy_to_label" not in payload:
+        payload["copy_to_label"] = "Copy to:"
+    
     # Add derived fields
     payload["has_via"] = bool(payload.get("via", []))
     payload["has_ref"] = bool(payload.get("ref", []))
     payload["has_encl"] = bool(payload.get("encl", []))
     payload["has_copy_to"] = bool(payload.get("copy_to", []))
+    payload["has_distribution"] = bool(payload.get("distribution", []))
     payload["via_count"] = len(payload.get("via", []))
     payload["ref_count"] = len(payload.get("ref", []))
     payload["encl_count"] = len(payload.get("encl", []))
+    payload["distribution_count"] = len(payload.get("distribution", []))
     payload["body_count"] = len(payload.get("body", []))
     
     return payload
