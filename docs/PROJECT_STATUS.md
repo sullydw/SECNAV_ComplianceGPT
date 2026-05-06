@@ -116,7 +116,14 @@ PASS
 - Used for action addressees when applicable
 - Renders after signature block and before "Copy to:"
 - Label and entries aligned at left margin
-- Single-column format
+- `distribution_mode` supports:
+ - `distribution_only` (omits To line)
+ - `to_plus_distribution` (keeps To line as group title)
+- `distribution_layout` supports:
+ - `single_column` (entries listed one per line)
+ - `columns` (two-column balanced row order)
+ - `paragraph` (comma-separated wrapping text)
+- Validation exists for invalid/missing mode and layout values with safe fallbacks
 
 ### Subject System
 - Page 1: wraps under subject text column
@@ -142,6 +149,13 @@ PASS
 - Distribution = action addressees
 - Copy to = informational addressees
 - Distribution appears before Copy to when both are present
+- `copy_to_layout` supports:
+ - `single_column` (entries listed one per line)
+ - `columns` (two-column balanced row order)
+ - `paragraph` (comma-separated wrapping text)
+- Copy to is informational only
+- Copy to never suppresses To, Via, Distribution, or other header fields
+- Validation exists for invalid `copy_to_layout` values with safe fallbacks
 
 ---
 
