@@ -14,6 +14,15 @@
 
 ---
 
+## Source of Current Behavior
+
+For all current rendering behavior and confirmed compliance decisions, see:
+docs/PROJECT_STATUS.md
+
+This file (BOOTSTRAP.md) provides architecture and setup only.
+
+---
+
 ## Current Architecture
 
 ### Core Components
@@ -60,8 +69,8 @@ BOUNDARY_SPACINGS = {
 ```
 
 **Paragraph spacing:**
-- One blank line AFTER each paragraph (except last)
-- Applied via: `if i < len(body_lines) - 1: y -= leading`
+- Controlled by renderer logic
+- Refer to docs/PROJECT_STATUS.md for current behavior
 
 ---
 
@@ -110,21 +119,15 @@ git push origin main
 
 3. **No hardcoded points:** Spacing calculated from font size, not magic numbers
 
-4. **Paragraph spacing:** Applied AFTER paragraphs (not before) to avoid double-spacing with continuation lines
+4. **Signature placement:** 4 lines below final body text per SECNAV M-5216.5 Ch 7
 
-5. **Signature placement:** 4 lines below final body text per SECNAV M-5216.5 Ch 7
-
-6. **Continuation pages:** Repeat subject line, omit letterhead/SSIC/header blocks
+5. **Continuation pages:** Repeat subject line, omit letterhead/SSIC/header blocks
 
 ---
 
 ## Known Issues / Open Questions
 
-1. **Body paragraph visual spacing:** Still being refined - currently uses "spacing after" with 1 leading unit
-
-2. **HTML/CSS renderer:** Considered for future, but NOT replacing ReportLab yet
-
-3. **Rule validation:** Some rules provisional pending SECNAV M-5216.5 verification
+1. **Rule validation:** Some rules provisional pending SECNAV M-5216.5 verification
 
 ---
 
