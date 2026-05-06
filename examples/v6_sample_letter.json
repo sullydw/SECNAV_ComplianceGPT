@@ -13,9 +13,13 @@
     "SUPPRESS_PARENT_LINE": true
   },
   "from": "Commanding Officer, 3d Battalion, 6th Marines",
+  "to": "Area Records Officers",
+  "distribution_mode": "to_plus_distribution",
   "distribution": [
-    "Commanding Officer, 2d Marine Division",
-    "Commanding General, II MEF"
+    "NAVCOMTELSTA WASHINGTON DC",
+    "NAVCOMTELSTA PENSACOLA",
+    "NAVCOMTELSTA SAN DIEGO",
+    "NAVCOMTELSTA SAN FRANCISCO"
   ],
   "via": [
     "(1) Commanding General, 2d Marine Division"

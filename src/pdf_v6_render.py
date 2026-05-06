@@ -623,8 +623,9 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, ri
     print(f"DEBUG From: '{normalized.get('from', '')}' | y={from_y:.1f}")
     y -= leading
 
-    # To: (only if distribution not present)
-    if not normalized.get("distribution"):
+    # To: (omit only if distribution_mode is "distribution_only")
+    distribution_mode = normalized.get("distribution_mode", "distribution_only" if normalized.get("distribution") else None)
+    if distribution_mode != "distribution_only":
         c.drawString(label_x, y, "To:")
         c.drawString(text_x, y, normalized.get("to", ""))
         y -= leading
