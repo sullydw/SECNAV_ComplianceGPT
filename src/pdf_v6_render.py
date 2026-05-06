@@ -461,17 +461,17 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
     body_lines_on_current_page = 0
     body_lines_on_last_page = 0
 
-    def draw_continuation_header(c, left_margin_pt, page_height, top_margin_pt, subj, text_x, right_edge_pt, leading):
+    def draw_continuation_header(c, left_margin_pt, page_height, top_margin_pt, subj, right_edge_pt, leading):
         """Draw repeated subject line on continuation pages (page 2+)."""
         y = page_height - top_margin_pt
+        header_label_x = left_margin_pt
+        header_text_x = left_margin_pt + 43  # Same text column as page 1 header
         c.setFont("Times-Roman", 12)
-        c.drawString(left_margin_pt, y, "Subj:")
-        subj_max_width = right_edge_pt - text_x
-        y = draw_wrapped_text(c, text_x, y, subj, 12, subj_max_width, leading)
-        y -= leading
-        # One blank line after subject
-        y -= leading
-        print(f"DEBUG Continuation header drawn, y after subject: {y:.1f}")
+        c.drawString(header_label_x, y, "Subj:")
+        subj_max_width = right_edge_pt - header_text_x
+        y = draw_wrapped_text(c, header_text_x, y, subj, 12, subj_max_width, leading)
+        y -= leading  # One blank line after subject
+        print(f"DEBUG Continuation header: label_x={header_label_x:.1f}, text_x={header_text_x:.1f}, y after subject={y:.1f}")
         return y
 
     for i, line in enumerate(body_lines):
@@ -506,7 +506,7 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
                 body_lines_on_current_page = 0
                 body_lines_on_last_page = 0  # Reset for new page
                 # Draw continuation header on page 2+
-                y = draw_continuation_header(c, left_margin_pt, page_height, top_margin_pt, subj, text_x, right_edge_pt, leading)
+                y = draw_continuation_header(c, left_margin_pt, page_height, top_margin_pt, subj, right_edge_pt, leading)
                 print(f"DEBUG SIGNATURE PAGE: Started page {page_count}, y after header: {y:.1f}")
         elif y < bottom_margin_pt + min_space_needed:
             # Draw page number on current page before showing new page
@@ -516,7 +516,7 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
             body_lines_on_current_page = 0
             body_lines_on_last_page = 0  # Reset for new page
             # Draw continuation header on page 2+
-            y = draw_continuation_header(c, left_margin_pt, page_height, top_margin_pt, subj, text_x, right_edge_pt, leading)
+            y = draw_continuation_header(c, left_margin_pt, page_height, top_margin_pt, subj, right_edge_pt, leading)
             print(f"DEBUG PAGINATION: Started page {page_count}, y after header: {y:.1f}")
 
         y -= leading
@@ -547,7 +547,7 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
                 body_lines_on_current_page = 0
                 body_lines_on_last_page = 0  # Reset for new page
                 # Draw continuation header on page 2+
-                y = draw_continuation_header(c, left_margin_pt, page_height, top_margin_pt, subj, text_x, right_edge_pt, leading)
+                y = draw_continuation_header(c, left_margin_pt, page_height, top_margin_pt, subj, right_edge_pt, leading)
                 print(f"DEBUG PAGINATION: Started page {page_count} (continuation), y after header: {y:.1f}")
             c.drawString(left_margin_pt, y, cont_line)
             y -= leading
