@@ -318,7 +318,7 @@ def _validate_structured_signature(signature):
     return True, None
 
 
-def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, signature_gap, copy_gap, bottom_margin_pt):
+def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, signature_gap, copy_gap, bottom_margin_pt, right_margin_pt=72.0):
     """
     Draw signature block as a single atomic unit for SECNAV role-based signing.
     Returns new y position after rendering.
@@ -419,12 +419,48 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
     # Distribution: (if present, renders after signature, before Copy to)
     if normalized.get("distribution"):
         dist_y = y
+        dist_layout = normalized.get("distribution_layout", "single_column")
         c.drawString(left_margin_pt, y, "Distribution:")
         y -= leading
-        for dist_entry in normalized.get("distribution", []):
-            c.drawString(left_margin_pt, y, dist_entry)
-            y -= leading
-        print(f"DEBUG Distribution block starts at y={dist_y:.1f}")
+        
+        if dist_layout == "single_column":
+            # Single column: entries listed one per line at left margin
+            for dist_entry in normalized.get("distribution", []):
+                c.drawString(left_margin_pt, y, dist_entry)
+                y -= leading
+        
+        elif dist_layout == "columns":
+            # Two columns: balanced row order (left, right, next row)
+            entries = normalized.get("distribution", [])
+            right_edge_pt = page_width - right_margin_pt
+            col1_x = left_margin_pt
+            col2_x = left_margin_pt + (right_edge_pt - left_margin_pt) / 2
+            
+            # Calculate how many rows needed
+            num_entries = len(entries)
+            num_rows = (num_entries + 1) // 2  # Ceiling division
+            
+            for row in range(num_rows):
+                left_idx = row * 2
+                right_idx = row * 2 + 1
+                
+                # Left column entry
+                if left_idx < num_entries:
+                    c.drawString(col1_x, y, entries[left_idx])
+                
+                # Right column entry
+                if right_idx < num_entries:
+                    c.drawString(col2_x, y, entries[right_idx])
+                
+                y -= leading
+        
+        elif dist_layout == "paragraph":
+            # Paragraph: comma-separated entries as wrapping text
+            dist_text = ", ".join(normalized.get("distribution", []))
+            max_width = page_width - right_margin_pt - left_margin_pt
+            y = draw_wrapped_text(c, left_margin_pt, y, dist_text, 12, max_width, leading)
+        
+        print(f"DEBUG Distribution block starts at y={dist_y:.1f} (layout: {dist_layout})")
         # One blank line after Distribution before Copy to
         y -= leading
 

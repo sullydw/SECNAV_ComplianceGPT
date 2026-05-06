@@ -19,8 +19,11 @@
     "NAVCOMTELSTA WASHINGTON DC",
     "NAVCOMTELSTA PENSACOLA",
     "NAVCOMTELSTA SAN DIEGO",
-    "NAVCOMTELSTA SAN FRANCISCO"
+    "NAVCOMTELSTA SAN FRANCISCO",
+    "NAVCOMTELSTA SEATTLE",
+    "NAVCOMTELSTA BOSTON"
   ],
+  "distribution_layout": "columns",
   "via": [
     "(1) Commanding General, 2d Marine Division"
   ],
