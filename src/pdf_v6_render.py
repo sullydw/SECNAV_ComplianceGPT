@@ -470,7 +470,8 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
         c.drawString(header_label_x, y, "Subj:")
         subj_max_width = right_edge_pt - header_text_x
         y = draw_wrapped_text(c, header_text_x, y, subj, 12, subj_max_width, leading)
-        y -= leading  # One blank line after subject
+        # draw_wrapped_text returns y already positioned for next line (one leading below last subject line)
+        # Body loop will do y -= leading before drawing, creating one visible blank line
         print(f"DEBUG Continuation header: label_x={header_label_x:.1f}, text_x={header_text_x:.1f}, y after subject={y:.1f}")
         return y
 
@@ -886,10 +887,13 @@ def main():
         # Draw continuation header on new page
         y = page_height - top_margin_pt
         c.setFont("Times-Roman", 12)
-        c.drawString(left_margin_pt, y, f"Subj: {normalized.get('subj', '')}")
-        y -= leading
-        y -= leading  # One blank line after subject
-        print(f"DEBUG Continuation header on signature page, y after header: {y:.1f}")
+        c.drawString(left_margin_pt, y, "Subj:")
+        header_text_x = left_margin_pt + 43
+        subj_max_width = (c._pagesize[0] - 72.0) - header_text_x
+        y = draw_wrapped_text(c, header_text_x, y, normalized.get('subj', ''), 12, subj_max_width, leading)
+        # draw_wrapped_text returns y already positioned for next line (one leading below last subject line)
+        # Signature block will start from this y position
+        print(f"DEBUG Continuation header on signature page: label_x={left_margin_pt:.1f}, text_x={header_text_x:.1f}, y after header={y:.1f}")
         
         # Verify body_lines_on_last_page for audit
         if body_lines_on_last_page == 0:
