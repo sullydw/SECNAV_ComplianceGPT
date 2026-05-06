@@ -96,5 +96,69 @@
     "applies_to": ["body_spacing", "signature_gap", "copy_gap", "page_break_buffer"],
     "severity": "I",
     "source": "Typography engine"
+  },
+  "V-011": {
+    "rule": "distribution_mode_valid",
+    "description": "distribution_mode must be one of: distribution_only, to_plus_distribution",
+    "check": "allowed_values",
+    "field": "distribution_mode",
+    "allowed_values": ["distribution_only", "to_plus_distribution"],
+    "default": "distribution_only",
+    "default_condition": "missing with distribution present",
+    "severity": "W",
+    "behavior": "warn_and_fallback",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "V-012": {
+    "rule": "distribution_layout_valid",
+    "description": "distribution_layout must be one of: single_column, columns, paragraph",
+    "check": "allowed_values",
+    "field": "distribution_layout",
+    "allowed_values": ["single_column", "columns", "paragraph"],
+    "default": "single_column",
+    "severity": "W",
+    "behavior": "warn_and_fallback",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "V-013": {
+    "rule": "copy_to_layout_valid",
+    "description": "copy_to_layout must be one of: single_column, columns, paragraph",
+    "check": "allowed_values",
+    "field": "copy_to_layout",
+    "allowed_values": ["single_column", "columns", "paragraph"],
+    "default": "single_column",
+    "severity": "W",
+    "behavior": "warn_and_fallback",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "V-014": {
+    "rule": "distribution_mode_to_plus_distribution_requires_to",
+    "description": "When distribution_mode is to_plus_distribution, To field must be present",
+    "check": "required_field",
+    "condition": "distribution_mode == to_plus_distribution",
+    "required_field": "to",
+    "severity": "W",
+    "behavior": "warn_and_fallback_to_distribution_only",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "V-015": {
+    "rule": "distribution_mode_distribution_only_ignores_to",
+    "description": "When distribution_mode is distribution_only, To field is ignored if present",
+    "check": "field_ignored",
+    "condition": "distribution_mode == distribution_only",
+    "ignored_field": "to",
+    "severity": "W",
+    "behavior": "warn",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "V-016": {
+    "rule": "copy_to_header_independence",
+    "description": "Copy to block must not suppress To, Via, Distribution, or other header fields",
+    "check": "no_header_suppression",
+    "field": "copy_to",
+    "must_not_suppress": ["to", "via", "distribution"],
+    "severity": "W",
+    "behavior": "warn",
+    "source": "SECNAV M-5216.5 Ch 7"
   }
 }
