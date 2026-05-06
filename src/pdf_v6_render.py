@@ -467,12 +467,38 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
     # Copy to (if present) - starts at left margin
     if normalized.get("copy_to"):
         copy_to_y = y
+        copy_to_layout = normalized.get("copy_to_layout", "single_column")
         c.drawString(left_margin_pt, copy_to_y, "Copy to:")
         y -= leading
-        for copy_line in normalized.get("copy_to", []):
-            c.drawString(left_margin_pt, y, copy_line)
-            y -= leading
-        print(f"DEBUG Copy to block starts at y={copy_to_y:.1f}")
+        
+        if copy_to_layout == "single_column":
+            for copy_line in normalized.get("copy_to", []):
+                c.drawString(left_margin_pt, y, copy_line)
+                y -= leading
+        
+        elif copy_to_layout == "columns":
+            entries = normalized.get("copy_to", [])
+            right_edge_pt = page_width - right_margin_pt
+            col1_x = left_margin_pt
+            col2_x = left_margin_pt + (right_edge_pt - left_margin_pt) / 2
+            num_entries = len(entries)
+            num_rows = (num_entries + 1) // 2
+            
+            for row in range(num_rows):
+                left_idx = row * 2
+                right_idx = row * 2 + 1
+                if left_idx < num_entries:
+                    c.drawString(col1_x, y, entries[left_idx])
+                if right_idx < num_entries:
+                    c.drawString(col2_x, y, entries[right_idx])
+                y -= leading
+        
+        elif copy_to_layout == "paragraph":
+            copy_text = ", ".join(normalized.get("copy_to", []))
+            max_width = page_width - right_margin_pt - left_margin_pt
+            y = draw_wrapped_text(c, left_margin_pt, y, copy_text, 12, max_width, leading)
+        
+        print(f"DEBUG Copy to block starts at y={copy_to_y:.1f} (layout: {copy_to_layout})")
     
     return y
 
@@ -972,3 +998,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

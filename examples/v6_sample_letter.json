@@ -61,6 +61,10 @@
     "affects_pay_or_allowances": false
   },
   "copy_to": [
-    "Commanding General, II MEF"
-  ]
+    "Commanding General, II MEF",
+    "Commanding Officer, 2d Marine Division",
+    "Chief of Staff, II MEF",
+    "G-3, II MEF"
+  ],
+  "copy_to_layout": "paragraph"
 }
