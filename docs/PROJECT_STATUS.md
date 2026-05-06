@@ -100,73 +100,48 @@ PASS
 
 ---
 
-## 5. Current Known Issue: Body Paragraph Spacing
+## 5. Current Confirmed Behaviors
 
-**Issue:** Paragraphs still appear visually too far apart despite code fix.
+### Sender-Symbol Block
+- Supports SSIC, optional originator code, or serial ("Ser X")
+- Date format: D Mon YY
+- Uses longest-line anchor alignment (all lines share same left start)
+- One blank line between sender-symbol block and "From:" line
 
-**What was done (2026-05-04):**
-- Changed from "spacing after paragraph" to "spacing before paragraph"
-- Applied `y -= leading` only when `i > 0` (skip first paragraph)
-- Removed duplicate spacing that was applied both before AND after
+### Header System
+- Order: From / To or Distribution / Via / Subj / Ref / Encl
+- "To:" omitted when "Distribution" is used
 
-**Current code:**
-```python
-# Add one blank line before this paragraph (except for first paragraph)
-if i > 0:
-    y -= leading
-```
+### Distribution Block
+- Used for action addressees when applicable
+- Renders after signature block and before "Copy to:"
+- Label and entries aligned at left margin
+- Single-column format
 
-**Suspected causes:**
-1. Leading value (14.4 pt) may be too large for visual single-spacing
-2. Each body record may still be drawing extra `y -= leading` after continuation lines
-3. Font-size vs leading ratio needs adjustment (currently 12pt font, 14.4pt leading = 20% extra)
+### Subject System
+- Page 1: wraps under subject text column
+- Continuation pages:
+ - subject repeats
+ - same wrapping logic as page 1
+ - correct alignment under subject text column
+ - one blank line after subject block
 
-**Next debugging step:**
-- Verify actual rendered line spacing in PDF viewer
-- Consider reducing leading to `font_size * 1.0` for true single-spacing
-- Check if continuation lines add extra spacing
+### Body System
+- Paragraph spacing finalized
+- Continuation lines return to left margin
+- Marker indentation preserved across levels
 
----
+### Signature System
+- Role-based rendering supported:
+ - standard
+ - By direction
+ - Acting/title variants
+- Signature block protected from orphaning (moves to next page if needed)
 
-## 6. Next Strategic Direction
-
-**Consideration:** HTML/CSS renderer as alternative to ReportLab PDF
-
-**Rationale:**
-- CSS provides more intuitive spacing control (`line-height`, `margin`, `padding`)
-- Easier visual debugging via browser dev tools
-- Can still export to PDF via headless browser (Playwright, Puppeteer)
-- Better support for complex layouts, tables, responsive design
-
-**Decision:**
-- Do NOT replace current `pdf_v6_render.py` yet
-- Continue debugging spacing issues in ReportLab renderer
-- If spacing issues persist, prototype HTML/CSS renderer in parallel
-- Maintain both renderers until HTML approach is proven
-
-**If HTML renderer is pursued:**
-- Create `src/html_v6_render.py`
-- Use same `letter_model_v6.py` normalization
-- Output to `output/v6_test_letter.html`
-- Optional: PDF export via Playwright
-
----
-
-## 7. OpenClaw Workflow Rule
-
-**Standard operating procedure:**
-
-1. **Edit:** OpenClaw edits files in `C:\Projects\SECNAV_ComplianceGPT` only
-2. **Build/Test:** Run `python src/pdf_v6_render.py` to verify
-3. **Commit:** `git add -A && git commit -m "descriptive message"`
-4. **Push:** `git push origin main`
-5. **Report:** Return commit hash, build output, any errors
-
-**Do NOT:**
-- Work in `.openclaw` workspace for this project
-- Create parallel replacement projects
-- Edit files outside `C:\Projects\SECNAV_ComplianceGPT` unless instructed
-- Restart architecture without explicit direction
+### Distribution vs Copy To
+- Distribution = action addressees
+- Copy to = informational addressees
+- Distribution appears before Copy to when both are present
 
 ---
 
