@@ -46,6 +46,14 @@ DO NOT:
 
 ---
 
+## Execution Dispatch Rule
+
+**If dispatch is available → execute task immediately**
+
+**If dispatch is not available → return prompt and state "DISPATCH NOT AVAILABLE"**
+
+---
+
 ## Code Modification Rules
 
 - Make minimal, targeted changes

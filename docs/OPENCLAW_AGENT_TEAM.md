@@ -20,13 +20,25 @@ This project uses a coordinator + specialist agent model for precise, bounded ta
 - Reads `docs/PROJECT_STATUS.md` for current system state
 - Reads `docs/OPENCLAW_INSTRUCTIONS.md` for execution rules
 - Selects the correct specialist agent based on task scope
-- Produces bounded task prompts with explicit file lists
+- Generates bounded task prompts with explicit file lists
+- Dispatches task immediately when execution is available
 - Does NOT make code changes unless explicitly instructed
+
+**Execution Behavior:**
+- If dispatch is available → execute task immediately
+- If dispatch is not available → return prompt and state "DISPATCH NOT AVAILABLE"
 
 **Forbidden:**
 - Editing source files directly
+- Performing task work directly (findings, code changes, audit results)
+- Returning findings, code changes, or audit results unless acting as a specific specialist agent
 - Redesigning architecture without explicit instruction
 - Expanding task scope beyond user request
+
+**Prohibition:**
+- Coordinator role is routing and orchestration ONLY
+- Coordinator must NOT perform specialist agent work
+- Coordinator must dispatch to appropriate specialist agent for all task execution
 
 ---
 
