@@ -174,6 +174,7 @@ PASS
 ### Validation
 - Audit Agent measurement confirms baseline-to-baseline accuracy
 - All tested boundaries match expected values per BOUNDARY_SPACINGS dict
+- Pagination stress test (`audit_pagination_stress.json`) generated 3-page PDF with signature/distribution/copy-to staying together on page 3; no overflow below bottom margin (Y=72 pt) and no orphaning observed. Renderer pagination logic confirmed working; no changes required.
 
 ### Distribution vs Copy To
 - Distribution = action addressees
