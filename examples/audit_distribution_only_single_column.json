@@ -1,0 +1,38 @@
+{
+  "_audit_case": "CASE_1: distribution_only, single_column, no copy_to",
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "originator_code": "S-1",
+  "date": "1 May 2026",
+  "unit_identity": {
+    "letterhead_family": "LH_USMC_ACTIVITY",
+    "UNIT_OR_ACTIVITY_NAME": "3D BATTALION 6TH MARINES",
+    "NEXT_ECHELON_OR_PARENT": "2D MARINE DIVISION",
+    "INSTALLATION_OR_LOCATION": "MCB CAMP LEJEUNE",
+    "STATE": "NC",
+    "ZIP9": "28542-0001",
+    "SUPPRESS_PARENT_LINE": true
+  },
+  "from": "Commanding Officer, 3d Battalion, 6th Marines",
+  "distribution_mode": "distribution_only",
+  "distribution": [
+    "NAVCOMTELSTA WASHINGTON DC",
+    "NAVCOMTELSTA PENSACOLA",
+    "NAVCOMTELSTA SAN DIEGO"
+  ],
+  "distribution_layout": "single_column",
+  "via": [],
+  "subj": "AUDIT TEST: Distribution Only with Single Column Layout",
+  "ref": [],
+  "encl": [],
+  "body": [
+    "1. This is an audit test payload for distribution_only mode with single_column layout.",
+    "2. To line should be omitted.",
+    "3. Distribution entries should render one per line at left margin after signature."
+  ],
+  "signature": {
+    "name": "D. SULLIVAN",
+    "role": "by_direction"
+  },
+  "copy_to": []
+}

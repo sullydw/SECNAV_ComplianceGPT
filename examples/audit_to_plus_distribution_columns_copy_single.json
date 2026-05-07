@@ -1,0 +1,47 @@
+{
+  "_audit_case": "CASE_2: to_plus_distribution, columns, with copy_to single_column",
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "originator_code": "S-1",
+  "date": "1 May 2026",
+  "unit_identity": {
+    "letterhead_family": "LH_USMC_ACTIVITY",
+    "UNIT_OR_ACTIVITY_NAME": "3D BATTALION 6TH MARINES",
+    "NEXT_ECHELON_OR_PARENT": "2D MARINE DIVISION",
+    "INSTALLATION_OR_LOCATION": "MCB CAMP LEJEUNE",
+    "STATE": "NC",
+    "ZIP9": "28542-0001",
+    "SUPPRESS_PARENT_LINE": true
+  },
+  "from": "Commanding Officer, 3d Battalion, 6th Marines",
+  "to": "Area Records Officers",
+  "distribution_mode": "to_plus_distribution",
+  "distribution": [
+    "NAVCOMTELSTA WASHINGTON DC",
+    "NAVCOMTELSTA PENSACOLA",
+    "NAVCOMTELSTA SAN DIEGO",
+    "NAVCOMTELSTA SAN FRANCISCO",
+    "NAVCOMTELSTA SEATTLE",
+    "NAVCOMTELSTA BOSTON"
+  ],
+  "distribution_layout": "columns",
+  "via": [],
+  "subj": "AUDIT TEST: To Plus Distribution with Columns and Copy To Single Column",
+  "ref": [],
+  "encl": [],
+  "body": [
+    "1. This is an audit test payload for to_plus_distribution mode.",
+    "2. To line should be rendered as group title.",
+    "3. Distribution entries should render in two columns after signature.",
+    "4. Copy to should render in single column after distribution."
+  ],
+  "signature": {
+    "name": "D. SULLIVAN",
+    "role": "by_direction"
+  },
+  "copy_to": [
+    "Commanding General, II MEF",
+    "Commanding Officer, 2d Marine Division"
+  ],
+  "copy_to_layout": "single_column"
+}

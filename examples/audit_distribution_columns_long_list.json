@@ -1,0 +1,47 @@
+{
+  "_audit_case": "CASE_4: Long distribution list (12 entries) with columns layout",
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "originator_code": "S-1",
+  "date": "1 May 2026",
+  "unit_identity": {
+    "letterhead_family": "LH_USMC_ACTIVITY",
+    "UNIT_OR_ACTIVITY_NAME": "3D BATTALION 6TH MARINES",
+    "NEXT_ECHELON_OR_PARENT": "2D MARINE DIVISION",
+    "INSTALLATION_OR_LOCATION": "MCB CAMP LEJEUNE",
+    "STATE": "NC",
+    "ZIP9": "28542-0001",
+    "SUPPRESS_PARENT_LINE": true
+  },
+  "from": "Commanding Officer, 3d Battalion, 6th Marines",
+  "distribution_mode": "distribution_only",
+  "distribution": [
+    "NAVCOMTELSTA WASHINGTON DC",
+    "NAVCOMTELSTA PENSACOLA",
+    "NAVCOMTELSTA SAN DIEGO",
+    "NAVCOMTELSTA SAN FRANCISCO",
+    "NAVCOMTELSTA SEATTLE",
+    "NAVCOMTELSTA BOSTON",
+    "NAVCOMTELSTA CHICAGO",
+    "NAVCOMTELSTA DALLAS",
+    "NAVCOMTELSTA MIAMI",
+    "NAVCOMTELSTA DENVER",
+    "NAVCOMTELSTA ATLANTA",
+    "NAVCOMTELSTA PHOENIX"
+  ],
+  "distribution_layout": "columns",
+  "via": [],
+  "subj": "AUDIT TEST: Long Distribution List with Columns Layout",
+  "ref": [],
+  "encl": [],
+  "body": [
+    "1. This is an audit test payload for long distribution list.",
+    "2. Distribution has 12 entries to test column balancing.",
+    "3. Should render as 6 rows with 2 entries per row (left, right)."
+  ],
+  "signature": {
+    "name": "D. SULLIVAN",
+    "role": "by_direction"
+  },
+  "copy_to": []
+}
