@@ -568,7 +568,7 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
         subj_max_width = right_edge_pt - header_text_x
         y = draw_wrapped_text(c, header_text_x, y, subj, 12, subj_max_width, leading)
         # draw_wrapped_text returns y already positioned for next line (one leading below last subject line)
-        # Body loop will do y -= leading before drawing, creating one visible blank line
+        # This y is the baseline where body paragraph 1 should be drawn
         print(f"DEBUG Continuation header: label_x={header_label_x:.1f}, text_x={header_text_x:.1f}, y after subject={y:.1f}")
         return y
 
@@ -617,7 +617,7 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
             y = draw_continuation_header(c, left_margin_pt, page_height, top_margin_pt, subj, right_edge_pt, leading)
             print(f"DEBUG PAGINATION: Started page {page_count}, y after header: {y:.1f}")
 
-        y -= leading
+        # Draw body record at current y position (incoming y is baseline for this record)
         body_lines_on_current_page += 1
         body_lines_on_last_page += 1
 
