@@ -159,6 +159,22 @@ PASS
  - Acting/title variants
 - Signature block protected from orphaning (moves to next page if needed)
 
+### Vertical Spacing Model (Verified)
+- All boundaries use next-baseline cursor semantics
+- All single-line spacing = 1 leading unit (14.4 pt)
+- BODY → SIGNATURE = 4 leading units
+- Subj → Body may span multiple lines when Ref/Encl present (expected behavior)
+
+### Resolved Defects
+- Date → From double spacing fixed (2.0 → 1.0 leading units)
+- Paragraph → subparagraph stacking fixed (3.0 → 1.0 leading units)
+- Signature → Distribution stacking fixed (2.0 → 1.0 leading units)
+- Distribution → Copy to stacking fixed (2.0 → 1.0 leading units)
+
+### Validation
+- Audit Agent measurement confirms baseline-to-baseline accuracy
+- All tested boundaries match expected values per BOUNDARY_SPACINGS dict
+
 ### Distribution vs Copy To
 - Distribution = action addressees
 - Copy to = informational addressees
