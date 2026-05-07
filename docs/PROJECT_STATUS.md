@@ -64,18 +64,27 @@ SECNAV_ComplianceGPT/
 ```python
 BOUNDARY_SPACINGS = {
     ("LETTERHEAD", "SSIC_DATE"): 1,      # 1 line (14.4 pt)
-    ("SSIC_DATE", "HEADER"): 2,          # 2 lines (28.8 pt)
-    ("HEADER", "BODY"): 0,               # 0 lines (0.0 pt) ← Reduced 2026-05-04
+    ("SSIC_DATE", "HEADER"): 1,          # 1 line (14.4 pt)
+    ("HEADER", "BODY"): 1,               # 1 line (14.4 pt)
     ("BODY", "SIGNATURE"): 4,            # 4 lines (signature_gap)
-    ("SIGNATURE", "COPY_TO"): 2,         # 2 lines (copy_gap)
+    ("SIGNATURE", "COPY_TO"): 1,         # 1 line after signature
     ("COPY_TO", "PAGE_END"): 0,
-    ("CONTINUATION_HEADER", "BODY"): 1,
+    ("CONTINUATION_HEADER", "BODY"): 1,  # 1 line after repeated Subj
 }
 ```
 
 **Leading calculation:**
 - Font size: 12 pt
 - Leading: `font_size * 1.2 = 14.4 pt`
+
+**Vertical Spacing Model (Next-Baseline Cursor Semantics):**
+- Incoming `y` is always the baseline where the next line should be drawn
+- No pre-subtraction before drawing—draw at current `y`, then advance
+- All spacing is applied AFTER drawing lines
+- All single blank lines = exactly 1 leading unit (14.4 pt)
+- Header and body use identical vertical spacing logic
+- Prior spacing defects were caused by mixing baseline vs. cursor semantics
+- This has been corrected as of 2026-05-07
 
 ---
 
@@ -138,6 +147,10 @@ PASS
 - Paragraph spacing finalized
 - Continuation lines return to left margin
 - Marker indentation preserved across levels
+- Uses next-baseline cursor semantics (incoming `y` is draw baseline)
+- No pre-subtraction before drawing body records
+- Spacing between paragraphs = exactly 1 leading unit (14.4 pt)
+- Subparagraph transitions match paragraph-to-paragraph spacing
 
 ### Signature System
 - Role-based rendering supported:
