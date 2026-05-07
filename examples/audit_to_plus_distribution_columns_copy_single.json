@@ -1,5 +1,5 @@
 {
-  "_audit_case": "CASE_2: to_plus_distribution, columns, with copy_to single_column",
+  "_audit_case": "CASE_2: to_plus_distribution, columns, with copy_to single_column, with REF/ENCL",
   "doc_type": "DT_STD_LTR",
   "ssic": 5216,
   "originator_code": "S-1",
@@ -25,15 +25,22 @@
     "NAVCOMTELSTA BOSTON"
   ],
   "distribution_layout": "columns",
-  "via": [],
+  "via": [
+    "(1) Commanding General, 2d Marine Division"
+  ],
   "subj": "AUDIT TEST: To Plus Distribution with Columns and Copy To Single Column",
-  "ref": [],
-  "encl": [],
+  "ref": [
+    "(a) SECNAV M-5216.5 Ch-2"
+  ],
+  "encl": [
+    "(1) Sample enclosure"
+  ],
   "body": [
     "1. This is an audit test payload for to_plus_distribution mode.",
-    "2. To line should be rendered as group title.",
-    "3. Distribution entries should render in two columns after signature.",
-    "4. Copy to should render in single column after distribution."
+    "a. To line should be rendered as group title.",
+    "b. Distribution entries should render in two columns after signature.",
+    "c. Copy to should render in single column after distribution.",
+    "d. REF and ENCL blocks should appear normally."
   ],
   "signature": {
     "name": "D. SULLIVAN",

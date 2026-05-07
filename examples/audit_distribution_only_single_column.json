@@ -1,5 +1,5 @@
 {
-  "_audit_case": "CASE_1: distribution_only, single_column, no copy_to",
+  "_audit_case": "CASE_1: distribution_only, single_column, no copy_to, no REF/ENCL",
   "doc_type": "DT_STD_LTR",
   "ssic": 5216,
   "originator_code": "S-1",
@@ -21,14 +21,17 @@
     "NAVCOMTELSTA SAN DIEGO"
   ],
   "distribution_layout": "single_column",
-  "via": [],
-  "subj": "AUDIT TEST: Distribution Only with Single Column Layout",
+  "via": [
+    "(1) Commanding General, 2d Marine Division"
+  ],
+  "subj": "AUDIT TEST: Distribution Only with Single Column Layout (No REF/ENCL)",
   "ref": [],
   "encl": [],
   "body": [
     "1. This is an audit test payload for distribution_only mode with single_column layout.",
-    "2. To line should be omitted.",
-    "3. Distribution entries should render one per line at left margin after signature."
+    "a. To line should be omitted.",
+    "b. Distribution entries should render one per line at left margin after signature.",
+    "c. No REF or ENCL blocks should appear; body moves up naturally."
   ],
   "signature": {
     "name": "D. SULLIVAN",

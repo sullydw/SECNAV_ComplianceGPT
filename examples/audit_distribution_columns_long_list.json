@@ -1,5 +1,5 @@
 {
-  "_audit_case": "CASE_4: Long distribution list (12 entries) with columns layout",
+  "_audit_case": "CASE_4: Long distribution list (12 entries) with columns layout, ENCL only (no REF)",
   "doc_type": "DT_STD_LTR",
   "ssic": 5216,
   "originator_code": "S-1",
@@ -30,14 +30,20 @@
     "NAVCOMTELSTA PHOENIX"
   ],
   "distribution_layout": "columns",
-  "via": [],
-  "subj": "AUDIT TEST: Long Distribution List with Columns Layout",
+  "via": [
+    "(1) Commanding General, 2d Marine Division"
+  ],
+  "subj": "AUDIT TEST: Long Distribution List with Columns Layout (ENCL Only)",
   "ref": [],
-  "encl": [],
+  "encl": [
+    "(1) Distribution list audit sample",
+    "(2) Column balancing test results"
+  ],
   "body": [
     "1. This is an audit test payload for long distribution list.",
-    "2. Distribution has 12 entries to test column balancing.",
-    "3. Should render as 6 rows with 2 entries per row (left, right)."
+    "a. Distribution has 12 entries to test column balancing.",
+    "b. Should render as 6 rows with 2 entries per row (left, right).",
+    "c. REF should be omitted; ENCL should appear with no blank line for REF."
   ],
   "signature": {
     "name": "D. SULLIVAN",

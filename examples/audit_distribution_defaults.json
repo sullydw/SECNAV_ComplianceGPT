@@ -1,5 +1,5 @@
 {
-  "_audit_case": "CASE_5: Missing layout fields to test defaults",
+  "_audit_case": "CASE_5: Missing layout fields to test defaults, no REF/ENCL",
   "doc_type": "DT_STD_LTR",
   "ssic": 5216,
   "originator_code": "S-1",
@@ -19,14 +19,17 @@
     "NAVCOMTELSTA WASHINGTON DC",
     "NAVCOMTELSTA PENSACOLA"
   ],
-  "via": [],
+  "via": [
+    "(1) Commanding General, 2d Marine Division"
+  ],
   "subj": "AUDIT TEST: Missing Layout Fields (Should Default to single_column)",
   "ref": [],
   "encl": [],
   "body": [
     "1. This is an audit test payload with missing distribution_layout and copy_to_layout.",
-    "2. Both should default to single_column per model normalization.",
-    "3. No warnings should appear for missing fields."
+    "a. Both should default to single_column per model normalization.",
+    "b. No warnings should appear for missing fields.",
+    "c. No REF or ENCL blocks; body moves up naturally."
   ],
   "signature": {
     "name": "D. SULLIVAN",

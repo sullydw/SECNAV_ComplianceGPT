@@ -1,5 +1,5 @@
 {
-  "_audit_case": "CASE_3: distribution_only, paragraph, with copy_to columns",
+  "_audit_case": "CASE_3: distribution_only, paragraph, with copy_to columns, REF only (no ENCL)",
   "doc_type": "DT_STD_LTR",
   "ssic": 5216,
   "originator_code": "S-1",
@@ -22,14 +22,19 @@
     "NAVCOMTELSTA SAN FRANCISCO"
   ],
   "distribution_layout": "paragraph",
-  "via": [],
-  "subj": "AUDIT TEST: Distribution Paragraph with Copy To Columns",
-  "ref": [],
+  "via": [
+    "(1) Commanding General, 2d Marine Division"
+  ],
+  "subj": "AUDIT TEST: Distribution Paragraph with Copy To Columns (REF Only)",
+  "ref": [
+    "(a) SECNAV M-5216.5 Ch-2"
+  ],
   "encl": [],
   "body": [
     "1. This is an audit test payload for distribution paragraph layout.",
-    "2. Distribution entries should render as comma-separated paragraph after signature.",
-    "3. Copy to should render in two columns after distribution."
+    "a. Distribution entries should render as comma-separated paragraph after signature.",
+    "b. Copy to should render in two columns after distribution.",
+    "c. REF block should appear; ENCL should be omitted with no blank line."
   ],
   "signature": {
     "name": "D. SULLIVAN",
