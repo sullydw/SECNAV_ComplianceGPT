@@ -120,6 +120,8 @@ PASS
 ### Header System
 - Order: From / To or Distribution / Via / Subj / Ref / Encl
 - "To:" omitted when "Distribution" is used
+- REF and ENCL are optional header blocks; omitted blocks leave no label and no blank placeholder
+- Adjacent visible boundaries remain exactly 1 leading unit (14.4 pt): Subj→Body (no REF/ENCL), Subj→REF, Subj→ENCL (no REF), REF→Body (no ENCL), REF→ENCL, ENCL→Body
 
 ### Distribution Block
 - Used for action addressees when applicable
