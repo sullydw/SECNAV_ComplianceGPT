@@ -414,7 +414,9 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
         y -= leading
 
     # Gap between signature and distribution/copy_to (1 leading unit)
+    sig_y_before = y
     y -= leading
+    print(f"DEBUG SPACING: Signature block end y={sig_y_before:.1f}, Distribution label y={y:.1f}, gap={sig_y_before - y:.1f}pt ({(sig_y_before - y) / leading:.2f} leading units)")
 
     # Distribution: (if present, renders after signature, before Copy to)
     # Label and order are rule-driven from model if provided
@@ -473,7 +475,10 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
         
         print(f"DEBUG Distribution block starts at y={dist_y:.1f} (layout: {dist_layout})")
         # One blank line after Distribution before Copy to
+        dist_end_y = y
         y -= leading
+        if normalized.get("copy_to"):
+            print(f"DEBUG SPACING: Distribution block end y={dist_end_y:.1f}, Copy to label y={y:.1f}, gap={dist_end_y - y:.1f}pt ({(dist_end_y - y) / leading:.2f} leading units)")
 
     # Copy to (if present) - renders after Distribution if both exist
     # Label is rule-driven from model if provided
@@ -652,6 +657,9 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
 
         # Debug: y position after this body record
         print(f"DEBUG y_position after level {level} marker '{marker}': {y:.1f}")
+        # Track transition from level 1 to level 2 (paragraph -> subparagraph)
+        if prev_level == 1 and level == 2:
+            print(f"DEBUG SPACING: Paragraph 1 end y={y + leading:.1f}, Subparagraph a y={y:.1f}, gap={leading:.1f}pt (1.00 leading units)")
 
         # Body record gap: single leading unit between paragraphs (except last)
         if i < len(body_lines) - 1:
@@ -752,8 +760,10 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, ri
             c.drawString(text_x, y, display_line)
             y -= leading
 
-    # One blank line before Subj (24 pt total from last line)
+    # One blank line before Subj (Via -> Subj)
+    via_y_before = y
     y -= leading
+    print(f"DEBUG SPACING: Via block end y={via_y_before:.1f}, Subj label y={y:.1f}, gap={via_y_before - y:.1f}pt ({(via_y_before - y) / leading:.2f} leading units)")
 
     # Subj: with word-wrapping for long subject lines
     c.drawString(label_x, y, "Subj:")
@@ -971,8 +981,10 @@ def main():
         print(f"DEBUG SSIC/date line '{line}' at x={block_left_x:.1f}, y={line_y:.1f}")
         y -= leading
     
-    # Boundary: SSIC_DATE -> HEADER
+    # Boundary: SSIC_DATE -> HEADER (Date -> From)
+    date_y_before = y
     y -= get_boundary_spacing("SSIC_DATE", "HEADER", leading)
+    print(f"DEBUG SPACING: Date block end y={date_y_before:.1f}, From line y={y:.1f}, gap={date_y_before - y:.1f}pt ({(date_y_before - y) / leading:.2f} leading units)")
 
     # Header block - use dedicated function with proper SECNAV text column
     label_x = left_margin_pt
@@ -980,8 +992,10 @@ def main():
 
     y = draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, right_margin_pt)
 
-    # Boundary: HEADER -> BODY (centralized spacing control)
+    # Boundary: HEADER -> BODY (Subj -> Body)
+    subj_y_before = y
     y -= get_boundary_spacing("HEADER", "BODY", leading)
+    print(f"DEBUG SPACING: Encl block end y={subj_y_before:.1f}, Body paragraph 1 y={y:.1f}, gap={subj_y_before - y:.1f}pt ({(subj_y_before - y) / leading:.2f} leading units)")
 
     # Body block - use dedicated function with level-based indentation and pagination
     y, page_count, body_lines_on_last_page = draw_body_block(
