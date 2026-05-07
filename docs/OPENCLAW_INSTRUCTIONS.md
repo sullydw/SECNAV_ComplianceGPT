@@ -1,6 +1,8 @@
 # OpenClaw Execution Instructions
 SECNAV_ComplianceGPT
 
+**See also:** `docs/OPENCLAW_AGENT_TEAM.md` for coordinator/specialist agent workflow
+
 ---
 
 ## Role
