@@ -224,14 +224,14 @@ def main():
             if success and os.path.exists(output_pdf):
                 print(f"  PASS: {message}")
                 print(f"  Output: {output_pdf}")
-                results.append((filename, "PASS", message))
+                results.append((f"{filename_no_ext}.pdf", "PASS", message))
             else:
                 print(f"  FAIL: {message}")
-                results.append((filename, "FAIL", message))
+                results.append((f"{filename_no_ext}.pdf", "FAIL", message))
         
         except Exception as e:
             print(f"  FAIL: {str(e)}")
-            results.append((filename, "FAIL", str(e)))
+            results.append((f"{filename_no_ext}.pdf", "FAIL", str(e)))
     
     # Summary
     print("\n" + "=" * 60)
