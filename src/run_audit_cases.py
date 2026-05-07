@@ -2,193 +2,78 @@
 """
 Audit Case Runner
 Run all audit JSON files in examples/ and generate PDFs for each.
+Uses the production renderer from pdf_v6_render.py to ensure consistency.
 """
 
 import json
 import os
 import glob
+import shutil
 import sys
-
-from reportlab.lib.pagesizes import LETTER
-from reportlab.pdfgen import canvas
-
-# Import modules from v6 pipeline
-from letter_model_v6 import normalize_payload
-from body_v6_validate import validate_body
-from letterhead_v6_resolve import resolve_letterhead
-from body_v6_parse import detect_marker_level
-
-
-# =============================================================================
-# Import rendering helpers from pdf_v6_render.py by executing it in a controlled way
-# Since we can't modify pdf_v6_render.py, we import its functions by adding to path
-# =============================================================================
 
 # Add src to path for imports
 script_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, script_dir)
-
-# Import rendering functions - they're defined at module level in pdf_v6_render.py
-# We need to import them without running main()
-import importlib.util
-spec = importlib.util.spec_from_file_location("pdf_v6_render", os.path.join(script_dir, "pdf_v6_render.py"))
-pdf_v6_render = importlib.util.module_from_spec(spec)
-
-# Load the module but prevent main() from executing by checking __name__
-# Since pdf_v6_render.py uses if __name__ == "__main__": main(), importing won't run main()
-spec.loader.exec_module(pdf_v6_render)
-
-# Now we have access to all the rendering functions
-wrap_line = pdf_v6_render.wrap_line
-wrap_paragraph = pdf_v6_render.wrap_paragraph
-draw_wrapped_text = pdf_v6_render.draw_wrapped_text
-draw_page_number = pdf_v6_render.draw_page_number
-calculate_signature_space = pdf_v6_render.calculate_signature_space
-draw_signature_block = pdf_v6_render.draw_signature_block
-draw_body_block = pdf_v6_render.draw_body_block
-draw_header_block = pdf_v6_render.draw_header_block
-get_boundary_spacing = pdf_v6_render.get_boundary_spacing
-format_sender_symbol_date = pdf_v6_render.format_sender_symbol_date
+base_dir = os.path.dirname(script_dir)
 
 
-def render_audit_pdf(payload, output_path):
-    """Render a single audit payload to PDF using the v6 renderer pipeline."""
+def run_audit_with_production_renderer(audit_json_path, output_pdf_path):
+    """
+    Run audit payload through the production renderer.
     
-    # Normalize
-    normalized = normalize_payload(payload)
+    Strategy:
+    1. Backup original v6_sample_letter.json
+    2. Copy audit JSON to v6_sample_letter.json
+    3. Run pdf_v6_render.py (which reads v6_sample_letter.json)
+    4. Move generated PDF to correct output location
+    5. Restore original v6_sample_letter.json
+    """
     
-    # Validate body
-    body_errors = validate_body(payload)
-    if body_errors:
-        return False, f"BODY VALIDATION FAILED: {body_errors}"
+    sample_path = os.path.join(base_dir, "examples", "v6_sample_letter.json")
+    temp_backup_path = os.path.join(base_dir, "examples", "v6_sample_letter.json.backup")
+    output_dir = os.path.join(base_dir, "output")
+    temp_pdf_path = os.path.join(output_dir, "v6_test_letter.pdf")
     
-    # Resolve letterhead
-    letterhead = resolve_letterhead(payload)
-    letterhead_lines = letterhead.get("lines", [])
+    # Ensure output directory exists
+    os.makedirs(output_dir, exist_ok=True)
     
-    # Layout values
-    left_margin_pt = 72.0
-    right_margin_pt = 72.0
-    top_margin_pt = 45.0
-    bottom_margin_pt = 72.0
-    
-    # Font-size-aware typography
-    body_font_size = 12
-    leading = body_font_size * 1.2
-    signature_gap = body_font_size * 4.0
-    copy_gap = body_font_size * 2.0
-    
-    # Load H-series rules
-    base_dir = os.path.dirname(script_dir)
-    h_series_path = os.path.join(base_dir, "H-series.json")
-    h_rules = {}
-    if os.path.exists(h_series_path):
-        with open(h_series_path, "r", encoding="utf-8") as f:
-            h_data = json.load(f)
-        h_rules["first_line_font"] = "Times-Bold"
-        h_rules["first_line_size"] = h_data.get("H-001", {}).get("font_size_pt", 10)
-        h_rules["subsequent_font"] = "Times-Roman"
-        h_rules["subsequent_size"] = h_data.get("H-002", {}).get("font_size_pt", 8)
-    else:
-        h_rules["first_line_font"] = "Times-Bold"
-        h_rules["first_line_size"] = 10
-        h_rules["subsequent_font"] = "Times-Roman"
-        h_rules["subsequent_size"] = 8
-    
-    # Page dimensions
-    page_width, page_height = LETTER
-    
-    # Create PDF
-    c = canvas.Canvas(output_path, pagesize=LETTER)
-    y = page_height - top_margin_pt
-    
-    # Render letterhead
-    if letterhead_lines:
-        for i, lh_line in enumerate(letterhead_lines):
-            if i == 0:
-                c.setFont(h_rules["first_line_font"], h_rules["first_line_size"])
-                lh_leading = h_rules["first_line_size"] * 1.2
-            else:
-                c.setFont(h_rules["subsequent_font"], h_rules["subsequent_size"])
-                lh_leading = h_rules["subsequent_size"] * 1.2
-            
-            text_width = c.stringWidth(lh_line, h_rules["first_line_font"] if i == 0 else h_rules["subsequent_font"], 
-                                       h_rules["first_line_size"] if i == 0 else h_rules["subsequent_size"])
-            x_centered = (page_width - text_width) / 2
-            c.drawString(x_centered, y, lh_line)
-            y -= lh_leading
+    try:
+        # Step 1: Backup original sample
+        if os.path.exists(sample_path):
+            shutil.copy2(sample_path, temp_backup_path)
         
-        if h_rules.get("spacing_after") == "one_blank_line":
-            y -= get_boundary_spacing("LETTERHEAD", "SSIC_DATE", leading)
-    
-    # SSIC/date sender-symbol block
-    ssic_val = str(normalized.get('ssic', ''))
-    originator_code = normalized.get('originator_code')
-    serial = normalized.get('serial')
-    raw_date_text = normalized.get('date', '')
-    formatted_date = format_sender_symbol_date(raw_date_text)
-    
-    sender_symbol_lines = []
-    if ssic_val:
-        sender_symbol_lines.append(ssic_val)
-    if serial:
-        sender_symbol_lines.append("Ser " + str(serial))
-    elif originator_code:
-        sender_symbol_lines.append(str(originator_code))
-    if formatted_date:
-        sender_symbol_lines.append(formatted_date)
-    
-    if sender_symbol_lines:
-        c.setFont("Times-Roman", body_font_size)
-        right_edge_x = page_width - right_margin_pt
-        longest_line_width = max(c.stringWidth(line, "Times-Roman", body_font_size) for line in sender_symbol_lines)
-        block_left_x = right_edge_x - longest_line_width
+        # Step 2: Copy audit JSON to sample location
+        shutil.copy2(audit_json_path, sample_path)
         
-        for line in sender_symbol_lines:
-            c.drawString(block_left_x, y, line)
-            y -= leading
+        # Step 3: Run production renderer
+        # Import and execute main() from pdf_v6_render.py
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("pdf_v6_render", os.path.join(script_dir, "pdf_v6_render.py"))
+        pdf_v6_render = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(pdf_v6_render)
+        
+        # Call main() which reads v6_sample_letter.json and generates v6_test_letter.pdf
+        pdf_v6_render.main()
+        
+        # Step 4: Move generated PDF to correct output location
+        if os.path.exists(temp_pdf_path):
+            shutil.move(temp_pdf_path, output_pdf_path)
+            return True, f"Generated: {output_pdf_path}"
+        else:
+            return False, f"PDF not generated at {temp_pdf_path}"
     
-    y -= get_boundary_spacing("SSIC_DATE", "HEADER", leading)
+    except Exception as e:
+        return False, f"Error: {str(e)}"
     
-    # Header block
-    label_x = left_margin_pt
-    text_x = left_margin_pt + 43
-    y = draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, right_margin_pt)
-    
-    y -= get_boundary_spacing("HEADER", "BODY", leading)
-    
-    # Body block
-    y, page_count, body_lines_on_last_page = draw_body_block(
-        c, left_margin_pt, y, leading, body_font_size, normalized, page_height, top_margin_pt, bottom_margin_pt,
-        signature_gap, copy_gap, reserve_signature_space=True
-    )
-    
-    # Signature block
-    required_signature_space = calculate_signature_space(normalized, leading, signature_gap, copy_gap)
-    
-    if y < bottom_margin_pt + required_signature_space:
-        draw_page_number(c, page_width, page_count, bottom_margin_pt)
-        c.showPage()
-        page_count += 1
-        y = page_height - top_margin_pt
-        c.setFont("Times-Roman", 12)
-        c.drawString(left_margin_pt, y, "Subj:")
-        header_text_x = left_margin_pt + 43
-        subj_max_width = (page_width - 72.0) - header_text_x
-        y = draw_wrapped_text(c, header_text_x, y, normalized.get('subj', ''), 12, subj_max_width, leading)
-    
-    y = draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, signature_gap, copy_gap, bottom_margin_pt, right_margin_pt)
-    
-    # Page number
-    draw_page_number(c, page_width, page_count, bottom_margin_pt)
-    
-    c.save()
-    
-    return True, f"Pages: {page_count}"
+    finally:
+        # Step 5: Restore original sample (always runs, even on error)
+        if os.path.exists(temp_backup_path):
+            shutil.move(temp_backup_path, sample_path)
+        # Clean up temp PDF if it exists
+        if os.path.exists(temp_pdf_path):
+            os.remove(temp_pdf_path)
 
 
 def main():
-    base_dir = os.path.dirname(script_dir)
     examples_dir = os.path.join(base_dir, "examples")
     output_dir = os.path.join(base_dir, "output")
     
@@ -213,32 +98,22 @@ def main():
         
         print(f"\nProcessing: {filename}")
         
-        try:
-            # Load JSON
-            with open(audit_file, "r", encoding="utf-8") as f:
-                payload = json.load(f)
-            
-            # Render
-            success, message = render_audit_pdf(payload, output_pdf)
-            
-            if success and os.path.exists(output_pdf):
-                print(f"  PASS: {message}")
-                print(f"  Output: {output_pdf}")
-                results.append((f"{filename_no_ext}.pdf", "PASS", message))
-            else:
-                print(f"  FAIL: {message}")
-                results.append((f"{filename_no_ext}.pdf", "FAIL", message))
+        # Run through production renderer
+        success, message = run_audit_with_production_renderer(audit_file, output_pdf)
         
-        except Exception as e:
-            print(f"  FAIL: {str(e)}")
-            results.append((f"{filename_no_ext}.pdf", "FAIL", str(e)))
+        if success and os.path.exists(output_pdf):
+            print(f"  PASS: {message}")
+            results.append((f"{filename_no_ext}.pdf", "PASS", message))
+        else:
+            print(f"  FAIL: {message}")
+            results.append((f"{filename_no_ext}.pdf", "FAIL", message))
     
     # Summary
     print("\n" + "=" * 60)
     print("SUMMARY")
     print("=" * 60)
-    for filename, status, message in results:
-        print(f"{filename}: {status}")
+    for pdf_filename, status, message in results:
+        print(f"{pdf_filename}: {status}")
     
     passed = sum(1 for _, status, _ in results if status == "PASS")
     print(f"\nTotal: {passed}/{len(results)} passed")
