@@ -201,6 +201,18 @@ PASS
 
 ---
 
+## 6. Output Directory Behavior
+
+- Output path is configurable with the following priority order:
+  1. `output_dir` argument (if provided)
+  2. `SECNAV_OUTPUT_DIR` environment variable
+  3. Default: `./output/` relative to project root
+- Output directory is auto-created if missing
+- No hardcoded absolute paths
+- Note: OpenClaw runs may default to workspace unless overridden; local runs can redirect output via environment variable
+
+---
+
 ## Changelog
 
 See `CHANGELOG.md` for version history.
