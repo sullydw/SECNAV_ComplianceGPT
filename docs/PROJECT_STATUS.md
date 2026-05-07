@@ -114,15 +114,16 @@ PASS
 
 ### Distribution Block
 - Used for action addressees when applicable
-- Renders after signature block and before "Copy to:"
-- Label and entries aligned at left margin
+- Placement: always after signature block
 - `distribution_mode` supports:
- - `distribution_only` (omits To line)
- - `to_plus_distribution` (keeps To line as group title)
+ - `distribution_only` → replaces To line (To omitted)
+ - `to_plus_distribution` → keeps To line as group title
 - `distribution_layout` supports:
- - `single_column` (entries listed one per line)
+ - `single_column` (entries listed one per line at left margin)
  - `columns` (two-column balanced row order)
  - `paragraph` (comma-separated wrapping text)
+- Label is rule-driven from model (default: "Distribution:")
+- Rendering is rule-driven (no hardcoded placement/order logic)
 - Validation exists for invalid/missing mode and layout values with safe fallbacks
 
 ### Subject System
@@ -148,13 +149,22 @@ PASS
 ### Distribution vs Copy To
 - Distribution = action addressees
 - Copy to = informational addressees
-- Distribution appears before Copy to when both are present
-- `copy_to_layout` supports:
+- Both render after signature block
+- Distribution renders before Copy to when both are present
+- Both support layouts:
  - `single_column` (entries listed one per line)
  - `columns` (two-column balanced row order)
  - `paragraph` (comma-separated wrapping text)
 - Copy to is informational only
-- Copy to never suppresses To, Via, Distribution, or other header fields
+- Copy to NEVER suppresses To, Via, Distribution, or other header fields
+- Rendering is rule-driven:
+ - placement determined by model
+ - ordering determined by model
+ - labels from model when provided (defaults: "Distribution:", "Copy to:")
+- Model guarantees defaults for:
+ - `distribution_mode` → `distribution_only` (when distribution present)
+ - `distribution_layout` → `single_column`
+ - `copy_to_layout` → `single_column`
 - Validation exists for invalid `copy_to_layout` values with safe fallbacks
 
 ---
