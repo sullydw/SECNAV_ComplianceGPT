@@ -106,10 +106,10 @@ def format_sender_symbol_date(date_text):
 BOUNDARY_SPACINGS = {
     # (from_block, to_block): spacing_in_leading_units
     ("LETTERHEAD", "SSIC_DATE"): 1,      # 1 line between letterhead and SSIC/date
-    ("SSIC_DATE", "HEADER"): 0,          # No additional gap - loop already provides 1 leading after last SSIC line
-    ("HEADER", "BODY"): 0,               # 0 lines between Encl and first body paragraph
+    ("SSIC_DATE", "HEADER"): 1,          # 1 line between SSIC/date and From line
+    ("HEADER", "BODY"): 1,               # 1 line between Encl and first body paragraph
     ("BODY", "SIGNATURE"): 4,            # 4 lines (signature_gap) after final body text
-    ("SIGNATURE", "COPY_TO"): 2,         # 2 lines (copy_gap) after signature
+    ("SIGNATURE", "COPY_TO"): 1,         # 1 line after signature before distribution/copy_to
     ("COPY_TO", "PAGE_END"): 0,          # No extra space
     ("CONTINUATION_HEADER", "BODY"): 1,  # 1 line after repeated Subj line
 }
@@ -413,8 +413,8 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
         print(f"DEBUG Signature drawn at x={signature_x:.1f}, y={y:.1f}")
         y -= leading
 
-    # Gap between signature and distribution/copy_to
-    y -= copy_gap
+    # Gap between signature and distribution/copy_to (1 leading unit)
+    y -= leading
 
     # Distribution: (if present, renders after signature, before Copy to)
     # Label and order are rule-driven from model if provided
