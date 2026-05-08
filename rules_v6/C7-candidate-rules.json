@@ -71,7 +71,7 @@
     "plain_language_rule": "Classified correspondence must follow SECNAV M-5510.30 and DoDM 5200.01 marking requirements. Classification markings (TOP SECRET, SECRET, CONFIDENTIAL) must appear at the top and bottom of each page, with overall classification shown on first and last pages. Additional handling instructions and distribution controls may apply based on classification level.",
     "category": "security",
     "enforceable": "partial",
-    "severity": "error",
+    "severity": "warning",
     "target_fields": ["classification_marking", "security_info", "handling_instructions", "distribution_control"],
     "validator_type": "classification_marking_validator",
     "renderer_impact": "Classification marking placement at top/bottom of pages; may affect header/footer rendering; requires special handling for classified document workflows",
