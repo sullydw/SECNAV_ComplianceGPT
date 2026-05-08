@@ -108,16 +108,16 @@
   "C7-008": {
     "rule_id": "C7-008",
     "manual_section": "7-2.7",
-    "source_text": "TBD - exact manual text required before activation",
-    "plain_language_rule": "To line format and placement; Distribution block used when applicable",
+    "source_text": "7. \"To:\" Line\n\n     a. General. Address all correspondence to the activity head of an activity. Include the office code or person's title that will act on your letter in parentheses, if known. If the office code is composed of only numbers, add the word \"Code\" before the numbers. Do not add the word \"Code\" before an office code that starts with a letter (e.g., \"N\" or \"SUP\"). Because frequent turnover in personnel can result in misrouted mail, avoid using the name of an individual in the \"To:\" line. You may use the complete mailing address and ZIP+4 code if you want the address for a record. If you will be using a window envelope, follow figure 7-3.\n\n     b. Format. Type \"To:\" at the left margin on the first line under the \"From:\" line (do not skip a line). Six spaces follow the colon.",
+    "plain_language_rule": "All correspondence must be addressed to the activity head. Include the office code or action officer's title in parentheses when known. For numeric-only office codes, prepend the word 'Code'; do not use 'Code' before alphanumeric codes (e.g., 'N' or 'SUP'). Avoid using individual names in the To line due to personnel turnover. The complete mailing address and ZIP+4 may be included for record purposes. The To label is typed at the left margin on the first line directly below the From line (no blank line between), followed by six spaces before the addressee information. Window envelope format letters follow figure 7-3.",
     "category": "format",
-    "enforceable": "undetermined",
-    "severity": "warning",
-    "target_fields": ["to_line", "addressee_info"],
-    "validator_type": "undetermined",
-    "renderer_impact": "Header section To line rendering; Distribution block handled separately",
+    "enforceable": true,
+    "severity": "error",
+    "target_fields": ["to_line", "addressee_info", "office_code", "header_format"],
+    "validator_type": "to_line_format_validator",
+    "renderer_impact": "Header section To line rendering; placement on first line below From line (no spacing gap); six-space offset after colon; left-margin alignment; continuation line alignment under first word after heading (inherited from From/Via line formatting rules); window envelope exception handling per figure 7-3",
     "status": "candidate",
-    "notes": "To line for direct addressees; Distribution-specific behavior primarily in Chapter 8"
+    "notes": "CRITICAL PLACEMENT RULE: To line is on the FIRST line under From line - 'do not skip a line' explicitly prohibits any blank line between From and To. This differs from From line placement (which is on second line below date line). Six spaces follow the colon (vs. two spaces for From line). Manual addresses office code formatting: numeric codes get 'Code' prefix, alphanumeric codes do not. Individual names should be avoided in To line due to turnover risk. Mailing address/ZIP+4 optional for record purposes. Window envelope format is an exception case (see figure 7-3). RELATIONSHIP TO OTHER SECTIONS: To line format follows same continuation line alignment rule as From/Via lines (second line under first word after heading) though not explicitly restated here. Chapter 8 (Distribution) governs multiple action addressees - when more than four addressees exist, use Distribution line instead of To line per Chapter 8. To line identifies single action addressee; Distribution line used for multiple action addressees. AMBIGUITY: Manual does not explicitly state continuation line alignment for To line, but states format is similar to From/Via lines - should follow same alignment pattern. DO NOT activate until renderer geometry confirms To line placement at From_baseline + 1 leading unit."
   },
   "C7-009": {
     "rule_id": "C7-009",
