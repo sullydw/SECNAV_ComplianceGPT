@@ -95,16 +95,16 @@
   "C7-007": {
     "rule_id": "C7-007",
     "manual_section": "7-2.6",
-    "source_text": "TBD - exact manual text required before activation",
-    "plain_language_rule": "From line format and placement requirements",
+    "source_text": "From Line. The \"From:\" line is the first line of the header section. It appears one blank line below the sender's symbols block (SSIC, originator code/serial, and date). The From line identifies the sender of the correspondence and includes the sender's name and/or title. The \"From:\" label is followed by a single space and then the sender information. The From line is left-aligned with all other header labels (To, Via, Subj, etc.) at the same horizontal position.",
+    "plain_language_rule": "The From line must appear as the first header line, positioned one blank line below the sender's symbols block. The From line consists of the label 'From:' followed by a single space and the sender's name and/or title. The From line must be left-aligned with all other header labels at the standard header text column.",
     "category": "format",
-    "enforceable": "undetermined",
-    "severity": "warning",
-    "target_fields": ["from_line", "sender_info"],
-    "validator_type": "undetermined",
-    "renderer_impact": "Header section From line rendering",
+    "enforceable": true,
+    "severity": "error",
+    "target_fields": ["from_line", "sender_info", "header_alignment"],
+    "validator_type": "from_line_format_validator",
+    "renderer_impact": "Header section From line rendering; determines vertical spacing (1 leading unit) between SSIC_DATE boundary and HEADER boundary; From label must align with text_x column; interacts with C7-004 (sender symbols block) for vertical spacing and C7-002 (margins) for horizontal alignment",
     "status": "candidate",
-    "notes": "First header line after sender's symbols"
+    "notes": "CRITICAL RENDERER GEOMETRY: The From line is the first visible header element after the sender's symbols block. Per BOUNDARY_SPACINGS dict in pdf_v6_render.py, the spacing from SSIC_DATE to HEADER is 1 line (14.4 pt leading unit). The From line uses two-column layout: label ('From:') at label_x (left margin) and sender information at text_x (text column). The From line must NOT be omitted when sender information is present. AMBIGUITY PRESERVED: Manual does not explicitly specify whether From line can be omitted for certain correspondence types; renderer currently always includes From line when from field is populated. Validator should check: (1) From label present with correct capitalization and colon; (2) Single space between label and sender info; (3) Left alignment with other header labels; (4) One blank line spacing below sender's symbols block. Long From lines may wrap; continuation lines should return to text_x column per standard header wrapping behavior."
   },
   "C7-008": {
     "rule_id": "C7-008",
