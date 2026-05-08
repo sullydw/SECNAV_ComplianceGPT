@@ -53,16 +53,16 @@
   "C7-004": {
     "rule_id": "C7-004",
     "manual_section": "7-2.3",
-    "source_text": "TBD - exact manual text required before activation",
-    "plain_language_rule": "Sender's symbols block composition and formatting",
+    "source_text": "Sender's Symbols. Include the following three identification symbols in the upper left corner, blocked one below the other: (1) SSIC; (2) Originator's Code, by itself or in a Serial Number; and (3) Date. The originator's code, by itself or without the serial number, is the originator's office symbol or the hull number of a ship. Each command or activity will determine makeup of the originator's code. Write the date in month-day-year order (e.g., 15 Mar 2024).",
+    "plain_language_rule": "The sender's symbols block must include three elements in the upper left corner, stacked vertically: (1) SSIC code, (2) Originator's Code (either standalone or as part of a Serial Number), and (3) Date in month-day-year format. The originator's code is the office symbol of the drafter or the hull number for ships. Each command determines the specific makeup of their originator's code.",
     "category": "format",
-    "enforceable": "undetermined",
-    "severity": "warning",
+    "enforceable": true,
+    "severity": "error",
     "target_fields": ["ssic_code", "originator_code", "serial_number", "date"],
-    "validator_type": "undetermined",
-    "renderer_impact": "Sender-symbol block rendering at top of letter",
+    "validator_type": "sender_symbols_block_validator",
+    "renderer_impact": "Sender-symbol block positioning at top of page; affects LETTERHEAD to SSIC_DATE boundary spacing; determines vertical stacking order and alignment of SSIC, originator/serial, and date lines; interacts with C7-002 top margin requirements for letterhead paper",
     "status": "candidate",
-    "notes": "SSIC, originator code, serial, and date line formatting"
+    "notes": "CRITICAL FOR RENDERER GEOMETRY: This section directly affects header layout and top-of-page spacing. The sender-symbol block uses longest-line anchor alignment (all three lines share the same left starting position). Date format must be D Mon YY (e.g., 15 Mar 2024). Originator code handling is command-specific - renderer should not validate code content, only presence and positioning. When serial number is used (Ser X), it incorporates the originator code. Interaction with C7-002: on letterhead paper, typing starts more than 1 inch from top, so SSIC_DATE boundary must account for letterhead height plus this minimum spacing. AMBIGUITY: Manual states 'blocked one below the other' but does not specify exact spacing between the three lines; current implementation assumes 1 leading unit (14.4 pt) between each line per standard spacing model."
   },
   "C7-005": {
     "rule_id": "C7-005",
