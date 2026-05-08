@@ -25,16 +25,16 @@
   "C7-002": {
     "rule_id": "C7-002",
     "manual_section": "7-2.1",
-    "source_text": "Margins: 1 inch all around. On letterhead, typing starts more than 1 inch from the top. Footers are 0.5 inch from the bottom of the page.",
-    "plain_language_rule": "Standard letters must have 1-inch margins on all sides (top, bottom, left, right). On letterhead paper, the first line of typing must start more than 1 inch from the top edge. Page numbers and footers on continuation pages must be positioned 0.5 inch from the bottom of the page.",
+    "source_text": "Margins: 1 inch all around. On letterhead, typing starts more than 1 inch from the top. Footers are 0.5 inch from the bottom of the page. Do not right, center, or full justify text or use proportional spacing.",
+    "plain_language_rule": "Standard letters must have 1-inch margins on all sides (top, bottom, left, right). On letterhead paper, the first line of typing must start more than 1 inch from the top edge. Page numbers and footers on continuation pages must be positioned 0.5 inch from the bottom of the page. Text must not be right-justified, center-justified, or fully justified. Proportional spacing must not be used. Exception: directive header/footer formatting may be retained if included in the source text.",
     "category": "format",
     "enforceable": "true",
     "severity": "error",
-    "target_fields": ["page_margin_top", "page_margin_bottom", "page_margin_left", "page_margin_right", "letterhead_typing_start", "footer_position", "page_number_position"],
+    "target_fields": ["page_margin_top", "page_margin_bottom", "page_margin_left", "page_margin_right", "letterhead_typing_start", "footer_position", "page_number_position", "text_justification", "proportional_spacing"],
     "validator_type": "margin_measurement",
-    "renderer_impact": "Page geometry configuration in ReportLab canvas; determines BOUNDARY_SPACINGS for top margin (72 pt = 1 inch), bottom margin (36 pt = 0.5 inch for footers), and left/right margins (72 pt = 1 inch each); letterhead rendering must account for typing start position below 1-inch threshold",
+    "renderer_impact": "Page geometry configuration in ReportLab canvas; determines BOUNDARY_SPACINGS for top margin (72 pt = 1 inch), bottom margin (36 pt = 0.5 inch for footers), and left/right margins (72 pt = 1 inch each); letterhead rendering must account for typing start position below 1-inch threshold; text must use left justification only with monospaced or fixed-pitch spacing",
     "status": "candidate",
-    "notes": "Margin rules are measurable renderer/layout requirements. Top margin: 1 inch (72 pt); Bottom margin for footers/page numbers: 0.5 inch (36 pt); Left/Right margins: 1 inch (72 pt) each. Letterhead typing start must exceed 1 inch from top edge. These are deterministic layout constraints, not advisory guidance."
+    "notes": "Margin rules are measurable renderer/layout requirements. Top margin: 1 inch (72 pt); Bottom margin for footers/page numbers: 0.5 inch (36 pt); Left/Right margins: 1 inch (72 pt) each. Letterhead typing start must exceed 1 inch from top edge. Text justification must be left-aligned only (no right, center, or full justify). Proportional spacing is forbidden. These are deterministic layout constraints, not advisory guidance."
   },
   "C7-003": {
     "rule_id": "C7-003",
