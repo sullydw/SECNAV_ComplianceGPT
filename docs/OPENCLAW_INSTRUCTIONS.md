@@ -25,6 +25,15 @@ Before any task:
 
 ---
 
+## Primary Manual Reference
+
+- `references/SECNAV_M-5216.5_CH-1.pdf`
+
+**Rules** Agents must consult the PDF directly before resolving candidate rules.
+Do not reconstruct manual text from renderer behavior or memory.
+
+---
+
 ## Core Rules
 
 DO:
