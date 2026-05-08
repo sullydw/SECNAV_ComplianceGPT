@@ -34,6 +34,30 @@ Do not reconstruct manual text from renderer behavior or memory.
 
 ---
 
+## Rule Source Verification Policy
+
+- Rules Agents must extract rule text directly from:
+  `references/SECNAV_M-5216.5_CH-1.pdf`
+
+- If exact source text cannot be verified from the PDF,
+  the rule must remain unresolved.
+
+- Do not reconstruct rule text from:
+  - renderer behavior
+  - audit behavior
+  - existing implementation
+  - memory
+  - inferred Navy formatting conventions
+
+- If verification fails:
+  - set `source_text` to:
+    "TBD - exact manual text required before activation"
+
+- Candidate rules must represent manual truth,
+  not current implementation behavior.
+
+---
+
 ## Core Rules
 
 DO:
