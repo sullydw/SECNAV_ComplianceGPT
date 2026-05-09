@@ -4,7 +4,7 @@
     "name": "Chapter 7 Standard Letter Rules",
     "description": "Candidate rule catalog for SECNAV M-5216.5 Chapter 7 standard letter formatting",
     "version": "1.0",
-    "updated": "2026-05-08",
+    "updated": "2026-05-09",
     "status": "candidate",
     "note": "All entries are placeholders requiring exact manual text before activation"
   },
@@ -97,7 +97,7 @@
       "rule_id": "C7-015",
       "manual_section": "7-2.14",
       "status": "candidate",
-      "source_text_state": "unresolved"
+      "source_text_state": "resolved"
     },
     {
       "rule_id": "C7-016",

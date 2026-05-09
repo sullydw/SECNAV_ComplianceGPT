@@ -1,19 +1,27 @@
 {
   "rule_id": "C7-015",
   "manual_section": "7-2.14",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "Signature block format and placement requirements",
+  "source_text": "14. Signature Line\n\na. General\n\n(1) Only the original, which goes to the action addressee, must be signed; however, the original and all copies must have typed or stamped signature line information below the signature. The last name appears in all capital letters with the exception of a last name beginning with a prefix.\n\nEXAMPLE: (last name beginning with a prefix) P. W. McNALLY\n\n(2) Start all lines of the signature line at the center of the page, beginning on the fourth line below the text. The preferred way to identify the signatory is by typing their first initial, middle initial, and last name. If the signatory does not have a middle name, use only their first initial and last name. Signature lines can be changed based on the signer's preference. Do not include the signatory's rank or a complimentary close. Add the signature line only when you are sure who will sign the correspondence. If you use a stamp, remember to mark all copies and avoid smeared or crooked impressions. Refer to chapter 2, page 2-4 for delegation of signature authority guidance.\n\nb. Examples of Signature Lines\n\n(1) When an activity head will sign the correspondence, the signature line is composed of only their name.\n\nEXAMPLE:\nJ. K. JANICKI\n\n(2) When a principal subordinate authorized to sign by title, such as the chief of staff or deputy in a major command will sign the correspondence, include their title as the second line of the signature line.\n\nEXAMPLE:\nT. OPPEL\nDeputy\n\n(3) When an individual has been formally appointed to temporarily replace the commanding officer or a subordinate who signs by title, include the term \"Acting\" as the last line of the signature line.\n\nEXAMPLES:\nV. E. WATSON\nActing\n\nS. V. MURPHY\nDeputy\nActing\n\n(4) Put the term \"By direction\" under the name of a subordinate formally authorized to sign official correspondence, but not by their title.\n\nEXAMPLE:\nI. K. WESLEY\nBy direction\n\n(5) When the signatory is authorized to sign \"By direction,\" and the correspondence will affect pay and allowances, the signature line will include the signatory's (a) name, (b) title, and (c) the phrase, \"By direction of the [activity head].\" (Insert the appropriate activity head title).\n\nEXAMPLE:\nC. COLLINS, JR\nExecutive Officer\nBy direction of the Commanding Officer",
+  "plain_language_rule": "Signature block centered on page, starting on the fourth line below the text. Only the original must be signed; all copies must have typed or stamped signature block information below the signature. Last name in all capital letters (exception: last names beginning with a prefix, e.g., McNALLY). Preferred name format: first initial, middle initial, last name. If no middle name, use first initial and last name only. Name format may vary based on signer preference. Do not include rank or complimentary close. Activity head signs with name only. Principal subordinate authorized by title signs with name plus title on second line. Formally appointed acting CO or acting sign-by-title subordinate: include \"Acting\" as the last line. Subordinate formally authorized to sign but not by title: include \"By direction\" under the name. For correspondence affecting pay and allowances signed \"By direction\": name, title, and \"By direction of the [activity head].\" When using a stamp, mark all copies and avoid smears/crooked impressions.",
   "category": "format",
-  "enforceable": "undetermined",
+  "enforceable": "partial",
   "severity": "warning",
   "target_fields": [
-    "signature_block",
-    "signer_name",
+    "signature_block_placement",
+    "signature_block_centering",
+    "signer_name_format",
     "signer_title",
-    "signature_mode"
+    "by_direction_usage",
+    "acting_designation",
+    "stamp_quality"
   ],
-  "validator_type": "undetermined",
-  "renderer_impact": "Signature block rendering and vertical placement",
+  "validator_type": "signature_line_composition_and_placement_check",
+  "renderer_impact": "Center signature block starting fourth line below body text; format name as initials + LASTNAME (all caps last name except prefix surnames); omit rank and complimentary close; select signature variant (name-only, name+title, name+Acting, name+title+Acting, name+By direction, name+title+By direction of the [activity head]) based on signer authority and correspondence type; enforce stamp quality constraints on all copies",
   "status": "candidate",
-  "notes": "Includes spacing before signature and signature variants"
+  "notes": "The manual does not specify an exact number of blank lines — it says \"beginning on the fourth line below the text,\" which means typing starts on the fourth line, yielding three blank lines between the end of text and the start of the signature block. The signature-page minimum two lines of text preceding the signature is established in C7-014 (7-2.13) and applies here but is not repeated in 7-2.14. The manual's allowance that \"signature lines can be changed based on the signer's preference\" introduces variance that limits full automated enforcement. The precise scope of who qualifies as \"formally appointed\" for Acting designation or \"formally authorized\" for By direction is a matter of administrative process, not defined in this section.",
+  "cross_references": [
+    "C7-014",
+    "Chapter 2, page 2-4"
+  ],
+  "figure_references": []
 }
