@@ -1,0 +1,17 @@
+{
+  "rule_id": "C7-017",
+  "manual_section": "7-2.16",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Identification format for second and later pages",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": [
+    "continuation_header",
+    "page_identification"
+  ],
+  "validator_type": "undetermined",
+  "renderer_impact": "Continuation page header rendering (page 2+)",
+  "status": "candidate",
+  "notes": "Ensures proper identification on multi-page letters"
+}

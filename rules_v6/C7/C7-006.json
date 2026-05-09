@@ -1,0 +1,18 @@
+{
+  "rule_id": "C7-006",
+  "manual_section": "7-2.5",
+  "source_text": "For Official Use Only (FOUO). FOUO information is unclassified information that may be exempt from public release under the Freedom of Information Act (FOIA). FOUO markings are required when correspondence contains information that is exempt from mandatory public release but does not require classification. FOUO markings appear on the first page of the correspondence and may be placed in the classification block area or as a separate marking line. The marking 'FOR OFFICIAL USE ONLY' or 'FOUO' must be clearly visible. FOUO handling and distribution is governed by organizational policy and may require additional control measures. Refer to SECNAV M-5510.30 and command-specific guidance for FOUO handling procedures. FOUO markings do not override or replace classification markings when both classified and FOUO information are present.",
+  "plain_language_rule": "For Official Use Only (FOUO) markings are required when correspondence contains unclassified information exempt from FOIA public release. The marking 'FOR OFFICIAL USE ONLY' or 'FOUO' must appear on the first page, typically in the classification block area or as a separate marking line. FOUO handling follows organizational policy and may require additional control measures per SECNAV M-5510.30 and command guidance. FOUO markings coexist with but do not replace classification markings when both are present.",
+  "category": "security",
+  "enforceable": "partial",
+  "severity": "warning",
+  "target_fields": [
+    "fouo_marking",
+    "control_info",
+    "classification_block"
+  ],
+  "validator_type": "fouo_marking_presence_validator",
+  "renderer_impact": "FOUO marking placement in header/classification block area on first page; may affect spacing if separate marking line is required; does not affect continuation page marking requirements",
+  "status": "candidate",
+  "notes": "CRITICAL DEPENDENCY: This rule delegates authority to external policy manuals (SECNAV M-5510.30) and organizational/command-specific FOUO handling procedures. The SECNAV M-5216.5 correspondence manual establishes the requirement for FOUO markings but does not specify detailed handling procedures - those are determined by the Information Security Program manual and local command policy. ENFORCEABILITY is marked 'partial' because: (1) FOUO determination depends on content analysis per FOIA exemption criteria, not document formatting; (2) specific marking placement details may vary by command policy; (3) FOUO handling and distribution controls are organization-specific. The renderer should ensure FOUO markings appear on the first page when present, but validation of proper FOUO designation and complete handling compliance requires FOIA/security program expertise beyond document formatting. FOUO is often internal to an organization and handled by organizational policy rather than uniform DoD-wide standards. This rule should remain candidate until coordination with security program officials confirms implementation approach. DO NOT activate without security program review. AMBIGUITY PRESERVED: Manual does not specify exact placement (classification block vs. separate line) - this is command-specific. DO NOT over-design FOUO enforcement in renderer."
+}

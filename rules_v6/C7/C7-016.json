@@ -1,0 +1,18 @@
+{
+  "rule_id": "C7-016",
+  "manual_section": "7-2.15",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Copy To line format for informational addressees",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "advisory",
+  "target_fields": [
+    "copy_to",
+    "copy_to_list",
+    "copy_to_layout"
+  ],
+  "validator_type": null,
+  "renderer_impact": "Copy To block rendering after signature",
+  "status": "candidate",
+  "notes": "Informational addressees; distinct from Distribution"
+}

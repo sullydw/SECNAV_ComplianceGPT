@@ -1,0 +1,17 @@
+{
+  "rule_id": "C7-018",
+  "manual_section": "7-2.17",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Page numbering format and placement on continuation pages",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": [
+    "page_number",
+    "page_number_placement"
+  ],
+  "validator_type": "undetermined",
+  "renderer_impact": "Page number rendering on page 2+ (centered, 1/2 inch from bottom)",
+  "status": "candidate",
+  "notes": "No page number on page 1; centered on page 2+"
+}

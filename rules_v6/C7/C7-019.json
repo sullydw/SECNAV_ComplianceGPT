@@ -1,0 +1,17 @@
+{
+  "rule_id": "C7-019",
+  "manual_section": "7-2.18",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Correspondence package assembly requirements",
+  "category": "procedural",
+  "enforceable": "undetermined",
+  "severity": "advisory",
+  "target_fields": [
+    "package_assembly",
+    "document_order"
+  ],
+  "validator_type": null,
+  "renderer_impact": "Document assembly and ordering for multi-part packages",
+  "status": "candidate",
+  "notes": "Covers assembly order for correspondence packages"
+}

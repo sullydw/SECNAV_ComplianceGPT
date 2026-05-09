@@ -1,0 +1,18 @@
+{
+  "rule_id": "C7-003",
+  "manual_section": "7-2.2",
+  "source_text": "For text, use 10 to 12 point font size. Times New Roman 12-point is the preferred font style and size for official correspondence, but Courier New may be used for informal correspondence.",
+  "plain_language_rule": "Standard letter body text must use 10 to 12 point font size. Times New Roman 12-point is the preferred font for official correspondence. Courier New may be used for informal correspondence.",
+  "category": "format",
+  "enforceable": true,
+  "severity": "warning",
+  "target_fields": [
+    "font_family",
+    "font_size",
+    "text_style"
+  ],
+  "validator_type": "font_family_size_check",
+  "renderer_impact": "Font selection and sizing throughout document body text; ReportLab font configuration must support Times New Roman 12pt as default, with Courier New as alternative for informal correspondence",
+  "status": "candidate",
+  "notes": "IMPORTANT AMBIGUITY: Section 7-2.1 (C7-002) prohibits 'proportional spacing' but Times New Roman (the preferred font per 7-2.2) IS a proportional font. This creates a direct conflict between sections. The prohibition on proportional spacing in 7-2.1 likely refers to character spacing/kerning settings rather than font type, since the manual explicitly approves Times New Roman which is inherently proportional. Clarification needed: 7-2.1's 'proportional spacing' prohibition should be interpreted as forbidding variable letter-spacing adjustments, not proportional font families. Times New Roman 12pt remains the standard for official correspondence despite this apparent conflict. Font size range of 10-12pt provides flexibility; 12pt is preferred for body text. Header elements may use different sizes per their specific requirements."
+}

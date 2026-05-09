@@ -1,0 +1,18 @@
+{
+  "rule_id": "C7-014",
+  "manual_section": "7-2.13",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Paragraph numbering, indentation, and spacing rules",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": [
+    "paragraphs",
+    "indentation",
+    "spacing"
+  ],
+  "validator_type": "undetermined",
+  "renderer_impact": "Paragraph marker detection, indentation levels, and spacing",
+  "status": "candidate",
+  "notes": "Defines paragraph hierarchy (1, a, (1), (a)) and spacing"
+}

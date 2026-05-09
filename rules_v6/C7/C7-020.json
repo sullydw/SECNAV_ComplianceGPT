@@ -1,0 +1,17 @@
+{
+  "rule_id": "C7-020",
+  "manual_section": "7-2.19",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Tabbing requirements for correspondence packages",
+  "category": "procedural",
+  "enforceable": "undetermined",
+  "severity": "advisory",
+  "target_fields": [
+    "tabbing",
+    "package_organization"
+  ],
+  "validator_type": null,
+  "renderer_impact": "Tab placement and organization for multi-part packages",
+  "status": "candidate",
+  "notes": "Covers tabbing standards for correspondence packages"
+}

@@ -1,0 +1,17 @@
+{
+  "rule_id": "C7-013",
+  "manual_section": "7-2.12",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Body text content requirements and structure",
+  "category": "content",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": [
+    "body_text",
+    "paragraphs"
+  ],
+  "validator_type": "undetermined",
+  "renderer_impact": "Body section text rendering and content flow",
+  "status": "candidate",
+  "notes": "Covers overall body text requirements"
+}

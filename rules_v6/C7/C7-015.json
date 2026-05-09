@@ -1,0 +1,19 @@
+{
+  "rule_id": "C7-015",
+  "manual_section": "7-2.14",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Signature block format and placement requirements",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": [
+    "signature_block",
+    "signer_name",
+    "signer_title",
+    "signature_mode"
+  ],
+  "validator_type": "undetermined",
+  "renderer_impact": "Signature block rendering and vertical placement",
+  "status": "candidate",
+  "notes": "Includes spacing before signature and signature variants"
+}

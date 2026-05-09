@@ -1,0 +1,17 @@
+{
+  "rule_id": "C7-012",
+  "manual_section": "7-2.11",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Enclosure line format for listing attached documents",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "advisory",
+  "target_fields": [
+    "enclosure_line",
+    "enclosure_list"
+  ],
+  "validator_type": null,
+  "renderer_impact": "Header section Enclosure line rendering (optional)",
+  "status": "candidate",
+  "notes": "Optional header element; may include enclosure list"
+}

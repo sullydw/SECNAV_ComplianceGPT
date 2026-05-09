@@ -1,0 +1,133 @@
+{
+  "_meta": {
+    "series": "C7",
+    "name": "Chapter 7 Standard Letter Rules",
+    "description": "Candidate rule catalog for SECNAV M-5216.5 Chapter 7 standard letter formatting",
+    "version": "1.0",
+    "updated": "2026-05-08",
+    "status": "candidate",
+    "note": "All entries are placeholders requiring exact manual text before activation"
+  },
+  "rules": [
+    {
+      "rule_id": "C7-001",
+      "manual_section": "7-1",
+      "status": "candidate",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-002",
+      "manual_section": "7-2.1",
+      "status": "candidate",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-003",
+      "manual_section": "7-2.2",
+      "status": "candidate",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-004",
+      "manual_section": "7-2.3",
+      "status": "candidate",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-005",
+      "manual_section": "7-2.4",
+      "status": "candidate",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-006",
+      "manual_section": "7-2.5",
+      "status": "candidate",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-007",
+      "manual_section": "7-2.6",
+      "status": "candidate",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-008",
+      "manual_section": "7-2.7",
+      "status": "candidate",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-009",
+      "manual_section": "7-2.8",
+      "status": "candidate",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-010",
+      "manual_section": "7-2.9",
+      "status": "candidate",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-011",
+      "manual_section": "7-2.10",
+      "status": "candidate",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-012",
+      "manual_section": "7-2.11",
+      "status": "candidate",
+      "source_text_state": "unresolved"
+    },
+    {
+      "rule_id": "C7-013",
+      "manual_section": "7-2.12",
+      "status": "candidate",
+      "source_text_state": "unresolved"
+    },
+    {
+      "rule_id": "C7-014",
+      "manual_section": "7-2.13",
+      "status": "candidate",
+      "source_text_state": "unresolved"
+    },
+    {
+      "rule_id": "C7-015",
+      "manual_section": "7-2.14",
+      "status": "candidate",
+      "source_text_state": "unresolved"
+    },
+    {
+      "rule_id": "C7-016",
+      "manual_section": "7-2.15",
+      "status": "candidate",
+      "source_text_state": "unresolved"
+    },
+    {
+      "rule_id": "C7-017",
+      "manual_section": "7-2.16",
+      "status": "candidate",
+      "source_text_state": "unresolved"
+    },
+    {
+      "rule_id": "C7-018",
+      "manual_section": "7-2.17",
+      "status": "candidate",
+      "source_text_state": "unresolved"
+    },
+    {
+      "rule_id": "C7-019",
+      "manual_section": "7-2.18",
+      "status": "candidate",
+      "source_text_state": "unresolved"
+    },
+    {
+      "rule_id": "C7-020",
+      "manual_section": "7-2.19",
+      "status": "candidate",
+      "source_text_state": "unresolved"
+    }
+  ]
+}
