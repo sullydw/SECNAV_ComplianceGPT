@@ -413,8 +413,8 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
         print(f"DEBUG Signature drawn at x={signature_x:.1f}, y={y:.1f}")
         y -= leading
 
-    # Gap between signature and distribution/copy_to (1 leading unit)
-    y -= leading
+    # Gap between signature and distribution/copy_to is handled by Distribution block start
+    # Do NOT add extra y decrement here - Distribution/Copy to will start at current y
 
     # Distribution: (if present, renders after signature, before Copy to)
     # Label and order are rule-driven from model if provided
@@ -472,8 +472,9 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
             y = draw_wrapped_text(c, left_margin_pt, y, dist_text, 12, max_width, leading)
         
         print(f"DEBUG Distribution block starts at y={dist_y:.1f} (layout: {dist_layout})")
-        # One blank line after Distribution before Copy to
-        y -= leading
+        # One blank line after Distribution before Copy to - ONLY if Copy to exists
+        # The gap after the last Distribution entry is already applied by the loop above
+        # Do NOT add extra spacing here
 
     # Copy to (if present) - renders after Distribution if both exist
     # Label is rule-driven from model if provided
@@ -654,8 +655,15 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
         print(f"DEBUG y_position after level {level} marker '{marker}': {y:.1f}")
 
         # Body record gap: single leading unit between paragraphs (except last)
+        # Do NOT apply gap when next line is a child (level increases)
         if i < len(body_lines) - 1:
-            y -= leading  # Single consistent blank line
+            next_line = body_lines[i + 1]
+            next_level, _, _ = detect_marker_level(next_line)
+            if next_level is None:
+                next_level = 1
+            # Only apply paragraph gap between same-level or higher-level resets (level decreases or stays same)
+            if next_level <= level:
+                y -= leading  # Single consistent blank line
 
         prev_level = level
 
@@ -761,42 +769,115 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, ri
     subj_max_width = page_width - right_margin_pt - text_x
     y = draw_wrapped_text(c, text_x, y, normalized.get("subj", ""), 12, subj_max_width, leading)
 
-    # One blank line before Ref
-    y -= leading
-
-    # Ref: (if present)
-    if normalized.get("ref_count", 0) > 0:
+    # Ref: (if present) - only apply spacing before Ref if Ref exists
+    ref_count = normalized.get("ref_count", 0)
+    encl_count = normalized.get("encl_count", 0)
+    
+    # Calculate text column for REF/ENCL entries
+    # text_x is already the start of the text column (label_x + 43)
+    # Max width for REF/ENCL text = right_edge - text_x
+    ref_encl_max_width = page_width - right_margin_pt - text_x
+    
+    if ref_count > 0:
+        # One blank line before Ref (only if Ref exists)
+        y -= leading
         c.drawString(label_x, y, "Ref:")
         for i, ref_line in enumerate(normalized.get("ref", [])):
-            if i == 0:
-                c.drawString(text_x, y, ref_line)
+            # Parse marker and text from ref_line (e.g., "(a) SECNAV M-5216.5...")
+            marker_match = re.match(r'^\(([a-zA-Z0-9]+)\)\s+(.*)$', ref_line)
+            if marker_match:
+                marker = f"({marker_match.group(1)})"
+                ref_text = marker_match.group(2)
             else:
-                c.drawString(text_x, y, ref_line)
-            y -= leading
+                # No marker found, treat entire line as text
+                marker = ""
+                ref_text = ref_line
+            
+            # Calculate marker width and text start position
+            if marker:
+                marker_with_spaces = marker + "  "
+                marker_width = c.stringWidth(marker_with_spaces, "Times-Roman", 12)
+                ref_text_x = text_x + marker_width
+                # First line: marker + text
+                first_max = ref_encl_max_width - marker_width
+                first_chunk, remaining = wrap_line(ref_text, "Times-Roman", 12, first_max, c)
+                c.drawString(text_x, y, marker_with_spaces + first_chunk)
+                y -= leading
+                # Continuation lines align under first text character (not under marker)
+                cont_max = ref_encl_max_width
+                for cont_line in wrap_paragraph(remaining, "Times-Roman", 12, cont_max, c):
+                    c.drawString(ref_text_x, y, cont_line)
+                    y -= leading
+            else:
+                # No marker - just wrap text at text_x
+                for wrapped_line in wrap_paragraph(ref_text, "Times-Roman", 12, ref_encl_max_width, c):
+                    c.drawString(text_x, y, wrapped_line)
+                    y -= leading
 
-    # One blank line before Encl
-    y -= leading
-
-    # Encl: (if present)
-    if normalized.get("encl_count", 0) > 0:
+    # Encl: (if present) - only apply spacing before Encl if Encl exists
+    if encl_count > 0:
+        # One blank line before Encl (only if Encl exists)
+        # If Ref was omitted, this creates Subj → ENCL = 1 leading unit
+        # If Ref was present, this creates REF → ENCL = 1 leading unit
+        y -= leading
         c.drawString(label_x, y, "Encl:")
         for i, encl_line in enumerate(normalized.get("encl", [])):
-            if i == 0:
-                c.drawString(text_x, y, encl_line)
+            # Parse marker and text from encl_line (e.g., "(1) Records Management...")
+            marker_match = re.match(r'^\(([a-zA-Z0-9]+)\)\s+(.*)$', encl_line)
+            if marker_match:
+                marker = f"({marker_match.group(1)})"
+                encl_text = marker_match.group(2)
             else:
-                c.drawString(text_x, y, encl_line)
-            y -= leading
+                # No marker found, treat entire line as text
+                marker = ""
+                encl_text = encl_line
+            
+            # Calculate marker width and text start position
+            if marker:
+                marker_with_spaces = marker + "  "
+                marker_width = c.stringWidth(marker_with_spaces, "Times-Roman", 12)
+                encl_text_x = text_x + marker_width
+                # First line: marker + text
+                first_max = ref_encl_max_width - marker_width
+                first_chunk, remaining = wrap_line(encl_text, "Times-Roman", 12, first_max, c)
+                c.drawString(text_x, y, marker_with_spaces + first_chunk)
+                y -= leading
+                # Continuation lines align under first text character (not under marker)
+                cont_max = ref_encl_max_width
+                for cont_line in wrap_paragraph(remaining, "Times-Roman", 12, cont_max, c):
+                    c.drawString(encl_text_x, y, cont_line)
+                    y -= leading
+            else:
+                # No marker - just wrap text at text_x
+                for wrapped_line in wrap_paragraph(encl_text, "Times-Roman", 12, ref_encl_max_width, c):
+                    c.drawString(text_x, y, wrapped_line)
+                    y -= leading
 
     return y
 
 
-def main():
+def main(output_dir=None):
     # Paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
     base_dir = os.path.dirname(script_dir)
     sample_path = os.path.join(base_dir, "examples", "v6_sample_letter.json")
-    output_dir = os.path.join(base_dir, "output")
+    
+    # Resolve output directory with priority:
+    # 1) Function argument/config
+    # 2) Environment variable SECNAV_OUTPUT_DIR
+    # 3) Default ./output/ relative to project root
+    if output_dir is None:
+        output_dir = os.environ.get("SECNAV_OUTPUT_DIR")
+    if output_dir is None:
+        output_dir = os.path.join(base_dir, "output")
+    
+    # Resolve to absolute path for robustness
+    output_dir = os.path.abspath(output_dir)
     output_path = os.path.join(output_dir, "v6_test_letter.pdf")
+    
+    # Debug: log which output path is being used
+    print(f"DEBUG Output directory: {output_dir}")
+    print(f"DEBUG Output path: {output_path}")
 
     # Ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)
@@ -965,13 +1046,15 @@ def main():
     print(f"DEBUG block_left_x: {block_left_x:.1f}pt")
     
     # Draw all sender-symbol lines with shared left anchor
-    for line in sender_symbol_lines:
+    for idx, line in enumerate(sender_symbol_lines):
         line_y = y
         c.drawString(block_left_x, y, line)
         print(f"DEBUG SSIC/date line '{line}' at x={block_left_x:.1f}, y={line_y:.1f}")
-        y -= leading
+        # Only advance y if this is not the last line (boundary spacing handles the gap after)
+        if idx < len(sender_symbol_lines) - 1:
+            y -= leading
     
-    # Boundary: SSIC_DATE -> HEADER
+    # Boundary: SSIC_DATE -> HEADER (provides exactly 1 leading unit after last sender-symbol line)
     y -= get_boundary_spacing("SSIC_DATE", "HEADER", leading)
 
     # Header block - use dedicated function with proper SECNAV text column
