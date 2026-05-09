@@ -58,6 +58,32 @@ Do not reconstruct manual text from renderer behavior or memory.
 
 ---
 
+## Single-Agent Manual Model Workflow
+
+**Preferred mode is main-agent only** unless the user explicitly requests subagents.
+
+**User will manually choose/switch the model** before each task. The main agent must not spawn subagents by default.
+
+**Main agent execution requirements:**
+- Execute the task directly within the current workspace
+- Before modifying files, confirm current directory is the repo root
+- Do not work from workspace root
+- Do not create loose `rules_v6/` or `docs/` folders outside the repository
+
+**Recommended model guidance by task type:**
+- Rule extraction/manual interpretation: DeepSeek V4 Pro
+- Architecture/hard reasoning: Qwen 3.5 397B
+- Code edits/renderers/validators: Qwen2.5-Coder 32B
+- Audits/consistency checks: GLM-5
+- Simple docs/cleanup: local `qwen3.5:9b` or Gemma 4
+
+**Workspace confirmation:**
+- Main agent must confirm it is working in: `C:\Users\drryl\.openclaw\workspace\SECNAV_ComplianceGPT`
+
+**Preserve existing rule source verification policy** — Rules Agents must extract rule text directly from `references/SECNAV_M-5216.5_CH-1.pdf`. Do not reconstruct manual text from renderer behavior or memory.
+
+---
+
 ## Core Rules
 
 DO:
