@@ -1,0 +1,46 @@
+{
+  "_comment": "AUDIT TEST CASE: REF/ENCL overflow visual test - entries exceed page width (540pt usable) to verify no wrapping implementation",
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "originator_code": "S-1",
+  "date": "7 May 2026",
+  "unit_identity": {
+    "letterhead_family": "LH_USMC_ACTIVITY",
+    "UNIT_OR_ACTIVITY_NAME": "3D BATTALION 6TH MARINES",
+    "NEXT_ECHELON_OR_PARENT": "2D MARINE DIVISION",
+    "INSTALLATION_OR_LOCATION": "MCB CAMP LEJEUNE",
+    "STATE": "NC",
+    "ZIP9": "28542-0001",
+    "SUPPRESS_PARENT_LINE": true
+  },
+  "from": "Commanding Officer, 3d Battalion, 6th Marines",
+  "to": "Area Records Officers",
+  "subj": "AUDIT TEST FOR REFERENCE AND ENCLOSURE OVERFLOW BEHAVIOR WHEN ENTRY TEXT EXCEEDS PAGE WIDTH",
+  "ref": [
+    "(a) SECNAV M-5216.5 Chapter 2 with extensive supplementary material covering records management procedures and classification guidelines",
+    "(b) MCO 5216.11 which provides detailed guidance on correspondence preparation and formatting standards for all Department of the Navy activities",
+    "(c) NAVADMIN 2024/156 announcing updates to the records management system implementation timeline and mandatory training requirements for all personnel",
+    "(d) OPNAVINST 5215.17A establishing the Department of the Navy directives and records management program with comprehensive policy guidance"
+  ],
+  "encl": [
+    "(1) Records Management Procedures Manual with comprehensive guidance on filing and retrieval operations including cross-referencing systems and retention schedules",
+    "(2) Correspondence Preparation Handbook covering formatting standards for all types of military letters memoranda and official communications",
+    "(3) Implementation Timeline Chart showing key milestones for the new records management system deployment across all Navy and Marine Corps commands",
+    "(4) Training Schedule and Attendance Roster for upcoming records management certification courses required for all administrative personnel"
+  ],
+  "body": [
+    "1. This audit test case verifies the visual behavior of REF and ENCL entries when their text content exceeds the usable page width of 540 points.",
+    "2. Each REF and ENCL entry above contains 120-180 characters of continuous text without manual line breaks to test overflow handling.",
+    "3. Expected behavior: text should exceed the right margin since no wrapping logic is implemented in the current renderer version."
+  ],
+  "signature": {
+    "name": "D. SULLIVAN",
+    "role": "by_direction",
+    "title": null,
+    "authority": null,
+    "activity_head_title": null,
+    "affects_pay_or_allowances": false
+  },
+  "distribution": [],
+  "copy_to": []
+}

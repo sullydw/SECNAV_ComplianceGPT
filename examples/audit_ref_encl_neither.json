@@ -1,0 +1,43 @@
+{
+  "_comment": "AUDIT TEST CASE: No REF, No ENCL - Measure Subj → Body spacing",
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "originator_code": "S-1",
+  "date": "7 May 2026",
+  "unit_identity": {
+    "letterhead_family": "LH_USMC_ACTIVITY",
+    "UNIT_OR_ACTIVITY_NAME": "3D BATTALION 6TH MARINES",
+    "NEXT_ECHELON_OR_PARENT": "2D MARINE DIVISION",
+    "INSTALLATION_OR_LOCATION": "MCB CAMP LEJEUNE",
+    "STATE": "NC",
+    "ZIP9": "28542-0001",
+    "SUPPRESS_PARENT_LINE": true
+  },
+  "from": "Commanding Officer, 3d Battalion, 6th Marines",
+  "to": "Area Records Officers",
+  "via": [
+    "(1) Commanding General, 2d Marine Division"
+  ],
+  "subj": "REF AND ENCL COLLAPSE SPACING AUDIT TEST CASE NEITHER",
+  "ref": [],
+  "encl": [],
+  "body": [
+    "1. First paragraph for spacing audit. This line verifies baseline-to-baseline measurement between Subj and first body paragraph when neither REF nor ENCL are present.",
+    "2. Second paragraph for spacing audit. This paragraph confirms consistent paragraph-to-paragraph spacing.",
+    "3. Third paragraph for spacing audit. Final paragraph before signature block."
+  ],
+  "signature": {
+    "name": "D. SULLIVAN",
+    "role": "by_direction"
+  },
+  "distribution": [
+    "NAVCOMTELSTA WASHINGTON DC",
+    "NAVCOMTELSTA PENSACOLA"
+  ],
+  "distribution_mode": "distribution_only",
+  "distribution_layout": "single_column",
+  "copy_to": [
+    "Commanding General, II MEF"
+  ],
+  "copy_to_layout": "single_column"
+}

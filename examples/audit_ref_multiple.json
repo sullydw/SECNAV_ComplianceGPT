@@ -1,0 +1,43 @@
+{
+  "_comment": "AUDIT TEST CASE: Multiple REF entries only (no ENCL) - tests REF numbering format, alignment, and spacing",
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "originator_code": "S-1",
+  "date": "7 May 2026",
+  "unit_identity": {
+    "letterhead_family": "LH_USMC_ACTIVITY",
+    "UNIT_OR_ACTIVITY_NAME": "3D BATTALION 6TH MARINES",
+    "NEXT_ECHELON_OR_PARENT": "2D MARINE DIVISION",
+    "INSTALLATION_OR_LOCATION": "MCB CAMP LEJEUNE",
+    "STATE": "NC",
+    "ZIP9": "28542-0001",
+    "SUPPRESS_PARENT_LINE": true
+  },
+  "from": "Commanding Officer, 3d Battalion, 6th Marines",
+  "to": "Area Records Officers",
+  "subj": "AUDIT TEST FOR MULTIPLE REFERENCE ENTRIES WITH LONG TEXT TO FORCE LINE WRAPPING AND VERIFY ALIGNMENT",
+  "ref": [
+    "(a) SECNAV M-5216.5 Ch-2 with extensive supplementary material covering records management procedures",
+    "(b) MCO 5216.11 which provides detailed guidance on correspondence preparation and formatting standards",
+    "(c) NAVADMIN 2024/156 announcing updates to the records management system implementation timeline",
+    "(d) OPNAVINST 5215.17A establishing the Department of the Navy directives and records management program"
+  ],
+  "encl": [],
+  "body": [
+    "1. This is the first paragraph of the audit test case for multiple REF entries. The purpose of this document is to verify that the renderer correctly handles multiple reference entries with long text that forces line wrapping.",
+    "2. This is the second paragraph. Each REF entry above contains intentionally long text to test whether continuation lines return to the left margin rather than being indented under the marker text.",
+    "3. This is the third paragraph. The audit will verify that REF entries use the correct numbering format with lowercase letters in parentheses: (a), (b), (c), (d).",
+    "4. This is the fourth paragraph. The spacing between the subject line and the first REF entry should be exactly one leading unit (14.4 points), and the spacing between consecutive REF entries should also be one leading unit.",
+    "5. This is the fifth and final paragraph. Since there are no ENCL entries in this test case, the spacing from the last REF entry to the first body paragraph should be exactly one leading unit (14.4 points)."
+  ],
+  "signature": {
+    "name": "D. SULLIVAN",
+    "role": "by_direction",
+    "title": null,
+    "authority": null,
+    "activity_head_title": null,
+    "affects_pay_or_allowances": false
+  },
+  "distribution": [],
+  "copy_to": []
+}
