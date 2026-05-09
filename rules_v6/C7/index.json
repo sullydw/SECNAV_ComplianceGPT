@@ -91,7 +91,7 @@
       "rule_id": "C7-014",
       "manual_section": "7-2.13",
       "status": "candidate",
-      "source_text_state": "unresolved"
+      "source_text_state": "resolved"
     },
     {
       "rule_id": "C7-015",
