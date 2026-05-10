@@ -15,9 +15,9 @@
     "enclosure_reference_exclusion"
   ],
   "validator_type": "enclosure_line_format_and_placement_check",
-  "renderer_impact": "Place \"Encl:\" at left margin, second line below signature block; indent subsequent enclosure items (5 spaces in examples); for non-text letters, place second line below \"From:\" line; single enclosure has no number prefix",
+  "renderer_impact": "Place \"Encl:\" at left margin, second line below signature block; align subsequent enclosure items according to the manual examples; exact spacing requires visual verification before validator enforcement; for non-text letters, place second line below \"From:\" line; single enclosure has no number prefix",
   "status": "candidate",
-  "notes": "A single enclosure is listed WITHOUT a preceding number — the parenthetical \"i.e., Encl: (1)\" in the manual illustrates what NOT to do. The \"SEP COVER\" notation is placed at the end of the enclosure description. No continuation/fold rules for multi-page enclosures are specified in this section. Each enclosure description is indented relative to \"Encl:\" (5 spaces in the examples). \"Do not abbreviate 'Encl:'\" is an explicit formatting rule. The mutual exclusion rule (no document may be both a reference and an enclosure) is absolute.",
+  "notes": "A single enclosure is listed WITHOUT a preceding number — the parenthetical \"i.e., Encl: (1)\" in the manual illustrates what NOT to do. The \"SEP COVER\" notation is placed at the end of the enclosure description. No continuation/fold rules for multi-page enclosures are specified in this section. Examples show enclosure descriptions indented relative to \"Encl:\", but exact space count should not be treated as a hard validator rule without visual/manual verification. \"Do not abbreviate 'Encl:'\" is an explicit formatting rule. The mutual exclusion rule (no document may be both a reference and an enclosure) is absolute.",
   "cross_references": [
     "C7-011"
   ],
