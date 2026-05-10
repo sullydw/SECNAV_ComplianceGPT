@@ -1,18 +1,20 @@
 {
   "rule_id": "C7-016",
   "manual_section": "7-2.15",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "Copy To line format for informational addressees",
+  "source_text": "15. Copy To Line\n\na. General\n\n(1) Show the copy to line on the original and all copies, if required\n(2) Start the designation \"Copy to:\" at the left margin on the second line below the last line of the signature block including the title, authority line or activity.\n\nb. Examples of Copy To Lines\n\n(1) Example 1\n\nEXAMPLE:\n\nCopy to:\nCOMMAVSEASYSCOM\nCNO (N4)\n\n(2) Example 2\n\nEXAMPLE:\n\nCopy to:\nCOMMAVSEASYSCOM\nCNO (N4)\n\n(3) When the correspondence has more than one copy to addressee, list them on separate lines in alphabetical order. Include the code, if applicable, as indicated in examples 1 and 2 above.",
+  "plain_language_rule": "Show the copy to line on the original and all copies, if required. Start the heading \"Copy to:\" at the left margin on the second line below the last line of the signature block (including the title, authority line, or activity). When there is more than one copy to addressee, list them on separate lines in alphabetical order, including the applicable code (e.g., N4).",
   "category": "format",
-  "enforceable": "undetermined",
-  "severity": "advisory",
+  "enforceable": "partial",
+  "severity": "warning",
   "target_fields": [
-    "copy_to",
-    "copy_to_list",
-    "copy_to_layout"
+    "copy_to_placement",
+    "copy_to_heading",
+    "copy_to_addressee_ordering"
   ],
-  "validator_type": null,
-  "renderer_impact": "Copy To block rendering after signature",
+  "validator_type": "copy_to_line_placement_and_format_check",
+  "renderer_impact": "Place \"Copy to:\" heading at left margin, second line below the last line of the signature block; list addressees alphabetically on separate lines with applicable codes",
   "status": "candidate",
-  "notes": "Informational addressees; distinct from Distribution"
+  "notes": "The manual only states \"if required\" for when a Copy to line should be used — it does not define the conditions that make it required. The section does not distinguish \"Copy to\" from any \"Distribution\" concept, does not mention blind copies or courtesy copies, and does not address whether references or enclosures accompany copies to Copy to addressees. The notations \"w/ref\" and \"w/encl\" are not discussed in this section. Both examples are identical (COMMAVSEASYSCOM and CNO (N4)), providing only one pattern.",
+  "cross_references": [],
+  "figure_references": []
 }
