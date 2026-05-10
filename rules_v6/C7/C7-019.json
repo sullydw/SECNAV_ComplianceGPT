@@ -1,17 +1,22 @@
 {
   "rule_id": "C7-019",
   "manual_section": "7-2.18",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "Correspondence package assembly requirements",
+  "source_text": "18. Correspondence Package Assembly. The basic letter, the enclosures, and the background material are assembled according to activity practices before they are presented for approval and signature. Figure 7-9 illustrates an assembled correspondence package that is ready for signature and mailing.",
+  "plain_language_rule": "Assemble the basic letter, enclosures, and background material according to activity practices before presenting the package for approval and signature.",
   "category": "procedural",
-  "enforceable": "undetermined",
+  "enforceable": false,
   "severity": "advisory",
   "target_fields": [
-    "package_assembly",
-    "document_order"
+    "package_assembly"
   ],
   "validator_type": null,
-  "renderer_impact": "Document assembly and ordering for multi-part packages",
+  "renderer_impact": null,
   "status": "candidate",
-  "notes": "Covers assembly order for correspondence packages"
+  "notes": "This is a physical-paper assembly instruction for staff preparing correspondence packages for signature and mailing. The manual identifies three component categories (basic letter, enclosures, background material) but explicitly defers assembly order to \"activity practices.\" No ordering, placement, or sequencing instructions are provided — the order may vary by command. Copies, route sheets, and references are not mentioned. The related Figure 7-9 is referenced for illustration. Does not apply to digital/electronic output; no renderer behavior is implied. Contrast with C7-020 which covers tabbing specifics.",
+  "cross_references": [
+    "C7-020"
+  ],
+  "figure_references": [
+    "Figure 7-9"
+  ]
 }
