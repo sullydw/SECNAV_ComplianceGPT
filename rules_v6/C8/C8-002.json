@@ -1,0 +1,16 @@
+{
+  "rule_id": "C8-002",
+  "manual_section": "8-2a",
+  "chapter": 8,
+  "title": "Listing Addressees — 'To:' Line Only",
+  "status": "candidate",
+  "enforceable": "undetermined",
+  "validator_type": "undetermined",
+  "severity": "warning",
+  "category": "address_block",
+  "target_fields": ["to_line"],
+  "plain_language_rule": "When a multiple-address letter has 4 or fewer addressees, list all addressees in the 'To:' line. Type 'To:' in uppercase followed by a colon, then list each addressee on a separate line. Address addressees as described in Chapter 7.",
+  "source_text": "TBD - exact manual text required before activation",
+  "renderer_impact": "For ≤4 addressees, all addressees appear in the 'To:' line. Each addressee on a separate line. No 'Distribution:' line is used.",
+  "notes": "The ≤4 addressee threshold determines whether addressees appear in the 'To:' line or the 'Distribution:' line. Addressee formatting follows Chapter 7 standards."
+}

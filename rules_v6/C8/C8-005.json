@@ -1,0 +1,16 @@
+{
+  "rule_id": "C8-005",
+  "manual_section": "8-3",
+  "chapter": 8,
+  "title": "Preparing and Signing Copies",
+  "status": "candidate",
+  "enforceable": "undetermined",
+  "validator_type": null,
+  "severity": "advisory",
+  "category": "assembly",
+  "target_fields": ["letterhead", "signature_block", "copies"],
+  "plain_language_rule": "Use letterhead paper (or plain bond paper if letterhead is not available) for the original only. All copies are photocopies of the signed original. If the originator cannot be reached and copies must be printed separately, include the notation 'ORIGINAL SIGNED BY [name]' on each copy. Copies printed separately must bear the activity's letterhead.",
+  "source_text": "TBD - exact manual text required before activation",
+  "renderer_impact": "Determines which pages use letterhead: original only uses letterhead paper; copies are photocopies. If separately printed, copies must include letterhead and 'ORIGINAL SIGNED BY' notation.",
+  "notes": "This section covers physical paper handling (letterhead paper, photocopying, signing). The 'ORIGINAL SIGNED BY' notation is a text-content requirement for separately printed copies. Most of this section is procedural and not amenable to automated layout validation."
+}

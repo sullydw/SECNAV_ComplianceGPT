@@ -1,0 +1,16 @@
+{
+  "rule_id": "C8-001",
+  "manual_section": "8-1",
+  "chapter": 8,
+  "title": "General — Multiple-Address Letter Use",
+  "status": "candidate",
+  "enforceable": "undetermined",
+  "validator_type": null,
+  "severity": "advisory",
+  "category": "address_block",
+  "target_fields": ["to_line", "via_line", "subject_line"],
+  "plain_language_rule": "Use a multiple-address letter when sending identical correspondence with the same subject to two or more addressees or activities within the Department of the Navy. Do not use multiple-address letters when enclosures differ per addressee, addressees are at different command levels, or letters require individual signatures.",
+  "source_text": "TBD - exact manual text required before activation",
+  "renderer_impact": "Determines whether the correspondence uses a single-address or multiple-address format, affecting To line, Distribution line, and copy assembly.",
+  "notes": "This section explains when to use (or not use) multiple-address letters. It is a procedural decision rule, not a layout validation rule. Some sub-conditions (different enclosures per addressee, addressees at different command levels) are judgment calls not amenable to automated enforcement."
+}

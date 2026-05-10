@@ -1,0 +1,16 @@
+{
+  "rule_id": "C8-006",
+  "manual_section": "8-4",
+  "chapter": 8,
+  "title": "Assembly of Multiple-Address Letters",
+  "status": "candidate",
+  "enforceable": "undetermined",
+  "validator_type": null,
+  "severity": "advisory",
+  "category": "assembly",
+  "target_fields": ["assembly_order", "mailing"],
+  "plain_language_rule": "Assemble the multiple-address letter in the following order: the original (signature copy or file copy), then the individual address copies. Mail the original to the first addressee on the 'To:' list. For distribution-only letters, assemble the original, file copy, and all distribution copies, then mail the original to the first addressee on the distribution list.",
+  "source_text": "TBD - exact manual text required before activation",
+  "renderer_impact": null,
+  "notes": "This section covers physical assembly and mailing order procedures. These are mailroom-level processes not amenable to automated validation."
+}

@@ -1,0 +1,16 @@
+{
+  "rule_id": "C8-004",
+  "manual_section": "8-2c",
+  "chapter": 8,
+  "title": "Listing Addressees — Both 'To:' and 'Distribution:' Line",
+  "status": "candidate",
+  "enforceable": "undetermined",
+  "validator_type": "undetermined",
+  "severity": "warning",
+  "category": "address_block",
+  "target_fields": ["to_line", "distribution_line"],
+  "plain_language_rule": "When correspondence is addressed to a group, board, or committee by title, use the 'To:' line for the group title and the 'Distribution:' line for individual members. Type 'To:' in uppercase followed by a colon and the group title. Type 'Distribution:' on the second line below the last line of the text, followed by member names.",
+  "source_text": "TBD - exact manual text required before activation",
+  "renderer_impact": "Combines 'To:' and 'Distribution:' lines. 'To:' holds the group/board/committee title. 'Distribution:' is placed on the second line below the last line of text with individual member names below.",
+  "notes": "This format applies when correspondence is sent to a group, board, or committee addressed by title. The 'To:' line carries the group title; 'Distribution:' lists individual members."
+}
