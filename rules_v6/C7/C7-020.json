@@ -1,17 +1,22 @@
 {
   "rule_id": "C7-020",
   "manual_section": "7-2.19",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "Tabbing requirements for correspondence packages",
+  "source_text": "19. Tabbing a Correspondence Package. Tab the signature page (if not the first page), enclosures, and background material. Label the tabs as appropriate. Figure 7-10 illustrates an assembled correspondence package with tabs. Take care so tabs can be removed without defacing the document.",
+  "plain_language_rule": "Tab the signature page (unless it is the first page), all enclosures, and all background material in a correspondence package. Label each tab as appropriate. Ensure tabs can be removed without defacing any document.",
   "category": "procedural",
-  "enforceable": "undetermined",
+  "enforceable": false,
   "severity": "advisory",
   "target_fields": [
-    "tabbing",
-    "package_organization"
+    "tabbing"
   ],
   "validator_type": null,
-  "renderer_impact": "Tab placement and organization for multi-part packages",
+  "renderer_impact": null,
   "status": "candidate",
-  "notes": "Covers tabbing standards for correspondence packages"
+  "notes": "This is a physical paper-handling instruction for staff assembling correspondence packages. Items requiring tabs: signature page (when it is not page 1), enclosures, and background material. Tab placement is not specified — deferred to Figure 7-10. Tab labeling uses \"as appropriate\" with no format, numbering scheme, or content standard provided. The \"defacing\" instruction is a preservation concern: use removable tabs that leave no adhesive residue or surface damage. No digital/electronic equivalent is implied.",
+  "cross_references": [
+    "C7-019"
+  ],
+  "figure_references": [
+    "Figure 7-10"
+  ]
 }
