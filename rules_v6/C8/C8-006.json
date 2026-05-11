@@ -5,12 +5,12 @@
   "title": "Assembly of Multiple-Address Letters",
   "status": "candidate",
   "enforceable": "undetermined",
-  "validator_type": null,
+  "validator_type": "undetermined",
   "severity": "advisory",
   "category": "assembly",
   "target_fields": ["assembly_order", "mailing"],
-  "plain_language_rule": "Assemble the multiple-address letter in the following order: the original (signature copy or file copy), then the individual address copies. Mail the original to the first addressee on the 'To:' list. For distribution-only letters, assemble the original, file copy, and all distribution copies, then mail the original to the first addressee on the distribution list.",
-  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Figure 8-4 shows a suggested way to assemble a multiple-address letter for signature and mailing. The manual does not prescribe a specific text-based assembly order in section 8-4 — the assembly procedure is illustrated in the figure.",
+  "source_text": "8-4 Assembly of Multiple-Address Letters. Figure 8-4 shows a suggested way to assemble a multiple-address letter for signature and mailing.",
   "renderer_impact": null,
-  "notes": "This section covers physical assembly and mailing order procedures. These are mailroom-level processes not amenable to automated validation."
+  "notes": "This section refers entirely to Figure 8-4 for guidance. The manual uses the word 'suggested,' indicating advisory tone. No prescriptive assembly order is stated in the text. This is a mailroom-level procedure not amenable to automated validation."
 }
