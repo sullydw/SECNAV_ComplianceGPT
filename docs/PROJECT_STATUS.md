@@ -1,7 +1,8 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-05-04  
-**GitHub:** https://github.com/sullydw/SECNAV_ComplianceGPT  
+**Last Updated:** 2026-05-11  
+**GitHub (Active):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT  
+**GitHub (Legacy):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **Renderer:** v6 PDF (ReportLab)
 
 ---

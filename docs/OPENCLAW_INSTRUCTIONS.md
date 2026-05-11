@@ -1,6 +1,9 @@
 # OpenClaw Execution Instructions
 SECNAV_ComplianceGPT
 
+**Active Repository:** https://github.com/drryl-worqx/SECNAV-ComplianceGPT  
+**Legacy Repository:** https://github.com/sullydw/SECNAV_ComplianceGPT (read-only reference)  
+
 **See also:** `docs/OPENCLAW_AGENT_TEAM.md` for coordinator/specialist agent workflow
 
 ---
