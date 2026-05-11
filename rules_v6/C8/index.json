@@ -5,7 +5,7 @@
     { "rule_id": "C8-001", "section": "8-1", "title": "General — When to Use a Multiple-Address Letter", "source_text_state": "resolved" },
     { "rule_id": "C8-002", "section": "8-2a", "title": "Listing Addressees — 'To:' Line Only", "source_text_state": "resolved" },
     { "rule_id": "C8-003", "section": "8-2b", "title": "Listing Addressees — 'Distribution:' Line Only", "source_text_state": "resolved" },
-    { "rule_id": "C8-004", "section": "8-2c", "title": "Listing Addressees — Both 'To:' and 'Distribution:' Line" },
+    { "rule_id": "C8-004", "section": "8-2c", "title": "Listing Addressees — Both 'To:' and 'Distribution:' Line", "source_text_state": "resolved" },
     { "rule_id": "C8-005", "section": "8-3", "title": "Preparing and Signing Copies" },
     { "rule_id": "C8-006", "section": "8-4", "title": "Assembly of Multiple-Address Letters" }
   ]
