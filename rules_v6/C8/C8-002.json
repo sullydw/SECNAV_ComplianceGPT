@@ -5,12 +5,14 @@
   "title": "Listing Addressees — 'To:' Line Only",
   "status": "candidate",
   "enforceable": "undetermined",
-  "validator_type": "undetermined",
-  "severity": "warning",
-  "category": "address_block",
-  "target_fields": ["to_line"],
-  "plain_language_rule": "When a multiple-address letter has 4 or fewer addressees, list all addressees in the 'To:' line. Type 'To:' in uppercase followed by a colon, then list each addressee on a separate line. Address addressees as described in Chapter 7.",
-  "source_text": "TBD - exact manual text required before activation",
-  "renderer_impact": "For ≤4 addressees, all addressees appear in the 'To:' line. Each addressee on a separate line. No 'Distribution:' line is used.",
-  "notes": "The ≤4 addressee threshold determines whether addressees appear in the 'To:' line or the 'Distribution:' line. Addressee formatting follows Chapter 7 standards."
+  "validator_type": null,
+  "severity": "advisory",
+  "category": "format_selection",
+  "target_fields": [
+    "format_type"
+  ],
+  "plain_language_rule": "A multiple-address letter may list addressees using one of three methods based on the number of addressees and the nature of the correspondence. Use the 'To:' Line Only method when: (1) all addressees are entitled to a 'To:' line — no addressee requires a 'Via:' line; (2) there are only a few addressees (4 or fewer is the stated rule-of-thumb); and (3) the correspondence communicates information directly to the addressees (i.e., command-type correspondence). Under this method, all addressees are listed on the 'To:' line, a single letter goes to each addressee, and a 'Distribution:' line is not used. This format is one of three mutually exclusive methods — the alternative methods are 'Distribution:' Line Only (8-2b) and both 'To:' and 'Distribution:' Lines (8-2c).",
+  "source_text": "8-2. Listing Addressees.\n\nOne of three methods will be used to list addressees in a multiple-address letter. The method selected should be based on the number of addressees involved and the nature of the correspondence.\n\n8-2a. \"To:\" Line Only.\n\nWhen (1) all addressees are entitled to a \"To:\" line (i.e., no \"Via:\" addressees); (2) there are only a few addressees (4 or less is a good rule-of-thumb); and (3) the information is being communicated directly to the addressees (i.e., command-type correspondence); use the \"To:\" Line Only method.\n\nUnder this method, all addressees are listed on the \"To:\" line, with a single letter dispatched to each addressee. A \"Distribution:\" line is not used.",
+  "renderer_impact": "When this format type is selected: (1) all addressees appear on the 'To:' line; (2) no 'Distribution:' line is rendered; (3) a separate copy of the letter is generated per addressee. The renderer must count addressees and ensure the count does not exceed the rule-of-thumb threshold. If conditions change (addressee count grows, Via addressees appear, or indirect communication is needed), the format must switch to an alternative method from 8-2b or 8-2c.",
+  "notes": "Source text resolved 2026-05-11. The ≤4 threshold is described as a 'good rule-of-thumb,' not a hard limit — ambiguity preserved. 'Command-type correspondence' is not defined in this section; the renderer cannot enforce it algorithmically. Condition (1) depends on whether any addressee requires a via chain, which requires knowledge of the organizational hierarchy. This is a format-selection rule, not a layout-validation rule; no address-block fields are validated here. Related rules: C8-003 (Distribution: Line Only), C8-004 (both To: and Distribution:), C8-001 (general scope)."
 }
