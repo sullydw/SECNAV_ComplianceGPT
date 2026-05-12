@@ -1,22 +1,17 @@
 {
   "rule_id": "C7-014",
   "manual_section": "7-2.13",
+  "chapter": 7,
+  "title": "Paragraphs",
+  "status": "candidate",
   "source_text": "13. Paragraphs. Start all continuation lines at the left margin. All paragraphs are single spaced and each paragraph or subparagraph begins on the second line below the previous paragraph or subparagraph. When using a subparagraph, the first line is always indented the appropriate number of spaces depending on the level of subparagraphing. All other lines of a subparagraph continue at the left margin. Do not indent the continuation lines of a subparagraph. If there is a paragraph 1a, there must be a paragraph 1b; if there is a paragraph 1a(1), there must be a paragraph 1a(2), etc. It is acceptable for a paragraph to break across pages, but do not begin a paragraph at the bottom of a page unless there is enough space for at least two lines of text on that page and at least two lines of text are carried over to the next page. A signature page must have at least two lines of text preceding the signature.\n\na. Identifying Paragraphs or Subparagraphs. Identify all paragraphs or subparagraphs with a number or letter. See figure 7-8 for an example of paragraph and subparagraph structure and identification.\n\nb. Limit Subparagraphs. Documents rarely require subdividing to the extent shown in figure 7-8. Do not subdivide past the second level until you have exhausted all re-paragraphing alternatives first. Never subparagraph beyond the levels shown in figure 7-8.\n\nc. Citing Paragraphs. When citing a paragraph or subparagraph, write the numbers and letters without periods or spaces.\nExample: 2b(4)(a)\n\nd. Paragraph Headings. Use paragraph headings in long correspondence with widely varying topics. Be brief but informative. Underline any heading and capitalize its key words using the Title Case format. Be consistent across main paragraphs and subparagraphs. If paragraph 1 has a heading, then paragraph 2 would need a heading; if paragraph 1a has a heading, then paragraph 1b would need a heading.",
-  "plain_language_rule": "Continuation lines at left margin; single spacing within paragraphs; one blank line between paragraphs/subparagraphs; subparagraph first line indented per level, continuation lines at left margin only; paired subparagraphs required; minimum two lines at page bottom and two carried over; signature page requires at least two text lines before signature; subparagraph levels limited per figure 7-8; citations without periods or spaces (e.g., 2b(4)(a)); paragraph headings underlined Title Case and consistent at same level",
+  "plain_language_rule": "Continuation lines at left margin; single spacing within paragraphs; one blank line between paragraphs/subparagraphs; subparagraph first line indented per level, continuation lines at left margin only; paired subparagraphs required; minimum two lines at page bottom and two carried over; signature page requires at least two text lines before signature; subparagraph levels limited per Figure 7-8 (deepest allowed level: 1a(1)(a)); citations without periods or spaces (e.g., 2b(4)(a)); paragraph headings underlined Title Case and consistent at same level. When using two-digit paragraph numbers, continue indenting each new subdivision; paragraphs will not line up the same way as single-digit paragraph numbers.",
   "category": "format",
   "enforceable": "partial",
   "severity": "warning",
-  "target_fields": [
-    "paragraph_spacing",
-    "paragraph_indentation",
-    "subparagraph_pairing",
-    "page_breaks",
-    "continuation_lines",
-    "paragraph_headings"
-  ],
+  "target_fields": ["paragraph_spacing", "paragraph_indentation", "subparagraph_pairing", "page_breaks", "continuation_lines", "paragraph_headings", "subparagraph_depth", "two_digit_marker_indentation"],
   "validator_type": "paragraph_structure_and_pagination_check",
-  "renderer_impact": "Inter-paragraph blank line insertion, subparagraph first-line indentation (level-dependent), continuation line left-margin enforcement, paired subparagraph existence check, orphan/widow control (2-line minimum), signature page text-line minimum, heading consistency check across sibling paragraphs",
-  "status": "candidate",
-  "notes": "Exact indentation amounts and maximum subdivision levels require figure 7-8. Paragraph heading rules (underlining, Title Case, sibling consistency) are part of this section, not a separate rule.",
-  "figure_references": ["figure 7-8"]
+  "renderer_impact": "Support subparagraph levels only through the maximum shown in Figure 7-8 unless later manual authority allows otherwise. Support different indentation behavior for two-digit paragraph markers (each new subdivision indents, unlike single-digit markers). Inter-paragraph blank line insertion, subparagraph first-line indentation (level-dependent), continuation line left-margin enforcement, paired subparagraph existence check, orphan/widow control (2-line minimum), signature page text-line minimum, heading consistency check across sibling paragraphs.",
+  "notes": "Exact indentation amounts and maximum subdivision levels require Figure 7-8. Paragraph heading rules (underlining, Title Case, sibling consistency) are part of this section, not a separate rule. Figure 7-8 is rule-bearing, not merely illustrative. Body text says never subparagraph beyond the levels shown in Figure 7-8. Figure 7-8 provides the visual maximum-depth example and two-digit indentation note.",
+  "figure_references": ["Figure 7-8"]
 }
