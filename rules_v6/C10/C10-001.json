@@ -12,5 +12,5 @@
   "target_fields": ["document_type", "memorandum_scope", "audience"],
   "validator_type": "memorandum_scope_check",
   "renderer_impact": "This rule selects memorandum handling for less-formal correspondence within an activity/command. It does not prescribe a specific memorandum layout; layout rules are defined in subsequent Chapter 10 sections.",
-  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 10-1 General. Key points: (1) memorandums are less formal than letters, (2) used within an activity/command, (3) subordinates may correspond directly with each other, (4)适用于 routine official business or informal communication. Enforceability is partial because determining organizational scope (same activity/command) requires external context."
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 10-1 General. Key points: (1) memorandums are less formal than letters, (2) used within an activity/command, (3) subordinates may correspond directly with each other, (4) applies to routine official business or informal communication. Enforceability is partial because determining organizational scope (same activity/command) requires external context."
 }
