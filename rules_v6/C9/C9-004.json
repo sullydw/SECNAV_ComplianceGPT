@@ -4,13 +4,13 @@
   "chapter": 9,
   "title": "Adding References in Endorsements",
   "status": "candidate",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "References may be added to endorsements when citing additional documents or communications relevant to the endorsement content.",
-  "category": "format",
-  "enforceable": "undetermined",
-  "severity": "warning",
-  "target_fields": ["reference_line"],
-  "validator_type": "undetermined",
-  "renderer_impact": null,
-  "notes": "Covers reference line additions in endorsement context. Exact source text extraction pending."
+  "source_text": "3. Adding References. Do not repeat a reference in the reference line of your endorsement that has already been identified in the reference line of the basic letter or a previous endorsement. Identify only the references that you add. Assign a letter to all references you add by continuing the sequence of letters from the basic letter and previous endorsements. For example, if the basic letter and previous endorsements had references identified up to letter \"f,\" the first reference of your endorsement would be letter \"g.\"",
+  "plain_language_rule": "Do not repeat references that have already been identified in the basic letter or previous endorsements. Identify only the references you add. Assign letters to new references by continuing the sequence from the basic letter and previous endorsements (e.g., if prior references end at \"f,\" your first new reference is \"g\").",
+  "category": "cross_field",
+  "enforceable": true,
+  "severity": "error",
+  "target_fields": ["reference_line", "endorsement_references", "reference_sequence"],
+  "validator_type": "endorsement_reference_sequence_check",
+  "renderer_impact": "Endorsement reference line must not repeat references from the basic letter or prior endorsements. New references continue the letter sequence from the basic letter and previous endorsements.",
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 9-2.3 Adding References. Key points: (1) no repetition of prior references, (2) identify only new references, (3) continue letter sequence from basic letter and previous endorsements."
 }
