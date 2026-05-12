@@ -4,13 +4,13 @@
   "chapter": 9,
   "title": "Endorsement Line",
   "status": "candidate",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "The endorsement line identifies the endorsement number and must be formatted according to manual specifications. Placement and formatting rules apply.",
+  "source_text": "9-2 Format\n\n1. Endorsement Line\n\na. Start the endorsement line at the left margin on the second line below the date line. If the correspondence is classified, start the endorsement line on the second line below the classification line. When preparing a same-page endorsement, as long as the entire page will be photocopied, you may omit the SSIC, subject and the basic letter's identification symbols.\n\nb. Number each endorsement in the sequence in which it is added to the basic letter. Indicate the numbers of the endorsement by using ordinal numbers such as FIRST, SECOND, THIRD, etc. Following the number, type \"ENDORSEMENT on\" and identify the basic letter using the same style as a reference line. When the heading exceeds one line, start the succeeding line with the word \"on\".\n\nExample:\nFIRST ENDORSEMENT on USS SCRANTON ltr 3000 Ser SSN 756/001 of 5 May 96",
+  "plain_language_rule": "Start the endorsement line at the left margin on the second line below the date line (or classification line if classified). Number each endorsement sequentially using ordinal numbers (FIRST, SECOND, THIRD, etc.). After the number, type \"ENDORSEMENT on\" and identify the basic letter using reference-line style. When the heading exceeds one line, start the succeeding line with the word \"on\". For same-page endorsements, you may omit the SSIC, subject, and basic letter's identification symbols if the entire page will be photocopied.",
   "category": "format",
-  "enforceable": "undetermined",
-  "severity": "warning",
-  "target_fields": ["endorsement_line"],
-  "validator_type": "undetermined",
-  "renderer_impact": null,
-  "notes": "Covers endorsement line format and placement. Exact source text extraction pending."
+  "enforceable": true,
+  "severity": "error",
+  "target_fields": ["endorsement_line", "endorsement_sequence", "endorsement_heading", "basic_letter_identification"],
+  "validator_type": "endorsement_line_format_check",
+  "renderer_impact": "Endorsement line placement: left margin, second line below date line (or classification line if classified). Ordinal endorsement numbering (FIRST, SECOND, THIRD, etc.) followed by \"ENDORSEMENT on\". Basic letter identification uses reference-line style. Continuation lines start with the word \"on\" when heading exceeds one line.",
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 9-2.1 Endorsement Line. Key points: (1) placement is second line below date/classification line, (2) ordinal numbering sequence, (3) \"ENDORSEMENT on\" heading format, (4) reference-style basic letter identification, (5) continuation starts with \"on\", (6) same-page endorsements may omit certain headers if full page photocopy is assured."
 }
