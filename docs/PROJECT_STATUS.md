@@ -1,13 +1,13 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-05-11  
+**Last Updated:** 2026-05-12  
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT (DO NOT USE)  
 **Renderer:** v6 PDF (ReportLab)
 
 ---
 
-## Milestone: Chapter 7 & 8 Candidate Rules Complete
+## Milestone: Chapters 7, 8, & 9 Candidate Rules Complete
 
 ### Chapter 7 — Complete and Audited
 - ✅ All 20 candidate rules (C7-001 through C7-020) created and audited
@@ -24,6 +24,15 @@
 - ✅ All C8 rules in `rules_v6/C8/` directory with standardized schema
 - ✅ Index file (`rules_v6/C8/index.json`) tracks all rules with source_text_state
 
+### Chapter 9 — Complete and Audited
+- ✅ All 8 candidate rules (C9-001 through C9-008) created and populated
+- ✅ All source_text resolved from manual (9-1, 9-2.1 through 9-2.7)
+- ✅ C9-001 scope leakage cleaned (removed header-omission language from 9-1)
+- ✅ C9 compatibility file (`C9-candidate-rules.json`) created as lightweight index pointer
+- ✅ All C9 rules in `rules_v6/C9/` directory with standardized schema
+- ✅ Index file (`rules_v6/C9/index.json`) tracks all rules with source_text_state: resolved
+- ✅ Final audit passed: all 8 rules resolved, compatibility pointer updated
+
 ### Repository Status
 - **Active repo:** https://github.com/sullydw/SECNAV_ComplianceGPT
 - **Invalid repo:** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE
@@ -31,7 +40,7 @@
 - **Working tree:** Clean (all commits pushed)
 
 ### Next Recommended Phases
-1. **Chapter 9 extraction** — Continue candidate rule catalog through next chapter
+1. **Chapter 10 extraction** (Memorandums) — Continue candidate rule catalog
 2. **Validator implementation planning** — Design validator specs for automatable rules
 3. **Renderer integration** — Connect rule catalog to PDF v6 renderer for automated compliance checking
 
