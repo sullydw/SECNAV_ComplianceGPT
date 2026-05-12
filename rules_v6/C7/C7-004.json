@@ -1,11 +1,17 @@
 {
   "rule_id": "C7-004",
   "manual_section": "7-2.3",
-  "chapter": 7,
-  "title": "Sender's Symbols",
   "status": "candidate",
   "enforceable": "partial",
-  "validator_type": "layout_check",
+  "severity": "warning",
+  "category": "format",
+  "target_fields": [
+    "ssic_placement",
+    "sender_symbol_alignment",
+    "letterhead_preprinted_status",
+    "sender_symbol_right_margin_distance"
+  ],
+  "validator_type": "sender_symbol_placement_check",
   "plain_language_rule": "If 'in reply refer to' is pre-printed on your activity's letterhead, type the SSIC on the next line. If not pre-printed, type the SSIC on the second line below the letterhead, starting 2 inches or more from the right edge of the paper. The longest line of the sender's symbol should end close to the right margin.",
   "source_text": "If 'in reply refer to' is printed on your activity's letterhead paper, type the Standard Subject Identification Code (SSIC) on the next line. If 'in reply refer to' is not printed on your activity's letterhead paper, type the SSIC on the second line below the letterhead, starting 2 inches or more from the right edge of the paper. The longest line of the sender's symbol should end close to the right margin.",
   "renderer_impact": "Sender's symbol placement depends on whether 'in reply refer to' is pre-printed on letterhead. SSIC goes on the next line if pre-printed, or on the second line below the letterhead starting 2 inches or more from the right edge if not pre-printed. The longest line of the sender's symbol should end close to the right margin.",
