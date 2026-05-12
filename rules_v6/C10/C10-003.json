@@ -4,13 +4,13 @@
   "chapter": 10,
   "title": "Memorandum for the Record",
   "status": "candidate",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "Memorandum for the Record format and usage rules for documenting information for official records.",
-  "category": "format",
-  "enforceable": "undetermined",
+  "source_text": "1. Memorandum for the Record. Use a Memorandum for the Record (MFR) as an internal document to record supporting information in the record that is not recorded elsewhere. Examples include such things as documenting the results of a meeting, an important telephone conversation, or an oral agreement. Type or handwrite these most informal memorandums. See figure 10-1. A full signature line and identification symbols are not required; however, it should be dated, signed, and show the organizational position of the signer. If it is only two or three lines, include it on the file copy of your document. Leave out the subject line if you add your MFR to the file copy.",
+  "plain_language_rule": "Use a Memorandum for the Record (MFR) as an internal document to record supporting information not recorded elsewhere (e.g., meeting results, telephone conversations, oral agreements). MFRs may be typed or handwritten (most informal). A full signature line and identification symbols are not required; however, the MFR should be dated, signed, and show the signer's organizational position. For two or three-line MFRs, include on the file copy. Omit the subject line when adding an MFR to the file copy.",
+  "category": "memorandum_format",
+  "enforceable": "partial",
   "severity": "warning",
-  "target_fields": ["memorandum_for_record"],
-  "validator_type": "undetermined",
-  "renderer_impact": null,
-  "notes": "Memorandum for the Record format specification. Exact source text extraction pending."
+  "target_fields": ["memorandum_type", "mfr_date", "mfr_signature", "signer_position", "subject_line"],
+  "validator_type": "memorandum_for_record_format_check",
+  "renderer_impact": "MFR may be typed or handwritten. Does not require full signature line or identification symbols. Should be dated, signed, and show signer organizational position. Subject line may be omitted when added to file copy.",
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 10-2.1 Memorandum for the Record. Key points: (1) MFR is for recording supporting information not recorded elsewhere, (2) examples: meeting results, telephone conversations, oral agreements, (3) typed or handwritten, (4) no full signature line or identification symbols required, (5) should be dated, signed, show organizational position, (6) for two or three lines, include on file copy, (7) omit subject line for file copy additions. Enforceability is partial because internal-document determination and file-copy context require external judgment."
 }
