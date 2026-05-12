@@ -11,6 +11,6 @@
   "severity": "warning",
   "target_fields": ["endorsement_line", "endorsement_placement"],
   "validator_type": "undetermined",
-  "renderer_impact": "Determines whether an endorsement renders on the same page as the basic letter/previous endorsement or on a new page based on available space. Same-page endorsements may omit SSIC, subject, and basic letter identification symbols if the entire page will be photocopied.",
-  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 9-1 General. Key points: (1) endorsements forward comments/recommendations/information, (2) not for routine replies, (3) Via addressees may modify routing, (4) same-page vs new-page decision based on available space, (5) same-page endorsements may omit certain headers if full page photocopy is assured."
+  "renderer_impact": "Determines whether an endorsement renders on the same page as the basic letter/previous endorsement or on a new page based on available space.",
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 9-1 General. Key points: (1) endorsements forward comments/recommendations/information, (2) not for routine replies, (3) Via addressees may modify routing, (4) same-page vs new-page decision based on available space."
 }
