@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-009",
+  "manual_section": "10-2.6b",
+  "chapter": 10,
+  "title": "Memorandum of Agreement or Understanding — Format",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Memorandum of Agreement or Understanding format requirements and layout specifications.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["moa_format"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "MOA/Understanding format specification. Exact source text extraction pending."
+}

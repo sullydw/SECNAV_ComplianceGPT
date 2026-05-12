@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-010",
+  "manual_section": "10-2.6c",
+  "chapter": 10,
+  "title": "Memorandum of Agreement or Understanding — Letterhead",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Memorandum of Agreement or Understanding letterhead requirements and specifications.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["moa_letterhead"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "MOA/Understanding letterhead specification. Exact source text extraction pending."
+}

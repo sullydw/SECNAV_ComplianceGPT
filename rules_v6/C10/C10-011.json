@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-011",
+  "manual_section": "10-2.6d",
+  "chapter": 10,
+  "title": "Memorandum of Agreement or Understanding — Signatures",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Memorandum of Agreement or Understanding signature requirements and signing procedures.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["moa_signatures"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "MOA/Understanding signature specification. Exact source text extraction pending."
+}

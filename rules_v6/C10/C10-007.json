@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-007",
+  "manual_section": "10-2.5",
+  "chapter": 10,
+  "title": "Decision Memorandum",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Decision Memorandum format and usage rules for presenting decisions requiring approval.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["decision_memorandum"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Decision Memorandum format specification. Exact source text extraction pending."
+}

@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-012",
+  "manual_section": "10-2.6e",
+  "chapter": 10,
+  "title": "Memorandum of Agreement or Understanding — Copies",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Memorandum of Agreement or Understanding copy distribution and retention requirements.",
+  "category": "procedure",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["moa_copies"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "MOA/Understanding copies specification. Exact source text extraction pending."
+}

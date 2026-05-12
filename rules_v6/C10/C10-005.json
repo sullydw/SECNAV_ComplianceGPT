@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-005",
+  "manual_section": "10-2.3",
+  "chapter": 10,
+  "title": "Plain-Paper Memorandum",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Plain-Paper Memorandum format and usage rules for correspondence on plain paper stock.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["plain_paper_memorandum"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Plain-Paper Memorandum format specification. Exact source text extraction pending."
+}

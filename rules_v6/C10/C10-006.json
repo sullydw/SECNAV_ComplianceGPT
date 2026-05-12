@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-006",
+  "manual_section": "10-2.4",
+  "chapter": 10,
+  "title": "Letterhead Memorandum",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Letterhead Memorandum format and usage rules for correspondence on letterhead stock.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["letterhead_memorandum"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Letterhead Memorandum format specification. Exact source text extraction pending."
+}

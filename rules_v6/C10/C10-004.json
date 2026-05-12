@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-004",
+  "manual_section": "10-2.2",
+  "chapter": 10,
+  "title": "From-To Memorandum",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "From-To Memorandum format and usage rules for internal correspondence between activities.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["from_to_memorandum"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "From-To Memorandum format specification. Exact source text extraction pending."
+}

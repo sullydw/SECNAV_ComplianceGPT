@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-002",
+  "manual_section": "10-2",
+  "chapter": 10,
+  "title": "Formats Overview",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Chapter 10 defines multiple memorandum formats for different purposes. This rule provides overview of available format types.",
+  "category": "memorandum_structure",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["memorandum_format_type"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Overview of memorandum format types. Exact source text extraction pending."
+}

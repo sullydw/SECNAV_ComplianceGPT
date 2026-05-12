@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-001",
+  "manual_section": "10-1",
+  "chapter": 10,
+  "title": "General — Memorandum Overview",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Memorandums are used for internal DON correspondence and have specific format requirements. This rule provides general overview of memorandum types and usage.",
+  "category": "memorandum_structure",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["memorandum_type", "memorandum_format"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Chapter 10 covers memorandum formatting and procedures. This rule provides general overview. Exact source text extraction pending."
+}
