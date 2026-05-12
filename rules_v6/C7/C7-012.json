@@ -1,25 +1,50 @@
 {
   "rule_id": "C7-012",
-  "manual_section": "7-2.11",
-  "source_text": "11. Enclosures. Refer to each enclosure in the text of the letter. If there is more than one enclosure, number them according to the order mentioned in the text. If only one enclosure is listed, do not precede it with a number, i.e., Encl: (1). If you send material separate from the letter, note it, i.e., Encl: (1) COMTHIRDFLT MSG DTG 112200Z JAN 90 (SEP COVER). An enclosure is a document, publication, or other item forwarded with a letter. To avoid confusion, do not list the same document as both a reference and an enclosure.\n\na. Placement. Type \"Encl:\" at the left margin on the second line below the last line of the signature block. Do not abbreviate \"Encl:.\"\n\nEXAMPLE:\nEncl: (1) JAG letter Ser 13/1234 of 4 May 1992\n     (2) NAVSEA ltr Ser 05/0056 of 6 Apr 1992\n     (3) NAVCOMPT ltr Ser 03/0001 of 27 Mar 1992\n\nb. List of Enclosures When No Text is Written. If enclosures make up the correspondence package (i.e., the basic correspondence does not include text), place the list of enclosures at the left margin on the second line below the \"From:\" line.\n\nEXAMPLE:\nFrom: Commanding Officer, Naval Station, Guam\nTo: Commander, Naval Base, Pearl Harbor\n\nEncl: (1) COMNAVMARIANAS INST 5040.1\n     (2) CINCPACFLTINST 5040.2\n     (3) NAVSTA Guam ltr Ser 00/0001 of 1 Jan 1992",
-  "plain_language_rule": "Refer to each enclosure in the text of the letter. List enclosures after the signature block using \"Encl:\" at the left margin — never abbreviate \"Encl:\". Number multiple enclosures in the order they appear in the text; a single enclosure is listed without a preceding number. If material is sent separate from the letter, note it as separate cover (SEP COVER). Do not list the same document as both a reference and an enclosure. For correspondence without body text, place the enclosure list at the left margin on the second line below the \"From:\" line.",
+  "chapter": "C7",
+  "section": "7-2",
+  "subsection": "11",
+  "title": "Enclosure Line",
   "category": "format",
-  "enforceable": true,
-  "severity": "error",
-  "target_fields": [
-    "enclosure_line_placement",
-    "enclosure_numbering",
-    "enclosure_content",
-    "enclosure_body_text_reference",
-    "enclosure_no_text_placement",
-    "enclosure_reference_exclusion"
-  ],
-  "validator_type": "enclosure_line_format_and_placement_check",
-  "renderer_impact": "Place \"Encl:\" at left margin, second line below signature block; align subsequent enclosure items according to the manual examples; exact spacing requires visual verification before validator enforcement; for non-text letters, place second line below \"From:\" line; single enclosure has no number prefix",
+  "subcategory": "enclosure_line",
+  "priority": "1-high",
   "status": "candidate",
-  "notes": "A single enclosure is listed WITHOUT a preceding number — the parenthetical \"i.e., Encl: (1)\" in the manual illustrates what NOT to do. The \"SEP COVER\" notation is placed at the end of the enclosure description. No continuation/fold rules for multi-page enclosures are specified in this section. Examples show enclosure descriptions indented relative to \"Encl:\", but exact space count should not be treated as a hard validator rule without visual/manual verification. \"Do not abbreviate 'Encl:'\" is an explicit formatting rule. The mutual exclusion rule (no document may be both a reference and an enclosure) is absolute.",
-  "cross_references": [
-    "C7-011"
+  "source_ref": "SECNAV M-5216.5 CH-1, 7-2.11",
+  "source_text": "11. Enclosure Line\n\na. General. List enclosures in the enclosure line in the order they appear in the text. Identify an enclosure using the same format as you would when identifying a reference. See paragraph 10 above. When identifying a document, cite its subject or title exactly. Never list an item in both the enclosure line and reference line of the same letter.\n\nb. Format. Type \"Encl:\" at the left margin on the second line below the last line of the previous heading. Three spaces follow the colon. Use a number in parentheses before the description of every enclosure, even if you have only one. One space follows the closing parenthesis. If the entry is longer than one line, start the second line under the first word after the heading.\n\nc. Normal Distribution and When to Vary It. Normally, send one copy of the basic letter plus any enclosures to all addressees. Do not use the term \"w/encl\" to indicate that all addressees are being sent the enclosures. Avoid sending an enclosure if an addressee has it already or if its bulk or other factors make furnishing it impractical.\n\nd. Adding Copies of Enclosures for all Addressees. When sending more than one copy of an enclosure to all addressees (\"To,\" \"Via,\" and \"Copy to\"), note the quantity in parentheses after the enclosure's description.\n\ne. Variations Affecting Only Copy To Addressees. In certain circumstances, it may be necessary to vary the normal distribution of enclosures to \"Copy to\" addressees. It is up to the originator of the correspondence to make this determination. There are two basic methods of varying distribution; all \"Copy to\" addressees are affected or only one or a few of the \"Copy to\" addressees are affected.\n\n(1) In these examples, all \"Copy to\" addressees are affected in the same way, so notes appear beside the \"Copy to\" heading.\n\n(2) In this example, only some of the \"Copy to\" addressees are affected, so notes appear beside the affected addressees.\n\nf. Variations Affecting Only Via Addressees. When varying the normal distribution of enclosures to \"Via\" addressees, show the variation beside the affected addressee. One possible variation appears below. Others may be adapted from the examples in paragraph 11e above.\n\ng. Sending Enclosures Separately. When size, weight, or other factors prevent sending an enclosure with a letter, send it separately and type the term \"sep cover\" in parentheses after the enclosure's description.",
+  "plain_language_rule": "A single enclosure IS numbered. Use a number in parentheses before every enclosure, even if only one — e.g., Encl:   (1) Report. List enclosures in the order they appear in the text. Identify an enclosure using the same format as a reference. Cite document subject or title exactly. Never list the same item as both reference and enclosure. Type \"Encl:\" at the left margin on the second line below the last line of the previous heading. Three spaces follow the colon. One space follows the closing parenthesis. Continuation lines start under the first word after the heading. Normal distribution sends one copy of the basic letter plus enclosures to all addressees. Do not use \"w/encl\" when all addressees receive enclosures. Use quantity notation when sending more than one copy of an enclosure to all addressees. Use Copy to/Via annotations when enclosure distribution varies. Use \"(sep cover)\" when sending an enclosure separately.",
+  "renderer": "The enclosure line must be rendered at the left margin, on the second line below the last line of the previous heading. Enclosure items are numbered sequentially starting from (1), even when only one enclosure exists. Each number appears in parentheses, followed by one space, then the enclosure description. Continuation lines begin under the first word after the \"Encl:\" heading (i.e., under the first enclosure description word). Three spaces follow the colon after \"Encl:\". Distribution variations (w/o encls, w/encl, sep cover) are annotated per the manual examples at paragraph 7-2.11e, 7-2.11f, and 7-2.11g.",
+  "examples": [
+    {
+      "description": "Single enclosure (numbered)",
+      "input": null,
+      "expected_output": "Encl:   (1) Quarterly Budget Report",
+      "notes": "Even a single enclosure receives the number (1)."
+    },
+    {
+      "description": "Multiple enclosures",
+      "input": null,
+      "expected_output": "Encl:   (1) List of Reserve Officers Selected for Promotion to Colonel\n           (2) CMC ltr 5216 Ser 00/451 of 5 Sep 09",
+      "notes": "Continuation line (2) starts under the first word after \"Encl:\" heading."
+    },
+    {
+      "description": "Sent separately",
+      "input": null,
+      "expected_output": "Encl:   (1) SECNAVINST 5211.5E (sep cover)",
+      "notes": "Use \"(sep cover)\" when the enclosure is not physically included with the letter."
+    }
   ],
-  "figure_references": []
+  "notes": "This rule consolidates the full enclosure line specification from section 7-2.11, subsections a through g. A single enclosure always receives the number (1). Distribution annotations (w/o encls, w/encl, sep cover) must follow the manual's Copy to and Via patterns exactly. Renderer-specific layout details (exact spacing, continuation line alignment) are included for automated processing.",
+  "related_rules": ["C7-006", "C7-011"],
+  "validator": {
+    "validator_type": null,
+    "validation_logic": null
+  },
+  "cross_references": {
+    "manual_sections": ["7-2.11a", "7-2.11b", "7-2.11c", "7-2.11d", "7-2.11e", "7-2.11f", "7-2.11g"]
+  },
+  "metadata": {
+    "created": "2026-05-09",
+    "updated": "2026-05-11",
+    "author": "system",
+    "review_status": "pending_review"
+  }
 }
