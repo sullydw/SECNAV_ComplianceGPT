@@ -1,0 +1,16 @@
+{
+  "rule_id": "C9-002",
+  "manual_section": "9-2.1",
+  "chapter": 9,
+  "title": "Endorsement Line",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "The endorsement line identifies the endorsement number and must be formatted according to manual specifications. Placement and formatting rules apply.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["endorsement_line"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Covers endorsement line format and placement. Exact source text extraction pending."
+}

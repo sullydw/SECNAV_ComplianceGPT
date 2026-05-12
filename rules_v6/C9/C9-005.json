@@ -1,0 +1,16 @@
+{
+  "rule_id": "C9-005",
+  "manual_section": "9-2.4",
+  "chapter": 9,
+  "title": "Adding Enclosures in Endorsements",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Enclosures may be added to endorsements. Formatting and listing rules apply for enclosure lines in endorsement context.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["enclosure_line"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Covers enclosure line additions in endorsement context. Exact source text extraction pending."
+}

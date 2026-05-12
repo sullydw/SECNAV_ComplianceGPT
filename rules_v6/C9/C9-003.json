@@ -1,0 +1,16 @@
+{
+  "rule_id": "C9-003",
+  "manual_section": "9-2.2",
+  "chapter": 9,
+  "title": "Via Line in Endorsements",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Via lines in endorsements follow specific formatting rules for routing correspondence through intermediate addressees.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["via_line"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Covers Via line handling within endorsement context. Exact source text extraction pending."
+}

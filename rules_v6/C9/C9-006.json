@@ -1,0 +1,16 @@
+{
+  "rule_id": "C9-006",
+  "manual_section": "9-2.5",
+  "chapter": 9,
+  "title": "Copy To Addressees in Endorsements",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Copy to addressees may be specified in endorsements for informational distribution. Formatting rules apply.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["copy_to_line"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Covers Copy to line handling in endorsement context. Exact source text extraction pending."
+}

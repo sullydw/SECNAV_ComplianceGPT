@@ -1,0 +1,16 @@
+{
+  "rule_id": "C9-001",
+  "manual_section": "9-1",
+  "chapter": 9,
+  "title": "General — Endorsement Overview",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Endorsements are used to add comments, recommendations, or forwarding actions to existing correspondence. An endorsement may be added to the bottom of a basic letter or on a new page depending on space and signing requirements.",
+  "category": "endorsement_structure",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["endorsement_line", "endorsement_placement"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Chapter 9 covers endorsement formatting and procedures. This rule provides general overview of when and how endorsements are used. Exact source text extraction pending."
+}

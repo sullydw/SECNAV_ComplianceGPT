@@ -1,0 +1,16 @@
+{
+  "rule_id": "C9-007",
+  "manual_section": "9-2.6",
+  "chapter": 9,
+  "title": "Forwarding Your Endorsement and Copies",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Procedures for forwarding endorsements and distributing copies to appropriate addressees.",
+  "category": "procedure",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["distribution"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Covers forwarding and distribution procedures for endorsements. Exact source text extraction pending."
+}

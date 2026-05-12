@@ -1,0 +1,16 @@
+{
+  "rule_id": "C9-008",
+  "manual_section": "9-2.7",
+  "chapter": 9,
+  "title": "Assembly of an Endorsement",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "Physical assembly order and procedures for endorsement documents and associated copies.",
+  "category": "procedure",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["assembly"],
+  "validator_type": null,
+  "renderer_impact": null,
+  "notes": "Covers physical assembly procedures for endorsements. Likely procedural/mailroom-level guidance. Exact source text extraction pending."
+}

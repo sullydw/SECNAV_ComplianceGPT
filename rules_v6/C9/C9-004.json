@@ -1,0 +1,16 @@
+{
+  "rule_id": "C9-004",
+  "manual_section": "9-2.3",
+  "chapter": 9,
+  "title": "Adding References in Endorsements",
+  "status": "candidate",
+  "source_text": "TBD - exact manual text required before activation",
+  "plain_language_rule": "References may be added to endorsements when citing additional documents or communications relevant to the endorsement content.",
+  "category": "format",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["reference_line"],
+  "validator_type": "undetermined",
+  "renderer_impact": null,
+  "notes": "Covers reference line additions in endorsement context. Exact source text extraction pending."
+}
