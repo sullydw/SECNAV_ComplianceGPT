@@ -4,13 +4,13 @@
   "chapter": 9,
   "title": "Via Line in Endorsements",
   "status": "candidate",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "Via lines in endorsements follow specific formatting rules for routing correspondence through intermediate addressees.",
+  "source_text": "2. \"Via:\" Line. When preparing your endorsement, include in the \"Via:\" line any remaining \"Via\" addressees, if any. If there is only one via addressee remaining, do not number it. If there is more than one remaining, number the remaining addresses starting with the number (1) in parenthesis and consecutively number the rest.",
+  "plain_language_rule": "When preparing an endorsement, include only the remaining Via addressees in the Via line. If there is only one Via addressee remaining, do not number it. If there is more than one remaining, number them consecutively starting with (1) in parentheses.",
   "category": "format",
-  "enforceable": "undetermined",
-  "severity": "warning",
-  "target_fields": ["via_line"],
-  "validator_type": "undetermined",
-  "renderer_impact": null,
-  "notes": "Covers Via line handling within endorsement context. Exact source text extraction pending."
+  "enforceable": true,
+  "severity": "error",
+  "target_fields": ["via_line", "remaining_via_addressees", "via_numbering"],
+  "validator_type": "endorsement_via_line_format_check",
+  "renderer_impact": "Via line in endorsements includes only remaining Via addressees. Single remaining Via addressee is unnumbered. Multiple remaining Via addressees are numbered consecutively starting with (1) in parentheses.",
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 9-2.2 Via Line. Key points: (1) only remaining Via addressees are included, (2) single remaining Via is unnumbered, (3) multiple remaining Via addressees numbered starting with (1)."
 }
