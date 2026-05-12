@@ -3,7 +3,7 @@
   "title": "Memorandums",
   "sections": [
     { "rule_id": "C10-001", "section": "10-1", "title": "General — Memorandum Overview", "source_text_state": "resolved" },
-    { "rule_id": "C10-002", "section": "10-2", "title": "Formats Overview", "source_text_state": "unresolved" },
+    { "rule_id": "C10-002", "section": "10-2", "title": "Formats Overview", "source_text_state": "resolved" },
     { "rule_id": "C10-003", "section": "10-2.1", "title": "Memorandum for the Record", "source_text_state": "unresolved" },
     { "rule_id": "C10-004", "section": "10-2.2", "title": "From-To Memorandum", "source_text_state": "unresolved" },
     { "rule_id": "C10-005", "section": "10-2.3", "title": "Plain-Paper Memorandum", "source_text_state": "unresolved" },
