@@ -7,6 +7,36 @@
 
 ---
 
+## Milestone: Chapter 7 & 8 Candidate Rules Complete
+
+### Chapter 7 — Complete and Audited
+- ✅ All 20 candidate rules (C7-001 through C7-020) created and audited
+- ✅ C7-012 enclosure rule corrected: single enclosure IS numbered, full 7-2.11 a-g source_text applied
+- ✅ C7 cleanup completed: removed implementation leakage (ReportLab, BOUNDARY_SPACINGS, CRITICAL notes) from C7-002/003/004/005/006/008/009/010/011
+- ✅ All C7 rules in `rules_v6/C7/` directory with standardized schema
+- ✅ Commit history preserved on `main` branch
+
+### Chapter 8 — Complete and Audited
+- ✅ All 6 candidate rules (C8-001 through C8-006) created and populated
+- ✅ All source_text resolved from manual (8-1 through 8-4)
+- ✅ C8-004 schema normalized (added severity, category, target_fields)
+- ✅ C8 compatibility file (`C8-candidate-rules.json`) replaced with lightweight index pointer
+- ✅ All C8 rules in `rules_v6/C8/` directory with standardized schema
+- ✅ Index file (`rules_v6/C8/index.json`) tracks all rules with source_text_state
+
+### Repository Status
+- **Active repo:** https://github.com/sullydw/SECNAV_ComplianceGPT
+- **Invalid repo:** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE
+- **Branch:** main
+- **Working tree:** Clean (all commits pushed)
+
+### Next Recommended Phases
+1. **Chapter 9 extraction** — Continue candidate rule catalog through next chapter
+2. **Validator implementation planning** — Design validator specs for automatable rules
+3. **Renderer integration** — Connect rule catalog to PDF v6 renderer for automated compliance checking
+
+---
+
 ## 1. Current Architecture
 
 ```
