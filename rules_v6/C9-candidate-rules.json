@@ -20,59 +20,59 @@
       "file_path": "rules_v6/C9/C9-001.json",
       "manual_section": "9-1",
       "title": "General — Endorsement Overview",
-      "source_text_state": "unresolved"
+      "source_text_state": "resolved"
     },
     {
       "rule_id": "C9-002",
       "file_path": "rules_v6/C9/C9-002.json",
       "manual_section": "9-2.1",
       "title": "Endorsement Line",
-      "source_text_state": "unresolved"
+      "source_text_state": "resolved"
     },
     {
       "rule_id": "C9-003",
       "file_path": "rules_v6/C9/C9-003.json",
       "manual_section": "9-2.2",
       "title": "Via Line in Endorsements",
-      "source_text_state": "unresolved"
+      "source_text_state": "resolved"
     },
     {
       "rule_id": "C9-004",
       "file_path": "rules_v6/C9/C9-004.json",
       "manual_section": "9-2.3",
       "title": "Adding References in Endorsements",
-      "source_text_state": "unresolved"
+      "source_text_state": "resolved"
     },
     {
       "rule_id": "C9-005",
       "file_path": "rules_v6/C9/C9-005.json",
       "manual_section": "9-2.4",
       "title": "Adding Enclosures in Endorsements",
-      "source_text_state": "unresolved"
+      "source_text_state": "resolved"
     },
     {
       "rule_id": "C9-006",
       "file_path": "rules_v6/C9/C9-006.json",
       "manual_section": "9-2.5",
       "title": "Copy To Addressees in Endorsements",
-      "source_text_state": "unresolved"
+      "source_text_state": "resolved"
     },
     {
       "rule_id": "C9-007",
       "file_path": "rules_v6/C9/C9-007.json",
       "manual_section": "9-2.6",
       "title": "Forwarding Your Endorsement and Copies",
-      "source_text_state": "unresolved"
+      "source_text_state": "resolved"
     },
     {
       "rule_id": "C9-008",
       "file_path": "rules_v6/C9/C9-008.json",
       "manual_section": "9-2.7",
       "title": "Assembly of an Endorsement",
-      "source_text_state": "unresolved"
+      "source_text_state": "resolved"
     }
   ],
   "total_rules": 8,
-  "all_resolved": false,
+  "all_resolved": true,
   "deprecated_fields_warning": "Full source_text, plain_language_rule, and other rule content fields are NOT included in this compatibility file. Read the per-rule JSON files directly for authoritative rule content."
 }
