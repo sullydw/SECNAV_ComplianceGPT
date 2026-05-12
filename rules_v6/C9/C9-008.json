@@ -4,13 +4,13 @@
   "chapter": 9,
   "title": "Assembly of an Endorsement",
   "status": "candidate",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "Physical assembly order and procedures for endorsement documents and associated copies.",
-  "category": "procedure",
-  "enforceable": "undetermined",
-  "severity": "warning",
-  "target_fields": ["assembly"],
+  "source_text": "7. Assembly of an Endorsement. Figure 9-2 shows a suggested way to assemble an endorsement for signature and mailing.",
+  "plain_language_rule": "The manual provides a suggested assembly method for endorsements via Figure 9-2. No prescriptive text-based assembly order is given; the guidance is advisory and refers to the figure for details.",
+  "category": "procedural",
+  "enforceable": false,
+  "severity": "advisory",
+  "target_fields": ["endorsement_assembly"],
   "validator_type": null,
   "renderer_impact": null,
-  "notes": "Covers physical assembly procedures for endorsements. Likely procedural/mailroom-level guidance. Exact source text extraction pending."
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 9-2.7 Assembly of an Endorsement. This is an advisory physical assembly/package procedure. The rule text only references Figure 9-2 for a suggested assembly method; no hard text-based assembly order is prescribed. Not automatable as a validator rule. No renderer impact."
 }
