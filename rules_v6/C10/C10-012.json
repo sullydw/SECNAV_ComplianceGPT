@@ -4,13 +4,30 @@
   "chapter": 10,
   "title": "Memorandum of Agreement or Understanding — Copies",
   "status": "candidate",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "Memorandum of Agreement or Understanding copy distribution and retention requirements.",
-  "category": "procedure",
-  "enforceable": "undetermined",
+  "source_text": "e. Copies. The activity signing last should send copies of the agreement to all cosigners.",
+  "plain_language_rule": "The activity signing last should send copies of the agreement to all cosigners.",
+  "category": "procedural",
+  "enforceable": true,
   "severity": "warning",
-  "target_fields": ["moa_copies"],
-  "validator_type": "undetermined",
-  "renderer_impact": null,
-  "notes": "MOA/Understanding copies specification. Exact source text extraction pending."
+  "target_fields": [
+    "copies",
+    "last_signing_activity",
+    "cosigners",
+    "agreement_distribution"
+  ],
+  "validator_type": "moa_mou_copy_distribution_check",
+  "renderer_impact": "This rule selects MOA/MOU copy distribution handling for cosigners. The activity signing last is responsible for sending copies to all cosigners. No layout rendering is implied unless copy-distribution output is later implemented.",
+  "notes": "Source text resolved from manual section 10-2.6e Copies. This rule governs MOA/MOU copy distribution. The activity signing last sends copies of the agreement to all cosigners.",
+  "cross_references": [
+    "C10-001",
+    "C10-002",
+    "C10-004",
+    "C10-005",
+    "C10-006",
+    "C10-007",
+    "C10-008",
+    "C10-009",
+    "C10-010",
+    "C10-011"
+  ]
 }
