@@ -7,7 +7,7 @@
   "source_text": "d. Signatures. Arrange signature lines so the senior official is at the right. Place the signature line of a third cosigner in the middle of the page. Precede all signature lines by over scoring as shown in figures 10-5 and 10-6. The senior activity should sign the agreement after the junior activity(ies).",
   "plain_language_rule": "Arrange signature lines with the senior official at the right. Place the signature line of a third cosigner in the middle of the page. Precede all signature lines by over scoring. The senior activity should sign the agreement after the junior activities. Signer typed names appear below the signature lines. An acting/deputy title may appear below the typed name when applicable. Figure 10-5 shows two signature lines at the bottom of a one-page MOA with senior/right-side signature placement. Figure 10-5 shows signature lines preceded by over scoring. Figure 10-5 shows signer typed names below signature lines with optional acting/deputy title. Figure 10-7 shows signature lines at the bottom of the second page of a multi-page MOU with senior/right-side signature placement and page number 2 centered at the bottom.",
   "category": "signature_format",
-  "enforceable": "true",
+  "enforceable": true,
   "severity": "error",
   "target_fields": [
     "signature_lines",
@@ -19,8 +19,8 @@
     "acting_or_deputy_title"
   ],
   "validator_type": "moa_mou_signature_block_check",
-  "renderer_impact": "Render signature lines with senior official at right, optional third cosigner centered, over scoring above all signature lines, senior activity signs after junior activities, typed names below signature lines, optional title below name when applicable. Figure 10-5 and 10-7 are rule-bearing.",
-  "notes": "Source text and Figures 10-5/10-7 details resolved from manual section 10-2.6d Signatures. This rule governs MOA/MOU signature placement and signing procedures. Senior official signature at right, third cosigner centered, over scoring above all lines, signature order with senior signing after junior activities, typed names below lines, optional acting/deputy title. Figures 10-5 and 10-7 show one-page and multi-page signature placement patterns.",
+  "renderer_impact": "Render signature lines with senior official at right, optional third cosigner centered, over scoring above all signature lines, senior activity signs after junior activities, typed names below signature lines, optional title below name when applicable. Figure 10-5, 10-6, and 10-7 are rule-bearing.",
+  "notes": "Source text and Figures 10-5/10-6/10-7 details resolved from manual section 10-2.6d Signatures. This rule governs MOA/MOU signature placement and signing procedures. Senior official signature at right, third cosigner centered, over scoring above all lines, signature order with senior signing after junior activities, typed names below lines, optional acting/deputy title. Figures 10-5, 10-6, and 10-7 show one-page and multi-page signature placement patterns.",
   "cross_references": [
     "C10-001",
     "C10-002",
@@ -34,6 +34,7 @@
   ],
   "figure_references": [
     "Figure 10-5",
+    "Figure 10-6",
     "Figure 10-7"
   ]
 }
