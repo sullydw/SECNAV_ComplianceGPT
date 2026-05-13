@@ -4,13 +4,32 @@
   "chapter": 10,
   "title": "Plain-Paper Memorandum",
   "status": "candidate",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "Plain-Paper Memorandum format and usage rules for correspondence on plain paper stock.",
-  "category": "format",
-  "enforceable": "undetermined",
+  "source_text": "3. Plain-Paper Memorandum. Use plain-paper memorandums for informal communications within your activity. It is no more formal than the memorandum form, but it is more flexible when there are multiple addressees, via addressees, or both.\n\na. Identification Symbols. The only identification symbol you need is the date, unless local practice calls for more.\n\nb. Format. Prepare on white bond paper. Type the date on the sixth line so it ends flush with the right margin, unless it is used as part of the senders symbol. See figures 10-3 and 10-4.",
+  "plain_language_rule": "Use plain-paper memorandums for informal communications within your activity. It is no more formal than the memorandum form, but it is more flexible when there are multiple addressees, via addressees, or both. The only identification symbol needed is the date, unless local practice calls for more. Prepare on white bond paper. Type the date on the sixth line so it ends flush with the right margin, unless it is used as part of the sender's symbol. Figure 10-3 shows a plain-paper 'from-to' memorandum with heading 'MEMORANDUM.' Figure 10-3 shows From, To, Via, and Subj fields. Figure 10-3 shows multiple To addressees may be listed. Figure 10-3 shows a Via line may be used. Figure 10-3 confirms the plain-paper 'from-to' memorandum may be used within your activity and is no more formal than the memorandum form but more flexible for multiple/via addressees. Figure 10-3 confirms to start typing the date on the sixth line, flush with the right margin. Figure 10-3 confirms preparation on white bond paper. Figure 10-3 shows the writer signs by name only.",
+  "category": "memorandum_format",
+  "enforceable": "partial",
   "severity": "warning",
-  "target_fields": ["plain_paper_memorandum"],
-  "validator_type": "undetermined",
-  "renderer_impact": null,
-  "notes": "Plain-Paper Memorandum format specification. Exact source text extraction pending."
+  "target_fields": [
+    "memorandum_type",
+    "plain_paper",
+    "white_bond_paper",
+    "date_line",
+    "identification_symbols",
+    "from_line",
+    "to_line",
+    "via_line",
+    "subject_line",
+    "signature"
+  ],
+  "validator_type": "plain_paper_memorandum_format_check",
+  "renderer_impact": "Prepare memorandum on white bond paper. Render heading as 'MEMORANDUM.' Place date on sixth line flush with right margin unless part of sender's symbol. Support From, To, Via, and Subj fields. Allow multiple To addressees. Support optional Via line. Render signature by name only (no organizational titles). Figure 10-3 is rule-bearing for layout and field placement.",
+  "notes": "Source text and Figure 10-3 details resolved from manual section 10-2.3. This rule governs the plain-paper memorandum format for informal internal communications. More flexible than printed memorandum form when multiple addressees or via addressees are needed. Only date identification symbol required unless local practice differs. White bond paper required. Date positioned on sixth line flush right (unless part of sender symbol). Figure 10-3 is rule-bearing and shows MEMORANDUM heading, From/To/Via/Subj structure, multiple To addressees, optional Via, and name-only signature.",
+  "cross_references": [
+    "C10-001",
+    "C10-002",
+    "C10-004"
+  ],
+  "figure_references": [
+    "Figure 10-3"
+  ]
 }
