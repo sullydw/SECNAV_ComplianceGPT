@@ -4,13 +4,14 @@
   "chapter": 8,
   "title": "Assembly of Multiple-Address Letters",
   "status": "candidate",
-  "enforceable": "undetermined",
-  "validator_type": "undetermined",
+  "enforceable": false,
+  "validator_type": null,
   "severity": "advisory",
   "category": "assembly",
-  "target_fields": ["assembly_order", "mailing"],
-  "plain_language_rule": "Figure 8-4 shows a suggested way to assemble a multiple-address letter for signature and mailing. The manual does not prescribe a specific text-based assembly order in section 8-4 — the assembly procedure is illustrated in the figure.",
+  "target_fields": ["assembly_order", "mailing", "brief_sheet", "signature_page_tabs", "enclosure_tabs", "background_material", "addressee_marking", "official_file_copy"],
+  "plain_language_rule": "Figure 8-4 shows a suggested way to assemble a multiple-address letter for signature and mailing. The manual does not prescribe a specific text-based assembly order in section 8-4 — the assembly procedure is illustrated in the figure. Figure 8-4 shows a suggested package including brief sheet if required, original/letters to be signed, envelopes or mailing labels if required, information-addressee copies with enclosures, official file copy with enclosures, and background material. Figure 8-4 shows signature page, enclosures, and background material may be tabbed. Figure 8-4 shows checking or arrowing the intended addressee on each copy. Figure 8-4 shows exposing the left margin of the official file copy for initials and dates.",
   "source_text": "8-4 Assembly of Multiple-Address Letters. Figure 8-4 shows a suggested way to assemble a multiple-address letter for signature and mailing.",
   "renderer_impact": null,
-  "notes": "This section refers entirely to Figure 8-4 for guidance. The manual uses the word 'suggested,' indicating advisory tone. No prescriptive assembly order is stated in the text. This is a mailroom-level procedure not amenable to automated validation."
+  "notes": "This section refers entirely to Figure 8-4 for guidance. The manual uses the word 'suggested,' indicating advisory tone. No prescriptive assembly order is stated in the text. This is a mailroom-level procedure not amenable to automated validation. Figure 8-4 is rule-bearing but uses suggested assembly guidance. Keep this rule procedural/advisory. Do not convert the suggested assembly order into a hard validator requirement. No renderer behavior is implied."
+  "figure_references": ["Figure 8-4"]
 }
