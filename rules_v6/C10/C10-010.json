@@ -7,7 +7,7 @@
   "source_text": "c. Letterhead. On plain bond, type the command titles so the senior is at the top. If the activities are in different cities or states, follow each title with its address.",
   "plain_language_rule": "Prepare MOA/MOU on plain bond. Type command titles with the senior activity at the top. If the activities are in different cities or states, follow each title with its address. Figure 10-5 shows MOA command-title/letterhead-style information at the top for two activities. Figure 10-5 shows the senior activity at the top/left side of the agreement heading area. Figure 10-5 shows command titles and sender symbols/date blocks above the MOA heading. Figure 10-5 shows NAVAIRSYSCOM and NAVINTCOM with their SSIC/serial/date blocks. Figure 10-5 repeats the body rule that command titles are typed on plain bond so the senior is at the top. Figure 10-5 states that if activities are in different cities or states, each title is followed by its address.",
   "category": "memorandum_format",
-  "enforceable": "true",
+  "enforceable": true,
   "severity": "error",
   "target_fields": [
     "plain_bond",
