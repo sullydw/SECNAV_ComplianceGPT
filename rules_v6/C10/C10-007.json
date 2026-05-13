@@ -7,7 +7,7 @@
   "source_text": "5. Decision Memorandum. When only requesting an approval/disapproval decision from a single addressee, it is appropriate to type a decision block at the left margin, two lines below the signature line in the following format:\nCOMMANDING OFFICER DECISION:\n_____________________ Approved\n_____________________ Disapproved\n_____________________ Other",
   "plain_language_rule": "When only requesting an approval/disapproval decision from a single addressee, type a decision block at the left margin, two lines below the signature line in the following format: COMMANDING OFFICER DECISION: followed by three underlined options: Approved, Disapproved, and Other. The decision block format uses consistent underlining and spacing.",
   "category": "memorandum_format",
-  "enforceable": "true",
+  "enforceable": true,
   "severity": "error",
   "target_fields": [
     "memorandum_type",
@@ -17,8 +17,8 @@
     "signature_line_spacing"
   ],
   "validator_type": "decision_memorandum_block_format_check",
-  "renderer_impact": "When requesting only an approval/disapproval decision from a single addressee, render a decision block at the left margin two lines below the signature line. Include COMMANDING OFFICER DECISION: heading. Render three underlined options: Approved, Disapproved, and Other. Figure 10-5 is rule-bearing for decision block format.",
-  "notes": "Source text resolved from manual section 10-2.5. This rule governs the decision memorandum format for requesting approval/disapproval from a single addressee. The decision block is typed at the left margin, two lines below the signature line. Includes COMMANDING OFFICER DECISION: heading and three underlined options: Approved, Disapproved, and Other. Figure 10-5 is rule-bearing for this format.",
+  "renderer_impact": "When requesting only an approval/disapproval decision from a single addressee, render a decision block at the left margin two lines below the signature line. Include COMMANDING OFFICER DECISION: heading. Render three underlined options: Approved, Disapproved, and Other.",,
+  "notes": "Source text resolved from manual section 10-2.5. This rule governs the decision memorandum format for requesting approval/disapproval from a single addressee. The decision block is typed at the left margin, two lines below the signature line. Includes COMMANDING OFFICER DECISION: heading and three underlined options: Approved, Disapproved, and Other.",,
   "cross_references": [
     "C10-001",
     "C10-002",
@@ -26,7 +26,5 @@
     "C10-005",
     "C10-006"
   ],
-  "figure_references": [
-    "Figure 10-5"
-  ]
+figure_references": []
 }
