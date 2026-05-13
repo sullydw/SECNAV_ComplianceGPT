@@ -4,13 +4,32 @@
   "chapter": 10,
   "title": "From-To Memorandum",
   "status": "candidate",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "From-To Memorandum format and usage rules for internal correspondence between activities.",
-  "category": "format",
-  "enforceable": "undetermined",
+  "source_text": "2. From-To Memorandum. Use OPNAV 5215/144A DON Memo (8-1/2 X 11) or OPNAV 5215/144B DON Memo (8-1/5 X 5-1/2) for the \"from—to\" memorandum. Memorandum may be directed to one or more addressees. If very informal, it may be handwritten. If the subject is insignificant, a file copy is not required. See figure 10-2.",
+  "plain_language_rule": "Use OPNAV 5215/144A DON Memo (8-1/2 x 11 inches) or OPNAV 5215/144B DON Memo (8-1/2 x 5-1/2 inches) for from-to memorandums. The memorandum may be directed to one or more addressees. Very informal memorandums may be handwritten. If the subject is insignificant, a file copy is not required. Figure 10-2 shows the printed form titled 'DEPARTMENT OF THE NAVY Memorandum.' The area above the printed line is preprinted; fill in DATE, FROM, TO, and SUBJ as appropriate. Reference and enclosure headings are typed under the printed headings. Figure 10-2 example shows DATE, FROM, TO, SUBJ, Ref (e.g., (a) SECNAV M-5216.1), and Encl (e.g., (1) Printed Form). The form is used for corresponding between individuals and offices of the same activity. The only identification symbol needed is the date unless local practice calls for more. Use names, titles, or codes in the From and To lines. Type reference and enclosure headings under the printed headings. Allow a 1-inch left margin. The writer signs his or her name without organizational titles.",
+  "category": "memorandum_format",
+  "enforceable": "partial",
   "severity": "warning",
-  "target_fields": ["from_to_memorandum"],
-  "validator_type": "undetermined",
-  "renderer_impact": null,
-  "notes": "From-To Memorandum format specification. Exact source text extraction pending."
+  "target_fields": [
+    "memorandum_type",
+    "printed_form",
+    "form_size",
+    "date_line",
+    "from_line",
+    "to_line",
+    "subject_line",
+    "reference_line",
+    "enclosure_line",
+    "left_margin",
+    "signature"
+  ],
+  "validator_type": "from_to_memorandum_format_check",
+  "renderer_impact": "Use of printed OPNAV 5215/144A (8-1/2 x 11 inches) or OPNAV 5215/144B (8-1/2 x 5-1/2 inches) DON Memo form. Render DATE, FROM, TO, and SUBJ fields in preprinted areas. Support optional reference and enclosure headings typed under printed headings. Apply 1-inch left margin. Render signature without organizational titles. Figure 10-2 is rule-bearing for form layout and field placement.",
+  "notes": "Source text and Figure 10-2 details resolved from manual section 10-2.2. This rule governs the from-to memorandum format using preprinted OPNAV forms. Two form sizes are specified (OPNAV 5215/144A and 5215/144B). The form is preprinted with DATE, FROM, TO, SUBJ fields. Reference and enclosure lines are typed under printed headings. The form is for internal correspondence within the same activity. Very informal memorandums may be handwritten. File copy not required for insignificant subjects. Writer signs without organizational titles. Only date identification symbol required unless local practice differs. Figure 10-2 is rule-bearing.",
+  "cross_references": [
+    "C10-001",
+    "C10-002"
+  ],
+  "figure_references": [
+    "Figure 10-2"
+  ]
 }
