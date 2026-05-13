@@ -4,13 +4,26 @@
   "chapter": 10,
   "title": "Memorandum of Agreement or Understanding — Use",
   "status": "candidate",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "Memorandum of Agreement or Understanding usage guidelines and when this format is appropriate.",
-  "category": "format",
-  "enforceable": "undetermined",
+  "source_text": "6. Memorandum of Agreement or Understanding. A Memorandum of Agreement (MOA) or Memorandum of Understanding (MOU) is used to document mutual agreements of facts, intentions, procedures, limits on future actions, and areas of present or future coordination, or commitments, etc. MOAs or MOUs may be used within your activity or between two or more activities.\n\na. Use. Although MOAs or MOUs may be used for any purpose described above, they are usually used to establish agreements between activities.",
+  "plain_language_rule": "Use Memorandum of Agreement (MOA) or Memorandum of Understanding (MOU) to document mutual agreements of facts, intentions, procedures, limits on future actions, areas of present or future coordination, or commitments. MOAs or MOUs may be used within an activity or between two or more activities. Although MOAs or MOUs may be used for any purpose described above, they are usually used to establish agreements between activities.",
+  "category": "memorandum_format",
+  "enforceable": "partial",
   "severity": "warning",
-  "target_fields": ["moa_use"],
-  "validator_type": "undetermined",
-  "renderer_impact": null,
-  "notes": "MOA/Understanding usage specification. Exact source text extraction pending."
+  "target_fields": [
+    "memorandum_type",
+    "agreement_type",
+    "agreement_purpose",
+    "participating_activities"
+  ],
+  "validator_type": "moa_mou_use_scope_check",
+  "renderer_impact": "This rule selects MOA/MOU document handling for mutual agreements, understandings, procedures, limits, coordination, or commitments. Does not prescribe layout.",
+  "notes": "Source text resolved from manual section 10-2.6 and 10-2.6a Use. This rule governs the use scope of MOAs and MOUs. MOAs/MOUs document mutual agreements of facts, intentions, procedures, limits on future actions, coordination areas, or commitments. MOAs/MOUs may be used within an activity or between two or more activities. Usually used to establish agreements between activities.",
+  "cross_references": [
+    "C10-001",
+    "C10-002",
+    "C10-004",
+    "C10-005",
+    "C10-006",
+    "C10-007"
+  ]
 }
