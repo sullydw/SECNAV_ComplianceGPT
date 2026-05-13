@@ -4,13 +4,33 @@
   "chapter": 10,
   "title": "Letterhead Memorandum",
   "status": "candidate",
-  "source_text": "TBD - exact manual text required before activation",
-  "plain_language_rule": "Letterhead Memorandum format and usage rules for correspondence on letterhead stock.",
-  "category": "format",
-  "enforceable": "undetermined",
+  "source_text": "4. Letterhead Memorandum. The letterhead memorandum may be used within your activity and provides more formality than the printed form or plain-paper memorandum. When direct liaison with individuals outside of your activity is authorized, the letterhead memorandum may be used to correspond on routine matters that neither make a commitment nor take an official stand. A full signature line is not required because the \"From:\" line identifies the signer. See figure 10-4. For example: You have been appointed chairperson of a committee and need to correspond with other members of the committee outside your activity.",
+  "plain_language_rule": "The letterhead memorandum may be used within your activity and provides more formality than the printed form or plain-paper memorandum. When direct liaison with individuals outside of your activity is authorized, the letterhead memorandum may be used to correspond on routine matters that neither make a commitment nor take an official stand. A full signature line is not required because the 'From:' line identifies the signer. Figure 10-4 shows a letterhead memorandum with letterhead at the top. Sender's symbols appear under the letterhead on the right: SSIC (e.g., 5216), Memo serial (e.g., Memo 00/83), and Date (e.g., 5 Jan 15). Heading is 'MEMORANDUM.' Figure 10-4 shows From, To, and Subj fields. Figure 10-4 confirms when used within an activity, the letterhead memorandum provides more formality than the printed memorandum form or plain-paper memorandum. Figure 10-4 confirms a letterhead memorandum may be sent outside your activity if: direct liaison is authorized, the matter is routine, and the memo neither makes a commitment nor takes an official stand. Figure 10-4 says generally follow the standard letter format, but type 'MEMORANDUM' as shown. Figure 10-4 shows the writer signs by name only.",
+  "category": "memorandum_format",
+  "enforceable": "partial",
   "severity": "warning",
-  "target_fields": ["letterhead_memorandum"],
-  "validator_type": "undetermined",
-  "renderer_impact": null,
-  "notes": "Letterhead Memorandum format specification. Exact source text extraction pending."
+  "target_fields": [
+    "memorandum_type",
+    "letterhead",
+    "sender_symbols",
+    "date_line",
+    "from_line",
+    "to_line",
+    "subject_line",
+    "memorandum_heading",
+    "signature",
+    "external_liaison_conditions"
+  ],
+  "validator_type": "letterhead_memorandum_format_check",
+  "renderer_impact": "Render letterhead at top of page. Place sender's symbols under letterhead on right side: SSIC, Memo serial, and Date. Type heading as 'MEMORANDUM.' Support From, To, and Subj fields. Follow standard letter format layout. Render signature by name only (no organizational titles; 'From:' line identifies signer). Figure 10-4 is rule-bearing for layout and field placement.",
+  "notes": "Source text and Figure 10-4 details resolved from manual section 10-2.4. This rule governs the letterhead memorandum format, which provides more formality than printed or plain-paper memorandums. Internal use within activity is standard. External use permitted only when: (1) direct liaison is authorized, (2) matter is routine, and (3) memo makes no commitment or official stand. Full signature line not required since 'From:' identifies signer. Sender's symbols (SSIC, Memo serial, Date) positioned under letterhead on right. MEMORANDUM heading required. Standard letter format followed with MEMORANDUM typed as heading. Figure 10-4 is rule-bearing.",
+  "cross_references": [
+    "C10-001",
+    "C10-002",
+    "C10-004",
+    "C10-005"
+  ],
+  "figure_references": [
+    "Figure 10-4"
+  ]
 }
