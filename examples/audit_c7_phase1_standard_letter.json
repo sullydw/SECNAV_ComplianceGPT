@@ -1,0 +1,117 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "ssic": "5216",
+  "originator_code": "OPC123",
+  "date": "01 May 26",
+  "unit_identity": "Commanding Officer, Example Activity",
+  "from": "Cmdr. John Doe",
+  "to": "Cmdr. Jane Smith",
+  "via": [
+    "Cmdr. Bob Johnson"
+  ],
+  "subj": "Standard Letter Phase 1 Audit — Paragraph Structure and Subdivision Testing",
+  "ref": [
+    "SECNAV M-5216.1",
+    "OPNAV 5216/144A"
+  ],
+  "encl": [
+    "Appendix A — Background Material (Standard)",
+    "Appendix B — Official File Copy (Standard)"
+  ],
+  "body": [
+    {
+      "marker": "1.",
+      "text": "This top-level paragraph defines or states in as few words as possible the purpose of this correspondence. It serves as an introduction to the material that follows and establishes context for the reader. Additional sentences may be included here to provide further background information or rationale for the correspondence.",
+      "subdivisions": [
+        {
+          "marker": "a.",
+          "text": "The first subparagraph under section 1 provides detailed sub-topics relevant to the parent paragraph. This subdivision may contain multiple paragraphs if needed to fully elaborate on the subject matter at hand. Subparagraphs should maintain consistent formatting throughout the document."
+        },
+        {
+          "marker": "b.",
+          "text": "The second subparagraph under section 1 continues the detailed examination of the sub-topics. It provides additional context and information that complements the first subparagraph. Both subparagraphs together form a comprehensive treatment of this sub-section.",
+          "subdivisions": [
+            {
+              "marker": "(1)",
+              "text": "This first sub-subdivision under 1.b offers further specificity to the parent subparagraph. It addresses a particular aspect of the broader topic covered by the subparagraph heading."
+            },
+            {
+              "marker": "(2)",
+              "text": "The second sub-subdivision under 1.b provides additional detail on the same sub-topics. Multiple levels of subdivision allow for increasingly granular treatment of complex topics while maintaining clear organizational structure."
+            },
+            {
+              "marker": "(a)",
+              "text": "This first third-level subdivision under 1.b(2) provides even more specific guidance. It demonstrates that three-level subdivision is valid when the material requires it."
+            },
+            {
+              "marker": "(b)",
+              "text": "The second third-level subdivision under 1.b(2) provides additional specific guidance. This demonstrates proper formatting at all levels of the subdivision hierarchy."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "marker": "2.",
+      "text": "This second top-level paragraph continues the discussion with additional substantive content. It may address a different aspect of the main topic or provide supplementary information that supports the overall purpose of the correspondence.",
+      "subdivisions": [
+        {
+          "marker": "a.",
+          "text": "This subparagraph under section 2 addresses another important sub-topic. It demonstrates that multiple top-level paragraphs can each contain their own set of subdivisions."
+        }
+      ]
+    },
+    {
+      "marker": "10.",
+      "text": "This two-digit paragraph marker tests proper handling of double-digit numbering in the subject matter. Some activities may require two-digit markers for their correspondence while single-digit markers suffice for others. The renderer should handle both formats correctly.",
+      "subdivisions": [
+        {
+          "marker": "a.",
+          "text": "This subparagraph under section 10 demonstrates that two-digit paragraphs can also contain subdivisions. The rendering should maintain consistent spacing and indentation regardless of whether the parent paragraph uses single or double-digit numbering."
+        }
+      ]
+    },
+    {
+      "marker": "11.",
+      "text": "This additional top-level paragraph provides even more content to force a continuation page. Long body text ensures that the pagination and continuation page handling are properly tested. Multiple paragraphs with subdivisions create realistic test conditions for the renderer. The continuation page should repeat the subject line, maintain proper indentation for continuations, and correctly display page numbers. Classification marks should appear appropriately if the document contains classified material.",
+      "subdivisions": [
+        {
+          "marker": "a.",
+          "text": "This subparagraph under section 11 provides further subdivision testing. It demonstrates that subdivision behavior remains consistent regardless of paragraph marker numbering. The renderer should maintain spacing semantics and not revert to pre-subtraction layout bugs when handling nested subdivisions."
+        }
+      ]
+    }
+  ],
+  "signature": [
+    {
+      "role": "Commanding Officer",
+      "name": "John Doe",
+      "grade": "O-6",
+      "unit": "Commanding Officer, Example Activity"
+    }
+  ],
+  "copy_to": [
+    {
+      "name": "Commanding Officer, Related Activity Alpha",
+      "grade": "O-6",
+      "unit": "Commanding Officer, Related Activity Alpha",
+      "type": "CC"
+    },
+    {
+      "name": "Commanding Officer, Related Activity Beta",
+      "grade": "O-6",
+      "unit": "Commanding Officer, Related Activity Beta",
+      "type": "CC"
+    },
+    {
+      "name": "Commanding Officer, Related Activity Gamma",
+      "grade": "O-6",
+      "unit": "Commanding Officer, Related Activity Gamma",
+      "type": "CC"
+    }
+  ],
+  "distribution_mode": "distribution_only",
+  "distribution_layout": "single_column",
+  "classification": "UNCLASSIFIED",
+  "internal_copy_options": false
+}
