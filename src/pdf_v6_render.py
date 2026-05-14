@@ -856,31 +856,29 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, ri
     return y
 
 
-def main(output_dir=None):
+def main(input_path=None, output_path=None):
     # Paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
     base_dir = os.path.dirname(script_dir)
-    sample_path = os.path.join(base_dir, "examples", "v6_sample_letter.json")
-    
-    # Resolve output directory with priority:
-    # 1) Function argument/config
-    # 2) Environment variable SECNAV_OUTPUT_DIR
-    # 3) Default ./output/ relative to project root
-    if output_dir is None:
-        output_dir = os.environ.get("SECNAV_OUTPUT_DIR")
-    if output_dir is None:
-        output_dir = os.path.join(base_dir, "output")
-    
-    # Resolve to absolute path for robustness
-    output_dir = os.path.abspath(output_dir)
-    output_path = os.path.join(output_dir, "v6_test_letter.pdf")
-    
-    # Debug: log which output path is being used
-    print(f"DEBUG Output directory: {output_dir}")
-    print(f"DEBUG Output path: {output_path}")
+
+    # Resolve input JSON path (default: examples/v6_sample_letter.json)
+    if input_path:
+        sample_path = input_path if os.path.isabs(input_path) else os.path.join(base_dir, input_path)
+    else:
+        sample_path = os.path.join(base_dir, "examples", "v6_sample_letter.json")
+
+    # Resolve output PDF path (default: output/v6_test_letter.pdf)
+    if output_path:
+        output_path = output_path if os.path.isabs(output_path) else os.path.join(base_dir, output_path)
+    else:
+        output_path = os.path.join(base_dir, "output", "v6_test_letter.pdf")
 
     # Ensure output directory exists
-    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    # Print resolved paths
+    print(f"INPUT_JSON: {sample_path}")
+    print(f"OUTPUT_PDF: {output_path}")
 
     # Load sample payload
     if not os.path.exists(sample_path):
@@ -891,11 +889,6 @@ def main(output_dir=None):
 
     with open(sample_path, "r", encoding="utf-8") as f:
         payload = json.load(f)
-
-    print(f"DEBUG Raw payload loaded from: {sample_path}")
-    print(f"DEBUG Raw payload body count: {len(payload.get('body', []))}")
-    if payload.get('body'):
-        print(f"DEBUG Raw body[0]: {repr(payload['body'][0])}")
 
     # Normalize
     normalized = normalize_payload(payload)
@@ -1122,5 +1115,12 @@ def main(output_dir=None):
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="SECNAV v6 PDF Renderer")
+    parser.add_argument("input", nargs="?", default=None,
+                        help="Input JSON path (default: examples/v6_sample_letter.json)")
+    parser.add_argument("output", nargs="?", default=None,
+                        help="Output PDF path (default: output/v6_test_letter.pdf)")
+    args = parser.parse_args()
+    main(input_path=args.input, output_path=args.output)
 
