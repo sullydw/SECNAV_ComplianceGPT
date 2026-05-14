@@ -1,37 +1,53 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-05-12  
+**Last Updated:** 2026-05-13  
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT (DO NOT USE)  
 **Renderer:** v6 PDF (ReportLab)
 
 ---
 
-## Milestone: Chapters 7, 8, & 9 Candidate Rules Complete
+## Milestone: Chapters 7, 8, 9, & 10 Candidate Rules Complete
 
 ### Chapter 7 — Complete and Audited
 - ✅ All 20 candidate rules (C7-001 through C7-020) created and audited
 - ✅ C7-012 enclosure rule corrected: single enclosure IS numbered, full 7-2.11 a-g source_text applied
 - ✅ C7 cleanup completed: removed implementation leakage (ReportLab, BOUNDARY_SPACINGS, CRITICAL notes) from C7-002/003/004/005/006/008/009/010/011
 - ✅ All C7 rules in `rules_v6/C7/` directory with standardized schema
+- ✅ Figure enhancements applied to C7-014/C7-016/C7-017/C7-018/C7-019/C7-020 with Figure 7-2/7-8/7-9/7-10 details
 - ✅ Commit history preserved on `main` branch
 
 ### Chapter 8 — Complete and Audited
 - ✅ All 6 candidate rules (C8-001 through C8-006) created and populated
 - ✅ All source_text resolved from manual (8-1 through 8-4)
 - ✅ C8-004 schema normalized (added severity, category, target_fields)
+- ✅ C8-003/C8-004/C8-006 figure-enhanced with Figure 8-2/8-3/8-4 details
 - ✅ C8 compatibility file (`C8-candidate-rules.json`) replaced with lightweight index pointer
 - ✅ All C8 rules in `rules_v6/C8/` directory with standardized schema
 - ✅ Index file (`rules_v6/C8/index.json`) tracks all rules with source_text_state
+- ✅ Final audit passed: all 6 rules resolved, JSON syntax fixed
 
 ### Chapter 9 — Complete and Audited
 - ✅ All 8 candidate rules (C9-001 through C9-008) created and populated
 - ✅ All source_text resolved from manual (9-1, 9-2.1 through 9-2.7)
 - ✅ C9-001 scope leakage cleaned (removed header-omission language from 9-1)
+- ✅ C9-002/C9-008 figure-enhanced with Figure 9-1/9-2/9-3 details
 - ✅ C9 compatibility file (`C9-candidate-rules.json`) created as lightweight index pointer
 - ✅ All C9 rules in `rules_v6/C9/` directory with standardized schema
 - ✅ Index file (`rules_v6/C9/index.json`) tracks all rules with source_text_state: resolved
 - ✅ Final audit passed: all 8 rules resolved, compatibility pointer updated
+
+### Chapter 10 — Complete and Candidate-Ready
+- ✅ Chapter 10 scaffold created (12 candidate rules: C10-001 through C10-012)
+- ✅ C10-001 through C10-012 resolved with verified source_text from manual sections
+- ✅ Figure-aware extraction used for Chapter 10 rules (Figures 10-1 through 10-7 reviewed)
+- ✅ C10-003/C10-004/C10-009/C10-010/C10-011 figure-enhanced with Figure 10-1/10-2/10-5/10-6/10-7 details
+- ✅ C10 compatibility pointer (`C10-candidate-rules.json`) updated: all_resolved=true, all 12 rules resolved
+- ✅ Final Chapter 10 audit passed: all 12 rules resolved, no unresolved rules remain
+- ✅ Chapters 7, 8, 9, and 10 are candidate-complete (46 rules total)
+- ✅ All Chapter 10 rules in `rules_v6/C10/` directory with standardized schema
+- ✅ Index file (`rules_v6/C10/index.json`) tracks all rules with source_text_state: resolved
+- ✅ Commit history preserved on `main` branch
 
 ### Repository Status
 - **Active repo:** https://github.com/sullydw/SECNAV_ComplianceGPT
@@ -39,10 +55,15 @@
 - **Branch:** main
 - **Working tree:** Clean (all commits pushed)
 
+### New Rule-Source Policy
+- **Figures are rule-bearing** and must be reviewed when referenced
+- Manual-derived truth only — no implementation leakage
+- Figure-derived advisory details included in target_fields and renderer_impact
+- No validators implemented yet; validator implementation planning pending
+
 ### Next Recommended Phases
-1. **Chapter 10 extraction** (Memorandums) — Continue candidate rule catalog
-2. **Validator implementation planning** — Design validator specs for automatable rules
-3. **Renderer integration** — Connect rule catalog to PDF v6 renderer for automated compliance checking
+1. **Validator implementation planning** — Design validator specs for automatable rules
+2. **Renderer integration** — Connect rule catalog to PDF v6 renderer for automated compliance checking
 
 ---
 
@@ -64,6 +85,14 @@ SECNAV_ComplianceGPT/
 │   ├── P-series.json         # Paragraph rules
 │   ├── S-series.json         # Spacing rules
 │   ├── V-series.json         # Validation rules
+│   ├── C7/                   # Chapter 7 rules
+│   ├── C8/                   # Chapter 8 rules
+│   ├── C9/                   # Chapter 9 rules
+│   ├── C10/                  # Chapter 10 rules (Memorandums)
+│   ├── C7-candidate-rules.json
+│   ├── C8-candidate-rules.json
+│   ├── C9-candidate-rules.json
+│   ├── C10-candidate-rules.json
 │   └── runtime/              # Compiled JSONL rules
 ├── examples/
 │   └── v6_sample_letter.json
