@@ -44,9 +44,7 @@
     "9. This ninth top-level paragraph adds more test content. It ensures that the renderer maintains consistent leading and spacing across all paragraph boundaries.",
     "10. This two-digit paragraph marker tests proper handling of double-digit numbering in the subject matter. Some activities may require two-digit markers for their correspondence while single-digit markers suffice for others. The renderer should handle both formats correctly.",
     "11. This additional top-level paragraph provides even more content to force a continuation page. Long body text ensures that the pagination and continuation page handling are properly tested. Multiple paragraphs with subdivisions create realistic test conditions for the renderer. The continuation page should repeat the subject line, maintain proper indentation for continuations, and correctly display page numbers. Classification marks should appear appropriately if the document contains classified material.",
-    "12. This twelfth top-level paragraph continues the test sequence. It demonstrates that paragraph numbering continues correctly beyond ten without causing rendering issues.",
-    "a. This subparagraph under section 12 provides subdivision testing. It confirms that two-digit paragraphs can contain subdivisions and that the renderer handles the mixed single/double-digit numbering correctly.",
-    "b. This second subparagraph under section 12 ensures that paired subdivisions are present as required by the manual. It validates that the renderer properly formats and renders subdivisions at all numbering levels."
+    "12. This twelfth top-level paragraph continues the test sequence. It demonstrates that paragraph numbering continues correctly beyond ten without causing rendering issues."
   ],
   "signature": {
     "name": "J. DOE",
