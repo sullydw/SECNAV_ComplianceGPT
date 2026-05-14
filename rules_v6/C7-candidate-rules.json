@@ -1,42 +1,174 @@
 {
-  "_comment": "COMPATIBILITY INDEX - Chapter 7 rules have been split into per-rule files",
-  "_migration": {
-    "message": "Chapter 7 rules have moved to rules_v6/C7/",
-    "index_file": "rules_v6/C7/index.json",
-    "per_rule_pattern": "rules_v6/C7/C7-###.json",
-    "example": "rules_v6/C7/C7-001.json"
-  },
-  "_meta": {
-    "series": "C7",
-    "name": "Chapter 7 Standard Letter Rules",
-    "description": "Candidate rule catalog for SECNAV M-5216.5 Chapter 7 standard letter formatting",
-    "version": "1.0",
-    "updated": "2026-05-08",
-    "status": "candidate",
-    "note": "All entries are placeholders requiring exact manual text before activation"
-  },
-  "rules_location": "rules_v6/C7/",
-  "index": "rules_v6/C7/index.json",
+  "compatibility_note": "This file is a lightweight compatibility pointer for legacy tooling. The authoritative Chapter 7 rules live in per-rule files under rules_v6/C7/. Do not use this file as the source of truth for rule content.",
+  "authoritative_location": "rules_v6/C7/",
+  "index_file": "rules_v6/C7/index.json",
+  "per_rule_files": [
+    "rules_v6/C7/C7-001.json",
+    "rules_v6/C7/C7-002.json",
+    "rules_v6/C7/C7-003.json",
+    "rules_v6/C7/C7-004.json",
+    "rules_v6/C7/C7-005.json",
+    "rules_v6/C7/C7-006.json",
+    "rules_v6/C7/C7-007.json",
+    "rules_v6/C7/C7-008.json",
+    "rules_v6/C7/C7-009.json",
+    "rules_v6/C7/C7-010.json",
+    "rules_v6/C7/C7-011.json",
+    "rules_v6/C7/C7-012.json",
+    "rules_v6/C7/C7-013.json",
+    "rules_v6/C7/C7-014.json",
+    "rules_v6/C7/C7-015.json",
+    "rules_v6/C7/C7-016.json",
+    "rules_v6/C7/C7-017.json",
+    "rules_v6/C7/C7-018.json",
+    "rules_v6/C7/C7-019.json",
+    "rules_v6/C7/C7-020.json"
+  ],
+  "chapter": 7,
+  "title": "Standard Letter",
   "rule_files": [
-    "C7-001.json",
-    "C7-002.json",
-    "C7-003.json",
-    "C7-004.json",
-    "C7-005.json",
-    "C7-006.json",
-    "C7-007.json",
-    "C7-008.json",
-    "C7-009.json",
-    "C7-010.json",
-    "C7-011.json",
-    "C7-012.json",
-    "C7-013.json",
-    "C7-014.json",
-    "C7-015.json",
-    "C7-016.json",
-    "C7-017.json",
-    "C7-018.json",
-    "C7-019.json",
-    "C7-020.json"
-  ]
+    {
+      "rule_id": "C7-001",
+      "file_path": "rules_v6/C7/C7-001.json",
+      "manual_section": "7-1",
+      "title": "General — Letter Overview",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-002",
+      "file_path": "rules_v6/C7/C7-002.json",
+      "manual_section": "7-2.1",
+      "title": "Letterhead",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-003",
+      "file_path": "rules_v6/C7/C7-003.json",
+      "manual_section": "7-2.2",
+      "title": "Date",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-004",
+      "file_path": "rules_v6/C7/C7-004.json",
+      "manual_section": "7-2.3",
+      "title": "From Line",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-005",
+      "file_path": "rules_v6/C7/C7-005.json",
+      "manual_section": "7-2.4",
+      "title": "To Line",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-006",
+      "file_path": "rules_v6/C7/C7-006.json",
+      "manual_section": "7-2.5",
+      "title": "Via Line",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-007",
+      "file_path": "rules_v6/C7/C7-007.json",
+      "manual_section": "7-2.6",
+      "title": "Subject Line",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-008",
+      "file_path": "rules_v6/C7/C7-008.json",
+      "manual_section": "7-2.7",
+      "title": "Reference Line",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-009",
+      "file_path": "rules_v6/C7/C7-009.json",
+      "manual_section": "7-2.8",
+      "title": "Enclosure Line",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-010",
+      "file_path": "rules_v6/C7/C7-010.json",
+      "manual_section": "7-2.9",
+      "title": "Copy To Line",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-011",
+      "file_path": "rules_v6/C7/C7-011.json",
+      "manual_section": "7-2.10",
+      "title": "Identification of Symbols",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-012",
+      "file_path": "rules_v6/C7/C7-012.json",
+      "manual_section": "7-2.11",
+      "title": "Enclosure Page Numbering",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-013",
+      "file_path": "rules_v6/C7/C7-013.json",
+      "manual_section": "7-2.12",
+      "title": "Continuation Pages",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-014",
+      "file_path": "rules_v6/C7/C7-014.json",
+      "manual_section": "7-2.13",
+      "title": "Paragraphs",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-015",
+      "file_path": "rules_v6/C7/C7-015.json",
+      "manual_section": "7-2.14",
+      "title": "Signature Block",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-016",
+      "file_path": "rules_v6/C7/C7-016.json",
+      "manual_section": "7-2.15",
+      "title": "Distribution List",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-017",
+      "file_path": "rules_v6/C7/C7-017.json",
+      "manual_section": "7-2.16",
+      "title": "Copy List",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-018",
+      "file_path": "rules_v6/C7/C7-018.json",
+      "manual_section": "7-2.17",
+      "title": "Page Numbering",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-019",
+      "file_path": "rules_v6/C7/C7-019.json",
+      "manual_section": "7-2.18",
+      "title": "Correspondence Package Assembly",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C7-020",
+      "file_path": "rules_v6/C7/C7-020.json",
+      "manual_section": "7-2.19",
+      "title": "Tabbing a Correspondence Package",
+      "source_text_state": "resolved"
+    }
+  ],
+  "total_rules": 20,
+  "all_resolved": true,
+  "deprecated_fields_warning": "Full source_text, plain_language_rule, and other rule content fields are NOT included in this compatibility file. Read the per-rule JSON files directly for authoritative rule content."
 }

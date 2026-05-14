@@ -41,7 +41,7 @@
 - ✅ Chapter 10 scaffold created (12 candidate rules: C10-001 through C10-012)
 - ✅ C10-001 through C10-012 resolved with verified source_text from manual sections
 - ✅ Figure-aware extraction used for Chapter 10 rules (Figures 10-1 through 10-7 reviewed)
-- ✅ C10-003/C10-004/C10-009/C10-010/C10-011 figure-enhanced with Figure 10-1/10-2/10-5/10-6/10-7 details
+- ✅ C10-003/C10-004/C10-005/C10-006/C10-009/C10-010/C10-011 figure-enhanced with Figure 10-1/10-2/10-5/10-6/10-7 details
 - ✅ C10 compatibility pointer (`C10-candidate-rules.json`) updated: all_resolved=true, all 12 rules resolved
 - ✅ Final Chapter 10 audit passed: all 12 rules resolved, no unresolved rules remain
 - ✅ Chapters 7, 8, 9, and 10 are candidate-complete (46 rules total)
