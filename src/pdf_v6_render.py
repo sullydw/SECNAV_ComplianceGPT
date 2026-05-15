@@ -543,7 +543,26 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
     """
     c.setFont("Times-Roman", 12)
 
+    # SECNAV Figure 7-8 paragraph alignment:
+    # Marker columns: where the marker (1., a., (1), (a)) prints
+    # Text columns: where first-line text starts (fixed per level)
+    # Continuation lines: return to left margin (72 pt)
+    # Two-digit markers (10., 11., etc.): marker may extend left of text column
     marker_offset = {1: 0, 2: 24, 3: 48, 4: 78}
+    
+    # Fixed first-line text-start columns per level (in points from left edge)
+    # Level 1: 18 pt (marker at 72 pt, text starts at 90 pt)
+    # Level 2: 42 pt (marker at 96 pt, text starts at 114 pt)
+    # Level 3: 72 pt (marker at 120 pt, text starts at 144 pt)
+    # Level 4: 102 pt (marker at 150 pt, text starts at 174 pt)
+    # These values ensure consistent text alignment regardless of marker width
+    text_start_column = {
+        1: left_margin_pt + 18,   # 90 pt
+        2: left_margin_pt + 42,   # 114 pt
+        3: left_margin_pt + 72,   # 144 pt
+        4: left_margin_pt + 102,  # 174 pt
+    }
+    
     page_width = c._pagesize[0]
     right_margin_size_pt = 72.0
     right_edge_pt = page_width - right_margin_size_pt
@@ -592,11 +611,9 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
 
         marker_x = left_margin_pt + marker_offset.get(level, 0)
 
-        if marker:
-            marker_with_spaces = marker + "  "
-            text_x = marker_x + c.stringWidth(marker_with_spaces, "Times-Roman", 12)
-        else:
-            text_x = marker_x
+        # First-line text start: use fixed column per level for consistent alignment
+        # Continuation lines will return to left_margin_pt
+        text_x = text_start_column.get(level, left_margin_pt)
 
         # Check if we need a new page before drawing this body record
         # Estimate space needed: at least one line for marker+text
