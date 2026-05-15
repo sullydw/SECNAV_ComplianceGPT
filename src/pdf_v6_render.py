@@ -545,22 +545,23 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
 
     # SECNAV Figure 7-8 paragraph alignment:
     # Marker columns: where the marker (1., a., (1), (a)) prints
-    # Text columns: where first-line text starts (fixed per level)
+    # Text columns: where first-line text starts (marker + 2 spaces)
     # Continuation lines: return to left margin (72 pt)
     # Two-digit markers (10., 11., etc.): marker may extend left of text column
-    marker_offset = {1: 0, 2: 24, 3: 48, 4: 78}
+    # Adjusted marker offsets to reduce excessive indentation for subparagraphs
+    marker_offset = {1: 0, 2: 18, 3: 36, 4: 54}
     
     # Fixed first-line text-start columns per level (in points from left edge)
-    # Level 1: 18 pt (marker at 72 pt, text starts at 90 pt)
-    # Level 2: 42 pt (marker at 96 pt, text starts at 114 pt)
-    # Level 3: 72 pt (marker at 120 pt, text starts at 144 pt)
-    # Level 4: 102 pt (marker at 150 pt, text starts at 174 pt)
-    # These values ensure consistent text alignment regardless of marker width
+    # Text starts at marker position + marker width + 2 spaces (~16 pt)
+    # Level 1: marker at 72 pt, text ~90 pt
+    # Level 2: marker at 90 pt, text ~108 pt
+    # Level 3: marker at 108 pt, text ~126 pt
+    # Level 4: marker at 126 pt, text ~144 pt
     text_start_column = {
-        1: left_margin_pt + 18,   # 90 pt
-        2: left_margin_pt + 42,   # 114 pt
-        3: left_margin_pt + 72,   # 144 pt
-        4: left_margin_pt + 102,  # 174 pt
+        1: left_margin_pt + 18,   # ~90 pt (for "1." marker)
+        2: left_margin_pt + 36,   # ~108 pt (for "a." marker)
+        3: left_margin_pt + 54,   # ~126 pt (for "(1)" marker)
+        4: left_margin_pt + 72,   # ~144 pt (for "(a)" marker)
     }
     
     page_width = c._pagesize[0]
