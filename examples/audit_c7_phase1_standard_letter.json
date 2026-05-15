@@ -58,7 +58,5 @@
     "Commanding Officer, Related Activity Alpha",
     "Commanding Officer, Related Activity Beta",
     "Commanding Officer, Related Activity Gamma"
-  ],
-  "distribution_mode": "distribution_only",
-  "distribution_layout": "single_column"
+  ]
 }
