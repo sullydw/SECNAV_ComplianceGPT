@@ -479,7 +479,9 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
     # Copy to (if present) - renders after Distribution if both exist
     # Label is rule-driven from model if provided
     # Copy to never affects header rendering
+    # One blank line after signature before Copy to per BOUNDARY_SPACINGS (SIGNATURE -> COPY_TO)
     if normalized.get("copy_to"):
+        y -= copy_gap  # One blank line after signature before Copy to
         copy_to_y = y
         copy_to_layout = normalized.get("copy_to_layout", "single_column")
         copy_to_label = normalized.get("copy_to_label", "Copy to:")
@@ -569,6 +571,8 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
         subj_max_width = right_edge_pt - header_text_x
         y = draw_wrapped_text(c, header_text_x, y, subj, 12, subj_max_width, leading)
         # draw_wrapped_text returns y already positioned for next line (one leading below last subject line)
+        # Add one blank line after continuation subject before body/signature resumes
+        y -= leading
         # This y is the baseline where body paragraph 1 should be drawn
         print(f"DEBUG Continuation header: label_x={header_label_x:.1f}, text_x={header_text_x:.1f}, y after subject={y:.1f}")
         return y
@@ -579,6 +583,12 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
             level = 1
             marker = ""
             text = line
+
+        # Add blank line when transitioning from parent to first child subparagraph
+        # This applies to: 1. -> a., b. -> (1), (2) -> (a)
+        if i > 0 and level > prev_level:
+            y -= leading  # One blank line before first child subparagraph
+            print(f"DEBUG blank line before level-{level} child of level-{prev_level} parent")
 
         marker_x = left_margin_pt + marker_offset.get(level, 0)
 
