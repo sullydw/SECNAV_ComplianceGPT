@@ -13,7 +13,7 @@
     "SUPPRESS_PARENT_LINE": true
   },
   "from": "Commanding Officer, Example Activity",
-  "to": "Cmdr. Jane Smith",
+  "to": "Commanding Officer, Example Receiving Activity",
   "via": [
     "(1) Commanding Officer, Example Parent Command"
   ],
