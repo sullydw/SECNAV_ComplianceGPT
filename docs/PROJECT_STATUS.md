@@ -65,6 +65,26 @@
 1. **Validator implementation planning** — Design validator specs for automatable rules
 2. **Renderer integration** — Connect rule catalog to PDF v6 renderer for automated compliance checking
 
+### C7 Phase 1 Visual Audit Completion (2026-05-15)
+
+- **PDF visual review completed** using `output/audit_c7_phase1_standard_letter.pdf`
+- **Fixture data cleanup completed**:
+  - To line activity/title fixed
+  - Via activity/title fixed
+  - Subject uppercase
+  - Ref markers added
+  - Encl markers added
+  - Distribution-only mode removed from standard-letter fixture
+- **Renderer spacing fixes completed**:
+  - SSIC/date to From blank line
+  - parent paragraph to child subparagraph blank line
+  - continuation-page subject to body blank line
+  - signature block to Copy to blank line
+- **Subparagraph marker indentation corrected** (reduced level 2-4 marker offsets)
+- **SSIC/sender-symbol block alignment reviewed and confirmed correct**
+- **C7 Phase 1 standard-letter visual smoke audit now passes**
+- **No rule files modified** for this visual-audit completion
+
 ---
 
 ## C7 Phase 1 Implementation (2026-05-14)
