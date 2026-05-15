@@ -85,6 +85,13 @@
 - **C7 Phase 1 standard-letter visual smoke audit now passes**
 - **No rule files modified** for this visual-audit completion
 
+### C7 Phase 1 Regression Runner (2026-05-15)
+
+- **Runner added and passed**: `tools/run_c7_phase1_regression.py` (9c4086a)
+- **Command**: `python tools/run_c7_phase1_regression.py`
+- **Covers**: body validation, C7 fixture render, default render, and output PDF existence/non-empty check
+- **Visual PDF review remains manual** per `docs/C7_PHASE1_REGRESSION_CHECKLIST.md`
+
 ---
 
 ## C7 Phase 1 Implementation (2026-05-14)
