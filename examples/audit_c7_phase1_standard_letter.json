@@ -15,16 +15,16 @@
   "from": "Commanding Officer, Example Activity",
   "to": "Cmdr. Jane Smith",
   "via": [
-    "Cmdr. Bob Johnson"
+    "(1) Commanding Officer, Example Parent Command"
   ],
-  "subj": "Standard Letter Phase 1 Audit — Paragraph Structure, Subdivision Testing, and Two-Digit Marker Validation",
+  "subj": "STANDARD LETTER PHASE 1 AUDIT — PARAGRAPH STRUCTURE, SUBDIVISION TESTING, AND TWO-DIGIT MARKER VALIDATION",
   "ref": [
-    "SECNAV M-5216.1",
-    "OPNAV 5216/144A"
+    "(a) SECNAV M-5216.1",
+    "(b) OPNAV 5216/144A"
   ],
   "encl": [
-    "Appendix A — Background Material (Standard)",
-    "Appendix B — Official File Copy (Standard)"
+    "(1) Appendix A — Background Material (Standard)",
+    "(2) Appendix B — Official File Copy (Standard)"
   ],
   "body": [
     "1. This top-level paragraph defines or states in as few words as possible the purpose of this correspondence. It serves as an introduction to the material that follows and establishes context for the reader. Additional sentences may be included here to provide further background information or rationale for the correspondence.",
