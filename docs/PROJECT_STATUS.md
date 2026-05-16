@@ -1,6 +1,6 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-05-13  
+**Last Updated:** 2026-05-16  
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT (DO NOT USE)  
 **Renderer:** v6 PDF (ReportLab)
@@ -36,6 +36,20 @@
 - ✅ All C9 rules in `rules_v6/C9/` directory with standardized schema
 - ✅ Index file (`rules_v6/C9/index.json`) tracks all rules with source_text_state: resolved
 - ✅ Final audit passed: all 8 rules resolved, compatibility pointer updated
+- ✅ C9 new-page endorsement Phase 1 implemented (2026-05-16):
+  - New-page endorsement audit fixture added: `examples/audit_c9_new_page_endorsement.json`
+  - C9 renderer Phase 1 support added:
+    - new-page endorsement heading renders from: `endorsement_ordinal` + " ENDORSEMENT on " + `basic_letter_id`
+    - explicit endorsement page-number continuation works using: `page_number_start`, `force_page_number_on_first_page`
+  - Page number is not inferred from endorsement_ordinal: FIRST/SECOND/THIRD identifies endorsement sequence only, not displayed page number
+  - Page-number continuation applies only to: `doc_type: DT_ENDORSEMENT`, `endorsement_type: new_page`
+  - C9 output: `output/audit_c9_new_page_endorsement.pdf`
+  - C7 regression runner passed after C9 changes: `python tools/run_c7_phase1_regression.py` — PASS
+  - C8 regression runner passed after C9 changes: `python tools/run_c8_regression.py` — PASS
+  - Same-page endorsement support not yet implemented
+  - C9 reference/enclosure sequence validation not yet implemented
+  - C9 copy-to significance/complete annotation logic not yet implemented
+  - C9 assembly remains advisory/procedural for later checklist support
 
 ### Chapter 10 — Complete and Candidate-Ready
 - ✅ Chapter 10 scaffold created (12 candidate rules: C10-001 through C10-012)
