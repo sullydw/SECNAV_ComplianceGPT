@@ -766,9 +766,25 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, ri
     
     # To: (omit only if distribution_mode is "distribution_only")
     if distribution_mode != "distribution_only":
-        c.drawString(label_x, y, "To:")
-        c.drawString(text_x, y, normalized.get("to", ""))
-        y -= leading
+        to_value = normalized.get("to", "")
+        
+        if isinstance(to_value, list):
+            to_entries = [str(entry).strip() for entry in to_value if str(entry).strip()]
+        elif str(to_value).strip():
+            to_entries = [str(to_value).strip()]
+        else:
+            to_entries = []
+        
+        if to_entries:
+            c.drawString(label_x, y, "To:")
+            c.drawString(text_x, y, to_entries[0])
+            print(f"DEBUG To: '{to_entries[0]}' | y={y:.1f}")
+            y -= leading
+            
+            for to_entry in to_entries[1:]:
+                c.drawString(text_x, y, to_entry)
+                print(f"DEBUG To continuation: '{to_entry}' | y={y:.1f}")
+                y -= leading
 
     # Via: (if present)
     if normalized.get("via_count", 0) > 0:
