@@ -166,16 +166,30 @@ def wrap_paragraph(text, font_name, font_size, max_width, c):
     return lines
 
 
-def draw_page_number(c, page_width, page_num, bottom_margin_pt):
-    """Draw page number centered, 1/2 inch from bottom edge (page 2+ only)."""
-    if page_num < 2:
+def draw_page_number(c, page_width, page_num, bottom_margin_pt, page_number_start=None, force_page_number_on_first_page=False):
+    """Draw page number centered, 1/2 inch from bottom edge.
+    
+    Standard letters: page 2+ only, display page_num.
+    C9 new-page endorsements (force_page_number_on_first_page=True):
+      draws on all pages, displaying page_number_start + (page_num - 1).
+    """
+    if page_number_start is None and page_num < 2:
         return
+    if page_number_start is None and not force_page_number_on_first_page:
+        return
+    
+    # Compute display number
+    if force_page_number_on_first_page and page_number_start is not None:
+        display_num = page_number_start + (page_num - 1)
+    else:
+        display_num = page_num
+    
     # 1/2 inch from bottom edge = 36pt from bottom of page
     page_num_y = 36.0
     page_num_x = page_width / 2
     c.setFont("Times-Roman", 12)
-    c.drawCentredString(page_num_x, page_num_y, str(page_num))
-    print(f"DEBUG Page number {page_num} drawn at x={page_num_x:.1f}, y={page_num_y:.1f}")
+    c.drawCentredString(page_num_x, page_num_y, str(display_num))
+    print(f"DEBUG Page number {display_num} drawn at x={page_num_x:.1f}, y={page_num_y:.1f}")
 
 
 def _draw_endorsement_heading(payload, c, y, left_margin_pt, font_name="Times-Roman", font_size=12):
@@ -565,7 +579,7 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
     return y
 
 
-def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, page_height, top_margin_pt, bottom_margin_pt, signature_gap, copy_gap, reserve_signature_space=False):
+def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, page_height, top_margin_pt, bottom_margin_pt, signature_gap, copy_gap, reserve_signature_space=False, page_number_start=None, force_page_number_on_first_page=False):
     """
     Draw body paragraphs with proper level-based indentation and word-wrap.
     Marker prints only on first line; continuation lines return to left margin.
@@ -663,7 +677,7 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
             signature_space_needed = signature_gap + leading + copy_gap  # signature_gap + signature line + copy_gap buffer
             if y < bottom_margin_pt + signature_space_needed:
                 # Draw page number on current page before showing new page
-                draw_page_number(c, page_width, page_count, bottom_margin_pt)
+                draw_page_number(c, page_width, page_count, bottom_margin_pt, page_number_start=page_number_start, force_page_number_on_first_page=force_page_number_on_first_page)
                 c.showPage()
                 page_count += 1
                 body_lines_on_current_page = 0
@@ -673,7 +687,7 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
                 print(f"DEBUG SIGNATURE PAGE: Started page {page_count}, y after header: {y:.1f}")
         elif y < bottom_margin_pt + min_space_needed:
             # Draw page number on current page before showing new page
-            draw_page_number(c, page_width, page_count, bottom_margin_pt)
+            draw_page_number(c, page_width, page_count, bottom_margin_pt, page_number_start=page_number_start, force_page_number_on_first_page=force_page_number_on_first_page)
             c.showPage()
             page_count += 1
             body_lines_on_current_page = 0
@@ -704,7 +718,7 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
             # Check if continuation line needs new page
             if y < bottom_margin_pt + leading:
                 # Draw page number on current page before showing new page
-                draw_page_number(c, page_width, page_count, bottom_margin_pt)
+                draw_page_number(c, page_width, page_count, bottom_margin_pt, page_number_start=page_number_start, force_page_number_on_first_page=force_page_number_on_first_page)
                 c.showPage()
                 page_count += 1
                 body_lines_on_current_page = 0
@@ -1145,7 +1159,8 @@ def main(input_path=None, output_path=None):
     # Body block - use dedicated function with level-based indentation and pagination
     y, page_count, body_lines_on_last_page = draw_body_block(
         c, left_margin_pt, y, leading, body_font_size, normalized, page_height, top_margin_pt, bottom_margin_pt,
-        signature_gap, copy_gap, reserve_signature_space=True
+        signature_gap, copy_gap, reserve_signature_space=True,
+        page_number_start=page_number_start, force_page_number_on_first_page=force_page_number_on_first_page
     )
     print(f"DEBUG Total pages generated: {page_count}")
     print(f"DEBUG Body lines on last page: {body_lines_on_last_page}")
@@ -1157,7 +1172,7 @@ def main(input_path=None, output_path=None):
     # Check if remaining space on current page is sufficient
     if y < bottom_margin_pt + required_signature_space:
         # Not enough room - start a new page for signature block
-        draw_page_number(c, page_width, page_count, bottom_margin_pt)
+        draw_page_number(c, page_width, page_count, bottom_margin_pt, page_number_start=page_number_start, force_page_number_on_first_page=force_page_number_on_first_page)
         c.showPage()
         page_count += 1
         print(f"DEBUG SIGNATURE PAGINATION: Started page {page_count} for signature block (insufficient space)")
@@ -1182,7 +1197,7 @@ def main(input_path=None, output_path=None):
     y = draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, signature_gap, copy_gap, bottom_margin_pt)
 
     # Draw page number on final page (page 2+ only)
-    draw_page_number(c, page_width, page_count, bottom_margin_pt)
+    draw_page_number(c, page_width, page_count, bottom_margin_pt, page_number_start=page_number_start, force_page_number_on_first_page=force_page_number_on_first_page)
 
     c.save()
 
