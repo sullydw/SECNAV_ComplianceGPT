@@ -1094,6 +1094,9 @@ def main(input_path=None, output_path=None):
     # Boundary: SSIC_DATE -> HEADER (provides exactly 1 leading unit after last sender-symbol line)
     y -= get_boundary_spacing("SSIC_DATE", "HEADER", leading)
 
+    # ── Endorsement heading (C9 new-page only) ──
+    y = _draw_endorsement_heading(payload, c, y, left_margin_pt)
+
     # Header block - use dedicated function with proper SECNAV text column
     label_x = left_margin_pt
     text_x = left_margin_pt + 43  # 43 pt offset for proper SECNAV alignment
