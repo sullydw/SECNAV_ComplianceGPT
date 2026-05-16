@@ -413,8 +413,9 @@ def draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, 
         print(f"DEBUG Signature drawn at x={signature_x:.1f}, y={y:.1f}")
         y -= leading
 
-    # Gap between signature and distribution/copy_to is handled by Distribution block start
-    # Do NOT add extra y decrement here - Distribution/Copy to will start at current y
+    # One blank line after signature before distribution
+    if normalized.get("distribution"):
+        y -= leading
 
     # Distribution: (if present, renders after signature, before Copy to)
     # Label and order are rule-driven from model if provided
