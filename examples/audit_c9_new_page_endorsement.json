@@ -1,4 +1,6 @@
 {
+  "page_number_start": 2,
+  "force_page_number_on_first_page": true,
   "doc_type": "DT_ENDORSEMENT",
   "endorsement_type": "new_page",
   "endorsement_ordinal": "SECOND",
