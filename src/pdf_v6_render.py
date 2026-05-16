@@ -178,6 +178,41 @@ def draw_page_number(c, page_width, page_num, bottom_margin_pt):
     print(f"DEBUG Page number {page_num} drawn at x={page_num_x:.1f}, y={page_num_y:.1f}")
 
 
+def _draw_endorsement_heading(payload, c, y, left_margin_pt, font_name="Times-Roman", font_size=12):
+    """Draw endorsement heading for C9 new-page endorsements.
+    
+    Only renders when payload has doc_type=DT_ENDORSEMENT and endorsement_type=new_page.
+    Returns (y) after decrementing for heading + one blank line.
+    """
+    doc_type = payload.get("doc_type", "")
+    endorsement_type = payload.get("endorsement_type", "")
+    
+    if doc_type != "DT_ENDORSEMENT" or endorsement_type != "new_page":
+        return y
+    
+    endorsement_ordinal = payload.get("endorsement_ordinal", "")
+    basic_letter_id = payload.get("basic_letter_id", "")
+    
+    if not endorsement_ordinal or not basic_letter_id:
+        print("WARNING: endorsement_ordinal or basic_letter_id missing, skipping endorsement heading")
+        return y
+    
+    heading_text = f"{endorsement_ordinal} ENDORSEMENT on {basic_letter_id}"
+    
+    c.setFont(font_name, font_size)
+    c.drawString(left_margin_pt, y, heading_text)
+    print(f"DEBUG Endorsement heading: '{heading_text}' at x={left_margin_pt:.1f}, y={y:.1f}")
+    
+    # Decrement y: heading line + one blank line before From block
+    font_size_pt = font_size
+    # Approximate leading as 1.2 * font_size_pt
+    heading_leading = font_size_pt * 1.2
+    y -= heading_leading  # space taken by heading text
+    y -= heading_leading  # blank line after heading
+    
+    return y
+
+
 def calculate_signature_space(normalized, leading, signature_gap, copy_gap):
     """
     Calculate total vertical space needed for signature block.
