@@ -325,6 +325,30 @@ PASS
 
 ---
 
+## C8 Core Address-Format Baseline (2026-05-16)
+
+- **C8 core address-format fixtures added**:
+  - `examples/audit_c8_to_only_letter.json` — C8-002 To-line-only multiple-address letter
+  - `examples/audit_c8_distribution_only_letter.json` — C8-003 Distribution-only multiple-address letter
+  - `examples/audit_c8_to_plus_distribution_letter.json` — C8-004 To + Distribution group title
+- **C8 core renderer support confirmed**:
+  - C8-002 To-line-only renders multiple To addressees as stacked entries
+  - C8-003 Distribution-only renders no To line and lists Distribution addressees
+  - C8-004 To + Distribution renders To group title plus Distribution members
+- **Renderer patch added support for "to" as a list** for C8-002 multiple addressees
+- **Visual audits passed for**:
+  - `output/audit_c8_to_only_letter.pdf` — PASS
+  - `output/audit_c8_distribution_only_letter.pdf` — PASS
+  - `output/audit_c8_to_plus_distribution_letter.pdf` — PASS
+- **C7 Phase 1 regression runner passed after C8 renderer changes**:
+  ```
+  python tools/run_c7_phase1_regression.py
+  C7 PHASE 1 REGRESSION RESULT: PASS
+  ```
+- **C8-005 and C8-006 remain advisory/procedural** for later checklist support
+
+---
+
 ## Changelog
 
 See `CHANGELOG.md` for version history.
