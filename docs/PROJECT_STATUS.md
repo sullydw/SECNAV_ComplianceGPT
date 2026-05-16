@@ -349,6 +349,30 @@ PASS
 
 ---
 
+### C8 Validator Regression Coverage (2026-05-16)
+
+- **C8 structural validator added**: `src/c8_validate.py`
+- **C8 validator coverage**:
+  - Valid C8 To-line-only fixture: PASS
+  - Valid C8 Distribution-only fixture: PASS
+  - Valid C8 To + Distribution fixture: PASS
+  - Invalid Distribution-only with To line: expected FAIL
+  - Invalid To + Distribution missing Distribution list: expected FAIL
+  - To-line-only with more than four addressees: WARNING + PASS
+- **C8 regression runner updated and passed**: `python tools/run_c8_regression.py`
+- **Runner covers**:
+  - C8 validator checks
+  - C8 render checks
+  - Output PDF existence/non-empty checks
+  - C7 Phase 1 regression guard
+- **C8 core implementation is baseline-locked** for:
+  - C8-002 To-line-only
+  - C8-003 Distribution-only
+  - C8-004 To + Distribution
+- **C8-005 and C8-006 remain advisory/procedural** for later checklist support
+
+---
+
 ### C8 Regression Runner (2026-05-16)
 
 - **C8 regression runner added and passed**: `tools/run_c8_regression.py`
