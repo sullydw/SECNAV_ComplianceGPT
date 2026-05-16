@@ -13,7 +13,11 @@
     "SUPPRESS_PARENT_LINE": true
   },
   "from": "Commanding Officer, Example Activity",
-  "to": "Commanding Officer, Example Receiving Activity Alpha, Commanding Officer, Example Receiving Activity Bravo, Commanding Officer, Example Receiving Activity Charlie",
+  "to": [
+    "Commanding Officer, Example Receiving Activity Alpha",
+    "Commanding Officer, Example Receiving Activity Bravo",
+    "Commanding Officer, Example Receiving Activity Charlie"
+  ],
   "subj": "C8 TO LINE ONLY MULTIPLE-ADDRESS LETTER AUDIT FIXTURE",
   "body": [
     "1. This multiple-address letter tests the To line only format for four or fewer action addressees with no Via addressees and no Distribution line.",
