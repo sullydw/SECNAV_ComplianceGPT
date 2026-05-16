@@ -349,6 +349,24 @@ PASS
 
 ---
 
+### C8 Regression Runner (2026-05-16)
+
+- **C8 regression runner added and passed**: `tools/run_c8_regression.py`
+- **Command**:
+  ```
+  python tools/run_c8_regression.py
+  C8 REGRESSION RESULT: PASS
+  ```
+- **Runner covers**:
+  - C8 To-line-only render
+  - C8 Distribution-only render
+  - C8 To + Distribution render
+  - Output PDF existence/non-empty checks
+  - C7 Phase 1 regression guard
+- **Visual PDF review remains manual** per `docs/C8_REGRESSION_CHECKLIST.md`
+
+---
+
 ## Changelog
 
 See `CHANGELOG.md` for version history.
