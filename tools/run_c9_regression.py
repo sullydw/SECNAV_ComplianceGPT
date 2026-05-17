@@ -96,6 +96,34 @@ def main() -> int:
     else:
         passed = False
 
+    # --- C9 Via fixtures ---
+
+    c9_single_via_render = [
+        py,
+        "src/pdf_v6_render.py",
+        "examples/audit_c9_new_page_endorsement_single_via.json",
+        "output/audit_c9_new_page_endorsement_single_via.pdf",
+    ]
+
+    if run_command(root, c9_single_via_render, "Render C9 single-Via new-page endorsement fixture"):
+        if not check_pdf(root, "output/audit_c9_new_page_endorsement_single_via.pdf"):
+            passed = False
+    else:
+        passed = False
+
+    c9_multi_via_render = [
+        py,
+        "src/pdf_v6_render.py",
+        "examples/audit_c9_new_page_endorsement_multiple_via.json",
+        "output/audit_c9_new_page_endorsement_multiple_via.pdf",
+    ]
+
+    if run_command(root, c9_multi_via_render, "Render C9 multiple-Via new-page endorsement fixture"):
+        if not check_pdf(root, "output/audit_c9_new_page_endorsement_multiple_via.pdf"):
+            passed = False
+    else:
+        passed = False
+
     if not run_command(root, [py, "tools/run_c7_phase1_regression.py"], "Run C7 Phase 1 regression guard"):
         passed = False
 
