@@ -298,6 +298,7 @@ PASS
 - Paragraph → subparagraph stacking fixed (3.0 → 1.0 leading units)
 - Signature → Distribution stacking fixed (2.0 → 1.0 leading units)
 - Distribution → Copy to stacking fixed (2.0 → 1.0 leading units)
+- SSIC/Date → Header/Endorsement heading blank line fixed (1.0 → 2.0 leading units)
 
 ### Validation
 - Audit Agent measurement confirms baseline-to-baseline accuracy
@@ -424,6 +425,27 @@ PASS
 - **C9 reference/enclosure sequence validation remains unimplemented**.
 - **C9 copy-to significance/complete annotation logic remains unimplemented**.
 - **Do not overstate this as full C9 implementation**.
+
+### C9-003 Via Addressee Fixtures (2026-05-16)
+
+- **C9 Via audit fixtures added and rendered**:
+  - `examples/audit_c9_new_page_endorsement_single_via.json`
+  - `examples/audit_c9_new_page_endorsement_multiple_via.json`
+- **C9-003 remaining Via behavior confirmed**:
+  - Single remaining Via addressee → renders unnumbered
+  - Multiple remaining Via addressees → render numbered (1), (2)
+- **Code-verified visual audit**: both renders PASS
+  - `output/audit_c9_new_page_endorsement_single_via.pdf` — PASS
+  - `output/audit_c9_new_page_endorsement_multiple_via.pdf` — PASS
+- **All regression suites PASS**:
+  - `python tools/run_c7_phase1_regression.py` — PASS
+  - `python tools/run_c8_regression.py` — PASS
+  - `python tools/run_c9_regression.py` — PASS
+- **SSIC/date-to-header spacing regression fixed (shared fix)**:
+  - C7/C8: one blank line between SSIC/date block and From line
+  - C9: one blank line between SSIC/date block and endorsement heading
+  - C9: one blank line between endorsement heading and From line (preserved)
+- **Next step**: update `tools/run_c9_regression.py` to include the two C9 Via fixtures
 
 ---
 
