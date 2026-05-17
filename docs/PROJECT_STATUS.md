@@ -405,6 +405,28 @@ PASS
 
 ---
 
+## C9 New-Page Endorsement Phase 1 (2026-05-16)
+
+- **C9 regression checklist added**: `docs/C9_REGRESSION_CHECKLIST.md`
+- **C9 regression runner added and passed**: `python tools/run_c9_regression.py`
+- **C9 REGRESSION RESULT: PASS**
+- **Runner covers**:
+  - C9 new-page endorsement render
+  - Output PDF existence/non-empty check
+  - C7 Phase 1 regression guard
+  - C8 regression guard
+- **C9 Phase 1 baseline locked** for:
+  - new-page endorsement heading
+  - explicit page-number continuation for new-page endorsements only
+- **Visual PDF review remains manual** per `docs/C9_REGRESSION_CHECKLIST.md`
+- **Same-page endorsements remain unimplemented**.
+- **C9 remaining Via behavior remains next planned implementation item**.
+- **C9 reference/enclosure sequence validation remains unimplemented**.
+- **C9 copy-to significance/complete annotation logic remains unimplemented**.
+- **Do not overstate this as full C9 implementation**.
+
+---
+
 ## Changelog
 
 See `CHANGELOG.md` for version history.
