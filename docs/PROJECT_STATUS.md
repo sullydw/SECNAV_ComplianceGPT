@@ -445,7 +445,24 @@ PASS
   - C7/C8: one blank line between SSIC/date block and From line
   - C9: one blank line between SSIC/date block and endorsement heading
   - C9: one blank line between endorsement heading and From line (preserved)
-- **Next step**: update `tools/run_c9_regression.py` to include the two C9 Via fixtures
+- **C9 regression runner coverage** (2026-05-17):
+  - Runner now includes Via fixtures
+  - Renders/checks:
+    - C9 base new-page endorsement fixture
+    - C9 single remaining Via fixture
+    - C9 multiple remaining Via fixture
+    - output PDF existence/non-empty checks
+    - C7 Phase 1 regression guard
+    - C8 regression guard
+  - C9-003 remaining Via behavior is now regression-protected
+    - single remaining Via addressee remains unnumbered
+    - multiple remaining Via addressees retain numbered format
+  - C9 regression runner passed:
+    ```
+    python tools/run_c9_regression.py
+    C9 REGRESSION RESULT: PASS
+    ```
+- **Next planned C9 work**: reference/enclosure continuation validation for C9-004 and C9-005
 
 ---
 
