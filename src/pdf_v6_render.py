@@ -1005,6 +1005,27 @@ def main(input_path=None, output_path=None):
             print(f"<error>{err}</error>")
         return
 
+    # Initialize page-number continuation (for C9 new-page endorsements only)
+    page_number_start = None
+    force_page_number_on_first_page = False
+
+    is_new_page_endorsement = (
+        payload.get("doc_type") == "DT_ENDORSEMENT"
+        and payload.get("endorsement_type") == "new_page"
+    )
+
+    if is_new_page_endorsement:
+        raw_page_number_start = payload.get("page_number_start")
+        if raw_page_number_start is not None:
+            try:
+                page_number_start = int(raw_page_number_start)
+            except (TypeError, ValueError):
+                page_number_start = None
+
+        force_page_number_on_first_page = bool(
+            payload.get("force_page_number_on_first_page", False)
+        )
+
     # Resolve letterhead
     letterhead = resolve_letterhead(payload)
     letterhead_lines = letterhead.get("lines", [])
