@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 """
-C9 Endorsement Reference & Enclosure Validator
+C9 Endorsement Reference, Enclosure & Copy To Validator
 
-Checks C9-004 (References) and C9-005 (Enclosures) continuation rules
-against prior-sequence metadata.
+Checks:
 
-C9-004: endorsement references must not repeat prior references and must
-        continue the prior reference marker sequence.
-C9-005: endorsement enclosures must not repeat prior enclosures and must
-        continue the prior enclosure marker sequence.
+    C9-004  endorsement references must not repeat prior references and must
+            continue the prior reference marker sequence.
+    C9-005  endorsement enclosures must not repeat prior enclosures and must
+            continue the prior enclosure marker sequence.
+    C9-006  significant endorsements must carry the prior endorser(s), the
+            basic-letter originator, and prior copy-to addressees in their
+            ``copy_to`` list.
+    C9-007  ``copy_to`` entries for complete-package first-time addressees
+            must include the ``"(complete)"`` annotation.
 
 Public API:
     validate_c9(payload) -> tuple[list[str], list[str]]
@@ -40,7 +44,7 @@ _MARKER_RE = re.compile(r'^\(([a-z]+|\d+)\)\s+(.+)$')
 # ---------------------------------------------------------------------------
 
 def validate_c9(payload: dict[str, Any]) -> tuple[list[str], list[str]]:
-    """Return (errors, warnings) for C9 reference/enclosure continuation checks."""
+    """Return (errors, warnings) for C9 reference/enclosure/copy-to checks."""
 
     errors: list[str] = []
     warnings: list[str] = []
@@ -125,6 +129,55 @@ def validate_c9(payload: dict[str, Any]) -> tuple[list[str], list[str]]:
             # Advance expected marker for next entry
             expected_encl_marker = _next_encl_marker(marker)
 
+    # --- C9-006: Copy to addressee checks (significant endorsements) ------
+
+    if payload.get("endorsement_significance") == "significant":
+        copy_to = _normalize_list(payload.get("copy_to"))
+        prior_endorsers = _normalize_list(payload.get("prior_endorsers"))
+        originator = payload.get("basic_letter_originator")
+        prior_copy_to = _normalize_list(payload.get("prior_copy_to"))
+
+        for endorser in prior_endorsers:
+            if endorser and not _copy_to_contains_addressee(copy_to, endorser):
+                errors.append(
+                    f"C9-006: copy_to must include prior endorser {endorser!r}"
+                )
+
+        if originator and str(originator).strip():
+            if not _copy_to_contains_addressee(copy_to, str(originator).strip()):
+                errors.append(
+                    f"C9-006: copy_to must include basic letter originator "
+                    f"{str(originator).strip()!r}"
+                )
+
+        for pc in prior_copy_to:
+            if pc and not _copy_to_contains_addressee(copy_to, pc):
+                errors.append(
+                    f"C9-006: copy_to must include prior copy_to addressee {pc!r}"
+                )
+
+    # --- C9-007: Complete package annotation check ------------------------
+
+    complete_package = _normalize_list(
+        payload.get("complete_package_first_time_copy_to")
+    )
+    if complete_package:
+        copy_to = _normalize_list(payload.get("copy_to"))
+        for required in complete_package:
+            found = False
+            target = _normalize_for_match(required)
+            for entry in copy_to:
+                base = _strip_complete_annotation(entry)
+                if _normalize_for_match(base) == target:
+                    if _has_complete_annotation(entry):
+                        found = True
+                        break
+            if not found:
+                errors.append(
+                    f"C9-007: copy_to must include {required!r} with "
+                    f'"complete" annotation for complete package'
+                )
+
     return errors, warnings
 
 
@@ -145,6 +198,40 @@ def _normalize_list(value: Any) -> list[str]:
         return [str(item).strip() for item in value if str(item).strip()]
     text = str(value).strip()
     return [text] if text else []
+
+
+def _normalize_for_match(text: str) -> str:
+    """Normalize text for case-insensitive, whitespace-collapsed comparison."""
+    return " ".join(str(text).lower().split())
+
+
+def _strip_complete_annotation(entry: str) -> str:
+    """Remove a trailing ``(complete)`` annotation from a copy-to entry."""
+    return re.sub(
+        r"\s*\(complete\)\s*$", "", str(entry).strip(), flags=re.IGNORECASE
+    ).strip()
+
+
+def _has_complete_annotation(entry: str) -> bool:
+    """Return True if the entry contains a ``(complete)`` annotation."""
+    return bool(re.search(r"\(complete\)", str(entry), re.IGNORECASE))
+
+
+def _copy_to_contains_addressee(copy_to: list[str], addressee: str) -> bool:
+    """Check whether *copy_to* includes *addressee*.
+
+    Matches are case-insensitive and whitespace-normalised.  Each
+    *copy_to* entry is also checked with its ``(complete)`` annotation
+    stripped so that ``"USS MUSTIN (complete)"`` is recognised as
+    matching ``"USS MUSTIN"``.
+    """
+    target = _normalize_for_match(addressee)
+    for entry in copy_to:
+        if _normalize_for_match(entry) == target:
+            return True
+        if _normalize_for_match(_strip_complete_annotation(entry)) == target:
+            return True
+    return False
 
 
 def _expected_next_ref_marker(prior_markers: list[str]) -> str:
