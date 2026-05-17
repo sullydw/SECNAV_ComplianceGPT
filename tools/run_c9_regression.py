@@ -83,6 +83,30 @@ def main() -> int:
 
     passed = True
 
+    # --- C9 validator checks (before render) ---
+
+    c9_valid_fixtures: list[tuple[str, bool]] = [
+        # (path, expect_pass) — expect_pass=True means exit 0, False means exit nonzero
+        ("examples/audit_c9_new_page_endorsement_refs_encls_valid.json", True),
+        ("examples/audit_c9_invalid_repeated_reference.json", False),
+        ("examples/audit_c9_invalid_repeated_enclosure.json", False),
+        ("examples/audit_c9_invalid_ref_encl_sequence.json", False),
+    ]
+
+    for fixture, expect_pass in c9_valid_fixtures:
+        label = f"Validate C9 {Path(fixture).stem}"
+        result = run_command(root, [py, "src/c9_validate.py", fixture], label)
+        if expect_pass:
+            if not result:
+                passed = False
+        else:
+            # Expected FAIL fixture should exit nonzero; if it exits 0, runner fails
+            if result:
+                print(f"UNEXPECTED PASS — {fixture} should have failed validation")
+                passed = False
+
+    # --- C9 render checks ---
+
     c9_render = [
         py,
         "src/pdf_v6_render.py",
