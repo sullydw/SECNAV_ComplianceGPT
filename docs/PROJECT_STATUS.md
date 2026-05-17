@@ -423,7 +423,7 @@ PASS
 - **Same-page endorsements remain unimplemented**.
 - **C9 remaining Via behavior remains next planned implementation item**.
 - **C9 reference/enclosure sequence validation remains unimplemented**.
-- **C9 copy-to significance/complete annotation logic remains unimplemented**.
+- **C9 copy-to significance/complete annotation logic now implemented**.
 - **Do not overstate this as full C9 implementation**.
 
 ### C9-003 Via Addressee Fixtures (2026-05-16)
@@ -489,7 +489,34 @@ PASS
   - output PDF existence/non-empty checks
   - C7 Phase 1 regression guard
   - C8 regression guard
-- **Next planned C9 work**: Copy to significance / complete annotation logic.
+- **Next planned C9 work**: review remaining Chapter 9 coverage and decide whether same-page endorsements stay deferred.
+
+### C9-006/C9-007 Copy to Validator Coverage (2026-05-17)
+
+- **C9 Copy to validator checks added to `src/c9_validate.py`**:
+  - **C9-006 significant endorsement Copy to expansion**:
+    - Significant endorsements must include `prior_endorsers`, `basic_letter_originator`, and `prior_copy_to` entries in their `copy_to` list
+    - Routine endorsements do not require expanded Copy to list
+  - **C9-007 complete package annotation**:
+    - Complete-package first-time Copy to addressees must include `(complete)`
+    - Annotation checked via case-insensitive, whitespace-normalized matching
+- **C9 Copy to audit fixtures added**:
+  - `examples/audit_c9_copy_to_significant_valid.json`
+  - `examples/audit_c9_copy_to_missing_prior_endorser.json`
+  - `examples/audit_c9_copy_to_missing_originator.json`
+  - `examples/audit_c9_copy_to_routine_valid.json`
+  - `examples/audit_c9_copy_to_missing_complete_annotation.json`
+- **C9 Copy to invalid fixture metadata was corrected**:
+  - Missing prior endorser fixture keeps `prior_endorsers` metadata populated while omitting it from `copy_to`
+  - Missing originator fixture keeps `basic_letter_originator` populated while omitting it from `copy_to`
+- **C9 regression runner updated and passed**: `python tools/run_c9_regression.py`
+- **Runner now includes**:
+  - C9 Copy to validator expected-PASS checks (significant valid, routine valid)
+  - C9 Copy to validator expected-FAIL checks (missing prior endorser, missing originator, missing complete annotation)
+  - existing C9 ref/encl validator checks
+  - existing C9 render checks (base new-page endorsement, single/multiple Via)
+  - C7 and C8 regression guards
+- **All regression suites PASS**
 
 ---
 
