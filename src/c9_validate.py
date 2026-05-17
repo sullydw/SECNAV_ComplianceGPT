@@ -49,21 +49,13 @@ def validate_c9(payload: dict[str, Any]) -> tuple[list[str], list[str]]:
     if payload.get("doc_type") != "DT_ENDORSEMENT":
         return errors, warnings
 
-    # Check that endorsement has prior-sequence metadata
-    if "prior_ref_markers" not in payload and "prior_refs" not in payload:
-        warnings.append(
-            "C9: No prior_ref_markers or prior_refs metadata; "
-            "skipping reference/enclosure continuation checks"
-        )
-        return errors, warnings
-
-    prior_ref_markers: list[str] = payload.get("prior_ref_markers", [])
-    prior_refs: list[str] = payload.get("prior_refs", [])
-    prior_encl_markers: list[str] = payload.get("prior_encl_markers", [])
-    prior_encls: list[str] = payload.get("prior_encls", [])
-
-    ref_entries: list[str] = payload.get("ref", []) or []
-    encl_entries: list[str] = payload.get("encl", []) or []
+    # Normalize all fields to clean string lists (string -> list, missing -> empty)
+    prior_ref_markers = _normalize_list(payload.get("prior_ref_markers"))
+    prior_refs = _normalize_list(payload.get("prior_refs"))
+    prior_encl_markers = _normalize_list(payload.get("prior_encl_markers"))
+    prior_encls = _normalize_list(payload.get("prior_encls"))
+    ref_entries = _normalize_list(payload.get("ref"))
+    encl_entries = _normalize_list(payload.get("encl"))
 
     # --- C9-004: Reference continuation -----------------------------------
 
@@ -139,6 +131,21 @@ def validate_c9(payload: dict[str, Any]) -> tuple[list[str], list[str]]:
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
+def _normalize_list(value: Any) -> list[str]:
+    """Normalize a field into a clean list of strings.
+
+    - None / missing -> []
+    - list -> stripped, non-empty string entries only
+    - anything else -> str(value).strip() as single entry (if non-empty)
+    """
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    text = str(value).strip()
+    return [text] if text else []
+
 
 def _expected_next_ref_marker(prior_markers: list[str]) -> str:
     """Determine the expected next reference marker from prior markers."""
