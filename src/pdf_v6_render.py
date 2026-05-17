@@ -1158,11 +1158,13 @@ def main(input_path=None, output_path=None):
         line_y = y
         c.drawString(block_left_x, y, line)
         print(f"DEBUG SSIC/date line '{line}' at x={block_left_x:.1f}, y={line_y:.1f}")
-        # Only advance y if this is not the last line (boundary spacing handles the gap after)
         if idx < len(sender_symbol_lines) - 1:
             y -= leading
     
-    # Boundary: SSIC_DATE -> HEADER (provides exactly 1 leading unit after last sender-symbol line)
+    # Blank line after SSIC/date block before next header content
+    y -= leading
+    
+    # Boundary: SSIC_DATE -> HEADER
     y -= get_boundary_spacing("SSIC_DATE", "HEADER", leading)
 
     # ── Endorsement heading (C9 new-page only) ──
