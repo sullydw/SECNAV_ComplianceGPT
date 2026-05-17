@@ -105,6 +105,27 @@ def main() -> int:
                 print(f"UNEXPECTED PASS — {fixture} should have failed validation")
                 passed = False
 
+    # --- C9 Copy to validator checks ---
+
+    c9_copy_to_fixtures: list[tuple[str, bool]] = [
+        ("examples/audit_c9_copy_to_significant_valid.json", True),
+        ("examples/audit_c9_copy_to_routine_valid.json", True),
+        ("examples/audit_c9_copy_to_missing_prior_endorser.json", False),
+        ("examples/audit_c9_copy_to_missing_originator.json", False),
+        ("examples/audit_c9_copy_to_missing_complete_annotation.json", False),
+    ]
+
+    for fixture, expect_pass in c9_copy_to_fixtures:
+        label = f"Validate C9 {Path(fixture).stem}"
+        result = run_command(root, [py, "src/c9_validate.py", fixture], label)
+        if expect_pass:
+            if not result:
+                passed = False
+        else:
+            if result:
+                print(f"UNEXPECTED PASS — {fixture} should have failed validation")
+                passed = False
+
     # --- C9 render checks ---
 
     c9_render = [
