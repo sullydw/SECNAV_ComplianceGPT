@@ -1,0 +1,47 @@
+{
+  "_comment": "C9 new-page endorsement Copy to validation fixture — invalid: missing complete annotation",
+  "page_number_start": 2,
+  "force_page_number_on_first_page": true,
+  "doc_type": "DT_ENDORSEMENT",
+  "endorsement_type": "new_page",
+  "endorsement_ordinal": "SECOND",
+  "basic_letter_id": "NAS MERIDIAN ltr 5216 Ser 11/273 of 22 Apr 15",
+  "ssic": 5216,
+  "originator_code": "Ser N72/420",
+  "date": "28 Apr 15",
+  "unit_identity": "Example Activity",
+  "from": "Commander, Naval Air Force, U.S. Atlantic Fleet",
+  "to": "Commander, Fleet Forces Command",
+  "subj": "HOW TO PREPARE AN ENDORSEMENT",
+  "ref": "",
+  "encl": "",
+  "copy_to": [
+    "Commander, Sea Based Anti-Submarine Warfare Wing, Atlantic",
+    "NAS Meridian (Code 11)",
+    "COMNAVPERSCOM (PERS 313C)",
+    "USS MUSTIN"
+  ],
+  "body": [
+    "1. This endorsement fixture supports C9 Copy to validation."
+  ],
+  "signature": {
+    "name": "J. T. CHILDRESS",
+    "title": "By direction"
+  },
+  "distribution_mode": null,
+  "distribution_layout": null,
+  "distribution": null,
+  "copy_to_layout": "single_column",
+  "basic_letter_originator": "NAS Meridian (Code 11)",
+  "prior_endorsers": [
+    "Commander, Sea Based Anti-Submarine Warfare Wing, Atlantic"
+  ],
+  "prior_copy_to": [
+    "COMNAVPERSCOM (PERS 313C)",
+    "USS MUSTIN"
+  ],
+  "complete_package_first_time_copy_to": [
+    "USS MUSTIN"
+  ],
+  "endorsement_significance": "significant"
+}
