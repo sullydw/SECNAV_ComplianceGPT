@@ -462,7 +462,34 @@ PASS
     python tools/run_c9_regression.py
     C9 REGRESSION RESULT: PASS
     ```
-- **Next planned C9 work**: reference/enclosure continuation validation for C9-004 and C9-005
+- **Next planned C9 work**: Copy to significance / complete annotation logic.
+
+### C9-004/C9-005 Reference/Enclosure Validator Coverage (2026-05-17)
+
+- **C9 reference/enclosure validator added and hardened**: `src/c9_validate.py`
+- **Validator covers**:
+  - C9-004 reference continuation
+  - C9-005 enclosure continuation
+  - repeated prior reference detection
+  - repeated prior enclosure detection
+  - reference marker continuation
+  - enclosure marker continuation
+  - string/list normalization for ref/encl/prior metadata fields
+- **C9 reference/enclosure fixtures added**:
+  - `examples/audit_c9_new_page_endorsement_refs_encls_valid.json`
+  - `examples/audit_c9_invalid_repeated_reference.json`
+  - `examples/audit_c9_invalid_repeated_enclosure.json`
+  - `examples/audit_c9_invalid_ref_encl_sequence.json`
+- **C9 regression runner updated and passed**: `python tools/run_c9_regression.py`
+- **Runner now includes**:
+  - C9 validator checks
+  - C9 base new-page endorsement render
+  - C9 single Via render
+  - C9 multiple Via render
+  - output PDF existence/non-empty checks
+  - C7 Phase 1 regression guard
+  - C8 regression guard
+- **Next planned C9 work**: Copy to significance / complete annotation logic.
 
 ---
 
