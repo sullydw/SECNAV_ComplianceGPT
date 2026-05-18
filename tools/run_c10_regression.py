@@ -2,7 +2,7 @@
 """
 C10 Regression Runner
 
-Runs the non-visual regression checks for C10 Phase 0B (MFR validator).
+Runs the non-visual regression checks for C10 Phase 0C (MFR validator and runner).
 No renderer checks yet — validator and guard checks only.
 """
 
