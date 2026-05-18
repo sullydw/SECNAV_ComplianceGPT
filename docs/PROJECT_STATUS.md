@@ -542,6 +542,16 @@ PASS
 - **Same-page endorsements remain deferred** and must not be described as implemented.
 - **Endorsement assembly remains advisory/procedural** and is not executable renderer logic.
 - **Future same-page endorsement work** must start as a separate phase with fixtures and checklist updates.
+- **Final Chapter 9 closeout verification completed** after closeout commit:
+  - Command results:
+    - `python tools/run_c9_regression.py` — PASS
+    - `python src/c9_validate.py examples/audit_c9_copy_to_routine_valid.json` — PASS
+  - Issues found: none
+  - Warnings: none
+  - Traceback: none
+  - Chapter 9 new-page endorsement scope remains closed/baseline-locked.
+  - Same-page endorsements remain deferred.
+  - Endorsement assembly remains advisory/procedural.
 
 ---
 
