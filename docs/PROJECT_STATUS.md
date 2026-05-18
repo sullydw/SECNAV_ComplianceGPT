@@ -525,6 +525,24 @@ PASS
   - C7 and C8 regression guards
 - **All regression suites PASS**
 
+### Chapter 9 Closeout (2026-05-17)
+
+- **Chapter 9 new-page endorsement support is closed/baseline-locked for current scope.**
+- **Covered and protected:**
+  - C9 new-page endorsement heading
+  - Explicit page-number continuation for new-page endorsements
+  - C9-003 remaining Via behavior
+  - C9-004 reference continuation validation
+  - C9-005 enclosure continuation validation
+  - C9-006 significant Copy to expansion validation
+  - C9-007 complete annotation validation
+- **Regression protection:**
+  - Command: `python tools/run_c9_regression.py`
+  - Runner includes C9 validator checks, C9 render checks, C7 guard, and C8 guard
+- **Same-page endorsements remain deferred** and must not be described as implemented.
+- **Endorsement assembly remains advisory/procedural** and is not executable renderer logic.
+- **Future same-page endorsement work** must start as a separate phase with fixtures and checklist updates.
+
 ---
 
 ## Changelog

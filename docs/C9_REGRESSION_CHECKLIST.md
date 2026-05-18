@@ -4,23 +4,24 @@
 - C9 new-page endorsement Phase 1 only.
 - Covers new-page endorsement heading rendering.
 - Covers explicit page-number continuation for new-page endorsements.
-- Same-page endorsements are not implemented yet.
-- C9 reference/enclosure sequence validation is not implemented yet.
-- C9 copy-to significance/complete annotation logic is not implemented yet.
-- C9 assembly remains advisory/procedural.
+- Covers C9-003 remaining Via behavior (single Via unnumbered, multiple Via numbered).
+- Covers C9-004 reference continuation validation.
+- Covers C9-005 enclosure continuation validation.
+- Covers C9-006 significant Copy to expansion validation.
+- Covers C9-007 complete annotation validation.
+- Same-page endorsements are deferred.
+- Endorsement assembly remains advisory/procedural.
 
 ## Commands
 ```bash
-python src/pdf_v6_render.py examples/audit_c9_new_page_endorsement.json output/audit_c9_new_page_endorsement.pdf
-python tools/run_c7_phase1_regression.py
-python tools/run_c8_regression.py
+python tools/run_c9_regression.py
 ```
 
 ## Expected Results
-- C9 new-page endorsement render PASS.
+- C9 regression runner PASS.
+- C9 fixture PDFs render correctly for manual visual review.
 - C7 Phase 1 regression runner PASS.
 - C8 regression runner PASS.
-- C9 fixture PDF is 1 generated page unless intentional fixture/layout changes are made.
 
 ## Visual Checks — C9 New-Page Endorsement
 - Endorsement heading appears after sender-symbol/date block and before From line.
@@ -48,3 +49,35 @@ python tools/run_c8_regression.py
 - Do not remove renderer CLI input/output path support.
 - Do not implement same-page endorsements as part of Phase 1.
 - Do not convert C9 advisory assembly guidance into hard renderer requirements.
+
+---
+
+## Chapter 9 Closeout Scope
+
+**Status:** New-page endorsement support is baseline-locked for current scope.
+
+**Covered and protected:**
+- C9 new-page endorsement heading
+- Explicit page-number continuation for new-page endorsements
+- C9-003 remaining Via behavior (single Via unnumbered, multiple Via numbered)
+- C9-004 reference continuation validation
+- C9-005 enclosure continuation validation
+- C9-006 significant Copy to expansion validation
+- C9-007 complete annotation validation
+
+**Regression protection:**
+- Command: `python tools/run_c9_regression.py`
+- Runner includes:
+  - C9 validator checks (refs/encls/Copy to)
+  - C9 render checks (base new-page, single Via, multiple Via)
+  - PDF existence/non-empty checks
+  - C7 Phase 1 regression guard
+  - C8 regression guard
+
+**Deferred:**
+- Same-page endorsements remain deferred and must not be described as implemented.
+- Endorsement assembly remains advisory/procedural and is not executable renderer logic.
+- Future same-page endorsement work must start as a separate phase with fixtures and checklist updates.
+
+**Manual review:**
+- Visual PDF review remains required for rendered PDFs per the visual checks above.
