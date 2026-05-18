@@ -419,21 +419,20 @@ PASS
 - **C9 Phase 1 baseline locked** for:
   - new-page endorsement heading
   - explicit page-number continuation for new-page endorsements only
+  - single remaining Via addressee unnumbered
+  - multiple remaining Via addressees numbered
 - **Visual PDF review remains manual** per `docs/C9_REGRESSION_CHECKLIST.md`
 - **Same-page endorsements remain unimplemented**.
-- **C9 remaining Via behavior remains next planned implementation item**.
-- **C9 reference/enclosure sequence validation remains unimplemented**.
-- **C9 copy-to significance/complete annotation logic now implemented**.
-- **Do not overstate this as full C9 implementation**.
+- **Endorsement assembly remains advisory/procedural**.
 
 ### C9-003 Via Addressee Fixtures (2026-05-16)
 
 - **C9 Via audit fixtures added and rendered**:
   - `examples/audit_c9_new_page_endorsement_single_via.json`
   - `examples/audit_c9_new_page_endorsement_multiple_via.json`
-- **C9-003 remaining Via behavior confirmed**:
-  - Single remaining Via addressee → renders unnumbered
-  - Multiple remaining Via addressees → render numbered (1), (2)
+- **C9-003 Via behavior is now regression-protected**:
+  - Single remaining Via addressee → unnumbered
+  - Multiple remaining Via addressees → numbered (1), (2)
 - **Code-verified visual audit**: both renders PASS
   - `output/audit_c9_new_page_endorsement_single_via.pdf` — PASS
   - `output/audit_c9_new_page_endorsement_multiple_via.pdf` — PASS
@@ -446,23 +445,31 @@ PASS
   - C9: one blank line between SSIC/date block and endorsement heading
   - C9: one blank line between endorsement heading and From line (preserved)
 - **C9 regression runner coverage** (2026-05-17):
-  - Runner now includes Via fixtures
+  - Runner includes Via fixtures
   - Renders/checks:
     - C9 base new-page endorsement fixture
     - C9 single remaining Via fixture
     - C9 multiple remaining Via fixture
+    - C9 Copy to validator fixtures
+    - existing C9 ref/encl validator fixtures
     - output PDF existence/non-empty checks
     - C7 Phase 1 regression guard
     - C8 regression guard
-  - C9-003 remaining Via behavior is now regression-protected
-    - single remaining Via addressee remains unnumbered
-    - multiple remaining Via addressees retain numbered format
   - C9 regression runner passed:
     ```
     python tools/run_c9_regression.py
     C9 REGRESSION RESULT: PASS
     ```
-- **Next planned C9 work**: Copy to significance / complete annotation logic.
+- **C9 summary**:
+  - C9 new-page endorsement rendering is locked
+  - C9-003 Via behavior is locked
+  - C9-004 reference continuation is validator-protected
+  - C9-005 enclosure continuation is validator-protected
+  - C9-006 significant Copy to expansion is validator-protected
+  - C9-007 complete annotation is validator-protected
+  - Same-page endorsements remain deferred
+  - Endorsement assembly remains advisory/procedural
+  - Do not overstate this as full C9 implementation.
 
 ### C9-004/C9-005 Reference/Enclosure Validator Coverage (2026-05-17)
 
