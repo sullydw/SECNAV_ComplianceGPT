@@ -79,12 +79,76 @@
   - Result: PASS
 - **C8 regression runner pass recorded** — Committed (f10f5d6)
   - `docs/PROJECT_STATUS.md` updated with runner status
-- **Working tree**: Clean on main
+- **C8 structural validator added** — Committed (6a31fe7)
+  - `src/c8_validate.py` implements C8-002/003/004 structural checks
+  - Validates To-line-only, Distribution-only, To+Distribution formats
+  - Detects contradictions: To line in distribution-only, missing distribution in to_plus_distribution
+  - Warns on To-lists with >4 entries without distribution_mode
+- **C8 validator regression coverage recorded** — Committed (31f0521)
+  - `docs/PROJECT_STATUS.md` updated with validator coverage status
+  - All 6 validator tests passing (3 PASS, 2 expected FAIL, 1 WARNING+PASS)
+- **C9 new-page endorsement fixture created** — Committed (6b7e8f2)
+  - `examples/audit_c9_new_page_endorsement.json` added
+  - Uses `doc_type: DT_ENDORSEMENT`, `endorsement_type: new_page`, `endorsement_ordinal: SECOND`
+  - Includes `basic_letter_id` reference to NAS MERIDIAN ltr 5216 Ser 11/273 of 22 Apr 15
+- **C9 baseline render audit completed** — Not committed (baseline test only)
+  - Fixture renders as standard letter (expected; endorsement logic not yet implemented)
+  - Missing: endorsement heading ("SECOND ENDORSEMENT on [basic_letter_id]")
+  - Missing: endorsement page-numbering continuation header
+  - C7/C8 regressions remain PASS
+- **Signature to Distribution spacing fixed** — Committed (e815c84)
+  - Added leading-based blank line between signature and Distribution block
+  - Both Distribution and Copy to blocks now properly spaced
+- **C9 new-page endorsement heading implemented** — Committed (6d647de)
+  - `_draw_endorsement_heading()` function added to `src/pdf_v6_render.py`
+  - Heading renders between sender-symbol/date block and From line
+  - C9 render: PASS (1 page, endorsement heading visible)
+  - C7/C8 regressions remain PASS
+- **C9 endorsement page-number continuation implemented** — Committed (0f2786a)
+  - `draw_page_number` updated with `page_number_start` and `force_page_number_on_first_page` params
+  - Page number 2 renders on first physical page of C9 endorsement fixture
+  - Standard letters (C7/C8) preserve existing page-number behavior
+  - C9 render: PASS, C7/C8 regressions: PASS
+- **C9 fixture metadata added** — Committed (1b7aff8)
+  - Added `page_number_start: 2` and `force_page_number_on_first_page: true` to audit_c9_new_page_endorsement.json
+- **C9 Phase 1 progress recorded** — Committed (79e7257)
+  - `docs/PROJECT_STATUS.md` updated with C9 new-page endorsement Phase 1 status
+- **C9 regression checklist created** — Committed (270d791)
+  - `docs/C9_REGRESSION_CHECKLIST.md` added
+  - Visual checks documented for new-page endorsement heading and page-number continuation
+  - Do-not-regress constraints specified
+- **C9 regression runner created and passed** — Committed (25adb32)
+  - `tools/run_c9_regression.py` added
+  - Runs C9 standard endorsement render + C7/C8 guards + body validator checks
+  - Result: PASS (6 checks total) - C9 fixture render, C7 guard PASS, C8 guard PASS
+- **C9 regression runner pass recorded** — Committed (3d96def)
+  - `docs/PROJECT_STATUS.md` updated with C9 baseline lock status
+  - Added C9 New-Page Endorsement Phase 1 section with checklist, runner, and baseline notes
+- **C9 endorsement Via fixtures added and rendered** — Committed (e0d4751)
+  - `examples/audit_c9_new_page_endorsement_single_via.json` - single remaining Via addressee (unnumbered)
+  - `examples/audit_c9_new_page_endorsement_multiple_via.json` - multiple remaining Via addressees (numbered)
+  - Both fixtures validated as valid JSON
+- **C9 renderer bug fixed** — Committed (52c3f89)
+  - Fixed `NameError: name 'page_number_start' is not defined` in `src/pdf_v6_render.py`
+  - Initialized variables for all code paths; only override for new-page endorsements
+  - All C9 renders PASS after fix
+- **C9 Via fixtures rendered and audited** — Complete (no commit required per instructions)
+  - Single Via: PASS (1 page, 2421 bytes) - unnumbered via confirmed
+  - Multiple Via: PASS (1 page, 2447 bytes) - numbered (1),(2) confirmed
+  - All regression suites (C7, C8, C9) PASS
+- **SSIC/date-to-header spacing regression fixed** — Committed (c198cbb)
+  - Adds blank line between SSIC/date block and next header content
+  - Applies to all document types (C7, C8, C9)
+  - All 5 renders PASS: C7 Phase 1, C8 Distribution-only, C8 To+Distribution, C9 base, C9 single-via, C9 multi-via
+- **C9 Via fixtures and SSIC spacing fix documented** — Committed (2c47cc8)
+  - `docs/PROJECT_STATUS.md` updated with C9-003 Via compliance and spacing fix details
+  - All regression suites PASS; next step to update C9 runner for Via fixtures
+- **Working tree**: Clean on main (2c47cc8)
 - **Active repo**: https://github.com/sullydw/SECNAV_ComplianceGPT
+- **C9 Via fixtures in regression runner**: ✅ Already present — `c9_single_via_render()` and `c9_multi_via_render()` both defined and gated with PDF existence checks (verified 2026-05-17)
 
 ## Recommended Next Phases
-1. Validator implementation planning
-2. Renderer integration
-
-
-
+1. C9 body validator — endorsement-specific body numbering/sequencing rules
+2. Same-page endorsement after new-page is stable
+3. C9 copy-to and reference/enclosure completion logic (future phases)
+4. Chapter 10 extraction — continue populating C10-005 through C10-012 with verified source text
