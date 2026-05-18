@@ -227,6 +227,40 @@ def _draw_endorsement_heading(payload, c, y, left_margin_pt, font_name="Times-Ro
     return y
 
 
+def draw_mfr_signature_block(c, normalized, page_width, y, leading, signature_gap):
+    """
+    Draw MFR signature block: simple signer name + org code.
+    Returns new y position after rendering.
+    
+    MFR signature format:
+    - signature_gap (4 blank lines) after body
+    - signer_name centered at page_width / 2
+    - signer_org_code on next line at same x
+    """
+    # Four blank lines after final body text
+    y -= signature_gap
+    print(f"DEBUG MFR: y after signature_gap before signer: {y:.1f}")
+    
+    # Signer block starts at center of page
+    signer_x = page_width / 2
+    signer_name = normalized.get("signer_name", "")
+    signer_org_code = normalized.get("signer_org_code", "")
+    
+    # Draw signer name
+    if signer_name:
+        c.drawString(signer_x, y, signer_name)
+        print(f"DEBUG MFR: Signer name drawn at x={signer_x:.1f}, y={y:.1f}: '{signer_name}'")
+        y -= leading
+    
+    # Draw org code
+    if signer_org_code:
+        c.drawString(signer_x, y, signer_org_code)
+        print(f"DEBUG MFR: Signer org code drawn at x={signer_x:.1f}, y={y:.1f}: '{signer_org_code}'")
+        y -= leading
+    
+    return y
+
+
 def calculate_signature_space(normalized, leading, signature_gap, copy_gap):
     """
     Calculate total vertical space needed for signature block.
@@ -1074,6 +1108,73 @@ def main(input_path=None, output_path=None):
     c = canvas.Canvas(output_path, pagesize=LETTER)
 
     y = page_height - top_margin_pt
+
+    # ── MFR render branch (DT_MEMO_MFR only) ──
+    if payload.get("doc_type") == "DT_MEMO_MFR":
+        print(f"DEBUG === MFR RENDER PATH ===")
+        
+        # Date at left margin
+        mfr_date = normalized.get("date", "")
+        if mfr_date:
+            c.drawString(left_margin_pt, y, mfr_date)
+            print(f"DEBUG MFR: Date drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{mfr_date}'")
+            y -= leading
+        
+        # One blank line before title
+        y -= leading
+        
+        # Centered MEMORANDUM FOR THE RECORD title
+        c.setFont("Times-Bold", 14)
+        title = "MEMORANDUM FOR THE RECORD"
+        title_width = c.stringWidth(title, "Times-Bold", 14)
+        title_x = (page_width - title_width) / 2
+        c.drawString(title_x, y, title)
+        print(f"DEBUG MFR: Title drawn at x={title_x:.1f}, y={y:.1f}: '{title}'")
+        c.setFont("Times-Roman", 12)
+        y -= leading
+        
+        # One blank line before optional Subj
+        y -= leading
+        
+        # Optional Subj: line
+        subj = normalized.get("subj")
+        if subj:
+            c.drawString(left_margin_pt, y, "Subj:")
+            subj_max_width = page_width - right_margin_pt - (left_margin_pt + 43)
+            y = draw_wrapped_text(c, left_margin_pt + 43, y, subj, 12, subj_max_width, leading)
+            print(f"DEBUG MFR: Subj drawn at y={y:.1f}")
+        
+        # One blank line before body
+        y -= leading
+        
+        # Body block (reuse existing function)
+        y, page_count, body_lines_on_last_page = draw_body_block(
+            c, left_margin_pt, y, leading, body_font_size, normalized, page_height,
+            top_margin_pt, bottom_margin_pt, signature_gap, copy_gap,
+            reserve_signature_space=True,
+            page_number_start=None, force_page_number_on_first_page=False
+        )
+        print(f"DEBUG MFR: Total pages generated: {page_count}")
+        print(f"DEBUG MFR: Body lines on last page: {body_lines_on_last_page}")
+        
+        # MFR signature block (simple signer name + org code)
+        y = draw_mfr_signature_block(c, normalized, page_width, y, leading, signature_gap)
+        
+        # Draw page number on final page
+        draw_page_number(c, page_width, page_count, bottom_margin_pt)
+        
+        c.save()
+        
+        # Verify output file exists
+        if os.path.exists(output_path):
+            print("=== PDF BUILD ===")
+            print("PASS")
+            print(f"output\\{os.path.basename(output_path)}")
+        else:
+            print("=== PDF BUILD ===")
+            print("FAIL")
+            print("Output file not created")
+        return  # Exit early; standard-letter path continues below
 
     # Render letterhead lines centered at top (H-series rules)
     if letterhead_lines:
