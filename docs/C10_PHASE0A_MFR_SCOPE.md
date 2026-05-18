@@ -8,7 +8,7 @@
 
 ## Objective
 
-Define the scope and create initial fixtures for Memorandum for the Record (MFR) rendering support in Chapter 10. This phase is **documentation and fixtures only** — no renderer, validator, or model changes.
+Define the scope and create initial fixtures for Memorandum for the Record (MFR) support in Chapter 10. This phase is **documentation and fixtures only** — no renderer, validator, or model changes.
 
 ---
 
@@ -41,7 +41,7 @@ This phase creates two audit fixtures:
 
 Both fixtures use:
 - `doc_type: "DT_MEMO_MFR"`
-- Standard numbered paragraph body structure
+- Standard numbered paragraph body structure (list of strings with inline markers)
 
 ---
 
@@ -59,11 +59,23 @@ The following are explicitly **not** part of Phase 0A:
 
 ---
 
-## Next Phase (0B)
+## Next Phases (0B, 0C, 1)
 
-After fixture review and scope approval, Phase 0B will implement:
+After fixture review and scope approval, subsequent phases will proceed in this order:
+
+**Phase 0B: Validator Only**
+- C10-001: MFR must have date and title
+- C10-002: MFR signer must include name and org code
+- C10-003: MFR subject is optional; if omitted, no blank placeholder
+- C10-004: MFR body paragraphs must use standard marker format
+
+**Phase 0C: Regression Runner Only**
+- Add C10 MFR fixture renders to regression suite
+- Guard C7/C8/C9 regressions during C10 development
+
+**Phase 1: Renderer Support (DT_MEMO_MFR only)**
 - MFR renderer support (date, title, optional subject, body, signer)
-- MFR-specific layout rules
+- MFR-specific layout rules (centered title, plain-paper format)
 - Visual audit checklist
 
 ---

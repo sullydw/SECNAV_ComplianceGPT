@@ -5,33 +5,9 @@
   "title": "MEMORANDUM FOR THE RECORD",
   "subj": "Proper disposal of classified materials",
   "body": [
-    {
-      "level": 1,
-      "marker": "1",
-      "text": "This memorandum documents the proper disposal procedures for classified materials within the activity. All personnel handling classified information must adhere to the procedures outlined below."
-    },
-    {
-      "level": 1,
-      "marker": "2",
-      "text": "Classified materials shall be disposed of using approved shredding equipment or burned in accordance with security guidelines. Personnel must ensure that all classified materials are properly accounted for before disposal.",
-      "children": [
-        {
-          "level": 2,
-          "marker": "a",
-          "text": "Documents marked CONFIDENTIAL or higher require witness verification during disposal."
-        },
-        {
-          "level": 2,
-          "marker": "b",
-          "text": "A disposal log must be maintained documenting the date, material type, and method of disposal."
-        }
-      ]
-    },
-    {
-      "level": 1,
-      "marker": "3",
-      "text": "Questions regarding classified material disposal should be directed to the Security Manager."
-    }
+    "1. This memorandum documents the proper disposal procedures for classified materials within the activity. All personnel handling classified information must adhere to the procedures outlined below.",
+    "2. Classified materials shall be disposed of using approved shredding equipment or burned in accordance with security guidelines. Personnel must ensure that all classified materials are properly accounted for before disposal.",
+    "3. Questions regarding classified material disposal should be directed to the Security Manager."
   ],
   "signer_name": "John Doe",
   "signer_org_code": "OPC123"

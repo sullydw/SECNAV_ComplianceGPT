@@ -11,7 +11,25 @@ These fixtures are designed to:
 1. Capture the structural essence of MFR format
 2. Test doc_type discrimination (DT_MEMO_MFR vs DT_STANDARD_LETTER)
 3. Validate optional subject handling
-4. Support future renderer implementation
+4. Support future validator and renderer implementation
+
+---
+
+## Body Format Convention
+
+Fixtures use the C7/C9 project style for body paragraphs:
+
+```json
+"body": [
+  "1. This memorandum records...",
+  "2. Action items...",
+  "3. a. Subparagraphs use standard marker format..."
+]
+```
+
+- Body is a list of strings (not nested objects)
+- Each string includes its paragraph marker inline (e.g., "1. ", "a. ", "(1) ")
+- No level/marker/text/children structure in Phase 0A
 
 ---
 
@@ -26,13 +44,18 @@ These fixtures are designed to:
   "date": "18 May 2026",
   "title": "MEMORANDUM FOR THE RECORD",
   "subj": "Subject line present",
-  "body": [...],
+  "body": ["1. First paragraph...", "2. Second paragraph..."],
   "signer_name": "John Doe",
   "signer_org_code": "OPC123"
 }
 ```
 
-**Expected renderer behavior (future):**
+**Expected validator behavior (Phase 0B):**
+- Validate date and title presence
+- Validate signer name and org code presence
+- Validate body paragraph marker format
+
+**Expected renderer behavior (Phase 1):**
 - Date at top-left
 - Title centered
 - Subject line (if present) below title
@@ -52,7 +75,7 @@ These fixtures are designed to:
   "date": "18 May 2026",
   "title": "MEMORANDUM FOR THE RECORD",
   "file_copy_mfr": true,
-  "body": [...],
+  "body": ["1. First paragraph...", "2. Second paragraph..."],
   "signer_name": "Jane Smith",
   "signer_org_code": "S-1"
 }
@@ -69,7 +92,7 @@ These fixtures are designed to:
 
 Both fixtures follow the v6 payload schema:
 - `doc_type` discriminates document type
-- `body` uses standard paragraph structure (level 1-4 markers)
+- `body` is a list of strings with inline markers (C7/C9 style)
 - Signer fields are simple strings (not full signature block objects)
 
 ---
@@ -78,14 +101,14 @@ Both fixtures follow the v6 payload schema:
 
 These fixtures are baseline for Phase 0A. Do not modify until:
 - Phase 0A scope is reviewed and approved
-- Phase 0B renderer implementation begins
+- Phase 0B validator implementation begins
 
 ---
 
-## Future Validation Rules (Phase 0B+)
+## Future Validation Rules (Phase 0B)
 
-Anticipated validator checks:
+Planned validator checks:
 - C10-001: MFR must have date and title
-- C10-002: MFR title must be centered (renderer rule)
 - C10-003: MFR signer must include name and org code
 - C10-004: MFR subject is optional; if omitted, no blank placeholder
+- C10-005: MFR body paragraphs must use standard marker format

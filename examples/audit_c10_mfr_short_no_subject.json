@@ -5,16 +5,8 @@
   "title": "MEMORANDUM FOR THE RECORD",
   "file_copy_mfr": true,
   "body": [
-    {
-      "level": 1,
-      "marker": "1",
-      "text": "This memorandum records the key points discussed during the coordination meeting held on 15 May 2026 regarding the upcoming inspection."
-    },
-    {
-      "level": 1,
-      "marker": "2",
-      "text": "Action items assigned during the meeting will be tracked separately and reported at the next staff meeting."
-    }
+    "1. This memorandum records the key points discussed during the coordination meeting held on 15 May 2026 regarding the upcoming inspection.",
+    "2. Action items assigned during the meeting will be tracked separately and reported at the next staff meeting."
   ],
   "signer_name": "Jane Smith",
   "signer_org_code": "S-1"
