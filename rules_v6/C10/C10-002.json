@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-002",
+  "manual_section": "10-2",
+  "chapter": 10,
+  "title": "Formats Overview",
+  "status": "candidate",
+  "source_text": "10-2 Formats. There are several memorandum formats. All DON activities shall use the appropriate memorandum that suits the subject, occasion, and audience. The following paragraphs discuss the different types of memorandums:",
+  "plain_language_rule": "Several memorandum formats exist. All DON activities shall use the appropriate memorandum that suits the subject, occasion, and audience. Subsequent paragraphs discuss the different memorandum types.",
+  "category": "format_selection",
+  "enforceable": "partial",
+  "severity": "warning",
+  "target_fields": ["memorandum_format", "subject", "occasion", "audience"],
+  "validator_type": "memorandum_format_selection_check",
+  "renderer_impact": "This rule selects the appropriate memorandum format based on subject, occasion, and audience. The specific layouts are governed by later Chapter 10 sections (10-2.1 through 10-2.6e).",
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 10-2 Formats. Key points: (1) several memorandum formats exist, (2) all DON activities shall use the appropriate format, (3) appropriateness determined by subject, occasion, and audience. Enforceability is partial because determining the appropriate format requires contextual judgment."
+}

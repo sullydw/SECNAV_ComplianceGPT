@@ -1,0 +1,13 @@
+{
+  "rule_id": "C7-008",
+  "manual_section": "7-2.8",
+  "chapter": 7,
+  "title": "Subject Line",
+  "status": "candidate",
+  "enforceable": true,
+  "validator_type": "layout_check",
+  "plain_language_rule": "Type the subject line in uppercase on the third line below the last line of the address block (i.e., two blank lines between the address and the subject line). The subject line must not extend beyond the center of the page.",
+  "source_text": "Type the subject on the third line below the last line of the address. Type the subject in uppercase. The subject must not extend beyond the center of the page.",
+  "renderer_impact": "Subject line must be uppercase, positioned two blank lines below the last line of the address block, and must not extend beyond the center of the page.",
+  "notes": "The subject line must be typed in uppercase and positioned at the left margin, two blank lines below the last line of the address. It must not extend beyond the center of the page."
+}

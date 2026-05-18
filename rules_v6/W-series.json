@@ -1,0 +1,54 @@
+[
+  {
+    "rule_id": "W-001",
+    "manual_section": "2-1(a)",
+    "source_text": "Correspondence shall be clear, concise, and easily understood.",
+    "plain_language_rule": "Write correspondence that is clear, concise, and easily understood by the intended audience.",
+    "category": "writing_guidance",
+    "applies_to": ["body", "subject"],
+    "guidance_type": "style",
+    "priority": "high",
+    "enforceable": false,
+    "validator_type": null,
+    "status": "candidate"
+  },
+  {
+    "rule_id": "W-002",
+    "manual_section": "2-1(b)",
+    "source_text": "Each paragraph shall address a single subject.",
+    "plain_language_rule": "Each paragraph must address only one subject to maintain clarity and focus.",
+    "category": "writing_guidance",
+    "applies_to": ["body"],
+    "guidance_type": "structure",
+    "priority": "high",
+    "enforceable": false,
+    "validator_type": null,
+    "status": "candidate"
+  },
+  {
+    "rule_id": "W-003",
+    "manual_section": "2-1(c)",
+    "source_text": "Use plain language. Avoid jargon, acronyms, and technical terms unless necessary.",
+    "plain_language_rule": "Use plain language and avoid jargon, acronyms, and technical terms unless they are necessary and well-known to the audience.",
+    "category": "writing_guidance",
+    "applies_to": ["body", "subject"],
+    "guidance_type": "language",
+    "priority": "high",
+    "enforceable": false,
+    "validator_type": null,
+    "status": "candidate"
+  },
+  {
+    "rule_id": "W-004",
+    "manual_section": "2-1(d)",
+    "source_text": "Use correct grammar, spelling, and punctuation.",
+    "plain_language_rule": "All correspondence must use correct grammar, spelling, and punctuation.",
+    "category": "writing_guidance",
+    "applies_to": ["body", "subject", "header"],
+    "guidance_type": "mechanics",
+    "priority": "high",
+    "enforceable": false,
+    "validator_type": null,
+    "status": "candidate"
+  }
+]

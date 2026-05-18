@@ -1,0 +1,112 @@
+{
+  "_meta": {
+    "series": "S",
+    "name": "Signature Block Rules",
+    "description": "Signature block placement and formatting rules",
+    "version": "1.0",
+    "updated": "2026-05-03"
+  },
+  "S-001": {
+    "rule": "signature_horizontal_position",
+    "description": "Signature line starts at the center of the page",
+    "x_position": "page_width / 2",
+    "text_alignment": "left_at_center",
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-002": {
+    "rule": "signature_vertical_position",
+    "description": "Signature line begins on the fourth line below the final body text",
+    "y_offset": "signature_gap = leading * 4",
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-003": {
+    "rule": "no_complimentary_close",
+    "description": "Do not include a complimentary close (e.g., 'Sincerely', 'Respectfully')",
+    "complimentary_close": false,
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-004": {
+    "rule": "copy_to_position",
+    "description": "Copy-to block begins on the second line below the signature block",
+    "y_offset": "copy_gap = leading * 2",
+    "x_position": "left_margin",
+    "applies_to": "copy_to_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-005": {
+    "rule": "signature_page_minimum_text",
+    "description": "A signature page must have at least two lines of body text preceding the signature",
+    "min_body_lines": 2,
+    "force_signature_page": true,
+    "applies_to": "signature_page_logic",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-006": {
+    "rule": "signature_page_continuation",
+    "description": "If signature won't fit, start new page with continuation header and carry at least 2 body lines",
+    "carry_body_lines": 2,
+    "continuation_header": true,
+    "applies_to": "signature_page_logic",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-007": {
+    "rule": "signature_name_format",
+    "description": "Signature line should use initials and last name format",
+    "notes": [
+      "First initial, middle initial (if applicable), and last name",
+      "Last name in uppercase",
+      "Prefix names (e.g., McNALLY) preserved"
+    ],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-008": {
+    "rule": "no_rank_or_service_in_signature",
+    "description": "Do not include rank or service identifiers in standard letter signature line",
+    "notes": [
+      "Applies to standard correspondence",
+      "Personnel identification rules apply elsewhere, not signature line"
+    ],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-009": {
+    "rule": "signature_role_activity_head",
+    "description": "Activity head signature contains name only",
+    "format": ["name"],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-010": {
+    "rule": "signature_role_title_based",
+    "description": "Principal subordinate signing by title includes title below name",
+    "format": ["name", "title"],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-011": {
+    "rule": "signature_role_acting",
+    "description": "Acting signatures include Acting below name or title",
+    "format": ["name", "Acting"],
+    "alt_format": ["name", "title", "Acting"],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "S-012": {
+    "rule": "signature_role_by_direction",
+    "description": "By direction signatures include authority line below name",
+    "format": ["name", "By direction"],
+    "notes": [
+      "Pay/allowance cases may require:",
+      "- name",
+      "- title",
+      "- By direction of the",
+      "- activity head title"
+    ],
+    "applies_to": "signature_block",
+    "source": "SECNAV M-5216.5 Ch 7"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "rule_id": "C7-005",
+  "manual_section": "7-2.4",
+  "chapter": 7,
+  "title": "Classified Correspondence Markings",
+  "status": "candidate",
+  "enforceable": "partial",
+  "validator_type": "layout_check",
+  "plain_language_rule": "Correspondence must bear classification markings centered at the top and bottom of each page. Refer to SECNAV M-5510.30 and DoDM 5200.01 Vol 3 for detailed classification marking requirements.",
+  "source_text": "Classification markings must be on the top and bottom center of each page. Follow SECNAV M-5510.30 and DoDM 5200.01 Vol 3 for classification marking requirements.",
+  "renderer_impact": "Classification markings must be rendered centered (top and bottom) on every page. The specific marking text and formatting are governed by SECNAV M-5510.30 and DoDM 5200.01 Vol 3, not by this rule.",
+  "notes": "The manual explicitly defers classification marking content and format to SECNAV M-5510.30 and DoDM 5200.01 Vol 3. This rule captures only the Chapter 7 requirement that markings must appear centered at top and bottom of each page. Detailed marking rules (text, format, specific positioning) are external to Chapter 7."
+}

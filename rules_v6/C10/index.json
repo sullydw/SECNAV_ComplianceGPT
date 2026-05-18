@@ -1,0 +1,18 @@
+{
+  "chapter": 10,
+  "title": "Memorandums",
+  "sections": [
+    { "rule_id": "C10-001", "section": "10-1", "title": "General — Memorandum Overview", "source_text_state": "resolved" },
+    { "rule_id": "C10-002", "section": "10-2", "title": "Formats Overview", "source_text_state": "resolved" },
+    { "rule_id": "C10-003", "section": "10-2.1", "title": "Memorandum for the Record", "source_text_state": "resolved" },
+    { "rule_id": "C10-004", "section": "10-2.2", "title": "From-To Memorandum", "source_text_state": "resolved" },
+    { "rule_id": "C10-005", "section": "10-2.3", "title": "Plain-Paper Memorandum", "source_text_state": "resolved" },
+    { "rule_id": "C10-006", "section": "10-2.4", "title": "Letterhead Memorandum", "source_text_state": "resolved" },
+    { "rule_id": "C10-007", "section": "10-2.5", "title": "Decision Memorandum", "source_text_state": "resolved" },
+    { "rule_id": "C10-008", "section": "10-2.6a", "title": "Memorandum of Agreement or Understanding — Use", "source_text_state": "resolved" },
+    { "rule_id": "C10-009", "section": "10-2.6b", "title": "Memorandum of Agreement or Understanding — Format", "source_text_state": "resolved" },
+    { "rule_id": "C10-010", "section": "10-2.6c", "title": "Memorandum of Agreement or Understanding — Letterhead", "source_text_state": "resolved" },
+    { "rule_id": "C10-011", "section": "10-2.6d", "title": "Memorandum of Agreement or Understanding — Signatures", "source_text_state": "resolved" },
+    { "rule_id": "C10-012", "section": "10-2.6e", "title": "Memorandum of Agreement or Understanding — Copies", "source_text_state": "resolved" }
+  ]
+}

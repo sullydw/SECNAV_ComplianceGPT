@@ -1,0 +1,16 @@
+{
+  "rule_id": "C9-007",
+  "manual_section": "9-2.6",
+  "chapter": 9,
+  "title": "Forwarding Your Endorsement and Copies",
+  "status": "candidate",
+  "source_text": "6. Forwarding Your Endorsement and Copies. When forwarding your endorsement to the next via addressee or to the action addressee, you must also do the following:\n\na. Attach any enclosure you identified in your endorsement to the original for forwarding to the action addressee.\n\nb. Forward one copy of your endorsement to each remaining addressee.\n\nc. Forward one copy of your endorsement to each copy to addressee. Include a copy of any enclosure you added. If a copy to addressee will be receiving the basic letter and previous endorsements for the first time from you, to the right of each of these addressees, type the word \"complete\" in parentheses to show that your endorsement includes the basic letter, enclosures, and prior endorsements.",
+  "plain_language_rule": "When forwarding your endorsement: (1) attach any enclosure you added to the original for the action addressee, (2) forward one copy of your endorsement to each remaining addressee, (3) forward one copy to each Copy to addressee with copies of any enclosures you added. If a Copy to addressee is receiving the basic letter and previous endorsements for the first time from you, type \"(complete)\" to the right of that addressee to indicate the full package is included.",
+  "category": "procedural",
+  "enforceable": "partial",
+  "severity": "warning",
+  "target_fields": ["endorsement_forwarding", "endorsement_copies", "endorsement_enclosures", "copy_to_complete_annotation"],
+  "validator_type": "endorsement_forwarding_and_copy_distribution_check",
+  "renderer_impact": "Added enclosures must accompany the original to the action addressee. Endorsement copies are forwarded to remaining addressees and Copy to addressees. Added enclosures accompany Copy to copies. The \"(complete)\" annotation appears beside Copy to addressees receiving the full package (basic letter, enclosures, prior endorsements) for the first time.",
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 9-2.6 Forwarding Your Endorsement and Copies. Key points: (1) added enclosures go with original to action addressee, (2) endorsement copies to remaining addressees, (3) endorsement copies plus added enclosures to Copy to addressees, (4) \"(complete)\" annotation for first-time full-package recipients. Enforceability is partial because determining first-time receipt requires tracking distribution history."
+}

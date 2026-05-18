@@ -1,0 +1,9 @@
+id,type,dt,family,line_order,text_role,align,font_name,font_size,spacing_rule,condition,action,target,severity,source,status,enabled,notes
+LHD-0001,LHD,DT_STD_LTR,LH_USMC_ACTIVITY,1,branch_line,center,TIMES-BOLD,12,single_space,always,ACT_RENDER,line_1,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"UNITED STATES MARINE CORPS branch line."
+LHD-0002,LHD,DT_STD_LTR,LH_USMC_ACTIVITY,2,unit_name,center,TIMES-BOLD,12,single_space,always,ACT_RENDER,line_2,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Primary unit/activity name centered."
+LHD-0003,LHD,DT_STD_LTR,LH_USMC_ACTIVITY,3,parent_line,center,TIMES-ROMAN,11,single_space,parent_present,ACT_RENDER,line_3,COND,SRC_SECNAV_5216_5_CH2,ACT,true,"Render parent/echelon line only when needed."
+LHD-0004,LHD,DT_STD_LTR,LH_USMC_ACTIVITY,4,location_line,center,TIMES-ROMAN,11,single_space,always,ACT_RENDER,line_4,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Installation/location line with ZIP centered."
+LHD-0005,LHD,DT_STD_LTR,LH_USMC_ACTIVITY,5,blank_gap,center,TIMES-ROMAN,11,one_blank_line,always,ACT_SPACE,below_letterhead,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"One blank line below letterhead before From block."
+LHD-0006,LHD,DT_STD_LTR,LH_HQMC,1,dept_line,center,TIMES-BOLD,12,single_space,always,ACT_RENDER,line_1,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"DEPARTMENT OF THE NAVY line for HQMC."
+LHD-0007,LHD,DT_STD_LTR,LH_HQMC,2,hqmc_line,center,TIMES-BOLD,12,single_space,always,ACT_RENDER,line_2,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"HEADQUARTERS UNITED STATES MARINE CORPS line."
+LHD-0008,LHD,DT_STD_LTR,LH_NAVY_ACTIVITY,1,dept_line,center,TIMES-BOLD,12,single_space,always,ACT_RENDER,line_1,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"DEPARTMENT OF THE NAVY line for Navy activity."

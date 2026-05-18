@@ -1,0 +1,17 @@
+{
+  "rule_id": "C9-002",
+  "manual_section": "9-2.1",
+  "chapter": 9,
+  "title": "Endorsement Line",
+  "status": "candidate",
+  "source_text": "9-2 Format\n\n1. Endorsement Line\n\na. Start the endorsement line at the left margin on the second line below the date line. If the correspondence is classified, start the endorsement line on the second line below the classification line. When preparing a same-page endorsement, as long as the entire page will be photocopied, you may omit the SSIC, subject and the basic letter's identification symbols.\n\nb. Number each endorsement in the sequence in which it is added to the basic letter. Indicate the numbers of the endorsement by using ordinal numbers such as FIRST, SECOND, THIRD, etc. Following the number, type \"ENDORSEMENT on\" and identify the basic letter using the same style as a reference line. When the heading exceeds one line, start the succeeding line with the word \"on\".\n\nExample:\nFIRST ENDORSEMENT on USS SCRANTON ltr 3000 Ser SSN 756/001 of 5 May 96",
+  "plain_language_rule": "Start the endorsement line at the left margin on the second line below the date line (or classification line if classified). Number each endorsement sequentially using ordinal numbers (FIRST, SECOND, THIRD, etc.). After the number, type \"ENDORSEMENT on\" and identify the basic letter using reference-line style. When the heading exceeds one line, start the succeeding line with the word \"on\". Same-page endorsement may be added to the bottom of the basic letter or prior endorsement only if the endorsement completely fits on that page and is sure to be signed without revision. Same-page endorsement may omit SSIC, subject, and basic-letter identification symbols if the entire page will be photocopied. New-page endorsement repeats the basic letter's SSIC, identifies the basic letter in the endorsement line, uses the basic letter's subject as its own, and continues page numbering from the basic letter or previous endorsement.",
+  "category": "format",
+  "enforceable": true,
+  "severity": "error",
+  "target_fields": ["endorsement_line", "endorsement_sequence", "endorsement_heading", "basic_letter_identification", "same_page_endorsement", "new_page_endorsement", "subject_line", "ssic"],
+  "validator_type": "endorsement_line_format_check",
+  "renderer_impact": "Endorsement line placement: left margin, second line below date line (or classification line if classified). Ordinal endorsement numbering (FIRST, SECOND, THIRD, etc.) followed by \"ENDORSEMENT on\". Basic letter identification uses reference-line style. Continuation lines start with the word \"on\" when heading exceeds one line. Support same-page endorsement placement at bottom of basic letter/prior endorsement. Support new-page endorsement with SSIC, endorsement heading, and subject. Support continuation page numbering for endorsements.",
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 9-2.1 Endorsement Line. Key points: (1) placement is second line below date/classification line, (2) ordinal numbering sequence, (3) \"ENDORSEMENT on\" heading format, (4) reference-style basic letter identification, (5) continuation starts with \"on\", (6) same-page endorsements may omit certain headers if full page photocopy is assured. Figure 9-1 and Figure 9-2 are rule-bearing. Figure 9-1 governs same-page endorsement examples. Figure 9-2 governs new-page endorsement examples. Body text and figures must both be considered during validation/rendering.",
+  "figure_references": ["Figure 9-1", "Figure 9-2"]
+}

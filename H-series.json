@@ -1,0 +1,56 @@
+{
+  "_meta": {
+    "series": "H",
+    "name": "Letterhead Rules",
+    "description": "Letterhead formatting and typography rules",
+    "version": "1.0",
+    "updated": "2026-05-03"
+  },
+  "H-001": {
+    "rule": "letterhead_first_line_font",
+    "description": "First line of letterhead uses Times New Roman 10 pt bold",
+    "font_family": "Times New Roman",
+    "font_size_pt": 10,
+    "font_weight": "bold",
+    "applies_to": "letterhead_line_1",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "H-002": {
+    "rule": "letterhead_subsequent_lines_font",
+    "description": "Subsequent letterhead lines use Times New Roman 8 pt regular",
+    "font_family": "Times New Roman",
+    "font_size_pt": 8,
+    "font_weight": "regular",
+    "applies_to": "letterhead_lines_2+",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "H-003": {
+    "rule": "letterhead_independent_scaling",
+    "description": "Letterhead typography is independent from body typography scaling",
+    "body_font_independent": true,
+    "letterhead_fixed": true,
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "H-004": {
+    "rule": "letterhead_centered_block",
+    "description": "Letterhead block is centered horizontally on the page",
+    "alignment": "center",
+    "applies_to": "letterhead_block",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "H-005": {
+    "rule": "address_format",
+    "description": "Address lines follow standard format with installation, state, ZIP+4",
+    "format": "INSTALLATION, STATE ZIP+4",
+    "zip_format": "XXXXX-XXXX",
+    "applies_to": "address_line",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "H-006": {
+    "rule": "letterhead_spacing",
+    "description": "One blank line below letterhead before From block",
+    "spacing_after": "one_blank_line",
+    "applies_to": "below_letterhead",
+    "source": "SECNAV M-5216.5 Ch 2"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "rule_id": "C7-016",
+  "manual_section": "7-2.15",
+  "chapter": 7,
+  "title": "Copy To Line",
+  "status": "candidate",
+  "source_text": "15. Copy To Line\n\na. General\n\n(1) Show the copy to line on the original and all copies, if required\n(2) Start the designation \"Copy to:\" at the left margin on the second line below the last line of the signature block including the title, authority line or activity.\n\nb. Examples of Copy To Lines\n\n(1) Example 1\n\nEXAMPLE:\n\nCopy to:\nCOMMAVSEASYSCOM\nCNO (N4)\n\n(2) Example 2\n\nEXAMPLE:\n\nCopy to:\nCOMMAVSEASYSCOM\nCNO (N4)\n\n(3) When the correspondence has more than one copy to addressee, list them on separate lines in alphabetical order. Include the code, if applicable, as indicated in examples 1 and 2 above.",
+  "plain_language_rule": "Show the copy to line on the original and all copies, if required. Start the heading \"Copy to:\" at the left margin on the second line below the last line of the signature block (including the title, authority line, or activity). When there is more than one copy to addressee, list them on separate lines in alphabetical order, including the applicable code (e.g., N4). Figure 7-2 shows Copy to addressees appear on all copies. Figure 7-2 shows blind copy addressees and writer/typist identification appear on internal copies only.",
+  "category": "format",
+  "enforceable": "partial",
+  "severity": "warning",
+  "target_fields": ["copy_to_placement", "copy_to_heading", "copy_to_addressee_ordering", "copy_to_all_copies", "blind_copy_internal_copy"],
+  "validator_type": "copy_to_line_placement_and_format_check",
+  "renderer_impact": "Place \"Copy to:\" heading at left margin, second line below the last line of the signature block; list addressees alphabetically on separate lines with applicable codes. Copy to block rendering remains after the signature block per body text. Renderer/document generator should support Copy to appearing on all copies. Blind copy/internal-copy details should be treated as internal-copy handling and may require separate future support.",
+  "notes": "The manual only states \"if required\" for when a Copy to line should be used — it does not define the conditions that make it required. The section does not distinguish \"Copy to\" from any \"Distribution\" concept, does not mention blind copies or courtesy copies, and does not address whether references or enclosures accompany copies to Copy to addressees. The notations \"w/ref\" and \"w/encl\" are not discussed in this section. Both examples are identical (COMMAVSEASYSCOM and CNO (N4)), providing only one pattern. Figure 7-2 is rule-bearing. Figure 7-2 adds copy-distribution details not fully stated in 7-2.15 body text. Blind copy/internal-copy handling may warrant a separate future rule or validator. Continuation-page and page-number details from Figure 7-2 belong to C7-017/C7-018, not C7-016.",
+  "cross_references": ["C7-017", "C7-018"],
+  "figure_references": ["Figure 7-2"]
+}

@@ -1,0 +1,56 @@
+{
+  "_meta": {
+    "series": "P",
+    "name": "Page Number Rules",
+    "description": "Page numbering placement and formatting rules",
+    "version": "1.0",
+    "updated": "2026-05-03"
+  },
+  "P-001": {
+    "rule": "page_one_no_number",
+    "description": "Do not place a page number on page 1",
+    "page_number_enabled": false,
+    "applies_to": "page_1",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "P-002": {
+    "rule": "page_number_placement",
+    "description": "Page numbers on page 2+ are centered horizontally, 1/2 inch from bottom edge",
+    "x_position": "center",
+    "y_position": "0.5 inch from bottom",
+    "y_position_pt": 36.0,
+    "applies_to": "page_2+",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "P-003": {
+    "rule": "page_number_format",
+    "description": "Plain number only - no hyphens, no punctuation, no 'Page' prefix",
+    "format": "N",
+    "examples": ["2", "3", "4"],
+    "applies_to": "all_page_numbers",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "P-004": {
+    "rule": "continuation_header",
+    "description": "Continuation pages (page 2+) repeat the subject line at top",
+    "header_content": "Subj: {subject_text}",
+    "header_position": "left_margin",
+    "applies_to": "page_2+",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "P-005": {
+    "rule": "continuation_header_spacing",
+    "description": "Text resumes on the second line below the repeated subject line",
+    "spacing_after_subject": "one_blank_line",
+    "applies_to": "continuation_pages",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "P-006": {
+    "rule": "continuation_page_content",
+    "description": "Do not draw letterhead, SSIC/date, From/To/Via/Ref/Encl on continuation pages",
+    "omit_on_continuation": ["letterhead", "ssic_date", "from", "to", "via", "ref", "encl"],
+    "include_on_continuation": ["subject_line", "body_text", "signature", "copy_to"],
+    "applies_to": "page_2+",
+    "source": "SECNAV M-5216.5 Ch 2"
+  }
+}

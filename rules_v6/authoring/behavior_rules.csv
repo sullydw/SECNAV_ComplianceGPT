@@ -1,0 +1,5 @@
+id,type,dt,sec,condition,action,target,severity,source,status,enabled,notes
+BEH-0001,BEH,DT_STD_LTR,SEC_VIA,via_count==0,ACT_OMIT,SEC_VIA,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"If no VIA addressee exists, omit the VIA section."
+BEH-0002,BEH,DT_STD_LTR,SEC_REF,ref_count>0,ACT_RENDER,SEC_REF,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Render references when provided."
+BEH-0003,BEH,DT_STD_LTR,SEC_ENCL,encl_count>0,ACT_RENDER,SEC_ENCL,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Render enclosures when provided."
+BEH-0004,BEH,DT_STD_LTR,SEC_CONTINUATION,page_number>1,ACT_RENDER,SEC_SUBJ_CONT,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Continuation pages show the subject continuation header."

@@ -1,0 +1,8 @@
+id,type,dt,level,marker_style,indent_rule,spacing_rule,condition,action,target,severity,source,status,enabled,notes
+BDY-0001,BDY,DT_STD_LTR,1,numeric_period,left_margin,single_space,always,ACT_NUMBER,paragraph_level_1,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Primary paragraphs use numeric markers: 1."
+BDY-0002,BDY,DT_STD_LTR,2,lower_alpha_period,indent_1,single_space,always,ACT_NUMBER,paragraph_level_2,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"First subparagraphs use lowercase letters: a."
+BDY-0003,BDY,DT_STD_LTR,3,numeric_paren,indent_2,single_space,always,ACT_NUMBER,paragraph_level_3,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Second subparagraphs use numbers in parentheses: (1)"
+BDY-0004,BDY,DT_STD_LTR,4,lower_alpha_paren,indent_3,single_space,always,ACT_NUMBER,paragraph_level_4,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Third subparagraphs use lowercase letters in parentheses: (a)"
+BDY-0005,BDY,DT_STD_LTR,2,,indent_1,single_space,subdivision_used,ACT_REQUIRE,min_two_items,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"If a subdivision level is used, at least two items are required."
+BDY-0006,BDY,DT_STD_LTR,3,,indent_2,single_space,subdivision_used,ACT_REQUIRE,min_two_items,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"If a subdivision level is used, at least two items are required."
+BDY-0007,BDY,DT_STD_LTR,4,,indent_3,single_space,subdivision_used,ACT_REQUIRE,min_two_items,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"If a subdivision level is used, at least two items are required."

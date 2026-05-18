@@ -1,0 +1,44 @@
+{
+  "rule_id": "C10-009",
+  "manual_section": "10-2.6b",
+  "chapter": 10,
+  "title": "Memorandum of Agreement or Understanding — Format",
+  "status": "candidate",
+  "source_text": "b. Format. Center \"MEMORANDUM OF AGREEMENT\" on the second line below the date line. Center \"BETWEEN\" on the next line and follow with the names of the agreeing activities (centered). To prepare a \"Memorandum of Understanding\", substitute those words for \"Memorandum of Agreement,\" and follow the same format as shown in figures 10-5 and 10-6. Number and letter paragraphs and subparagraphs the same as other correspondence. The basic text may contain, but is not limited to, the following titled paragraphs:\n\n(1) Purpose. This paragraph defines or states in as few words as possible, the purpose of the agreement.\n\n(2) Problem. Present a clear, concise statement of the problem, to include a brief background.\n\n(3) Scope. Add a short statement specifying the area covered by the agreement.\n\n(4) Agreement, Understanding. Spell out the agreement or understanding and responsibilities of and between each of the parties involved.\n\n(5) Effective Date. Enter the date the agreement will take effect.",
+  "plain_language_rule": "Center 'MEMORANDUM OF AGREEMENT' or 'MEMORANDUM OF UNDERSTANDING' on the second line below the date line. Center 'BETWEEN' on the next line, then list the names of the agreeing activities (centered). To prepare a Memorandum of Understanding, substitute 'Memorandum of Understanding' for 'Memorandum of Agreement' and follow the same format. Number and letter paragraphs and subparagraphs following standard correspondence numbering/lettering. The basic text may contain titled paragraphs including Purpose (defines/states the purpose in few words), Problem (clear concise statement with brief background), Scope (area covered by agreement), Agreement/Understanding (agreement/responsibilities between parties), and Effective Date (date agreement takes effect). Figures 10-5, 10-6, and 10-7 show the centered heading structure, optional Ref line, standard paragraph numbering, and continuation page with repeated subject line and bottom numbering.",
+  "category": "memorandum_format",
+  "enforceable": true,
+  "severity": "error",
+  "target_fields": [
+    "moa_mou_heading",
+    "between_line",
+    "agreeing_activities",
+    "subject_line",
+    "reference_line",
+    "paragraph_numbering",
+    "purpose_paragraph",
+    "problem_paragraph",
+    "scope_paragraph",
+    "agreement_understanding_paragraph",
+    "effective_date_paragraph",
+    "continuation_subject_line",
+    "continuation_page_number"
+  ],
+  "validator_type": "moa_mou_format_check",
+  "renderer_impact": "Render centered 'MEMORANDUM OF AGREEMENT' or 'MEMORANDUM OF UNDERSTANDING' heading on second line below date. Center 'BETWEEN' line. Render centered agreeing activity names with 'AND' between them. Support optional Ref line. Number/letter paragraphs and subparagraphs per standard correspondence. Support titled paragraphs: Purpose, Problem, Scope, Agreement/Understanding, Effective Date. Render continuation page with repeated subject line and bottom page numbering. Figures 10-5, 10-6, 10-7 are rule-bearing.",
+  "notes": "Source text and Figures 10-5/10-6/10-7 details resolved from manual section 10-2.6b Format. This rule governs MOA/MOU formatting with centered headings, BETWEEN line, centered agreeing activities, optional Ref line, standard paragraph numbering, titled paragraphs, and continuation pages. Figure 10-5 shows one-page MOA format. Figure 10-6 shows first page of two-page MOU with Ref line. Figure 10-7 shows continuation page with repeated subject line and bottom numbering. Titled paragraphs: Purpose, Problem, Scope, Agreement/Understanding, Effective Date.",
+  "cross_references": [
+    "C10-001",
+    "C10-002",
+    "C10-004",
+    "C10-005",
+    "C10-006",
+    "C10-007",
+    "C10-008"
+  ],
+  "figure_references": [
+    "Figure 10-5",
+    "Figure 10-6",
+    "Figure 10-7"
+  ]
+}

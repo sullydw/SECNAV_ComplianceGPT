@@ -1,0 +1,13 @@
+{
+  "rule_id": "C7-010",
+  "manual_section": "7-2.10",
+  "chapter": 7,
+  "title": "Reference Line",
+  "status": "candidate",
+  "enforceable": true,
+  "validator_type": "layout_check",
+  "plain_language_rule": "Type 'Ref:' (or 'Refs:' for multiple references) in uppercase, followed by a colon, on the second line below the last line of the via block (or subject line if no via). List references using lowercase letters in parentheses: (a), (b), (c), etc. Separate multiple references with semicolons.",
+  "source_text": "Type 'Ref:' or 'Refs:' in uppercase followed by a colon, on the second line below the last line of the via block or, if no via, below the subject line. Identify each reference by a lowercase letter in parentheses: (a), (b), (c), etc.",
+  "renderer_impact": "Reference line must appear on the second line below the last via line or subject line. 'Ref:' or 'Refs:' in uppercase followed by a colon. References identified by lowercase letters in parentheses.",
+  "notes": "The reference line uses 'Ref:' for a single reference or 'Refs:' for multiple references, followed by a colon. Each reference is identified by a lowercase letter in parentheses."
+}

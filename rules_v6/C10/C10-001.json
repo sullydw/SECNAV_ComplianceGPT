@@ -1,0 +1,16 @@
+{
+  "rule_id": "C10-001",
+  "manual_section": "10-1",
+  "chapter": 10,
+  "title": "General — Memorandum Overview",
+  "status": "candidate",
+  "source_text": "10-1 General. A memorandum provides a less formal way to correspond within an activity/command. Subordinates within that activity or command may use a memorandum to correspond directly with each other on routine official business or as an informal means of communication.",
+  "plain_language_rule": "A memorandum is a less formal correspondence method used within an activity or command. Subordinates within the same activity/command may use memorandums to correspond directly with each other on routine official business or as an informal means of communication.",
+  "category": "correspondence_type",
+  "enforceable": "partial",
+  "severity": "warning",
+  "target_fields": ["document_type", "memorandum_scope", "audience"],
+  "validator_type": "memorandum_scope_check",
+  "renderer_impact": "This rule selects memorandum handling for less-formal correspondence within an activity/command. It does not prescribe a specific memorandum layout; layout rules are defined in subsequent Chapter 10 sections.",
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 10-1 General. Key points: (1) memorandums are less formal than letters, (2) used within an activity/command, (3) subordinates may correspond directly with each other, (4) applies to routine official business or informal communication. Enforceability is partial because determining organizational scope (same activity/command) requires external context."
+}

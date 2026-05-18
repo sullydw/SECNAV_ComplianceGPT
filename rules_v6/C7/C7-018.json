@@ -1,0 +1,18 @@
+{
+  "rule_id": "C7-018",
+  "manual_section": "7-2.17",
+  "chapter": 7,
+  "title": "Page Numbering",
+  "status": "candidate",
+  "source_text": "17. Page Numbering. Do not number a single-page letter or the first page of a multiple-page letter. Center page numbers 1/2 inch from the bottom edge, starting with the number 2. No punctuation accompanies a page number. See figure 7-2. Ensure the pages of a TOP SECRET document are numbered for compliance with the accountability requirements in DoDM 5200.01V2.",
+  "plain_language_rule": "Do not number a single-page letter or the first page of a multiple-page letter. Center page numbers 1/2 inch from the bottom edge of the page, starting with the number 2. Page numbers use bare Arabic digits with no punctuation. For TOP SECRET documents, number all pages for accountability compliance per DoDM 5200.01V2.",
+  "category": "format",
+  "enforceable": "partial",
+  "severity": "warning",
+  "target_fields": ["page_number_placement", "page_number_format", "page_number_start", "page_number_classification_override", "continuation_page_number"],
+  "validator_type": "page_numbering_format_and_placement_check",
+  "renderer_impact": "Omit page number on page 1 and single-page letters; center bare Arabic numbers (2, 3, 4…) at 1/2 inch from bottom edge on pages 2+; for TOP SECRET, number all pages per DoDM 5200.01V2",
+  "notes": "The TOP SECRET exception overrides the general rule — all TOP SECRET document pages must be numbered, not just continuation pages. The exact accountability-required format is deferred to DoDM 5200.01V2. The phrase \"no punctuation accompanies a page number\" means bare digits only (no periods, dashes, hyphens, or parentheses). The spacing is defined as 1/2 inch from the \"bottom edge\" — not the bottom margin — which may differ from margin settings. Figure 7-2 is rule-bearing for continuation-page page-number display. Figure 7-2 supports the bare centered page number format. Continuation-page subject/text placement belongs to C7-017. Copy to/blind-copy details in Figure 7-2 are not part of this page-numbering rule and will be handled separately.",
+  "cross_references": ["C7-017"],
+  "figure_references": ["Figure 7-2"]
+}

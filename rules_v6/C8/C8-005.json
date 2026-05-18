@@ -1,0 +1,16 @@
+{
+  "rule_id": "C8-005",
+  "manual_section": "8-3",
+  "chapter": 8,
+  "title": "Preparing and Signing Copies",
+  "status": "candidate",
+  "enforceable": "undetermined",
+  "validator_type": "undetermined",
+  "severity": "advisory",
+  "category": "assembly",
+  "target_fields": ["letterhead", "signature", "copies"],
+  "plain_language_rule": "Every action addressee must receive a letter that has a letterhead and signature. The letterhead may be printed, typed, stamped, or photocopied. The signature must be original or photocopied. Type the original on letterhead paper. After the original has been signed, make the necessary photocopies. Keep the original signed copy in the official file and send out photocopies.",
+  "source_text": "8-3 Preparing and Signing Copies. Every action addressee must receive a letter that has a letterhead and signature. The letterhead may be printed, typed, stamped, or photocopied. The signature must be original or photocopied. To meet these requirements, make copies the following way: Type original on letterhead paper. After the original has been signed, make the necessary photocopies. Keep the original signed copy in the official file and send out photocopies.",
+  "renderer_impact": "Original uses letterhead paper; all copies are photocopies of the signed original. Letterhead may be rendered as printed, typed, stamped, or photocopied. Signature may be rendered as original or photocopied.",
+  "notes": "This section covers physical paper handling (letterhead paper, photocopying, signing). The signature may be original OR photocopied — there is no requirement that copies bear an 'ORIGINAL SIGNED BY' notation in section 8-3. Most of this section is procedural and not amenable to automated layout validation."
+}

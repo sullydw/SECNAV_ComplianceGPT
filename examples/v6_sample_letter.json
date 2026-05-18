@@ -1,0 +1,152 @@
+{
+  "_comment": "AUDIT TEST CASES FOR DISTRIBUTION AND COPY-TO LAYOUTS",
+  "_test_cases": {
+    "CASE_1_distribution_only_single_column": {
+      "description": "distribution_only mode, single_column layout, no copy_to",
+      "distribution_mode": "distribution_only",
+      "distribution_layout": "single_column",
+      "distribution": [
+        "NAVCOMTELSTA WASHINGTON DC",
+        "NAVCOMTELSTA PENSACOLA",
+        "NAVCOMTELSTA SAN DIEGO"
+      ],
+      "copy_to": []
+    },
+    "CASE_2_to_plus_distribution_columns_with_copy_to": {
+      "description": "to_plus_distribution mode, columns layout, with copy_to single_column",
+      "distribution_mode": "to_plus_distribution",
+      "to": "Area Records Officers",
+      "distribution_layout": "columns",
+      "distribution": [
+        "NAVCOMTELSTA WASHINGTON DC",
+        "NAVCOMTELSTA PENSACOLA",
+        "NAVCOMTELSTA SAN DIEGO",
+        "NAVCOMTELSTA SAN FRANCISCO",
+        "NAVCOMTELSTA SEATTLE",
+        "NAVCOMTELSTA BOSTON"
+      ],
+      "copy_to": [
+        "Commanding General, II MEF",
+        "Commanding Officer, 2d Marine Division"
+      ],
+      "copy_to_layout": "single_column"
+    },
+    "CASE_3_distribution_only_paragraph_with_copy_to_columns": {
+      "description": "distribution_only mode, paragraph layout, with copy_to columns",
+      "distribution_mode": "distribution_only",
+      "distribution_layout": "paragraph",
+      "distribution": [
+        "NAVCOMTELSTA WASHINGTON DC",
+        "NAVCOMTELSTA PENSACOLA",
+        "NAVCOMTELSTA SAN DIEGO",
+        "NAVCOMTELSTA SAN FRANCISCO"
+      ],
+      "copy_to": [
+        "Commanding General, II MEF",
+        "Commanding Officer, 2d Marine Division",
+        "Chief of Staff, II MEF",
+        "G-3, II MEF"
+      ],
+      "copy_to_layout": "columns"
+    },
+    "CASE_4_long_distribution_columns": {
+      "description": "Long distribution list (10+ entries) with columns layout to test balancing",
+      "distribution_mode": "distribution_only",
+      "distribution_layout": "columns",
+      "distribution": [
+        "NAVCOMTELSTA WASHINGTON DC",
+        "NAVCOMTELSTA PENSACOLA",
+        "NAVCOMTELSTA SAN DIEGO",
+        "NAVCOMTELSTA SAN FRANCISCO",
+        "NAVCOMTELSTA SEATTLE",
+        "NAVCOMTELSTA BOSTON",
+        "NAVCOMTELSTA CHICAGO",
+        "NAVCOMTELSTA DALLAS",
+        "NAVCOMTELSTA MIAMI",
+        "NAVCOMTELSTA DENVER",
+        "NAVCOMTELSTA ATLANTA",
+        "NAVCOMTELSTA PHOENIX"
+      ],
+      "copy_to": []
+    },
+    "CASE_5_missing_layouts_defaults": {
+      "description": "Missing distribution_layout and copy_to_layout to test defaults (single_column)",
+      "distribution_mode": "distribution_only",
+      "distribution": [
+        "NAVCOMTELSTA WASHINGTON DC",
+        "NAVCOMTELSTA PENSACOLA"
+      ],
+      "copy_to": [
+        "Commanding General, II MEF"
+      ]
+    }
+  },
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "originator_code": "S-1",
+  "date": "1 May 2026",
+  "unit_identity": {
+    "letterhead_family": "LH_USMC_ACTIVITY",
+    "UNIT_OR_ACTIVITY_NAME": "3D BATTALION 6TH MARINES",
+    "NEXT_ECHELON_OR_PARENT": "2D MARINE DIVISION",
+    "INSTALLATION_OR_LOCATION": "MCB CAMP LEJEUNE",
+    "STATE": "NC",
+    "ZIP9": "28542-0001",
+    "SUPPRESS_PARENT_LINE": true
+  },
+  "from": "Commanding Officer, 3d Battalion, 6th Marines",
+  "to": "Area Records Officers",
+  "distribution_mode": "to_plus_distribution",
+  "distribution": [
+    "NAVCOMTELSTA WASHINGTON DC",
+    "NAVCOMTELSTA PENSACOLA",
+    "NAVCOMTELSTA SAN DIEGO",
+    "NAVCOMTELSTA SAN FRANCISCO",
+    "NAVCOMTELSTA SEATTLE",
+    "NAVCOMTELSTA BOSTON"
+  ],
+  "distribution_layout": "columns",
+  "via": [
+    "(1) Commanding General, 2d Marine Division"
+  ],
+  "subj": "THIS IS A VERY LONG SUBJECT LINE INTENDED TO FORCE WRAPPING IN THE SECNAV LETTER GENERATION SYSTEM TO VERIFY THAT CONTINUATION LINES ALIGN PROPERLY UNDER THE FIRST WORD OF THE SUBJECT TEXT AND NOT UNDER THE LABEL",
+  "ref": [
+    "(a) SECNAV M-5216.5 Ch-2"
+  ],
+  "encl": [
+    "(1) Sample enclosure"
+  ],
+  "body": [
+    "1. First top-level paragraph. This line is intentionally long enough to wrap onto a continuation line so we can confirm continuation returns to the left margin.",
+    "a. First subparagraph. This line is intentionally long enough to wrap onto a continuation line so we can confirm subparagraph continuation returns to the left margin.",
+    "b. Second subparagraph required because if a subdivision is used, at least two are required.",
+    "(1) First nested paragraph. This line is intentionally long enough to wrap onto a continuation line for nested marker testing.",
+    "(2) Second nested paragraph required for paired subdivision validation.",
+    "(a) First fourth-level paragraph. This line is intentionally long enough to wrap onto a continuation line for fourth-level marker testing.",
+    "(b) Second fourth-level paragraph required for paired subdivision validation.",
+    "2. Second top-level paragraph after nested material.",
+    "3. Third top-level paragraph.",
+    "4. Fourth top-level paragraph.",
+    "5. Fifth top-level paragraph.",
+    "6. Sixth top-level paragraph.",
+    "7. Seventh top-level paragraph.",
+    "8. Eighth top-level paragraph.",
+    "9. Ninth top-level paragraph.",
+    "10. Tenth top-level paragraph. This line verifies that marker plus two spaces naturally pushes text farther right and paragraphs do not line up."
+  ],
+  "signature": {
+    "name": "D. SULLIVAN",
+    "role": "by_direction",
+    "title": null,
+    "authority": null,
+    "activity_head_title": null,
+    "affects_pay_or_allowances": false
+  },
+  "copy_to": [
+    "Commanding General, II MEF",
+    "Commanding Officer, 2d Marine Division",
+    "Chief of Staff, II MEF",
+    "G-3, II MEF"
+  ],
+  "copy_to_layout": "paragraph"
+}

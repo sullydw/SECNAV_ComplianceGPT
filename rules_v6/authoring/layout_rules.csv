@@ -1,0 +1,7 @@
+id,type,dt,sec,condition,action,target,severity,source,status,enabled,notes
+LAY-0001,LAY,DT_STD_LTR,SEC_PAGE,always,ACT_SET,left_margin_in,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Left margin is 1 inch."
+LAY-0002,LAY,DT_STD_LTR,SEC_PAGE,always,ACT_SET,right_margin_in,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Right margin is 1 inch."
+LAY-0003,LAY,DT_STD_LTR,SEC_PAGE,always,ACT_SET,top_margin_in,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Top margin is 5/8 inch."
+LAY-0004,LAY,DT_STD_LTR,SEC_PAGE,always,ACT_SET,bottom_margin_in,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Bottom margin is 1 inch."
+LAY-0005,LAY,DT_STD_LTR,SEC_BODY,always,ACT_SPACE,line_spacing_single,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Body text is single-spaced."
+LAY-0006,LAY,DT_STD_LTR,SEC_HEADER,between_header_sections,ACT_SPACE,one_blank_line,REQ,SRC_SECNAV_5216_5_CH2,ACT,true,"Use one blank line between major header sections."

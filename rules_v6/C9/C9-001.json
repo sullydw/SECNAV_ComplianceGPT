@@ -1,0 +1,16 @@
+{
+  "rule_id": "C9-001",
+  "manual_section": "9-1",
+  "chapter": 9,
+  "title": "General — Endorsement Overview",
+  "status": "candidate",
+  "source_text": "9-1 General. When a letter is transmitted via your activity, use an endorsement to forward comments, recommendations, or information. While an endorsement is mostly used to transmit correspondence through the chain of command, you may also use it to redirect a letter. Do not use an endorsement to reply to a routine letter. Additionally, a \"Via\" addressee may alter the order of any remaining \"Via\" addressees or add others. The length of the endorsement and the amount of space that is available on the basic letter or on the preceding endorsement determines if you should use a same-page or new page endorsement. If it will completely fit on the signature page of the basic letter or the preceding endorsement, you may add it to that page. If not, use a new-page endorsement.",
+  "plain_language_rule": "Use an endorsement to forward comments, recommendations, or information when a letter is transmitted via your activity. Endorsements are mostly used to transmit correspondence through the chain of command, but may also redirect a letter. Do not use an endorsement to reply to a routine letter. A Via addressee may alter the order of remaining Via addressees or add others. Use a same-page endorsement if it will completely fit on the signature page of the basic letter or preceding endorsement; otherwise use a new-page endorsement.",
+  "category": "endorsement_structure",
+  "enforceable": "undetermined",
+  "severity": "warning",
+  "target_fields": ["endorsement_line", "endorsement_placement"],
+  "validator_type": "undetermined",
+  "renderer_impact": "Determines whether an endorsement renders on the same page as the basic letter/previous endorsement or on a new page based on available space.",
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 9-1 General. Key points: (1) endorsements forward comments/recommendations/information, (2) not for routine replies, (3) Via addressees may modify routing, (4) same-page vs new-page decision based on available space."
+}

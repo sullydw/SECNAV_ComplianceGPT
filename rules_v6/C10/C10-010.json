@@ -1,0 +1,37 @@
+{
+  "rule_id": "C10-010",
+  "manual_section": "10-2.6c",
+  "chapter": 10,
+  "title": "Memorandum of Agreement or Understanding — Letterhead",
+  "status": "candidate",
+  "source_text": "c. Letterhead. On plain bond, type the command titles so the senior is at the top. If the activities are in different cities or states, follow each title with its address.",
+  "plain_language_rule": "Prepare MOA/MOU on plain bond. Type command titles with the senior activity at the top. If the activities are in different cities or states, follow each title with its address. Figure 10-5 shows MOA command-title/letterhead-style information at the top for two activities. Figure 10-5 shows the senior activity at the top/left side of the agreement heading area. Figure 10-5 shows command titles and sender symbols/date blocks above the MOA heading. Figure 10-5 shows NAVAIRSYSCOM and NAVINTCOM with their SSIC/serial/date blocks. Figure 10-5 repeats the body rule that command titles are typed on plain bond so the senior is at the top. Figure 10-5 states that if activities are in different cities or states, each title is followed by its address.",
+  "category": "memorandum_format",
+  "enforceable": true,
+  "severity": "error",
+  "target_fields": [
+    "plain_bond",
+    "command_titles",
+    "senior_activity_order",
+    "activity_addresses",
+    "sender_symbols",
+    "date_blocks"
+  ],
+  "validator_type": "moa_mou_letterhead_title_check",
+  "renderer_impact": "Render MOA/MOU on plain bond. Render command titles with senior activity at top. Support address lines after each title when activities are in different cities/states. Show sender symbols/date blocks above MOA/MOU heading. Figure 10-5 and 10-6 are rule-bearing.",
+  "notes": "Source text and Figure 10-5/10-6 details resolved from manual section 10-2.6c Letterhead. This rule governs MOA/MOU letterhead/title placement. Prepared on plain bond. Command titles typed with senior activity at top. Addresses included after titles for activities in different cities/states. Figures 10-5 and 10-6 show command titles with SSIC/serial/date blocks positioned above the MOA/MOU heading.",
+  "cross_references": [
+    "C10-001",
+    "C10-002",
+    "C10-004",
+    "C10-005",
+    "C10-006",
+    "C10-007",
+    "C10-008",
+    "C10-009"
+  ],
+  "figure_references": [
+    "Figure 10-5",
+    "Figure 10-6"
+  ]
+}

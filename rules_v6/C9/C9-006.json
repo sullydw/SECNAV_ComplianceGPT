@@ -1,0 +1,16 @@
+{
+  "rule_id": "C9-006",
+  "manual_section": "9-2.5",
+  "chapter": 9,
+  "title": "Copy To Addressees in Endorsements",
+  "status": "candidate",
+  "source_text": "5. \"Copy To:\" Addressees. If your endorsement is significant and not routine, each activity that endorsed the basic letter before you and the originator of the basic letter shall be included as a copy to addressee on your endorsement. Additionally, all copy to addressees from the basic letter and previous endorsements shall be included as a copy to addressee. Significant endorsements include \"forwarded, recommending disapproval,\" \"readdressed and forwarded,\" and those with substantive comments. Routine endorsements include \"forwarded,\" \"forwarded for consideration,\" and \"forwarded, recommending approval.\"",
+  "plain_language_rule": "If your endorsement is significant (not routine), include as Copy to addressees: (1) each activity that endorsed before you, (2) the originator of the basic letter, and (3) all Copy to addressees from the basic letter and previous endorsements. Significant endorsements include \"forwarded, recommending disapproval,\" \"readdressed and forwarded,\" and those with substantive comments. Routine endorsements include \"forwarded,\" \"forwarded for consideration,\" and \"forwarded, recommending approval.\"",
+  "category": "cross_field",
+  "enforceable": "partial",
+  "severity": "warning",
+  "target_fields": ["copy_to", "endorsement_copy_to_addressees", "endorsement_significance"],
+  "validator_type": "endorsement_copy_to_addressee_check",
+  "renderer_impact": "Significant (non-routine) endorsements require expanded Copy to distribution including prior endorsers, the originator, and all existing Copy to addressees. Routine endorsements do not trigger this requirement. Significance determination depends on endorsement content (e.g., \"recommending disapproval\" vs \"recommending approval\").",
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 9-2.5 Copy To Addressees. Key points: (1) significant endorsements require expanded Copy to list, (2) prior endorsers must be included, (3) originator must be included, (4) existing Copy to addressees must be included, (5) significance determined by endorsement content. Enforceability is partial because significance determination requires content judgment."
+}

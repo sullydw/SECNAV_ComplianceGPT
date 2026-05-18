@@ -1,0 +1,17 @@
+{
+  "rule_id": "C9-008",
+  "manual_section": "9-2.7",
+  "chapter": 9,
+  "title": "Assembly of an Endorsement",
+  "status": "candidate",
+  "source_text": "7. Assembly of an Endorsement. Figure 9-2 shows a suggested way to assemble an endorsement for signature and mailing.",
+  "plain_language_rule": "The manual provides a suggested assembly method for endorsements via Figure 9-2. No prescriptive text-based assembly order is given; the guidance is advisory and refers to the figure for details. Figure 9-3 shows a suggested way to assemble an endorsement for signature and mailing. Suggested elements include a brief sheet if required, the endorsement with enclosures to be signed, earlier endorsements with the most recent on top, the basic letter, earlier enclosures plus new enclosures on top, copies for remaining Via addressees, copies for Copy to addressees, official file copy with exposed left margin, and background material. Figure 9-3 shows checking or arrowing the intended addressee on each copy. Figure 9-3 shows tabbing the signature page, enclosures, and background material.",
+  "category": "procedural",
+  "enforceable": false,
+  "severity": "advisory",
+  "target_fields": ["endorsement_assembly", "brief_sheet", "endorsement_to_be_signed", "prior_endorsements", "basic_letter", "enclosures", "via_addressee_copies", "copy_to_copies", "official_file_copy", "background_material", "addressee_marking", "tabs"],
+  "validator_type": null,
+  "renderer_impact": null,
+  "notes": "Source text resolved from SECNAV M-5216.5 CH-1, 9-2.7 Assembly of an Endorsement. This is an advisory physical assembly/package procedure. The rule text only references Figure 9-2 for a suggested assembly method; no hard text-based assembly order is prescribed. Not automatable as a validator rule. No renderer impact. Figure 9-3 is rule-bearing but advisory. Keep this rule procedural/advisory. Do not convert the suggested assembly order into a hard validator requirement. No renderer behavior is implied.",
+  "figure_references": ["Figure 9-3"]
+}

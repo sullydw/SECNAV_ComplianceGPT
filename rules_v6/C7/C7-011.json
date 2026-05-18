@@ -1,0 +1,13 @@
+{
+  "rule_id": "C7-011",
+  "manual_section": "7-2.11",
+  "chapter": 7,
+  "title": "Enclosure Line",
+  "status": "candidate",
+  "enforceable": "partial",
+  "validator_type": "layout_check",
+  "plain_language_rule": "Type 'Encl:' in uppercase followed by a colon on the second line below the last line of the reference block (or via/subject line if no references). List enclosures using lowercase letters in parentheses: (a), (b), (c), etc. A single enclosure is listed without a preceding number. When an enclosure is sent under separate cover, note '(sep cover)' after the enclosure description.",
+  "source_text": "Type 'Encl:' in uppercase followed by a colon, on the second line below the last line of the reference block or, if no references, below the via block or subject line. Identify each enclosure by a lowercase letter in parentheses. When an enclosure is sent under separate cover, type '(sep cover)' after the enclosure description.",
+  "renderer_impact": "Enclosure line must appear on the second line below the last reference line (or via/subject line if no references). 'Encl:' in uppercase followed by a colon. Enclosures identified by lowercase letters in parentheses.",
+  "notes": "The enclosure line uses 'Encl:' followed by a colon. A single enclosure is listed without a preceding number. When an enclosure is sent under separate cover, '(sep cover)' is typed after the enclosure description. No document may be both a reference and an enclosure."
+}

@@ -1,0 +1,16 @@
+{
+  "rule_id": "C8-001",
+  "manual_section": "8-1",
+  "chapter": 8,
+  "title": "General — When to Use a Multiple-Address Letter",
+  "status": "candidate",
+  "enforceable": "undetermined",
+  "validator_type": null,
+  "severity": "advisory",
+  "category": "format_selection",
+  "target_fields": ["format_type"],
+  "plain_language_rule": "A multiple-address letter is used when identical correspondence (same subject and content) must be sent to more than one activity or individual within the Department of the Navy. It may also be used for commands of other services, other Government agencies, and the general public when conditions permit. A multiple-address letter follows the standard letter format from Chapter 7, with the modifications described in this chapter. Do not use a multiple-address letter when: (1) separate letters with different enclosures per addressee would be prepared anyway, (2) addressees are at different levels in the chain of command (e.g., some To, some Via), or (3) the letter requires an individual signature of the originator for each addressee.",
+  "source_text": "8-1 General.\n\na. A multiple-address letter is used when the originator determines that correspondence with the same subject and content must be dispatched to more than one activity or individual within the Department of the Navy. The letter may also be used to correspond with commands of other services, other Government agencies, and the general public when the conditions in paragraph 8-1a apply and military and Government standards make its use feasible. A multiple-address letter is prepared based on the standard letter format detailed in chapter 7, with the modifications described herein.\n\nb. Situations that do not warrant preparation of a multiple-address letter are:\n(1) When separate letters are prepared anyway (e.g., different enclosures are required for different addressees);\n(2) Several addressees are at different levels in the chain of command (e.g., some To, some Via);\n(3) When a letter requires individual signature of the originator for each addressee.",
+  "renderer_impact": "Determines whether the correspondence uses a single-address or multiple-address format. When a multiple-address letter is selected, the renderer must apply Chapter 8 modifications (addressing, distribution, copies, assembly) on top of the Chapter 7 standard letter base format.",
+  "notes": "This is a scope/selection rule defining when to use (or not use) a multiple-address letter. It is primarily a procedural decision for the originator — the rule says 'when the originator determines.' The three exclusion criteria involve content-level judgments (different enclosures per addressee, command chain position, individual signature requirements) that are not amenable to automated layout validation. The rule explicitly defers to Chapter 7 for the base letter format; Chapter 8 only describes modifications. The phrase 'when military and Government standards make its use feasible' for non-DON addressees is an additional human judgment gate."
+}

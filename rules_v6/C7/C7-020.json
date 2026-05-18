@@ -1,0 +1,27 @@
+{
+  "rule_id": "C7-020",
+  "manual_section": "7-2.19",
+  "source_text": "19. Tabbing a Correspondence Package. Tab the signature page (if not the first page), enclosures, and background material. Label the tabs as appropriate. Figure 7-10 illustrates an assembled correspondence package with tabs. Take care so tabs can be removed without defacing the document.",
+  "plain_language_rule": "Tab the signature page (unless it is the first page), all enclosures, and all background material in a correspondence package. Label each tab as appropriate. Ensure tabs can be removed without defacing any document. Figure 7-10 shows tab placement/usage for a correspondence package. Signature page, enclosures, and background material are tabbed as appropriate. Tabs must be removable without defacing the document. Figure 7-10 supports physical package preparation, not digital rendering.",
+  "category": "procedural",
+  "enforceable": false,
+  "severity": "advisory",
+  "target_fields": [
+    "tabbing",
+    "signature_page_tabs",
+    "enclosure_tabs",
+    "background_material_tabs",
+    "removable_tabs",
+    "document_preservation"
+  ],
+  "validator_type": null,
+  "renderer_impact": null,
+  "status": "candidate",
+  "notes": "Figure 7-10 is rule-bearing but advisory/procedural. Do not convert figure tab placement into a hard pixel/validator rule unless later manual text explicitly requires it. Preserve the manual requirement that tabs can be removed without defacing the document. No renderer behavior is implied.",
+  "cross_references": [
+    "C7-019"
+  ],
+  "figure_references": [
+    "Figure 7-10"
+  ]
+}

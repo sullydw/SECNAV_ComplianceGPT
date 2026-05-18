@@ -1,0 +1,11 @@
+{
+  "body": [
+    "1. First top-level paragraph.",
+    "a. First subparagraph under paragraph 1.",
+    "b. Second subparagraph under paragraph 1.",
+    "2. Second top-level paragraph.",
+    "a. First subparagraph under paragraph 2.",
+    "b. Second subparagraph under paragraph 2.",
+    "3. Third top-level paragraph."
+  ]
+}

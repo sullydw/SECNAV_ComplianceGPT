@@ -1,0 +1,62 @@
+{
+  "_meta": {
+    "series": "F",
+    "name": "Font and Typography Rules",
+    "description": "Body font, leading, and spacing rules",
+    "version": "1.0",
+    "updated": "2026-05-03"
+  },
+  "F-001": {
+    "rule": "body_font_size_default",
+    "description": "Body text uses 12 pt font size by default",
+    "font_size_pt": 12,
+    "font_family": "Times-Roman",
+    "applies_to": "body_text",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "F-002": {
+    "rule": "leading_calculation",
+    "description": "Line spacing (leading) is calculated as font_size * 1.2",
+    "formula": "leading = font_size * 1.2",
+    "example": "12 pt font = 14.4 pt leading",
+    "applies_to": "all_body_spacing",
+    "source": "Typography best practices"
+  },
+  "F-003": {
+    "rule": "continuation_line_margin",
+    "description": "Continuation lines (wrapped text) return to the left margin without marker indentation",
+    "indent": "left_margin",
+    "marker_on_continuation": false,
+    "applies_to": "wrapped_body_lines",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "F-004": {
+    "rule": "paragraph_spacing",
+    "description": "Each paragraph/subparagraph begins on the second line below the prior paragraph (one blank line between)",
+    "spacing_between": "one_blank_line",
+    "formula": "blank_line = leading",
+    "applies_to": "all_paragraphs",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "F-005": {
+    "rule": "page_break_minimum_space",
+    "description": "Two-line minimum space required before forcing a page break",
+    "min_space": "leading * 2",
+    "applies_to": "page_break_logic",
+    "source": "Pagination engine"
+  },
+  "F-006": {
+    "rule": "signature_gap",
+    "description": "Four lines of space between final body text and signature block",
+    "formula": "signature_gap = leading * 4",
+    "applies_to": "signature_placement",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "F-007": {
+    "rule": "copy_to_gap",
+    "description": "Two lines of space between signature and copy-to block",
+    "formula": "copy_gap = leading * 2",
+    "applies_to": "copy_to_placement",
+    "source": "SECNAV M-5216.5 Ch 7"
+  }
+}

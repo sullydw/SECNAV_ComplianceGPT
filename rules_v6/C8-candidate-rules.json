@@ -1,0 +1,62 @@
+{
+  "compatibility_note": "This file is a lightweight compatibility pointer for legacy tooling. The authoritative Chapter 8 rules live in per-rule files under rules_v6/C8/. Do not use this file as the source of truth for rule content.",
+  "authoritative_location": "rules_v6/C8/",
+  "index_file": "rules_v6/C8/index.json",
+  "per_rule_files": [
+    "rules_v6/C8/C8-001.json",
+    "rules_v6/C8/C8-002.json",
+    "rules_v6/C8/C8-003.json",
+    "rules_v6/C8/C8-004.json",
+    "rules_v6/C8/C8-005.json",
+    "rules_v6/C8/C8-006.json"
+  ],
+  "chapter": 8,
+  "title": "Preparing Multiple-Address Letters",
+  "rule_files": [
+    {
+      "rule_id": "C8-001",
+      "file_path": "rules_v6/C8/C8-001.json",
+      "manual_section": "8-1",
+      "title": "General — When to Use a Multiple-Address Letter",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C8-002",
+      "file_path": "rules_v6/C8/C8-002.json",
+      "manual_section": "8-2a",
+      "title": "Listing Addressees — 'To:' Line Only",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C8-003",
+      "file_path": "rules_v6/C8/C8-003.json",
+      "manual_section": "8-2b",
+      "title": "Listing Addressees — 'Distribution:' Line Only",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C8-004",
+      "file_path": "rules_v6/C8/C8-004.json",
+      "manual_section": "8-2c",
+      "title": "Listing Addressees — Both 'To:' and 'Distribution:' Line",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C8-005",
+      "file_path": "rules_v6/C8/C8-005.json",
+      "manual_section": "8-3",
+      "title": "Preparing and Signing Copies",
+      "source_text_state": "resolved"
+    },
+    {
+      "rule_id": "C8-006",
+      "file_path": "rules_v6/C8/C8-006.json",
+      "manual_section": "8-4",
+      "title": "Assembly of Multiple-Address Letters",
+      "source_text_state": "resolved"
+    }
+  ],
+  "total_rules": 6,
+  "all_resolved": true,
+  "deprecated_fields_warning": "Full source_text, plain_language_rule, and other rule content fields are NOT included in this compatibility file. Read the per-rule JSON files directly for authoritative rule content."
+}

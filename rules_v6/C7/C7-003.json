@@ -1,0 +1,18 @@
+{
+  "rule_id": "C7-003",
+  "manual_section": "7-2.2",
+  "source_text": "For text, use 10 to 12 point font size. Times New Roman 12-point is the preferred font style and size for official correspondence, but Courier New may be used for informal correspondence.",
+  "plain_language_rule": "Standard letter body text must use 10 to 12 point font size. Times New Roman 12-point is the preferred font for official correspondence. Courier New may be used for informal correspondence.",
+  "category": "format",
+  "enforceable": true,
+  "severity": "warning",
+  "target_fields": [
+    "font_family",
+    "font_size",
+    "text_style"
+  ],
+  "validator_type": "font_family_size_check",
+  "renderer_impact": "Font selection and sizing throughout document body text; renderer must support Times New Roman 12pt as the default for official correspondence, with Courier New as an acceptable alternative for informal correspondence. Font size range 10–12pt is permitted.",
+  "status": "candidate",
+  "notes": "The manual specifies 10–12pt font for body text, with Times New Roman 12pt preferred for official correspondence and Courier New acceptable for informal use. There is a surface-level tension between 7-2.1's prohibition on proportional spacing and the explicit approval of Times New Roman (a proportional font). The proportional-spacing prohibition likely refers to character-spacing/kerning adjustments, not proportional font families. This ambiguity is preserved as-is from the manual. Header elements may use different sizes per their specific requirements."
+}

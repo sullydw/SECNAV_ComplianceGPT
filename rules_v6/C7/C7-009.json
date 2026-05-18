@@ -1,0 +1,13 @@
+{
+  "rule_id": "C7-009",
+  "manual_section": "7-2.9",
+  "chapter": 7,
+  "title": "Via Line",
+  "status": "candidate",
+  "enforceable": true,
+  "validator_type": "layout_check",
+  "plain_language_rule": "Type 'VIA' in uppercase followed by a colon, then the title of the intermediate addressee on the same line. Place the via line on the second line below the subject line (one blank line between subject and via). Each additional via addressee goes on a separate line below.",
+  "source_text": "Type 'VIA' in uppercase, followed by a colon, and the title of the addressee to whom the letter is being sent through. Place the via line on the second line below the subject line. When there is more than one via addressee, type each on a separate line.",
+  "renderer_impact": "Via line must appear on the second line below the subject line. 'VIA' in uppercase followed by a colon, then the addressee title on the same line. Multiple via addressees each get a separate line.",
+  "notes": "The via line is typed on the second line below the subject line, with 'VIA' in uppercase followed by a colon and the addressee title. Multiple via addressees are each on a separate line."
+}

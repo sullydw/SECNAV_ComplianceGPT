@@ -1,0 +1,18 @@
+{
+  "rule_id": "C7-017",
+  "manual_section": "7-2.16",
+  "chapter": 7,
+  "title": "Identifying Second and Later Pages",
+  "status": "candidate",
+  "source_text": "16. Identifying Second and Later Pages\n\na. General\n\n(1) Identify second and later pages as a continuation page from the first page. Use a header that identifies the subject of the correspondence and the page number using the format shown below. Place the header at the left margin, 1 inch from the top of the page.\n\nb. Examples of Continuation Page Header\n\n(1) The subject line will be abbreviated if too long for one line. Abbreviate only those words that lend themselves to common abbreviations.\n\nEXAMPLE: (Single line abbreviation)\nSubj: SECNAV FOREIGN AREA OFFICER PROGRAM\n\n(2) When the subject is too long for one line, use block style paragraph format.\n\nEXAMPLE: (2-line abbreviation)\nSubj: DEFENSE POLICY ANALYSIS - TASK\nFORCE REVIEW",
+  "plain_language_rule": "Identify second and later pages with a continuation page header placed at the left margin, 1 inch from the top of the page. The header includes the abbreviated subject and the page number. Abbreviate the subject line if too long for one line, using only words that lend themselves to common abbreviations. When the abbreviated subject is still too long for one line, use block style paragraph format. Second and later pages repeat the subject line. Continue text on the second line below the repeated subject line. Figure 7-2 shows continuation-page typing begins at the sixth line from the top / 1-inch top margin.",
+  "category": "format",
+  "enforceable": "partial",
+  "severity": "warning",
+  "target_fields": ["continuation_header_placement", "continuation_header_content", "subject_line_abbreviation", "continuation_subject_line", "continuation_text_start"],
+  "validator_type": "continuation_page_identification_check",
+  "renderer_impact": "Render continuation page header at left margin, 1 inch from top. Repeat abbreviated subject line on second and later pages. Resume body text on second line below repeated subject line. Abbreviate long subjects using common abbreviations or use block style paragraph format for multi-line cases.",
+  "notes": "The header format shown includes only the subject and page number — no sender, addressee, or date elements are mentioned. The exact page-numbering format is not specified here; see C7-018. The manual states \"1 inch from the top of the page\" with no additional margin-bottom or line-spacing specifications. The phrase \"words that lend themselves to common abbreviations\" is subjective and leaves room for judgment. Block style paragraph format is the fallback when single-line abbreviation is insufficient. Figure 7-2 is rule-bearing, not merely illustrative. Figure 7-2 provides continuation-page subject/text placement details. Page numbering itself remains governed by C7-018. Copy to/blind copy details in Figure 7-2 are not part of this rule and will be handled separately.",
+  "cross_references": ["C7-018"],
+  "figure_references": ["Figure 7-2"]
+}

@@ -1,0 +1,29 @@
+{
+  "rule_id": "C7-019",
+  "manual_section": "7-2.18",
+  "source_text": "18. Correspondence Package Assembly. The basic letter, the enclosures, and the background material are assembled according to activity practices before they are presented for approval and signature. Figure 7-9 illustrates an assembled correspondence package that is ready for signature and mailing.",
+  "plain_language_rule": "Assemble the basic letter, enclosures, and background material according to activity practices before presenting the package for approval and signature. Figure 7-9 shows a suggested way to assemble a correspondence package for signature and mailing. Suggested package elements include the basic letter, enclosures, background material, and official file copy. Figure 7-9 shows tabbing or marking items as needed for review/signature. Figure 7-9 supports physical-package assembly guidance, not digital rendering.",
+  "category": "procedural",
+  "enforceable": false,
+  "severity": "advisory",
+  "target_fields": [
+    "package_assembly",
+    "brief_sheet",
+    "signature_page",
+    "enclosures",
+    "background_material",
+    "official_file_copy",
+    "addressee_marking",
+    "tabs"
+  ],
+  "validator_type": null,
+  "renderer_impact": null,
+  "status": "candidate",
+  "notes": "Figure 7-9 is rule-bearing but advisory. The section defers actual assembly to activity practices. Do not convert the suggested assembly order into a hard validator requirement. No renderer behavior is implied.",
+  "cross_references": [
+    "C7-020"
+  ],
+  "figure_references": [
+    "Figure 7-9"
+  ]
+}

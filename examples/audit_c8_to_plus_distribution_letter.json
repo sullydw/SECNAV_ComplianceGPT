@@ -1,0 +1,42 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "originator_code": "OPC123",
+  "date": "15 May 2026",
+  "unit_identity": {
+    "letterhead_family": "LH_USMC_ACTIVITY",
+    "UNIT_OR_ACTIVITY_NAME": "EXAMPLE ACTIVITY",
+    "NEXT_ECHELON_OR_PARENT": "EXAMPLE PARENT COMMAND",
+    "INSTALLATION_OR_LOCATION": "EXAMPLE BASE",
+    "STATE": "VA",
+    "ZIP9": "22134-0001",
+    "SUPPRESS_PARENT_LINE": true
+  },
+  "from": "Commanding Officer, Example Activity",
+  "to": "Standard of Conduct Coordinators",
+  "distribution_mode": "to_plus_distribution",
+  "distribution_layout": "single_column",
+  "distribution": [
+    "NAVCOMTELSTA WASHINGTON DC",
+    "NAVCOMTELSTA PENSACOLA",
+    "NAVCOMTELSTA SAN DIEGO",
+    "NAVCOMTELSTA SAN FRANCISCO"
+  ],
+  "subj": "C8 TO PLUS DISTRIBUTION MULTIPLE-ADDRESS LETTER AUDIT FIXTURE",
+  "body": [
+    "1. This multiple-address letter tests the To plus Distribution format where the To line identifies a group title and the Distribution line identifies individual members or addressees.",
+    "2. Copy to addressees may still appear when otherwise required; Figure 8-3 omits Copy to but does not prohibit it."
+  ],
+  "signature": {
+    "name": "J. DOE",
+    "role": "by_direction",
+    "title": null,
+    "authority": null,
+    "activity_head_title": null,
+    "affects_pay_or_allowances": false
+  },
+  "copy_to": [
+    "COMNAVSEASYSCOM (SEA-06)"
+  ],
+  "copy_to_layout": "single_column"
+}

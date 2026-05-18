@@ -1,0 +1,164 @@
+{
+  "_meta": {
+    "series": "V",
+    "name": "Validation Rules",
+    "description": "Validation checks for v6 letter format compliance",
+    "version": "1.0",
+    "updated": "2026-05-03"
+  },
+  "V-001": {
+    "rule": "body_marker_sequence",
+    "description": "Body markers must follow sequential numbering per level",
+    "check": "sequential_per_level",
+    "levels": {
+      "1": "numeric_period (1., 2., 3.)",
+      "2": "lower_alpha_period (a., b., c.)",
+      "3": "numeric_paren ((1), (2), (3))",
+      "4": "lower_alpha_paren ((a), (b), (c))"
+    },
+    "severity": "E",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "V-002": {
+    "rule": "minimum_two_children",
+    "description": "If a subdivision level is used, at least two items are required at that level",
+    "check": "min_children_count",
+    "min_count": 2,
+    "applies_to": ["level_2", "level_3", "level_4"],
+    "severity": "E",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "V-003": {
+    "rule": "no_level_skip",
+    "description": "Level jumps greater than +1 are not allowed (e.g., cannot go from level 1 to level 4)",
+    "check": "level_jump_max",
+    "max_jump": 1,
+    "severity": "E",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "V-004": {
+    "rule": "signature_page_text_minimum",
+    "description": "Signature page must have at least 2 lines of body text before signature",
+    "check": "min_body_lines_before_signature",
+    "min_lines": 2,
+    "severity": "W",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "V-005": {
+    "rule": "continuation_header_present",
+    "description": "Page 2+ must have repeated subject line at top",
+    "check": "continuation_header_exists",
+    "applies_to": "page_2+",
+    "severity": "E",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "V-006": {
+    "rule": "page_number_placement",
+    "description": "Page numbers must be centered, 1/2 inch from bottom, on page 2+ only",
+    "check": "page_number_position",
+    "x": "center",
+    "y_pt": 36.0,
+    "applies_to": "page_2+",
+    "severity": "W",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "V-007": {
+    "rule": "no_page_one_number",
+    "description": "Page 1 must not have a page number",
+    "check": "page_number_absent",
+    "applies_to": "page_1",
+    "severity": "E",
+    "source": "SECNAV M-5216.5 Ch 2"
+  },
+  "V-008": {
+    "rule": "signature_spacing",
+    "description": "Signature must be 4 lines below final body text",
+    "check": "signature_gap",
+    "expected_gap": "leading * 4",
+    "tolerance_pt": 2.0,
+    "severity": "W",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "V-009": {
+    "rule": "copy_to_spacing",
+    "description": "Copy-to block must be 2 lines below signature",
+    "check": "copy_gap",
+    "expected_gap": "leading * 2",
+    "tolerance_pt": 2.0,
+    "severity": "W",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "V-010": {
+    "rule": "leading_calculation",
+    "description": "All vertical spacing must use leading = font_size * 1.2",
+    "check": "leading_formula",
+    "formula": "font_size * 1.2",
+    "applies_to": ["body_spacing", "signature_gap", "copy_gap", "page_break_buffer"],
+    "severity": "I",
+    "source": "Typography engine"
+  },
+  "V-011": {
+    "rule": "distribution_mode_valid",
+    "description": "distribution_mode must be one of: distribution_only, to_plus_distribution",
+    "check": "allowed_values",
+    "field": "distribution_mode",
+    "allowed_values": ["distribution_only", "to_plus_distribution"],
+    "default": "distribution_only",
+    "default_condition": "missing with distribution present",
+    "severity": "W",
+    "behavior": "warn_and_fallback",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "V-012": {
+    "rule": "distribution_layout_valid",
+    "description": "distribution_layout must be one of: single_column, columns, paragraph",
+    "check": "allowed_values",
+    "field": "distribution_layout",
+    "allowed_values": ["single_column", "columns", "paragraph"],
+    "default": "single_column",
+    "severity": "W",
+    "behavior": "warn_and_fallback",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "V-013": {
+    "rule": "copy_to_layout_valid",
+    "description": "copy_to_layout must be one of: single_column, columns, paragraph",
+    "check": "allowed_values",
+    "field": "copy_to_layout",
+    "allowed_values": ["single_column", "columns", "paragraph"],
+    "default": "single_column",
+    "severity": "W",
+    "behavior": "warn_and_fallback",
+    "source": "SECNAV M-5216.5 Ch 7"
+  },
+  "V-014": {
+    "rule": "distribution_mode_to_plus_distribution_requires_to",
+    "description": "When distribution_mode is to_plus_distribution, To field must be present",
+    "check": "required_field",
+    "condition": "distribution_mode == to_plus_distribution",
+    "required_field": "to",
+    "severity": "W",
+    "behavior": "warn_and_fallback_to_distribution_only",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "V-015": {
+    "rule": "distribution_mode_distribution_only_ignores_to",
+    "description": "When distribution_mode is distribution_only, To field is ignored if present",
+    "check": "field_ignored",
+    "condition": "distribution_mode == distribution_only",
+    "ignored_field": "to",
+    "severity": "W",
+    "behavior": "warn",
+    "source": "SECNAV M-5216.5 Ch 8"
+  },
+  "V-016": {
+    "rule": "copy_to_header_independence",
+    "description": "Copy to block must not suppress To, Via, Distribution, or other header fields",
+    "check": "no_header_suppression",
+    "field": "copy_to",
+    "must_not_suppress": ["to", "via", "distribution"],
+    "severity": "W",
+    "behavior": "warn",
+    "source": "SECNAV M-5216.5 Ch 7"
+  }
+}

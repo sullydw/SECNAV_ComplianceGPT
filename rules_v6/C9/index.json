@@ -1,0 +1,14 @@
+{
+  "chapter": 9,
+  "title": "Endorsements",
+  "sections": [
+    { "rule_id": "C9-001", "section": "9-1", "title": "General — Endorsement Overview", "source_text_state": "resolved" },
+    { "rule_id": "C9-002", "section": "9-2.1", "title": "Endorsement Line", "source_text_state": "resolved" },
+    { "rule_id": "C9-003", "section": "9-2.2", "title": "Via Line in Endorsements", "source_text_state": "resolved" },
+    { "rule_id": "C9-004", "section": "9-2.3", "title": "Adding References in Endorsements", "source_text_state": "resolved" },
+    { "rule_id": "C9-005", "section": "9-2.4", "title": "Adding Enclosures in Endorsements", "source_text_state": "resolved" },
+    { "rule_id": "C9-006", "section": "9-2.5", "title": "Copy To Addressees in Endorsements", "source_text_state": "resolved" },
+    { "rule_id": "C9-007", "section": "9-2.6", "title": "Forwarding Your Endorsement and Copies", "source_text_state": "resolved" },
+    { "rule_id": "C9-008", "section": "9-2.7", "title": "Assembly of an Endorsement", "source_text_state": "resolved" }
+  ]
+}

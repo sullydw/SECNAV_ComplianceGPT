@@ -1,0 +1,90 @@
+{
+  "_comment": "PAGINATION STRESS TEST - Forces signature + Distribution + Copy to near page bottom",
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "originator_code": "S-1",
+  "date": "7 May 2026",
+  "unit_identity": {
+    "letterhead_family": "LH_USMC_ACTIVITY",
+    "UNIT_OR_ACTIVITY_NAME": "3D BATTALION 6TH MARINES",
+    "NEXT_ECHELON_OR_PARENT": "2D MARINE DIVISION",
+    "INSTALLATION_OR_LOCATION": "MCB CAMP LEJEUNE",
+    "STATE": "NC",
+    "ZIP9": "28542-0001",
+    "SUPPRESS_PARENT_LINE": true
+  },
+  "from": "Commanding Officer, 3d Battalion, 6th Marines",
+  "to": "Area Records Officers",
+  "distribution_mode": "to_plus_distribution",
+  "distribution_layout": "columns",
+  "distribution": [
+    "NAVCOMTELSTA WASHINGTON DC",
+    "NAVCOMTELSTA PENSACOLA",
+    "NAVCOMTELSTA SAN DIEGO",
+    "NAVCOMTELSTA SAN FRANCISCO",
+    "NAVCOMTELSTA SEATTLE",
+    "NAVCOMTELSTA BOSTON",
+    "NAVCOMTELSTA CHICAGO",
+    "NAVCOMTELSTA DALLAS"
+  ],
+  "via": [
+    "(1) Commanding General, 2d Marine Division"
+  ],
+  "subj": "PAGINATION STRESS TEST TO VERIFY SIGNATURE AND DISTRIBUTION BLOCK PLACEMENT NEAR PAGE BOTTOM",
+  "ref": [
+    "(a) SECNAV M-5216.5 Ch-2",
+    "(b) MCO 5216.11"
+  ],
+  "encl": [
+    "(1) Sample enclosure one",
+    "(2) Sample enclosure two"
+  ],
+  "body": [
+    "1. This is the first paragraph of the pagination stress test. The purpose of this document is to force the signature block, distribution list, and copy-to list to render near or past the bottom of a page to verify that the pagination logic handles overflow correctly.",
+    "2. This is the second paragraph. We are systematically adding paragraphs to push content down the page. Each paragraph is designed to be moderately long to consume vertical space efficiently.",
+    "3. This is the third paragraph. The renderer must correctly calculate remaining space on each page and determine whether the signature block can fit or should be moved to the next page to avoid orphaning.",
+    "4. This is the fourth paragraph. If the signature block is split across pages, that would be considered a defect. The entire signature block should move together to the next page if insufficient space exists.",
+    "5. This is the fifth paragraph. We continue adding content to test the boundary conditions of the pagination algorithm. The goal is to reach a state where only a small amount of space remains after the last body paragraph.",
+    "6. This is the sixth paragraph. The distribution block and copy-to block must also be considered when calculating whether content fits on a page. All three elements should remain together if possible.",
+    "7. This is the seventh paragraph. ReportLab canvas rendering uses a cursor-based approach where the y-coordinate decreases as content is added. When the cursor approaches the bottom margin, pagination decisions must be made.",
+    "8. This is the eighth paragraph. The bottom margin is set at Y=72 points. Any content rendering below this value would be considered overflow and potentially clipped in the final PDF output.",
+    "9. This is the ninth paragraph. We are now entering the critical zone where the signature block placement becomes uncertain. The renderer must evaluate whether to place it here or on the next page.",
+    "10. This is the tenth paragraph. Each paragraph consumes approximately one leading unit of vertical space plus any additional spacing required by the boundary spacing rules defined in the renderer.",
+    "11. This is the eleventh paragraph. The signature block requires a fixed amount of vertical space including the signature gap, the name line, and any role-specific formatting such as By direction or acting title variants.",
+    "12. This is the twelfth paragraph. After the signature block, the distribution list will render with the configured columns layout. This layout balances entries across two columns in row order.",
+    "13. This is the thirteenth paragraph. The distribution list contains eight entries which will be split into two columns of four entries each when using the columns layout configuration.",
+    "14. This is the fourteenth paragraph. Following the distribution list, the copy-to list will render in single column format with each entry on its own line at the left margin.",
+    "15. This is the fifteenth paragraph. The copy-to list contains informational addressees who receive the letter for awareness but are not required to take action on its contents.",
+    "16. This is the sixteenth paragraph. We continue to add paragraphs to ensure that the combined height of signature, distribution, and copy-to blocks approaches the remaining page space.",
+    "17. This is the seventeenth paragraph. The pagination logic should protect against orphaning by keeping related blocks together. Splitting the distribution list across pages would be undesirable.",
+    "18. This is the eighteenth paragraph. Similarly, the copy-to list should remain intact on a single page rather than having some entries on one page and others on the next.",
+    "19. This is the nineteenth paragraph. We are now very close to the target threshold where the renderer must make critical decisions about content placement and page breaks.",
+    "20. This is the twentieth paragraph. The stress test is designed to reveal any weaknesses in the pagination algorithm that might not be apparent with shorter documents.",
+    "21. This is the twenty-first paragraph. Real-world correspondence often contains lengthy bodies of text followed by extensive distribution lists, making this a realistic test scenario.",
+    "22. This is the twenty-second paragraph. Military correspondence in particular tends to have formal distribution patterns with multiple action and informational addressees.",
+    "23. This is the twenty-third paragraph. The renderer must handle these cases gracefully without producing PDFs that have content cut off or split inappropriately across pages.",
+    "24. This is the twenty-fourth paragraph. We are adding additional paragraphs beyond the minimum to ensure we exceed the threshold and trigger pagination behavior definitively.",
+    "25. This is the twenty-fifth paragraph. At this point the document should require at least two pages, with the signature block and subsequent elements appearing on the second page.",
+    "26. This is the twenty-sixth paragraph. The exact page count will depend on the letterhead height, header spacing, and the cumulative height of all body paragraphs.",
+    "27. This is the twenty-seventh paragraph. Debug output from the renderer will show the Y-coordinate positions of each major element for verification against expected values.",
+    "28. This is the twenty-eighth paragraph. By comparing the measured Y-positions against the known bottom margin of 72 points, we can confirm whether any overflow occurred.",
+    "29. This is the twenty-ninth paragraph. This stress test serves as a baseline for future pagination improvements and regression testing after any renderer modifications.",
+    "30. This is the thirtieth and final paragraph of the pagination stress test body. The signature block should now appear immediately after this paragraph, followed by distribution and copy-to lists."
+  ],
+  "signature": {
+    "name": "D. SULLIVAN",
+    "role": "by_direction",
+    "title": null,
+    "authority": null,
+    "activity_head_title": null,
+    "affects_pay_or_allowances": false
+  },
+  "copy_to": [
+    "Commanding General, II MEF",
+    "Commanding Officer, 2d Marine Division",
+    "Chief of Staff, II MEF",
+    "G-3, II MEF",
+    "G-4, II MEF"
+  ],
+  "copy_to_layout": "single_column"
+}

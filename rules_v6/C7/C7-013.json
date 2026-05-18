@@ -1,0 +1,22 @@
+{
+  "rule_id": "C7-013",
+  "manual_section": "7-2.12",
+  "source_text": "12. Text. Start the text on the second line below the subject line. The text will be single-spaced, left justified only. For guidance on plain English, slang, jargon, abbreviations, and acronyms, see chapter 12.",
+  "plain_language_rule": "Start the body text on the second line below the subject line. Text must be single-spaced and left-justified only — do not use full or block justification. For writing guidance on plain English, slang, jargon, abbreviations, and acronyms, refer to Chapter 12 of the manual.",
+  "category": "format",
+  "enforceable": true,
+  "severity": "error",
+  "target_fields": [
+    "body_text_placement",
+    "body_text_spacing",
+    "body_text_justification"
+  ],
+  "validator_type": "body_text_format_and_placement_check",
+  "renderer_impact": "Place body text starting on the second line below the subject line; use single line spacing; apply left justification only — no block, full, or right justification",
+  "status": "candidate",
+  "notes": "This section contains three deterministic layout rules (placement relative to subject line, single-spacing, left-only justification) and defers all writing-style guidance to Chapter 12. Plain English, slang, jargon, abbreviations, and acronym usage are referenced but not defined in this section — they are content-style rules, not layout rules. The validator should enforce only the deterministic layout rules; writing-style rules require separate Chapter 12 implementation. No paragraph-specific rules are included here (see C7-014 for paragraph formatting).",
+  "cross_references": [
+    "C7-014"
+  ],
+  "figure_references": []
+}

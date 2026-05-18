@@ -1,0 +1,13 @@
+{
+  "rule_id": "C7-006",
+  "manual_section": "7-2.5",
+  "chapter": 7,
+  "title": "FOUO Correspondence Markings",
+  "status": "candidate",
+  "enforceable": "partial",
+  "validator_type": "layout_check",
+  "plain_language_rule": "Every page must have its classification level centered at the top and bottom. UNCLASSIFIED correspondence is marked 'UNCLASSIFIED' at the top and bottom center of each page. Classified correspondence follows SECNAV M-5510.30 and DoDM 5200.01 Vol 3 for marking details.",
+  "source_text": "The overall classification must be placed at the top and bottom center of each page. UNCLASSIFIED correspondence must be marked 'UNCLASSIFIED' at the top and bottom center of each page. Classified correspondence must follow SECNAV M-5510.30 and DoDM 5200.01 Vol 3 for marking requirements.",
+  "renderer_impact": "Centered classification markings at top and bottom of each page. UNCLASSIFIED correspondence must render 'UNCLASSIFIED' centered at top and bottom. Classified correspondence marking details are governed by SECNAV M-5510.30 and DoDM 5200.01 Vol 3.",
+  "notes": "The manual explicitly defers classification marking details beyond basic placement to SECNAV M-5510.30 and DoDM 5200.01 Vol 3. This rule captures the Chapter 7 requirements: centered top/bottom placement on every page, and that UNCLASSIFIED correspondence is marked 'UNCLASSIFIED'. Detailed marking rules for classified correspondence are external to Chapter 7."
+}
