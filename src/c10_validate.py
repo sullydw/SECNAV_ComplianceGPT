@@ -11,7 +11,9 @@ Checks:
     C10-004  require non-empty `body` list. Every body entry must be a string
              and must start with one of: "1. ", "a. ", "(1) ", "(a) ".
              Reject nested body objects.
-    C10-005  (reserved for future MFR-specific rules)
+    C10-005  MFR must not include non-empty standard-letter-only fields:
+             `from`, `to`, `via`, `ref`, `encl`, `distribution`, `copy_to`,
+             `ssic`, `originator_code`, `unit_identity`.
 
 Public API:
     validate_c10(payload) -> tuple[list[str], list[str]]
@@ -34,6 +36,36 @@ from typing import Any
 
 # Valid body paragraph marker patterns
 _BODY_MARKER_PATTERN = re.compile(r'^(\d+\. |[a-z]\. |\(\d+\) |\([a-z]+\) )')
+
+# Standard-letter-only fields that MFR must not include
+_MFR_FORBIDDEN_FIELDS = (
+    "from",
+    "to",
+    "via",
+    "ref",
+    "encl",
+    "distribution",
+    "copy_to",
+    "ssic",
+    "originator_code",
+    "unit_identity",
+)
+
+
+def _is_empty(value: Any) -> bool:
+    """Check if a field value should be treated as empty.
+    
+    Empty: missing, None, empty/whitespace string, empty list, empty dict
+    Non-empty: non-empty string, non-empty list, non-empty dict, any other non-null value
+    """
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return not value.strip()
+    if isinstance(value, (list, dict)):
+        return len(value) == 0
+    # Any other non-null value is treated as non-empty
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -124,6 +156,16 @@ def validate_c10(payload: dict[str, Any]) -> tuple[list[str], list[str]]:
                     f"prefix (e.g., '1. ', 'a. ', '(1) ', '(a) '), "
                     f"got {entry[:40]!r}..."
                 )
+
+    # --- C10-005: MFR must not include standard-letter-only fields ------
+
+    for field_name in _MFR_FORBIDDEN_FIELDS:
+        field_value = payload.get(field_name)
+        if not _is_empty(field_value):
+            errors.append(
+                f"C10-005: MFR must not include non-empty '{field_name}' field "
+                f"(standard-letter-only field)"
+            )
 
     return errors, warnings
 
