@@ -2,8 +2,8 @@
 """
 C10 Regression Runner
 
-Runs the non-visual regression checks for C10 Phase 0C (MFR validator and runner).
-No renderer checks yet — validator and guard checks only.
+Runs the regression checks for C10 Phase 1C (MFR validator and renderer).
+Includes validator checks, render checks, and C7/C8/C9 guard checks.
 """
 
 from __future__ import annotations
@@ -79,6 +79,32 @@ def main() -> int:
             if result:
                 print(f"UNEXPECTED PASS — {fixture} should have failed validation")
                 passed = False
+
+    # --- C10 render checks ---
+
+    c10_renders: list[tuple[str, str]] = [
+        # (input_json, output_pdf)
+        ("examples/audit_c10_mfr_with_subject.json", "output/audit_c10_mfr_with_subject.pdf"),
+        ("examples/audit_c10_mfr_short_no_subject.json", "output/audit_c10_mfr_short_no_subject.pdf"),
+    ]
+
+    for input_json, output_pdf in c10_renders:
+        label = f"Render C10 {Path(input_json).stem}"
+        if not run_command(root, [py, "src/pdf_v6_render.py", input_json, output_pdf], label):
+            passed = False
+        
+        # Check PDF exists and is non-empty
+        pdf_path = root / output_pdf
+        if not pdf_path.exists():
+            print(f"ERROR: PDF not created: {output_pdf}")
+            passed = False
+        else:
+            size = pdf_path.stat().st_size
+            if size == 0:
+                print(f"ERROR: PDF is empty: {output_pdf}")
+                passed = False
+            else:
+                print(f"PDF CHECK: {output_pdf} — {size} bytes — PASS")
 
     # --- Baseline guards ---
 
