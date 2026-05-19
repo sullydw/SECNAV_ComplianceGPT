@@ -1,0 +1,22 @@
+{
+  "_comment": "C10 Phase 2A — Plain-Paper From-To Memorandum (with enclosures)",
+  "doc_type": "DT_MEMO_FROM_TO_PLAIN",
+  "date": "19 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "Distribution of Training Schedule",
+  "encl": [
+    "(1)  Annual Training Schedule FY2026",
+    "(2)  Department Training Requirements Matrix"
+  ],
+  "body": [
+    "1. This memorandum distributes the annual training schedule for FY2026. All departments must review the enclosed schedule and submit any conflicts by 30 May 2026.",
+    "2. Department heads are responsible for ensuring all personnel complete required training within the specified timeframe.",
+    "3. Questions regarding training requirements should be directed to the Training Officer."
+  ],
+  "signature": {
+    "name": "Bob Johnson",
+    "title": "Assistant Chief of Staff",
+    "organization": "N1"
+  }
+}

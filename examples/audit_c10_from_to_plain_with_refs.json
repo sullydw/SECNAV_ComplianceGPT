@@ -1,0 +1,22 @@
+{
+  "_comment": "C10 Phase 2A — Plain-Paper From-To Memorandum (with references)",
+  "doc_type": "DT_MEMO_FROM_TO_PLAIN",
+  "date": "19 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "Guidance on Correspondence Standards",
+  "ref": [
+    "(a)  SECNAV M-5216.5",
+    "(b)  COMNAVAIRFORINST 5216.5A"
+  ],
+  "body": [
+    "1. This memorandum provides guidance on correspondence standards for all administrative personnel. All correspondence must comply with the references cited above.",
+    "2. Department heads are responsible for ensuring their staff receives proper training on correspondence preparation.",
+    "3. Questions regarding correspondence standards should be directed to the Administrative Officer."
+  ],
+  "signature": {
+    "name": "Jane Smith",
+    "title": "Director",
+    "organization": "S-1"
+  }
+}

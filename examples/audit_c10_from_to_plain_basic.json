@@ -1,0 +1,18 @@
+{
+  "_comment": "C10 Phase 2A — Plain-Paper From-To Memorandum (basic)",
+  "doc_type": "DT_MEMO_FROM_TO_PLAIN",
+  "date": "19 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "Request for Administrative Support",
+  "body": [
+    "1. This memorandum requests administrative support for the upcoming inspection scheduled for 15 June 2026. All departments must coordinate with the inspection team to ensure readiness.",
+    "2. Action items assigned during the pre-inspection briefing will be tracked separately and reported at the next staff meeting.",
+    "3. Questions regarding inspection preparation should be directed to the Administrative Officer."
+  ],
+  "signature": {
+    "name": "John Doe",
+    "title": "Chief of Staff",
+    "organization": "OPC123"
+  }
+}
