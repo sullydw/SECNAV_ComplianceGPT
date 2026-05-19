@@ -1116,10 +1116,10 @@ def main(input_path=None, output_path=None):
         # MFR layout constants (Figure 10-1)
         mfr_date_x = 440.0
         mfr_date_y = page_height - 140.0
-        mfr_text_left = 130.0
+        mfr_text_left = left_margin_pt  # Use standard left margin (72pt)
         mfr_subject_text_x = mfr_text_left + 43
         
-        # Set font for MFR content
+        # Set font for MFR content (Times-Roman 12pt throughout)
         c.setFont("Times-Roman", 12)
         
         # Date at top-right position (Figure 10-1)
@@ -1144,9 +1144,8 @@ def main(input_path=None, output_path=None):
             subj_max_width = page_width - right_margin_pt - mfr_subject_text_x
             y = draw_wrapped_text(c, mfr_subject_text_x, y, subj, 12, subj_max_width, leading)
             print(f"DEBUG MFR: Subj drawn at y={y:.1f}")
-        
-        # One blank line before body
-        y -= leading
+            # One blank line after subject before body
+            y -= leading
         
         # Body block (use mfr_text_left as left margin)
         y, page_count, body_lines_on_last_page = draw_body_block(
