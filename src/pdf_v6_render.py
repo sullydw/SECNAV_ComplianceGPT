@@ -1113,43 +1113,44 @@ def main(input_path=None, output_path=None):
     if payload.get("doc_type") == "DT_MEMO_MFR":
         print(f"DEBUG === MFR RENDER PATH ===")
         
-        # Date at left margin
+        # MFR layout constants (Figure 10-1)
+        mfr_date_x = 440.0
+        mfr_date_y = page_height - 140.0
+        mfr_text_left = 130.0
+        mfr_subject_text_x = mfr_text_left + 43
+        
+        # Set font for MFR content
+        c.setFont("Times-Roman", 12)
+        
+        # Date at top-right position (Figure 10-1)
         mfr_date = normalized.get("date", "")
         if mfr_date:
-            c.drawString(left_margin_pt, y, mfr_date)
-            print(f"DEBUG MFR: Date drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{mfr_date}'")
-            y -= leading
+            c.drawString(mfr_date_x, mfr_date_y, mfr_date)
+            print(f"DEBUG MFR: Date drawn at x={mfr_date_x:.1f}, y={mfr_date_y:.1f}: '{mfr_date}'")
         
-        # One blank line before title
-        y -= leading
-        
-        # Centered MEMORANDUM FOR THE RECORD title
-        c.setFont("Times-Bold", 14)
+        # Title below date (MEMORANDUM FOR THE RECORD)
+        mfr_title_y = mfr_date_y - (2 * leading)
         title = "MEMORANDUM FOR THE RECORD"
-        title_width = c.stringWidth(title, "Times-Bold", 14)
-        title_x = (page_width - title_width) / 2
-        c.drawString(title_x, y, title)
-        print(f"DEBUG MFR: Title drawn at x={title_x:.1f}, y={y:.1f}: '{title}'")
-        c.setFont("Times-Roman", 12)
-        y -= leading
+        c.drawString(mfr_text_left, mfr_title_y, title)
+        print(f"DEBUG MFR: Title drawn at x={mfr_text_left:.1f}, y={mfr_title_y:.1f}: '{title}'")
         
-        # One blank line before optional Subj
-        y -= leading
+        # Position for subject/body below title
+        y = mfr_title_y - (2 * leading)
         
         # Optional Subj: line
         subj = normalized.get("subj")
         if subj:
-            c.drawString(left_margin_pt, y, "Subj:")
-            subj_max_width = page_width - right_margin_pt - (left_margin_pt + 43)
-            y = draw_wrapped_text(c, left_margin_pt + 43, y, subj, 12, subj_max_width, leading)
+            c.drawString(mfr_text_left, y, "Subj:")
+            subj_max_width = page_width - right_margin_pt - mfr_subject_text_x
+            y = draw_wrapped_text(c, mfr_subject_text_x, y, subj, 12, subj_max_width, leading)
             print(f"DEBUG MFR: Subj drawn at y={y:.1f}")
         
         # One blank line before body
         y -= leading
         
-        # Body block (reuse existing function)
+        # Body block (use mfr_text_left as left margin)
         y, page_count, body_lines_on_last_page = draw_body_block(
-            c, left_margin_pt, y, leading, body_font_size, normalized, page_height,
+            c, mfr_text_left, y, leading, body_font_size, normalized, page_height,
             top_margin_pt, bottom_margin_pt, signature_gap, copy_gap,
             reserve_signature_space=True,
             page_number_start=None, force_page_number_on_first_page=False
