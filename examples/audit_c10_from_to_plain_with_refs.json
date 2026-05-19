@@ -6,8 +6,8 @@
   "to": "Commanding Officer, Example Receiving Activity",
   "subj": "Guidance on Correspondence Standards",
   "ref": [
-    "(a)  SECNAV M-5216.5",
-    "(b)  COMNAVAIRFORINST 5216.5A"
+    "(a) SECNAV M-5216.5",
+    "(b) COMNAVAIRFORINST 5216.5A"
   ],
   "body": [
     "1. This memorandum provides guidance on correspondence standards for all administrative personnel. All correspondence must comply with the references cited above.",
@@ -15,8 +15,11 @@
     "3. Questions regarding correspondence standards should be directed to the Administrative Officer."
   ],
   "signature": {
-    "name": "Jane Smith",
+    "name": "J. SMITH",
+    "role": "principal_subordinate_by_title",
     "title": "Director",
-    "organization": "S-1"
+    "authority": null,
+    "activity_head_title": null,
+    "affects_pay_or_allowances": false
   }
 }

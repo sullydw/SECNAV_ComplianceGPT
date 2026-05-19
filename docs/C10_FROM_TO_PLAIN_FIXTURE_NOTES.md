@@ -40,16 +40,16 @@ References and enclosures follow C7/C9 marker style:
 **References:**
 ```json
 "ref": [
-  "(a)  COMNAVAIRFORINST 5216.5A",
-  "(b)  Smith Industries letter Ser 123/45 of 15 Mar 2025"
+  "(a) SECNAV M-5216.5",
+  "(b) COMNAVAIRFORINST 5216.5A"
 ]
 ```
 
 **Enclosures:**
 ```json
 "encl": [
-  "(1)  List of Reserve Officers",
-  "(2)  CMC ltr 5216 Ser 00/451 of 5 Sep 09"
+  "(1) Annual Training Schedule FY2026",
+  "(2) Department Training Requirements Matrix"
 ]
 ```
 
@@ -61,11 +61,21 @@ From-To memo uses full signature block (compatible with C7 standard letters):
 
 ```json
 "signature": {
-  "name": "John Doe",
+  "name": "J. DOE",
+  "role": "principal_subordinate_by_title",
   "title": "Chief of Staff",
-  "organization": "OPC123"
+  "authority": null,
+  "activity_head_title": null,
+  "affects_pay_or_allowances": false
 }
 ```
+
+- `name`: Signer's last name in initials format (e.g., "J. DOE")
+- `role`: Signer's role type (e.g., "principal_subordinate_by_title")
+- `title`: Signer's title (e.g., "Chief of Staff")
+- `authority`: null for standard signatures
+- `activity_head_title`: null unless signing as activity head
+- `affects_pay_or_allowances`: false for standard correspondence
 
 ---
 
@@ -83,9 +93,12 @@ From-To memo uses full signature block (compatible with C7 standard letters):
   "subj": "Subject line required",
   "body": ["1. First paragraph...", "2. Second paragraph..."],
   "signature": {
-    "name": "John Doe",
+    "name": "J. DOE",
+    "role": "principal_subordinate_by_title",
     "title": "Chief of Staff",
-    "organization": "OPC123"
+    "authority": null,
+    "activity_head_title": null,
+    "affects_pay_or_allowances": false
   }
 }
 ```
@@ -119,14 +132,17 @@ From-To memo uses full signature block (compatible with C7 standard letters):
   "to": "Commanding Officer, Example Receiving Activity",
   "subj": "Subject with references",
   "ref": [
-    "(a)  COMNAVAIRFORINST 5216.5A",
-    "(b)  NAVADMIN 123/25"
+    "(a) SECNAV M-5216.5",
+    "(b) COMNAVAIRFORINST 5216.5A"
   ],
   "body": ["1. First paragraph...", "2. Second paragraph..."],
   "signature": {
-    "name": "Jane Smith",
+    "name": "J. SMITH",
+    "role": "principal_subordinate_by_title",
     "title": "Director",
-    "organization": "S-1"
+    "authority": null,
+    "activity_head_title": null,
+    "affects_pay_or_allowances": false
   }
 }
 ```
@@ -150,14 +166,17 @@ From-To memo uses full signature block (compatible with C7 standard letters):
   "to": "Commanding Officer, Example Receiving Activity",
   "subj": "Subject with enclosures",
   "encl": [
-    "(1)  List of Reserve Officers",
-    "(2)  CMC ltr 5216 Ser 00/451 of 5 Sep 09"
+    "(1) Annual Training Schedule FY2026",
+    "(2) Department Training Requirements Matrix"
   ],
   "body": ["1. First paragraph...", "2. Second paragraph..."],
   "signature": {
-    "name": "Bob Johnson",
+    "name": "B. JOHNSON",
+    "role": "principal_subordinate_by_title",
     "title": "Assistant Chief of Staff",
-    "organization": "N1"
+    "authority": null,
+    "activity_head_title": null,
+    "affects_pay_or_allowances": false
   }
 }
 ```
@@ -173,8 +192,8 @@ From-To memo uses full signature block (compatible with C7 standard letters):
 All fixtures follow the v6 payload schema:
 - `doc_type` discriminates document type
 - `body` is a list of strings with inline markers (C7/C9/C10-MFR style)
-- `signature` is an object with name, title, organization (C7-compatible)
-- `ref` and `encl` are lists of strings with marker prefixes
+- `signature` is a C7-compatible structured object (name, role, title, authority, activity_head_title, affects_pay_or_allowances)
+- `ref` and `encl` are lists of strings with marker prefixes (one space after marker)
 
 ---
 

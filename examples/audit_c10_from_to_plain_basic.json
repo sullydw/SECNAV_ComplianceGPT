@@ -11,8 +11,11 @@
     "3. Questions regarding inspection preparation should be directed to the Administrative Officer."
   ],
   "signature": {
-    "name": "John Doe",
+    "name": "J. DOE",
+    "role": "principal_subordinate_by_title",
     "title": "Chief of Staff",
-    "organization": "OPC123"
+    "authority": null,
+    "activity_head_title": null,
+    "affects_pay_or_allowances": false
   }
 }
