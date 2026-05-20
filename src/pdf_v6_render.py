@@ -1176,6 +1176,12 @@ def main(input_path=None, output_path=None):
             print("Output file not created")
         return  # Exit early; standard-letter path continues below
 
+    # ── From-To render branch (DT_MEMO_FROM_TO_PLAIN only) ──
+    if payload.get("doc_type") == "DT_MEMO_FROM_TO_PLAIN":
+        print(f"DEBUG === FROM-TO PLAIN RENDER PATH ===")
+        render_from_to_plain_pdf({"payload": payload, "normalized": normalized}, output_path)
+        return  # Exit early; standard-letter path continues below
+
     # Render letterhead lines centered at top (H-series rules)
     if letterhead_lines:
         print(f"DEBUG === LETTERHEAD BLOCK ===")
@@ -1330,6 +1336,177 @@ def main(input_path=None, output_path=None):
         print("=== PDF BUILD ===")
         print("PASS")
         print(f"output\\v6_test_letter.pdf")
+    else:
+        print("=== PDF BUILD ===")
+        print("FAIL")
+        print("Output file not created")
+
+
+# ───────────────────────────────────────────────────────────────────
+# C10 Phase 3B: Plain-Paper From-To Memorandum Renderer
+# ───────────────────────────────────────────────────────────────────
+
+def render_from_to_plain_pdf(data, output_path):
+    """
+    Render a Plain-Paper From-To Memorandum (DT_MEMO_FROM_TO_PLAIN).
+    
+    Requirements:
+    - No letterhead
+    - No SSIC/originator block
+    - No endorsement heading
+    - No standard-letter header stack
+    - Explicitly set font to Times-Roman 12 before drawing From-To content
+    - Date near top left
+    - Draw MEMORANDUM FOR in Times-Roman 12, same font/weight as body text
+    - Do not use bold or 14 pt for MEMORANDUM FOR
+    - Use the normal left margin for the From-To text block
+    - Draw From line below MEMORANDUM FOR
+    - Draw To line below From
+    - Draw required Subj line below To
+    - Draw optional Ref line(s) below Subj if present
+    - Draw optional Encl line(s) below Ref, or below Subj if no Ref
+    - Use existing wrapping helper for long Subj/Ref/Encl text where practical
+    - Use existing draw_body_block() for body
+    - Use existing draw_signature_block() for the full C7-compatible signature block
+    - Use draw_page_number() on final page
+    - Do not use draw_mfr_signature_block()
+    
+    Spacing (one blank line between elements):
+    - one blank line before Subj
+    - one blank line before Ref if Ref exists
+    - one blank line before Encl if Encl exists
+    - one blank line before body after final header element
+    """
+    payload = data.get("payload", {})
+    normalized = data.get("normalized", {})
+    
+    # Layout constants
+    left_margin_pt = 72.0
+    right_margin_pt = 72.0
+    top_margin_pt = 72.0
+    bottom_margin_pt = 72.0
+    page_width, page_height = LETTER
+    body_font_size = 12
+    leading = body_font_size * 1.2
+    signature_gap = 24
+    copy_gap = 12
+    
+    # Create canvas
+    c = canvas.Canvas(output_path, pagesize=LETTER)
+    y = page_height - top_margin_pt
+    
+    # Set font to Times-Roman 12 for entire From-To content
+    c.setFont("Times-Roman", 12)
+    
+    # ── From-To Header Block ────────────────────────────────────────
+    
+    # Date near top left (similar to MFR but no SSIC)
+    date = normalized.get("date", "")
+    if date:
+        c.drawString(left_margin_pt, y, date)
+        print(f"DEBUG FROM-TO: Date drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{date}'")
+        y -= leading
+    
+    # One blank line before MEMORANDUM FOR (consistent spacing from MFR)
+    y -= leading
+    
+    # MEMORANDUM FOR title (Times-Roman 12, not bold, not larger)
+    memo_for = "MEMORANDUM FOR"
+    c.drawString(left_margin_pt, y, memo_for)
+    print(f"DEBUG FROM-TO: Title drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{memo_for}'")
+    y -= leading
+    
+    # One blank line before From
+    y -= leading
+    
+    # From line
+    From = normalized.get("From", "")
+    if From:
+        c.drawString(left_margin_pt, y, f"From: {From}")
+        print(f"DEBUG FROM-TO: From drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{From}'")
+        y -= leading
+    
+    # To line
+    To = normalized.get("To", "")
+    if To:
+        c.drawString(left_margin_pt, y, f"To: {To}")
+        print(f"DEBUG FROM-TO: To drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{To}'")
+        y -= leading
+    
+    # One blank line before Subj
+    y -= leading
+    
+    # Subj line
+    subj = normalized.get("subj")
+    if subj:
+        c.drawString(left_margin_pt, y, "Subj:")
+        subj_max_width = page_width - right_margin_pt - (left_margin_pt + 43)
+        y = draw_wrapped_text(c, left_margin_pt + 43, y, subj, 12, subj_max_width, leading)
+        print(f"DEBUG FROM-TO: Subj drawn at y={y:.1f}")
+        # One blank line after subject before Ref/Encl/body
+        y -= leading
+    
+    # Optional Ref lines
+    refs = normalized.get("refs", [])
+    if refs:
+        # One blank line before Ref
+        y -= leading
+        for ref in refs:
+            ref_text = ref.get("ref", "")
+            if ref_text:
+                c.drawString(left_margin_pt, y, f"Ref: {ref_text}")
+                print(f"DEBUG FROM-TO: Ref drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{ref_text}'")
+                y -= leading
+        # One blank line after Refs before body
+        y -= leading
+    
+    # Optional Encl lines (only if no Ref)
+    encls = normalized.get("encls", [])
+    if encls:
+        # If Refs exist, Encls come after Refs; otherwise after Subj
+        # One blank line before Encl
+        y -= leading
+        for encl in encls:
+            encl_text = encl.get("encl", "")
+            if encl_text:
+                c.drawString(left_margin_pt, y, f"Encl: {encl_text}")
+                print(f"DEBUG FROM-TO: Encl drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{encl_text}'")
+                y -= leading
+        # One blank line after Encls before body
+        y -= leading
+    elif not refs and not subj:
+        # No Refs and no Subj - one blank line before body
+        y -= leading
+    
+    # ── Body Block ───────────────────────────────────────────────────
+    
+    # Body block (use draw_body_block with standard margins)
+    y, page_count, body_lines_on_last_page = draw_body_block(
+        c, left_margin_pt, y, leading, body_font_size, normalized, page_height,
+        top_margin_pt, bottom_margin_pt, signature_gap, copy_gap,
+        reserve_signature_space=True,
+        page_number_start=None, force_page_number_on_first_page=False
+    )
+    print(f"DEBUG FROM-TO: Total pages generated: {page_count}")
+    print(f"DEBUG FROM-TO: Body lines on last page: {body_lines_on_last_page}")
+    
+    # ── Signature Block ──────────────────────────────────────────────
+    
+    # Draw signature block as atomic unit
+    y = draw_signature_block(c, normalized, page_width, left_margin_pt, y, leading, signature_gap, copy_gap, bottom_margin_pt)
+    
+    # ── Page Number ──────────────────────────────────────────────────
+    
+    # Draw page number on final page
+    draw_page_number(c, page_width, page_count, bottom_margin_pt)
+    
+    c.save()
+    
+    # Verify output file exists
+    if os.path.exists(output_path):
+        print("=== PDF BUILD ===")
+        print("PASS")
+        print(f"output\\{os.path.basename(output_path)}")
     else:
         print("=== PDF BUILD ===")
         print("FAIL")
