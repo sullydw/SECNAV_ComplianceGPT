@@ -1420,14 +1420,14 @@ def render_from_to_plain_pdf(data, output_path):
     y -= leading
     
     # From line
-    From = normalized.get("From", "")
+    From = normalized.get("from", "")
     if From:
         c.drawString(left_margin_pt, y, f"From: {From}")
         print(f"DEBUG FROM-TO: From drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{From}'")
         y -= leading
     
     # To line
-    To = normalized.get("To", "")
+    To = normalized.get("to", "")
     if To:
         c.drawString(left_margin_pt, y, f"To: {To}")
         print(f"DEBUG FROM-TO: To drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{To}'")
@@ -1447,12 +1447,11 @@ def render_from_to_plain_pdf(data, output_path):
         y -= leading
     
     # Optional Ref lines
-    refs = normalized.get("refs", [])
+    refs = normalized.get("ref", [])
     if refs:
         # One blank line before Ref
         y -= leading
-        for ref in refs:
-            ref_text = ref.get("ref", "")
+        for ref_text in refs:
             if ref_text:
                 c.drawString(left_margin_pt, y, f"Ref: {ref_text}")
                 print(f"DEBUG FROM-TO: Ref drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{ref_text}'")
@@ -1461,13 +1460,12 @@ def render_from_to_plain_pdf(data, output_path):
         y -= leading
     
     # Optional Encl lines (only if no Ref)
-    encls = normalized.get("encls", [])
+    encls = normalized.get("encl", [])
     if encls:
         # If Refs exist, Encls come after Refs; otherwise after Subj
         # One blank line before Encl
         y -= leading
-        for encl in encls:
-            encl_text = encl.get("encl", "")
+        for encl_text in encls:
             if encl_text:
                 c.drawString(left_margin_pt, y, f"Encl: {encl_text}")
                 print(f"DEBUG FROM-TO: Encl drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{encl_text}'")
