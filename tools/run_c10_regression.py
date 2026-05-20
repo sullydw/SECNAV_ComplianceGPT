@@ -2,8 +2,8 @@
 """
 C10 Regression Runner
 
-Runs the regression checks for C10 Phase 1C (MFR validator and renderer).
-Includes validator checks, render checks, and C7/C8/C9 guard checks.
+Runs the regression checks for C10 Phase 2C (MFR and From-To validators, MFR renderer).
+Includes validator checks for MFR and From-To fixtures, render checks for MFR, and C7/C8/C9 guard checks.
 """
 
 from __future__ import annotations
@@ -63,9 +63,13 @@ def main() -> int:
     # --- C10 validator checks ---
 
     c10_fixtures: list[tuple[str, bool]] = [
-        # (path, expect_pass) — expect_pass=True means exit 0, False means exit nonzero
+        # MFR fixtures
         ("examples/audit_c10_mfr_with_subject.json", True),
         ("examples/audit_c10_mfr_short_no_subject.json", True),
+        # From-To fixtures
+        ("examples/audit_c10_from_to_plain_basic.json", True),
+        ("examples/audit_c10_from_to_plain_with_refs.json", True),
+        ("examples/audit_c10_from_to_plain_with_encls.json", True),
     ]
 
     for fixture, expect_pass in c10_fixtures:
