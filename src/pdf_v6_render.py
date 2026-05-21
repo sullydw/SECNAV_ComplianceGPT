@@ -1398,23 +1398,23 @@ def render_from_to_plain_pdf(data, output_path):
     # Set font to Times-Roman 12 for entire From-To content
     c.setFont("Times-Roman", 12)
     
-    # ── From-To Header Block ────────────────────────────────────────
+    # ── From-To Header Block (Figure 10-3) ───────────────────────────
     
-    # Date near top left (similar to MFR but no SSIC)
+    # Date at upper right, flush with right margin (Times-Roman 12)
     date = normalized.get("date", "")
     if date:
-        c.drawString(left_margin_pt, y, date)
-        print(f"DEBUG FROM-TO: Date drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{date}'")
+        date_width = c.stringWidth(date, "Times-Roman", 12)
+        date_x = page_width - right_margin_pt - date_width
+        c.drawString(date_x, y, date)
+        print(f"DEBUG FROM-TO: Date drawn at x={date_x:.1f}, y={y:.1f}: '{date}'")
         y -= leading
     
-    # One blank line before MEMORANDUM FOR (consistent spacing from MFR)
+    # One blank line before MEMORANDUM
     y -= leading
     
-    # MEMORANDUM FOR line: includes addressee from payload's `to` field (Figure 10-3)
-    to_value = normalized.get("to", "")
-    memo_for_line = f"MEMORANDUM FOR {to_value}" if to_value else "MEMORANDUM FOR"
-    c.drawString(left_margin_pt, y, memo_for_line)
-    print(f"DEBUG FROM-TO: Memo-for line drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{memo_for_line}'")
+    # MEMORANDUM heading (Times-Roman 12, not bold, not enlarged)
+    c.drawString(left_margin_pt, y, "MEMORANDUM")
+    print(f"DEBUG FROM-TO: MEMORANDUM drawn at x={left_margin_pt:.1f}, y={y:.1f}")
     y -= leading
     
     # One blank line before From
@@ -1427,11 +1427,22 @@ def render_from_to_plain_pdf(data, output_path):
         print(f"DEBUG FROM-TO: From drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{From}'")
         y -= leading
     
-    # To line: skip if addressee already in MEMORANDUM FOR line
-    if to_value and not memo_for_line.startswith(f"MEMORANDUM FOR {to_value}"):
-        c.drawString(left_margin_pt, y, f"To: {to_value}")
-        print(f"DEBUG FROM-TO: To drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{to_value}'")
+    # To line
+    To = normalized.get("to", "")
+    if To:
+        c.drawString(left_margin_pt, y, f"To: {To}")
+        print(f"DEBUG FROM-TO: To drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{To}'")
         y -= leading
+    
+    # Optional Via line (if present in payload)
+    Via = normalized.get("via", [])
+    if Via:
+        for via_entry in Via:
+            via_text = via_entry if isinstance(via_entry, str) else via_entry.get("via", "")
+            if via_text:
+                c.drawString(left_margin_pt, y, f"Via: {via_text}")
+                print(f"DEBUG FROM-TO: Via drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{via_text}'")
+                y -= leading
     
     # One blank line before Subj
     y -= leading
