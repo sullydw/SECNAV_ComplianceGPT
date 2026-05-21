@@ -51,17 +51,35 @@
   - C9 copy-to significance/complete annotation logic not yet implemented
   - C9 assembly remains advisory/procedural for later checklist support
 
-### Chapter 10 — Complete and Candidate-Ready
-- ✅ Chapter 10 scaffold created (12 candidate rules: C10-001 through C10-012)
-- ✅ C10-001 through C10-012 resolved with verified source_text from manual sections
-- ✅ Figure-aware extraction used for Chapter 10 rules (Figures 10-1 through 10-7 reviewed)
-- ✅ C10-003/C10-004/C10-005/C10-006/C10-009/C10-010/C10-011 figure-enhanced with Figure 10-1/10-2/10-5/10-6/10-7 details
-- ✅ C10 compatibility pointer (`C10-candidate-rules.json`) updated: all_resolved=true, all 12 rules resolved
-- ✅ Final Chapter 10 audit passed: all 12 rules resolved, no unresolved rules remain
-- ✅ Chapters 7, 8, 9, and 10 are candidate-complete (46 rules total)
-- ✅ All Chapter 10 rules in `rules_v6/C10/` directory with standardized schema
-- ✅ Index file (`rules_v6/C10/index.json`) tracks all rules with source_text_state: resolved
-- ✅ Commit history preserved on `main` branch
+### Chapter 10 — Candidate Components Complete
+
+#### Protected and Closed Components
+- ✅ **C10 MFR** — Closed/protected implementation (separate branch, not modified)
+- ✅ **C10 Plain-Paper From-To (From-To Memorandum)** — Closed/protected implementation
+  - **Latest verified commit**: `5e27b4e58eba3753a939b96efc53aa38df7357c6`
+  - **Full Chapter 10 is NOT fully implemented**
+  - **Other C10 memo types remain out of scope**:
+    - printed From-To memorandum
+    - letterhead memorandum
+    - decision memorandum
+    - MOA/MOU memorandum
+
+#### C10 Plain-Paper From-To Closeout (5e27b4e)
+- ✅ C10 Plain-Paper From-To renderer implemented (`render_from_to_plain_pdf()`)
+- ✅ C10 Plain-Paper From-To validator implemented
+- ✅ C10 regression runner validates and render-checks From-To fixtures
+- ✅ C7/C8/C9 guards remained passing after C10 changes
+- ✅ Manual visual review accepted as "looks pretty good"
+- ✅ Same-page endorsements remain deferred/not implemented
+- ⏳ Same-page endorsements support not yet implemented (deferred)
+- ✅ **Closeout documentation**: `docs/C10_FROM_TO_PLAIN_CLOSEOUT.md`
+- ✅ **Visual review checklist**: `docs/C10_FROM_TO_PLAIN_VISUAL_REVIEW_CHECKLIST.md`
+- ✅ **Protected fixtures**:
+  - `examples/audit_c10_from_to_plain_basic.json`
+  - `examples/audit_c10_from_to_plain_with_refs.json`
+  - `examples/audit_c10_from_to_plain_with_encls.json`
+- ✅ **Protected renderer path**: `render_from_to_plain_pdf()` in `src/pdf_v6_render.py`
+- ✅ **Protected runner**: `tools/run_c10_regression.py`
 
 ### Repository Status
 - **Active repo:** https://github.com/sullydw/SECNAV_ComplianceGPT
