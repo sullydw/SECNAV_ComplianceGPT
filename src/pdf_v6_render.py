@@ -1410,10 +1410,11 @@ def render_from_to_plain_pdf(data, output_path):
     # One blank line before MEMORANDUM FOR (consistent spacing from MFR)
     y -= leading
     
-    # MEMORANDUM FOR title (Times-Roman 12, not bold, not larger)
-    memo_for = "MEMORANDUM FOR"
-    c.drawString(left_margin_pt, y, memo_for)
-    print(f"DEBUG FROM-TO: Title drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{memo_for}'")
+    # MEMORANDUM FOR line: includes addressee from payload's `to` field (Figure 10-3)
+    to_value = normalized.get("to", "")
+    memo_for_line = f"MEMORANDUM FOR {to_value}" if to_value else "MEMORANDUM FOR"
+    c.drawString(left_margin_pt, y, memo_for_line)
+    print(f"DEBUG FROM-TO: Memo-for line drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{memo_for_line}'")
     y -= leading
     
     # One blank line before From
@@ -1426,11 +1427,10 @@ def render_from_to_plain_pdf(data, output_path):
         print(f"DEBUG FROM-TO: From drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{From}'")
         y -= leading
     
-    # To line
-    To = normalized.get("to", "")
-    if To:
-        c.drawString(left_margin_pt, y, f"To: {To}")
-        print(f"DEBUG FROM-TO: To drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{To}'")
+    # To line: skip if addressee already in MEMORANDUM FOR line
+    if to_value and not memo_for_line.startswith(f"MEMORANDUM FOR {to_value}"):
+        c.drawString(left_margin_pt, y, f"To: {to_value}")
+        print(f"DEBUG FROM-TO: To drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{to_value}'")
         y -= leading
     
     # One blank line before Subj
