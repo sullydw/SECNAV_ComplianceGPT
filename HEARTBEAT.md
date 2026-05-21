@@ -45,7 +45,7 @@
 - ✅ Manual visual review accepted as "looks pretty good"
 - ✅ Same-page endorsements remain deferred/not implemented
 - ✅ **Closeout documentation**: `docs/C10_FROM_TO_PLAIN_CLOSEOUT.md`
-- ✅ **Visual review checklist**: `docs/C10_FROM_TO_PLAIN_VISUAL_REGRESSION_CHECKLIST.md`
+- ✅ **Visual review checklist**: `docs/C10_FROM_TO_PLAIN_VISUAL_REVIEW_CHECKLIST.md`
 - ✅ **Protected fixtures**:
   - `examples/audit_c10_from_to_plain_basic.json`
   - `examples/audit_c10_from_to_plain_with_refs.json`
