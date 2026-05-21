@@ -1454,8 +1454,6 @@ def render_from_to_plain_pdf(data, output_path):
         subj_max_width = page_width - right_margin_pt - (left_margin_pt + 43)
         y = draw_wrapped_text(c, left_margin_pt + 43, y, subj, 12, subj_max_width, leading)
         print(f"DEBUG FROM-TO: Subj drawn at y={y:.1f}")
-        # One blank line after subject before Ref/Encl/body
-        y -= leading
     
     # Optional Ref lines
     refs = normalized.get("ref", [])
