@@ -31,8 +31,9 @@
 - [ ] Date uses sixth-line style (compact, right-aligned, no leading blank line)
 
 #### Heading
+- [ ] Heading is followed by the From/To header block, not directly by body text
 - [ ] Heading says "**MEMORANDUM**" without "FOR"
-- [ ] Body immediately follows heading with no intervening blank line
+- [ ] Body begins only after Subj/Ref/Encl header material is complete
 
 #### From Line
 - [ ] From line appears separately (below heading block)
@@ -48,7 +49,7 @@
 
 #### Spacing Checks
 - [ ] No extra blank line between Subj and Ref list
-- [ ] No extra blank line between Subj and Enc list
+- [ ] No extra blank line between Subj and Encl list
 - [ ] Basic fixture has exactly one blank line between Subj and body paragraphs
 
 #### Reference Lines (refs fixture only)
@@ -57,9 +58,9 @@
 - [ ] No extra blank line before first Ref line
 
 #### Enclosure Lines (encls fixture only)
-- [ ] Enc list appears below Subj line
-- [ ] Optional enc lines present when fixture includes them
-- [ ] No extra blank line before first Enc line
+- [ ] Encl list appears below Subj line
+- [ ] Optional encl lines present when fixture includes them
+- [ ] No extra blank line before first Encl line
 
 #### Body Paragraph Markers
 - [ ] Body paragraph markers ("1.", "2.", etc.) render with correct indentation
