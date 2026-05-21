@@ -90,6 +90,9 @@ def main() -> int:
         # (input_json, output_pdf)
         ("examples/audit_c10_mfr_with_subject.json", "output/audit_c10_mfr_with_subject.pdf"),
         ("examples/audit_c10_mfr_short_no_subject.json", "output/audit_c10_mfr_short_no_subject.pdf"),
+        ("examples/audit_c10_from_to_plain_basic.json", "output/audit_c10_from_to_plain_basic.pdf"),
+        ("examples/audit_c10_from_to_plain_with_refs.json", "output/audit_c10_from_to_plain_with_refs.pdf"),
+        ("examples/audit_c10_from_to_plain_with_encls.json", "output/audit_c10_from_to_plain_with_encls.pdf"),
     ]
 
     for input_json, output_pdf in c10_renders:
