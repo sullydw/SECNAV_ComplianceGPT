@@ -1451,21 +1451,26 @@ def render_from_to_plain_pdf(data, output_path):
     refs = normalized.get("ref", [])
     encls = normalized.get("encl", [])
     
+    # Define consistent header text alignment
+    # Use the width of "Encl:  " as it's the longest label
+    header_text_x = left_margin_pt + c.stringWidth("Encl:  ", "Times-Roman", 12)
+    
     # Subj line
     subj = normalized.get("subj")
     if subj:
         c.drawString(left_margin_pt, y, "Subj:")
-        subj_max_width = page_width - right_margin_pt - (left_margin_pt + 43)
-        y = draw_wrapped_text(c, left_margin_pt + 43, y, subj, 12, subj_max_width, leading)
+        subj_max_width = page_width - right_margin_pt - header_text_x
+        y = draw_wrapped_text(c, header_text_x, y, subj, 12, subj_max_width, leading)
         print(f"DEBUG FROM-TO: Subj drawn at y={y:.1f}")
         
-        # Handle Ref/Encl lines immediately after Subj without extra blank line
+        # Handle Ref/Encl lines with proper spacing
         if refs:
-            # No blank line between Subj and Refs
+            # One blank line between Subj and Refs
+            y -= leading
+            
             # Calculate x positions for labels and text
             ref_label_x = left_margin_pt
-            ref_label_width = c.stringWidth("Ref:  ", "Times-Roman", 12)
-            ref_text_x = left_margin_pt + ref_label_width
+            ref_text_x = header_text_x
             
             for i, ref_text in enumerate(refs):
                 if ref_text:
@@ -1478,14 +1483,15 @@ def render_from_to_plain_pdf(data, output_path):
                         c.drawString(ref_text_x, y, ref_text)
                     print(f"DEBUG FROM-TO: Ref drawn at x={ref_text_x:.1f}, y={y:.1f}: '{ref_text}'")
                     y -= leading
-            # One blank line after all Refs before body or Encls
+            # One blank line after all Refs before body
             y -= leading
         elif encls:
-            # No blank line between Subj and Encls
+            # One blank line between Subj and Encls
+            y -= leading
+            
             # Calculate x positions for labels and text
             encl_label_x = left_margin_pt
-            encl_label_width = c.stringWidth("Encl:  ", "Times-Roman", 12)
-            encl_text_x = left_margin_pt + encl_label_width
+            encl_text_x = header_text_x
             
             for i, encl_text in enumerate(encls):
                 if encl_text:
