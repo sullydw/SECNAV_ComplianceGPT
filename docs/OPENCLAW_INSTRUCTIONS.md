@@ -22,7 +22,9 @@ You execute the provided task exactly.
 Before any task:
 
 1. Read:
- docs/PROJECT_STATUS.md
+   - `docs/OPENCLAW_INSTRUCTIONS.md`
+   - `docs/PROJECT_STATUS.md`
+   - `HEARTBEAT.md`
 
 2. Inspect only the files specified in the task.
 
@@ -138,10 +140,10 @@ DO NOT:
 ## Renderer Rules
 
 - Do not modify:
- - header structure
- - body parsing logic
- - pagination logic
- - signature system
+  - header structure
+  - body parsing logic
+  - pagination logic
+  - signature system
 unless explicitly required by the task
 
 ---
@@ -151,12 +153,45 @@ unless explicitly required by the task
 For every task:
 
 1. Apply changes
-2. Run:
- python src/pdf_v6_render.py
-3. Verify build passes
-4. Commit using provided commit message format
-5. Push to GitHub
-6. Return exact requested fields
+2. Run only the tests or commands explicitly required by the task.
+3. If no test command is specified, ask for clarification or use the narrowest relevant regression runner:
+   - For current C10 work, prefer:
+     `python tools/run_c10_regression.py`
+   - For C9 work, prefer:
+     `python tools/run_c9_regression.py`
+   - For C8 work, prefer:
+     `python tools/run_c8_regression.py`
+   - For C7 Phase 1 work, prefer:
+     `python tools/run_c7_phase1_regression.py`
+4. Verify build passes
+5. Commit using provided commit message format
+6. Push to GitHub
+7. Return exact requested fields
+
+**Task-specific instructions override this Workflow section.**
+
+---
+
+## Current Protected Scope Reminder
+
+- **C7 Phase 1 standard letters** — protected (baseline-locked)
+- **C8 core address formats** — protected (To-only, Distribution-only, To+Distribution baseline-locked)
+- **C9 new-page endorsements** — protected (heading, page-number continuation, Via behavior baseline-locked)
+- **C9 same-page endorsements** — deferred / not implemented
+- **C10 MFR (Memorandum For Record)** — protected
+- **C10 Plain-Paper From-To Memorandum** — in progress (Phase 3B renderer complete, validator pending)
+- **Do not describe full Chapter 10 as implemented** — only C10-001 through C10-004 have renderer support; remaining C10 rules are candidate-complete but not implemented.
+
+---
+
+## Visual Inspection Warning
+
+**PDF existence/non-empty checks are useful but do not prove visual compliance.**
+
+For renderer/layout changes:
+- Manual visual inspection against the applicable SECNAV figure is required before closeout.
+- Regression runners verify PDF generation and basic structure only.
+- Layout-sensitive work (spacing, alignment, pagination) requires human verification against `references/SECNAV_M-5216.5_CH-1.pdf` figures.
 
 ---
 
