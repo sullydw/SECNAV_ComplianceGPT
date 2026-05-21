@@ -1447,6 +1447,11 @@ def render_from_to_plain_pdf(data, output_path):
     # One blank line before Subj
     y -= leading
     
+    # Optional Ref lines
+    refs = normalized.get("ref", [])
+    # Optional Encl lines
+    encls = normalized.get("encl", [])
+    
     # Subj line
     subj = normalized.get("subj")
     if subj:
@@ -1454,35 +1459,51 @@ def render_from_to_plain_pdf(data, output_path):
         subj_max_width = page_width - right_margin_pt - (left_margin_pt + 43)
         y = draw_wrapped_text(c, left_margin_pt + 43, y, subj, 12, subj_max_width, leading)
         print(f"DEBUG FROM-TO: Subj drawn at y={y:.1f}")
+        # Add one blank line after Subj before body (only if no refs/encls)
+        if not refs and not encls:
+            y -= leading
     
     # Optional Ref lines
     refs = normalized.get("ref", [])
     if refs:
         # One blank line before Ref
         y -= leading
-        for ref_text in refs:
+        for i, ref_text in enumerate(refs):
             if ref_text:
-                c.drawString(left_margin_pt, y, f"Ref: {ref_text}")
+                if i == 0:
+                    # First ref line gets the "Ref:" label
+                    c.drawString(left_margin_pt, y, f"Ref: {ref_text}")
+                else:
+                    # Subsequent ref lines get only the marker/text, aligned under the first
+                    c.drawString(left_margin_pt, y, f"     {ref_text}")
                 print(f"DEBUG FROM-TO: Ref drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{ref_text}'")
                 y -= leading
         # One blank line after Refs before body
         y -= leading
+    elif subj:
+        # If there are refs, spacing is already handled above
+        # If no refs but there is a subj, add one blank line before body
+        y -= leading
     
-    # Optional Encl lines (only if no Ref)
+    # Optional Encl lines
     encls = normalized.get("encl", [])
     if encls:
-        # If Refs exist, Encls come after Refs; otherwise after Subj
-        # One blank line before Encl
+        # One blank line before Encl (only if Encl exists)
         y -= leading
-        for encl_text in encls:
+        for i, encl_text in enumerate(encls):
             if encl_text:
-                c.drawString(left_margin_pt, y, f"Encl: {encl_text}")
+                if i == 0:
+                    # First encl line gets the "Encl:" label
+                    c.drawString(left_margin_pt, y, f"Encl: {encl_text}")
+                else:
+                    # Subsequent encl lines get only the marker/text, aligned under the first
+                    c.drawString(left_margin_pt, y, f"      {encl_text}")
                 print(f"DEBUG FROM-TO: Encl drawn at x={left_margin_pt:.1f}, y={y:.1f}: '{encl_text}'")
                 y -= leading
         # One blank line after Encls before body
         y -= leading
-    elif not refs and not subj:
-        # No Refs and no Subj - one blank line before body
+    elif not refs and subj:
+        # If no encls and no refs, but there is a subj, add one blank line before body
         y -= leading
     
     # ── Body Block ───────────────────────────────────────────────────
