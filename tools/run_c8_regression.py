@@ -263,6 +263,17 @@ def main() -> int:
     if not run_command(root, layout_audit_figure_8_2_args, "C8 layout audit Figure 8-2"):
         passed = False
 
+    layout_audit_figure_8_3_args = [
+        py,
+        "tools/audit_pdf_layout.py",
+        "--profile",
+        "docs/layout_profiles/figure_8_3_multiple_address_to_distribution.json",
+        "--pdf",
+        "output/audit_c8_to_plus_distribution_letter.pdf",
+    ]
+    if not run_command(root, layout_audit_figure_8_3_args, "C8 layout audit Figure 8-3"):
+        passed = False
+
     c7_args = [py, "tools/run_c7_phase1_regression.py"]
     if not run_command(root, c7_args, "Run C7 Phase 1 regression guard"):
         passed = False
