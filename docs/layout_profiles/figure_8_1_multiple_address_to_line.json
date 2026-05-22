@@ -1,0 +1,32 @@
+{
+  "figure_id": "8-1",
+  "manual_reference": "SECNAV M-5216.5 Figure 8-1",
+  "doc_type": "DT_MULTIPLE_ADDRESS_LETTER_TO_LINE",
+  "target_pdf": "output/audit_c8_to_only_letter.pdf",
+  "required_text": ["From:", "To:", "Subj:", "1."],
+  "optional_text": ["Copy to:"],
+  "order_rules": [
+    ["From:", "To:"],
+    ["To:", "Subj:"],
+    ["Subj:", "1."]
+  ],
+  "alignment_groups": [
+    {
+      "name": "header_label_column",
+      "texts": ["From:", "To:", "Copy to:", "Subj:"],
+      "x_field": "x0",
+      "tolerance_pt": 3
+    }
+  ],
+  "label_content_alignment_groups": [
+    {
+      "name": "header_text_column",
+      "labels": ["From:", "To:", "Copy to:", "Subj:"],
+      "tolerance_pt": 3
+    }
+  ],
+  "spacing_tolerances": {
+    "x_tolerance_pt": 3,
+    "y_tolerance_pt": 4
+  }
+}
