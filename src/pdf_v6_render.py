@@ -168,22 +168,21 @@ def wrap_paragraph(text, font_name, font_size, max_width, c):
 
 def draw_page_number(c, page_width, page_num, bottom_margin_pt, page_number_start=None, force_page_number_on_first_page=False):
     """Draw page number centered, 1/2 inch from bottom edge.
-    
+
     Standard letters: page 2+ only, display page_num.
     C9 new-page endorsements (force_page_number_on_first_page=True):
       draws on all pages, displaying page_number_start + (page_num - 1).
     """
-    if page_number_start is None and page_num < 2:
+    # Skip page numbers on page 1 of standard letters (no override in effect)
+    if page_num < 2 and page_number_start is None and not force_page_number_on_first_page:
         return
-    if page_number_start is None and not force_page_number_on_first_page:
-        return
-    
+
     # Compute display number
-    if force_page_number_on_first_page and page_number_start is not None:
+    if page_number_start is not None:
         display_num = page_number_start + (page_num - 1)
     else:
         display_num = page_num
-    
+
     # 1/2 inch from bottom edge = 36pt from bottom of page
     page_num_y = 36.0
     page_num_x = page_width / 2
