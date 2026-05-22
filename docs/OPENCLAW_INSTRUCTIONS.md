@@ -29,11 +29,11 @@ Before any task:
 
 2. Inspect only the files specified in the task.
 
-3. Run the repository safety preflight in the next section.
+3. Use the repository safety check in the next section only when needed.
 
 ---
 
-## Repository Safety Preflight
+## Repository Safety Check
 
 Use only this local working directory for SECNAV_ComplianceGPT work:
 
@@ -41,7 +41,16 @@ Use only this local working directory for SECNAV_ComplianceGPT work:
 C:\Users\drryl\SECNAV_ComplianceGPT
 ```
 
-Before every task that may read, modify, commit, or push repository files, run:
+The full repository check is **not required before every task**. To conserve context and tool resources, use it only when:
+
+- starting a new agent session
+- the working directory is uncertain
+- the remote/history looks suspicious
+- a push is rejected
+- Git reports unrelated history
+- the user explicitly asks for verification
+
+Full check command when needed:
 
 ```bat
 cd C:\Users\drryl\SECNAV_ComplianceGPT
@@ -51,28 +60,12 @@ git log --oneline -5
 git status
 ```
 
-Required safety checks:
+Hard safety rules still apply:
 
-- Remote must be `https://github.com/sullydw/SECNAV_ComplianceGPT.git`
-- Branch must be `main`
-- Recent history must show the SECNAV project history, including the latest verified safe checkpoint when applicable
-- Working tree must be clean unless the current task intentionally modifies files
-
-STOP and report if:
-
-- the repo path is different
-- the remote points to Hermes, OpenClaw, NousResearch, or any repo other than `sullydw/SECNAV_ComplianceGPT`
-- git history does not show the SECNAV project history
-- Git reports unrelated history
-- a push would require `--force` or `--force-with-lease`
-
-Never change Git remotes or force-push unless the user explicitly provides an emergency recovery instruction.
-
-Normal task pushes must use only:
-
-```bat
-git push origin main
-```
+- Do not work from any Hermes/OpenClaw app directory
+- Do not change Git remotes during normal task execution
+- Use normal pushes only: `git push origin main`
+- Stop and report if the remote points to Hermes, OpenClaw, NousResearch, or any repo other than `sullydw/SECNAV_ComplianceGPT`
 
 ---
 
@@ -117,7 +110,7 @@ Do not reconstruct manual text from renderer behavior or memory.
 
 **Main agent execution requirements:**
 - Execute the task directly within the current workspace
-- Before modifying files, confirm current directory is the repo root
+- Before modifying files, confirm current directory is the repo root if the session/path is uncertain
 - Do not work from workspace root
 - Do not create loose `rules_v6/` or `docs/` folders outside the repository
 
@@ -129,7 +122,7 @@ Do not reconstruct manual text from renderer behavior or memory.
 - Simple docs/cleanup: local `qwen3.5:9b` or Gemma 4
 
 **Workspace confirmation:**
-- Main agent must confirm it is working in: `C:\Users\drryl\SECNAV_ComplianceGPT`
+- Main agent must confirm it is working in: `C:\Users\drryl\SECNAV_ComplianceGPT` when the session/path is uncertain.
 
 **Preserve existing rule source verification policy** — Rules Agents must extract rule text directly from `references/SECNAV_M-5216.5_CH-1.pdf`. Do not reconstruct manual text from renderer behavior or memory.
 
@@ -154,7 +147,6 @@ DO NOT:
 - Replace existing logic unless instructed
 - Add features not explicitly requested
 - Change Git remotes during normal task execution
-- Use `git push --force` or `git push --force-with-lease` during normal task execution
 - Work from any Hermes/OpenClaw app directory
 
 ---
