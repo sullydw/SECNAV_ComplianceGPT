@@ -21,7 +21,16 @@ Hermes must use this working directory for SECNAV_ComplianceGPT work:
 C:\Users\drryl\SECNAV_ComplianceGPT
 ```
 
-Before every task that may read, modify, commit, or push repository files, Hermes must run:
+The full repository preflight is **not required before every task**. To conserve context and tool resources, use the full preflight only when:
+
+- starting a new Hermes session
+- the working directory is uncertain
+- the remote/history looks suspicious
+- a push is rejected
+- Git reports unrelated history
+- the user explicitly asks for verification
+
+Full preflight command when needed:
 
 ```bat
 cd C:\Users\drryl\SECNAV_ComplianceGPT
@@ -31,49 +40,34 @@ git log --oneline -5
 git status
 ```
 
-Required safety checks:
+Hard safety rules still apply:
 
-- Remote must be `https://github.com/sullydw/SECNAV_ComplianceGPT.git`
-- Branch must be `main`
-- Recent history must show the SECNAV project history, including the latest verified safe checkpoint when applicable
-- Working tree must be clean unless the current task intentionally modifies files
-
-Hermes must stop and report if:
-
-- the repo path is different
-- the remote points to Hermes, OpenClaw, NousResearch, or any repo other than `sullydw/SECNAV_ComplianceGPT`
-- git history does not show the SECNAV project history
-- Git reports unrelated history
-- a push would require `--force` or `--force-with-lease`
-
-Hermes must never change remotes or force-push unless the user explicitly provides an emergency recovery instruction.
-
-Normal task pushes must use only:
-
-```bat
-git push origin main
-```
+- Do not work from any Hermes/OpenClaw app directory
+- Do not change Git remotes during normal task execution
+- Use normal pushes only: `git push origin main`
+- Stop and report if the remote points to Hermes, OpenClaw, NousResearch, or any repo other than `sullydw/SECNAV_ComplianceGPT`
 
 ## Hermes-Specific Workflow Rules
 
 - Use TUI or terminal-first workflow (leveraging Hermes' terminal/TUI capabilities)
 - Use explicit shell commands to perform operations
-- Confirm you're at the correct repository root before making any edits
-- Run `git status` before and after every edit to verify changes
+- Confirm you're at the correct repository root before making edits when the session or path is uncertain
+- Run `git status` before commit and after commit to verify changes
 - Do NOT operate from workspace/root directories outside the repository
 - Do NOT create loose files outside the repository boundaries
 - Do NOT work from any Hermes/OpenClaw app directory
 - Do NOT change Git remotes during normal task execution
-- Do NOT use `git push --force` or `git push --force-with-lease` during normal task execution
 
 ## Sync Rule
 
-Before making code edits:
+Before making code edits in a long-running or uncertain session:
 
 1. Run `git fetch origin`
 2. Check if local branch is behind origin/main
 3. If behind, run git pull/rebase before editing
 4. If conflicts occur, **STOP and report** immediately
+
+For small follow-up tasks in a known-clean active session, do not repeat sync commands unless needed.
 
 ## Autonomy Limits
 
