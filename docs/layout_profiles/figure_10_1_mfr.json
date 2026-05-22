@@ -1,0 +1,35 @@
+{
+  "figure_id": "10-1",
+  "manual_reference": "SECNAV M-5216.5 Figure 10-1",
+  "doc_type": "DT_MEMORANDUM_FOR_THE_RECORD",
+  "target_pdf": "output/audit_c10_mfr_with_subject.pdf",
+  "required_text": [
+    "MEMORANDUM FOR THE RECORD",
+    "Subj:",
+    "1."
+  ],
+  "optional_text": [],
+  "order_rules": [
+    ["MEMORANDUM FOR THE RECORD", "Subj:"],
+    ["Subj:", "1."]
+  ],
+  "alignment_groups": [
+    {
+      "name": "header_label_column",
+      "texts": ["MEMORANDUM FOR THE RECORD", "Subj:"],
+      "x_field": "x0",
+      "tolerance_pt": 3
+    }
+  ],
+  "label_content_alignment_groups": [
+    {
+      "name": "header_text_column",
+      "labels": ["Subj:"],
+      "tolerance_pt": 3
+    }
+  ],
+  "spacing_tolerances": {
+    "x_tolerance_pt": 3,
+    "y_tolerance_pt": 4
+  }
+}
