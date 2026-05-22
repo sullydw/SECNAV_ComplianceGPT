@@ -23,7 +23,7 @@ The tool checks:
 ### Scope
 
 Currently supports:
-- **Figure 8-1 Multiple-Address Letter (To-line Only)** — standalone profile for first-page validation of To-line-only format with multiple addressees.
+- **Figure 8-1 Multiple-Address Letter (To-line Only)** — wired into `tools/run_c8_regression.py`
 
 Future profiles should cover:
 - Figure 8-2 Distribution-line only
@@ -49,7 +49,7 @@ profile: docs/layout_profiles/figure_8_1_multiple_address_to_line.json
 pdf:     output/audit_c8_to_only_letter.pdf
 passed:  7
 failed:  0
-warnings: 1
+warnings: 0
 ```
 
 ## Profile Format
@@ -70,7 +70,7 @@ The profile JSON includes:
 
 The profile verifies that multiple To addressees (e.g., "Commanding Officer, Example Receiving Activity Alpha", "Commanding Officer, Example Receiving Activity Bravo") are vertically stacked below/near the To block and aligned to the same label column as the first To line. The alignment check groups `From:`, `To:`, `Copy to:`, and `Subj:` labels together to verify consistent left-edge alignment.
 
-Note: Copy to lines are typically single-item lists without rich text content. Content extraction may be unreliable for these lines, resulting in expected warnings.
+Note: Copy to lines are typically single-item lists without rich text content. Content extraction may be unreliable for these lines in single-span structure.
 
 ### Continuation Entries
 
@@ -95,6 +95,7 @@ This prevents body-level markers from interfering with header-level alignment ch
 ## Status
 
 - **Prototype only**
-- **Standalone only** — not yet wired into C8 regression runner
+- **Wired into C8 regression runner** — Figure 8-1 layout audit now runs in `tools/run_c8_regression.py`
+- Audit failure causes C8 regression failure
 - Manual review still required for final compliance
 - Future C8 profiles will expand coverage to Figures 8-2 and 8-3

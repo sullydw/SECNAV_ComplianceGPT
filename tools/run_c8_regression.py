@@ -136,12 +136,12 @@ def main() -> int:
 
     print("C8 REGRESSION RUNNER")
     print(f"REPO ROOT: {root}")
-    print(f"PYTHON: {py}")
+    print(f"PYPYTHON: {py}")
     print()
 
     passed = True
 
-    # ── C8 structural validator checks ────────────────────────────────
+    # ── C8 structural validator checks ──
     print("--- C8 Structural Validator Checks ---")
     print()
 
@@ -232,8 +232,6 @@ def main() -> int:
         ),
     ]
 
-    passed = True
-
     for args, label, pdf_path in render_checks:
         if not run_command(root, args, label):
             passed = False
@@ -241,6 +239,18 @@ def main() -> int:
 
         if not check_pdf(root, pdf_path):
             passed = False
+
+    # ── C8 layout audit checks ──
+    layout_audit_args = [
+        py,
+        "tools/audit_pdf_layout.py",
+        "--profile",
+        "docs/layout_profiles/figure_8_1_multiple_address_to_line.json",
+        "--pdf",
+        "output/audit_c8_to_only_letter.pdf",
+    ]
+    if not run_command(root, layout_audit_args, "C8 layout audit Figure 8-1"):
+        passed = False
 
     c7_args = [py, "tools/run_c7_phase1_regression.py"]
     if not run_command(root, c7_args, "Run C7 Phase 1 regression guard"):
