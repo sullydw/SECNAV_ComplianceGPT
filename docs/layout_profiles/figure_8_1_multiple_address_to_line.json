@@ -21,7 +21,7 @@
   "label_content_alignment_groups": [
     {
       "name": "header_text_column",
-      "labels": ["From:", "To:", "Copy to:", "Subj:"],
+      "labels": ["From:", "To:", "Subj:"],
       "tolerance_pt": 3
     }
   ],
