@@ -111,5 +111,9 @@ The `vertical_sequence` profile field supports:
 ## Status
 
 - **Prototype only**
-- Not wired into `run_c7_phase1_regression.py` yet
+- **Wired into** `tools/run_c7_phase1_regression.py` — layout audit runs automatically after PDF generation and failure fails C7 Phase 1 regression
+- The standalone audit tool can still be run manually:
+  ```bash
+  python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_7_1_standard_letter.json --pdf output/audit_c7_phase1_standard_letter.pdf
+  ```
 - Manual review still required for final compliance

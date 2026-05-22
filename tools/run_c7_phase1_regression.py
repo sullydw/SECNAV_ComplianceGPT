@@ -111,6 +111,18 @@ def main() -> int:
     if not check_pdf(root, "output/audit_c7_phase1_standard_letter.pdf"):
         passed = False
 
+    # Standalone layout audit (now wired into regression)
+    layout_audit_args = [
+        py,
+        "tools/audit_pdf_layout.py",
+        "--profile",
+        "docs/layout_profiles/figure_7_1_standard_letter.json",
+        "--pdf",
+        "output/audit_c7_phase1_standard_letter.pdf",
+    ]
+    if not run_command(root, layout_audit_args, "C7 layout audit"):
+        passed = False
+
     print("=" * 72)
     if passed:
         print("C7 PHASE 1 REGRESSION RESULT: PASS")
