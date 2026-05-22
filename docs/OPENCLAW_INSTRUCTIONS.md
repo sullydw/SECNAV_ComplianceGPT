@@ -2,6 +2,7 @@
 SECNAV_ComplianceGPT
 
 **Active Repository:** https://github.com/sullydw/SECNAV_ComplianceGPT  
+**Required Local Working Directory:** `C:\Users\drryl\SECNAV_ComplianceGPT`  
 **Invalid/Nonexistent:** https://github.com/drryl-worqx/SECNAV-ComplianceGPT (DO NOT USE)  
 
 **See also:** `docs/OPENCLAW_AGENT_TEAM.md` for coordinator/specialist agent workflow
@@ -27,6 +28,51 @@ Before any task:
    - `HEARTBEAT.md`
 
 2. Inspect only the files specified in the task.
+
+3. Run the repository safety preflight in the next section.
+
+---
+
+## Repository Safety Preflight
+
+Use only this local working directory for SECNAV_ComplianceGPT work:
+
+```text
+C:\Users\drryl\SECNAV_ComplianceGPT
+```
+
+Before every task that may read, modify, commit, or push repository files, run:
+
+```bat
+cd C:\Users\drryl\SECNAV_ComplianceGPT
+git remote -v
+git branch --show-current
+git log --oneline -5
+git status
+```
+
+Required safety checks:
+
+- Remote must be `https://github.com/sullydw/SECNAV_ComplianceGPT.git`
+- Branch must be `main`
+- Recent history must show the SECNAV project history, including the latest verified safe checkpoint when applicable
+- Working tree must be clean unless the current task intentionally modifies files
+
+STOP and report if:
+
+- the repo path is different
+- the remote points to Hermes, OpenClaw, NousResearch, or any repo other than `sullydw/SECNAV_ComplianceGPT`
+- git history does not show the SECNAV project history
+- Git reports unrelated history
+- a push would require `--force` or `--force-with-lease`
+
+Never change Git remotes or force-push unless the user explicitly provides an emergency recovery instruction.
+
+Normal task pushes must use only:
+
+```bat
+git push origin main
+```
 
 ---
 
@@ -83,7 +129,7 @@ Do not reconstruct manual text from renderer behavior or memory.
 - Simple docs/cleanup: local `qwen3.5:9b` or Gemma 4
 
 **Workspace confirmation:**
-- Main agent must confirm it is working in: `C:\Users\drryl\.openclaw\workspace\SECNAV_ComplianceGPT`
+- Main agent must confirm it is working in: `C:\Users\drryl\SECNAV_ComplianceGPT`
 
 **Preserve existing rule source verification policy** — Rules Agents must extract rule text directly from `references/SECNAV_M-5216.5_CH-1.pdf`. Do not reconstruct manual text from renderer behavior or memory.
 
@@ -107,6 +153,9 @@ DO NOT:
 - Guess missing requirements
 - Replace existing logic unless instructed
 - Add features not explicitly requested
+- Change Git remotes during normal task execution
+- Use `git push --force` or `git push --force-with-lease` during normal task execution
+- Work from any Hermes/OpenClaw app directory
 
 ---
 
@@ -165,7 +214,7 @@ For every task:
      `python tools/run_c7_phase1_regression.py`
 4. Verify build passes
 5. Commit using provided commit message format
-6. Push to GitHub
+6. Push to GitHub with normal `git push origin main` only
 7. Return exact requested fields
 
 **Task-specific instructions override this Workflow section.**
@@ -179,8 +228,8 @@ For every task:
 - **C9 new-page endorsements** — protected (heading, page-number continuation, Via behavior baseline-locked)
 - **C9 same-page endorsements** — deferred / not implemented
 - **C10 MFR (Memorandum For Record)** — protected
-- **C10 Plain-Paper From-To Memorandum** — in progress (Phase 3B renderer complete, validator pending)
-- **Do not describe full Chapter 10 as implemented** — only C10-001 through C10-004 have renderer support; remaining C10 rules are candidate-complete but not implemented.
+- **C10 Plain-Paper From-To Memorandum** — closed/protected
+- **Do not describe full Chapter 10 as implemented** — MFR and Plain-Paper From-To are implemented/protected; remaining C10 memo types are out of scope unless specifically tasked.
 
 ---
 
