@@ -23,6 +23,7 @@ The tool checks:
 
 Currently supports:
 - **Figure 10-1 Memorandum for the Record** — wired into C10 regression; audit failure fails C10 regression
+- **Figure 10-3 Plain-Paper From-To (Basic)** — standalone profile, not wired into regression yet
 
 Future profiles should cover:
 - Figure 10-2 (if applicable)
@@ -34,6 +35,12 @@ Future profiles should cover:
 
 ```bash
 python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_10_1_mfr.json --pdf output/audit_c10_mfr_with_subject.pdf
+```
+
+### Figure 10-3 Plain-Paper From-To Basic
+
+```bash
+python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_10_from_to_plain_basic.json --pdf output/audit_c10_from_to_plain_basic.pdf
 ```
 
 ## Tolerances
@@ -73,6 +80,17 @@ The Figure 10-1 profile verifies that:
 - `Subj:` appears after the heading with correct alignment
 - Body paragraph `1.` appears after `Subj:`
 - Date appears right-aligned in the top-right area
+
+### From-To Plain Check
+
+The Figure 10-3 basic profile verifies that:
+- `MEMORANDUM` heading appears at the left margin
+- `From:`, `To:`, and `Subj:` labels are vertically ordered
+- `From:`, `To:`, `Subj:` labels align in the same label column
+- `Subj:` text aligns at the header text column
+- Body paragraph `1.` appears after `Subj:`
+- Date appears right-aligned in the top-right area
+- Note: `From:` and `To:` text content may render in a single span (label+content combined), so content_x extraction may produce a warning; this is expected behavior for the current renderer
 
 ## Implementation
 

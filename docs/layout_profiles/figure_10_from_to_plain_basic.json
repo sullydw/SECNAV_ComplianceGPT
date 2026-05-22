@@ -1,0 +1,39 @@
+{
+  "figure_id": "10-3-basic",
+  "manual_reference": "SECNAV M-5216.5 Figure 10-3 Plain-Paper From-To Basic",
+  "doc_type": "DT_MEMO_FROM_TO_PLAIN",
+  "target_pdf": "output/audit_c10_from_to_plain_basic.pdf",
+  "required_text": [
+    "MEMORANDUM",
+    "From:",
+    "To:",
+    "Subj:",
+    "1."
+  ],
+  "optional_text": [],
+  "order_rules": [
+    ["MEMORANDUM", "From:"],
+    ["From:", "To:"],
+    ["To:", "Subj:"],
+    ["Subj:", "1."]
+  ],
+  "alignment_groups": [
+    {
+      "name": "header_label_column",
+      "texts": ["MEMORANDUM", "From:", "To:", "Subj:"],
+      "x_field": "x0",
+      "tolerance_pt": 3
+    }
+  ],
+  "label_content_alignment_groups": [
+    {
+      "name": "header_text_column",
+      "labels": ["From:", "To:", "Subj:"],
+      "tolerance_pt": 3
+    }
+  ],
+  "spacing_tolerances": {
+    "x_tolerance_pt": 3,
+    "y_tolerance_pt": 4
+  }
+}
