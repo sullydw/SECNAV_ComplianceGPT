@@ -241,7 +241,7 @@ def main() -> int:
             passed = False
 
     # ── C8 layout audit checks ──
-    layout_audit_args = [
+    layout_audit_figure_8_1_args = [
         py,
         "tools/audit_pdf_layout.py",
         "--profile",
@@ -249,7 +249,18 @@ def main() -> int:
         "--pdf",
         "output/audit_c8_to_only_letter.pdf",
     ]
-    if not run_command(root, layout_audit_args, "C8 layout audit Figure 8-1"):
+    if not run_command(root, layout_audit_figure_8_1_args, "C8 layout audit Figure 8-1"):
+        passed = False
+
+    layout_audit_figure_8_2_args = [
+        py,
+        "tools/audit_pdf_layout.py",
+        "--profile",
+        "docs/layout_profiles/figure_8_2_multiple_address_distribution_line.json",
+        "--pdf",
+        "output/audit_c8_distribution_only_letter.pdf",
+    ]
+    if not run_command(root, layout_audit_figure_8_2_args, "C8 layout audit Figure 8-2"):
         passed = False
 
     c7_args = [py, "tools/run_c7_phase1_regression.py"]

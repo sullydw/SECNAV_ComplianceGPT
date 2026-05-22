@@ -24,7 +24,7 @@ The tool checks:
 
 Currently supports:
 - **Figure 8-1 Multiple-Address Letter (To-line Only)** — wired into `tools/run_c8_regression.py`
-- **Figure 8-2 Multiple-Address Letter (Distribution-line Only)** — standalone profile, not wired into regression yet
+- **Figure 8-2 Multiple-Address Letter (Distribution-line Only)** — wired into `tools/run_c8_regression.py`
 
 Future profiles should cover:
 - Figure 8-3 To + Distribution line
@@ -116,7 +116,8 @@ This prevents body-level markers from interfering with header-level alignment ch
 
 - **Prototype only**
 - **Figure 8-1 wired into C8 regression runner** — layout audit now runs in `tools/run_c8_regression.py`
-- **Figure 8-2 created as standalone profile** — not wired into regression yet; audit failure does not yet cause C8 regression failure
+- **Figure 8-2 wired into C8 regression runner** — layout audit now runs in `tools/run_c8_regression.py`
+- **Figure 8-3 remains future work**
 - Audit failure causes C8 regression failure (for wired profiles)
 - Manual review still required for final compliance
 - Future C8 profiles will expand coverage to Figure 8-3
