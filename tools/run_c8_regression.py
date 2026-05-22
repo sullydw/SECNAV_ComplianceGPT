@@ -136,7 +136,7 @@ def main() -> int:
 
     print("C8 REGRESSION RUNNER")
     print(f"REPO ROOT: {root}")
-    print(f"PYPYTHON: {py}")
+    print(f"PYTHON: {py}")
     print()
 
     passed = True
