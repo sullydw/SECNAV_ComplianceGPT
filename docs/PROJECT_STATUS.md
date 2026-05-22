@@ -3,7 +3,8 @@
 **Last Updated:** 2026-05-22  
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT (DO NOT USE)  
-**Renderer:** v6 PDF (ReportLab)
+**Renderer:** v6 PDF (ReportLab)  
+**Line Endings:** .gitattributes (new) enforces LF for Python/MD/JSON configs; CRLF for Windows batch scripts to reduce warning noise
 
 ---
 

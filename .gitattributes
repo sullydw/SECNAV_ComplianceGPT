@@ -1,0 +1,38 @@
+# Normalize line endings for text files
+text=auto
+
+# Python source files - LF only
+*.py text eol=lf
+
+# JSON configuration - LF only
+*.json text eol=lf
+
+# Markdown documentation - LF only
+*.md text eol=lf
+
+# Text files - LF only
+*.txt text eol=lf
+
+# YAML configuration - LF only
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Windows batch files - CRLF only
+*.bat text eol=crlf
+
+# PowerShell scripts - CRLF only
+*.ps1 text eol=crlf
+
+# Windows command scripts - CRLF only
+*.cmd text eol=crlf
+
+# PDF renders - binary
+*.pdf binary
+
+# Image assets - binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+
+# Font files - binary
+*.ttf binary
