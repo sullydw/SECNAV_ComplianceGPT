@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -166,8 +167,8 @@ def check_vertical_sequence(spans, vertical_sequence, passed, failed, warnings_l
             rule_type = "adjacent_pairs"
         elif rule.get("from_any_previous_visible", False):
             rule_type = "from_any_previous_visible"
-        elif rule.get("from_last_visible_before_body"):
-            rule_type = "from_last_visible_before_body"
+        elif rule.get("from_final_header_entry_before_body"):
+            rule_type = "from_final_header_entry_before_body"
         else:
             # Check if from_text/to_text exist for backward compatibility with simple rules
             from_text = rule.get("from_text")
@@ -244,34 +245,58 @@ def check_vertical_sequence(spans, vertical_sequence, passed, failed, warnings_l
                     f"vertical_seq '{name}': {prev_label} -> {to_text} delta={actual:.1f}pt vs exp={expected}pt"
                 )
 
-        elif rule_type == "from_last_visible_before_body":
-            candidates = rule.get("from_last_visible_before_body", [])
+        elif rule_type == "from_final_header_entry_before_body":
             to_text = rule.get("to_text", "1.")
             expected = rule.get("expected_delta_pt", 28.8)
             tolerance = rule.get("tolerance_pt", 3.0)
 
-            body_idx = None
-            for i, (text, _) in enumerate(present):
-                if text == to_text:
-                    body_idx = i
+            body_span = None
+            for s in spans:
+                if to_text.lower() in s.get("text", "").lower():
+                    body_span = s
                     break
-            if body_idx is None or body_idx == 0:
+
+            if body_span is None:
+                warnings_list.append(f"vertical_seq '{name}': body '{to_text}' not found")
                 continue
-            # Check if element immediately above body is one of candidates
-            prev_label = present[body_idx - 1][0]
-            if prev_label not in candidates:
+
+            body_page = body_span.get("page", 1)
+            body_y = body_span.get("y0", 0)
+
+            # Find header entry candidates on same page above body
+            header_label_re = re.compile(r"^(Subj:|Ref:|Encl:)", re.IGNORECASE)
+            ref_cont_re = re.compile(r"^\([a-z]+\)")
+            encl_cont_re = re.compile(r"^\([0-9]+\)")
+
+            candidates = []
+            for s in spans:
+                text = s.get("text", "")
+                if s.get("page", 1) != body_page:
+                    continue
+                if s.get("y0", 0) >= body_y:
+                    continue
+                if header_label_re.search(text) or ref_cont_re.search(text) or encl_cont_re.search(text):
+                    candidates.append((text, s))
+
+            if not candidates:
+                warnings_list.append(
+                    f"vertical_seq '{name}': no header-entry candidate found above '{to_text}'"
+                )
                 continue
-            prev_span = present[body_idx - 1][1]
-            body_span = present[body_idx][1]
-            actual = abs(body_span.get("y0", 0) - prev_span.get("y0", 0))
+
+            # Choose lowest on page (highest y0)
+            candidates.sort(key=lambda item: item[1].get("y0", 0), reverse=True)
+            final_text, final_span = candidates[0]
+
+            actual = abs(body_y - final_span.get("y0", 0))
             diff = abs(actual - expected)
             if diff <= tolerance:
                 passed.append(
-                    f"vertical_seq '{name}': {prev_label} -> {to_text} delta={actual:.1f}pt (ok)"
+                    f"vertical_seq '{name}': '{final_text}' -> '{to_text}' delta={actual:.1f}pt (ok)"
                 )
             else:
                 warnings_list.append(
-                    f"vertical_seq '{name}': {prev_label} -> {to_text} delta={actual:.1f}pt vs exp={expected}pt"
+                    f"vertical_seq '{name}': '{final_text}' -> '{to_text}' delta={actual:.1f}pt vs exp={expected}pt"
                 )
 
 

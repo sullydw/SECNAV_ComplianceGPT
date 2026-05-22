@@ -73,7 +73,7 @@ The profile JSON includes:
 - `alignment_groups`: Coarse x-coordinate alignment groups (e.g., `header_label_column` for `From:` / `To:` / `Subj:`)
 - `label_content_alignment_groups`: Coarse x-coordinate alignment for text content after labels (e.g., `header_text_column`)
 - `vertical_spacing_rules`: Legacy fixed-pair vertical spacing rules (e.g., `from_to_normal_line`)
-- `vertical_sequence`: Sequence-aware vertical spacing rules that measure between actually adjacent visible elements, accounting for optional header blocks (Via/Ref/Encl)
+- `vertical_sequence`: Sequence-aware vertical spacing rules that measure between actually adjacent visible elements, accounting for optional header blocks (Via/Ref/Encl). Supports `adjacent_pairs`, `from_any_previous_visible`, and `from_final_header_entry_before_body` for body-start spacing.
 - `alignment_rules`: Continuation marker alignment rules
 - `spacing_tolerances`: X/Y tolerances
 
@@ -88,10 +88,12 @@ Uses PyMuPDF (`fitz`) for text extraction:
 
 The tool avoids fixed non-adjacent spacing checks (e.g., `To:` -> `Subj:`) because optional sections like `Via:`, `Ref:`, or `Encl:` can intervene and cause false warnings. Instead, it determines which header elements are actually present, sorts them by vertical position, and measures between adjacent rendered elements.
 
+For body-start spacing, `from_final_header_entry_before_body` measures from the **final actual header-entry line** above body paragraph `1.`, not merely the `Ref:` or `Encl:` label line. This includes continuation markers like `(a)` or `(1)` when they represent the last line of the Ref/Encl block. This avoids broad tolerances when multiple Ref/Encl entries are present.
+
 The `vertical_sequence` profile field supports:
 - `adjacent_pairs`: check distance between adjacent pairs that are present
 - `from_any_previous_visible`: check distance from whatever is immediately above a target element
-- `from_last_visible_before_body`: check distance from the last header element before body paragraph `1.`
+- `from_final_header_entry_before_body`: check distance from the final header entry line before body paragraph `1.`
 
 ## Status
 

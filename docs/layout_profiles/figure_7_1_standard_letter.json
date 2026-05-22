@@ -65,10 +65,10 @@
       },
       {
         "name": "blank_line_after_final_header_before_body",
-        "from_last_visible_before_body": ["Subj:", "Ref:", "Encl:"],
+        "from_final_header_entry_before_body": true,
         "to_text": "1.",
         "expected_delta_pt": 28.8,
-        "tolerance_pt": 15.0
+        "tolerance_pt": 3.0
       }
     ]
   },
