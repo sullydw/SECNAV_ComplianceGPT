@@ -19,8 +19,8 @@ The tool checks:
 - Header label-column alignment for `From:` / `To:` / `Subj:`
 - Header text-column alignment for text content after `From:` / `To:` / `Subj:`
 - Sequence-aware vertical spacing between adjacent visible header/body elements
-- Body paragraph placement below final header block
-- Continuation-marker alignment when applicable (Ref / Encl)
+- Body paragraph placement below final header entry line (not just the label line)
+- **Ref/Encl continuation marker alignment** — e.g., `(a)`/`(b)` and `(1)`/`(2)` x-positions aligned within tolerance (scored to header block above body `1.` when possible)
 
 ### Scope
 
@@ -74,7 +74,7 @@ The profile JSON includes:
 - `label_content_alignment_groups`: Coarse x-coordinate alignment for text content after labels (e.g., `header_text_column`)
 - `vertical_spacing_rules`: Legacy fixed-pair vertical spacing rules (e.g., `from_to_normal_line`)
 - `vertical_sequence`: Sequence-aware vertical spacing rules that measure between actually adjacent visible elements, accounting for optional header blocks (Via/Ref/Encl). Supports `adjacent_pairs`, `from_any_previous_visible`, and `from_final_header_entry_before_body` for body-start spacing.
-- `alignment_rules`: Continuation marker alignment rules
+- `alignment_rules`: Ref/Encl continuation marker alignment rules (regex-based marker matching scoped to header block above body `1.`)
 - `spacing_tolerances`: X/Y tolerances
 
 ## Implementation
@@ -83,6 +83,19 @@ Uses PyMuPDF (`fitz`) for text extraction:
 1. Extract visible text spans/words
 2. Get page number, text, x0, y0, x1, y1
 3. Profile matching and rule checking
+
+### Continuation Marker Alignment
+
+The tool checks that Ref continuation markers (e.g., `(a)`, `(b)`) and Encl continuation markers (e.g., `(1)`, `(2)`) are horizontally aligned within their respective groups.
+
+For each `alignment_rules` entry:
+- Apply the `marker_regex` to all spans
+- Restrict to markers in the header block above body paragraph `1.` (same page, strictly above `1.`)
+- Skip with a warning if fewer than 2 markers are found
+- Compare marker x0 values to the first marker x0
+- PASS if all markers are within tolerance_pt; FAIL if any are outside
+
+This prevents body-level paragraph markers (like `(1)` in subdivisions) from interfering with header-level Ref/Encl marker alignment checks.
 
 ### Sequence-Aware Spacing
 

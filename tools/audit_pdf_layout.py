@@ -300,6 +300,67 @@ def check_vertical_sequence(spans, vertical_sequence, passed, failed, warnings_l
                 )
 
 
+def check_continuation_marker_alignment(spans, alignment_rules, passed, failed, warnings_list):
+    """Check x-alignment of Ref/Encl continuation markers, scoped to header block above body."""
+    # Determine body start position for scoping
+    body_span = None
+    for s in spans:
+        if s.get("text", "").strip() == "1.":
+            body_span = s
+            break
+
+    body_page = body_span.get("page", 1) if body_span else None
+    body_y = body_span.get("y0", 0) if body_span else float('inf')
+
+    for rule in alignment_rules:
+        name = rule.get("name", "unnamed_rule")
+        pattern = rule.get("marker_regex", "")
+        tolerance = rule.get("tolerance_pt", 3)
+
+        if not pattern:
+            continue
+
+        try:
+            regex = re.compile(pattern)
+        except re.error as e:
+            warnings_list.append(f"marker_alignment '{name}': invalid regex '{pattern}': {e}")
+            continue
+
+        # Find matching markers, scoped to header area above body
+        matches = []
+        for s in spans:
+            text = s.get("text", "")
+            if regex.match(text):
+                if body_span is not None:
+                    if s.get("page", 1) != body_page:
+                        continue
+                    if s.get("y0", 0) >= body_y:
+                        continue
+                matches.append((text, s.get("x0", 0)))
+
+        if len(matches) < 2:
+            if len(matches) == 1:
+                warnings_list.append(
+                    f"marker_alignment '{name}': only 1 marker found ('{matches[0][0]}' at x={matches[0][1]:.1f}pt); alignment check skipped"
+                )
+            else:
+                warnings_list.append(f"marker_alignment '{name}': no markers found; alignment check skipped")
+            continue
+
+        first_x = matches[0][1]
+        all_within = True
+        for text, x in matches:
+            if abs(x - first_x) > tolerance:
+                all_within = False
+                break
+
+        vals_str = ", ".join(f"'{t}'={x:.1f}" for t, x in matches)
+        if all_within:
+            passed.append(f"marker_alignment '{name}': aligned within {tolerance}pt ({vals_str})")
+        else:
+            failed.append(f"marker_alignment '{name}': misaligned ({vals_str})")
+
+
 def check_alignment_groups(spans, alignment_groups, passed, failed):
     """Check x-coordinate alignment across groups of label x positions."""
     for group in alignment_groups:
@@ -396,6 +457,11 @@ def main():
     vertical_sequence = profile.get("vertical_sequence", {})
     if vertical_sequence:
         check_vertical_sequence(spans, vertical_sequence, passed, failed, warnings)
+
+    # Check continuation marker alignment
+    alignment_rules = profile.get("alignment_rules", [])
+    if alignment_rules:
+        check_continuation_marker_alignment(spans, alignment_rules, passed, failed, warnings)
 
     print(f"\nRESULT: {'PASS' if not failed else 'FAIL'}")
     print(f"  profile: {profile_path}")
