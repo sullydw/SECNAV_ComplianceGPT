@@ -26,7 +26,7 @@ The tool checks:
 
 Currently supports:
 - **Figure 7-1 Standard Letter (First Page)** — wired into C7 Phase 1 regression runner.
-- **Figure 7-2 Standard Letter (Second Page / Continuation)** — standalone profile for second-page validation; checks repeated subject placement and bottom-centered page number.
+- **Figure 7-2 Standard Letter (Second Page / Continuation)** — wired into C7 Phase 1 regression runner; checks repeated subject placement and bottom-centered page number.
 
 Future profiles can be added for:
 - Figure 8-1/8-2/8-3
@@ -113,9 +113,10 @@ The `vertical_sequence` profile field supports:
 ## Status
 
 - **Prototype only**
-- **Wired into** `tools/run_c7_phase1_regression.py` — layout audit runs automatically after PDF generation and failure fails C7 Phase 1 regression
+- **Figure 7-1 and Figure 7-2 are both wired into** `tools/run_c7_phase1_regression.py` — layout audit runs automatically after PDF generation and failure on either figure fails C7 Phase 1 regression
 - The standalone audit tool can still be run manually:
   ```bash
   python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_7_1_standard_letter.json --pdf output/audit_c7_phase1_standard_letter.pdf
+  python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_7_2_standard_letter_second_page.json --pdf output/audit_c7_phase1_standard_letter.pdf
   ```
 - Manual review still required for final compliance

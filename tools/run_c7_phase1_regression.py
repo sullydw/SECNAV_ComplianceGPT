@@ -120,7 +120,18 @@ def main() -> int:
         "--pdf",
         "output/audit_c7_phase1_standard_letter.pdf",
     ]
-    if not run_command(root, layout_audit_args, "C7 layout audit"):
+    if not run_command(root, layout_audit_args, "C7 layout audit Figure 7-1"):
+        passed = False
+
+    layout_audit_args_2 = [
+        py,
+        "tools/audit_pdf_layout.py",
+        "--profile",
+        "docs/layout_profiles/figure_7_2_standard_letter_second_page.json",
+        "--pdf",
+        "output/audit_c7_phase1_standard_letter.pdf",
+    ]
+    if not run_command(root, layout_audit_args_2, "C7 layout audit Figure 7-2"):
         passed = False
 
     print("=" * 72)
