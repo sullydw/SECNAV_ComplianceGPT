@@ -67,6 +67,7 @@ The profile JSON includes:
 - `target_pdf`: The PDF path to audit
 - `required_text`: List of required label lines
 - `optional_text`: List of optional label lines that may appear
+- `forbidden_text`: List of text strings that must NOT appear in the PDF (e.g., `"To:"` in a Distribution-only letter)
 - `order_rules`: Expected vertical ordering of label lines
 - `alignment_groups`: Coarse x-coordinate alignment groups for label positions
 - `label_content_alignment_groups`: Coarse x-coordinate alignment for text content after labels (not checked for Copy to lines)
@@ -87,6 +88,7 @@ The Figure 8-2 profile verifies that:
 - `Distribution:` and `Copy to:` labels align to the left margin (expected ~72pt)
 - `Distribution:` and `Copy to:` labels align with each other in the `distribution_label_left_margin` group
 - `From:` and `Subj:` labels maintain normal header-column alignment
+- **`To:` is forbidden** — if `"To:"` appears anywhere in the PDF, the audit fails
 
 The `header_text_column` check only includes `From:` and `Subj:` (no `To:` because Figure 8-2 omits To line).
 

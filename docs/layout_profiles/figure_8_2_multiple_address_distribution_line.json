@@ -5,6 +5,7 @@
   "target_pdf": "output/audit_c8_distribution_only_letter.pdf",
   "required_text": ["From:", "Subj:", "1.", "Distribution:"],
   "optional_text": ["Copy to:"],
+  "forbidden_text": ["To:"],
   "order_rules": [
     ["From:", "Subj:"],
     ["Subj:", "1."],

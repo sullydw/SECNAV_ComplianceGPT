@@ -366,6 +366,21 @@ def check_continuation_marker_alignment(spans, alignment_rules, passed, failed, 
             failed.append(f"marker_alignment '{name}': misaligned ({vals_str})")
 
 
+def check_forbidden_text(spans, forbidden_text, passed, failed):
+    """Check that forbidden text does not appear anywhere in the PDF."""
+    for text in forbidden_text:
+        matches = [s for s in spans if s.get("text", "").strip().lower() == text.lower()]
+        if matches:
+            locations = ", ".join(
+                f"page {m['page']} y={m['y0']:.1f}" for m in matches[:3]
+            )
+            if len(matches) > 3:
+                locations += f", ... ({len(matches)} total)"
+            failed.append(f"forbidden '{text}': found ({locations})")
+        else:
+            passed.append(f"forbidden '{text}': absent (ok)")
+
+
 def check_alignment_groups(spans, alignment_groups, passed, failed):
     """Check x-coordinate alignment across groups of label x positions."""
     for group in alignment_groups:
@@ -587,6 +602,11 @@ def main():
     page_number_rules = profile.get("page_number_rules", [])
     if page_number_rules:
         check_page_number_rules(spans, page_dimensions, page_number_rules, passed, failed, warnings)
+
+    # Check forbidden text
+    forbidden = profile.get("forbidden_text", [])
+    if forbidden:
+        check_forbidden_text(spans, forbidden, passed, failed)
 
     print(f"\nRESULT: {'PASS' if not failed else 'FAIL'}")
     print(f"  profile: {profile_path}")
