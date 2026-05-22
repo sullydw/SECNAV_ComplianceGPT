@@ -18,6 +18,13 @@
       "tolerance_pt": 3
     }
   ],
+  "label_content_alignment_groups": [
+    {
+      "name": "header_text_column",
+      "labels": ["From:", "To:", "Subj:"],
+      "tolerance_pt": 3
+    }
+  ],
   "alignment_rules": [
     {
       "name": "ref_continuation_markers",

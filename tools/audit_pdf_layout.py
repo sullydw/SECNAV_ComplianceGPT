@@ -38,8 +38,74 @@ def find_first_span(spans, label):
     return None
 
 
+def check_label_content_alignment_groups(spans, groups, passed, failed, warnings_list):
+    """Check x-coordinate of text content after labels (e.g., From text, To text, Subj text)."""
+    for group in groups:
+        name = group.get("name", "unnamed_group")
+        labels = group.get("labels", [])
+        tolerance = group.get("tolerance_pt", 3)
+        y_tol = 1.5  # same-line tolerance in points
+
+        if not labels:
+            continue
+
+        values = []
+        unreliable = []
+
+        for label in labels:
+            label_span = find_first_span(spans, label)
+            if label_span is None:
+                warnings_list.append(f"label_content_group '{name}': missing '{label}'")
+                continue
+
+            page = label_span.get("page", 1)
+            y0 = label_span.get("y0", 0)
+
+            # Collect all spans on the same line (same page, same y within y_tol)
+            same_line = [
+                s for s in spans
+                if s.get("page", 1) == page and abs(s.get("y0", 0) - y0) <= y_tol
+            ]
+            same_line.sort(key=lambda s: s.get("x0", 0))
+
+            # Locate the label span in the sorted line
+            label_idx = None
+            for i, s in enumerate(same_line):
+                if label.lower() in s.get("text", "").lower():
+                    label_idx = i
+                    break
+
+            if label_idx is not None and label_idx + 1 < len(same_line):
+                content_span = same_line[label_idx + 1]
+                values.append((label, content_span.get("x0", 0)))
+            else:
+                unreliable.append(label)
+
+        if unreliable:
+            for lbl in unreliable:
+                warnings_list.append(
+                    f"label_content_group '{name}': '{lbl}' content_x could not be reliably extracted (single-span line or ambiguous); check skipped"
+                )
+
+        if len(values) < 2:
+            continue
+
+        first_val = values[0][1]
+        all_within = True
+        for label, val in values:
+            if abs(val - first_val) > tolerance:
+                all_within = False
+                break
+
+        vals_str = ", ".join(f"{t}={v:.1f}" for t, v in values)
+        if all_within:
+            passed.append(f"label_content_group '{name}': aligned within {tolerance}pt ({vals_str})")
+        else:
+            warnings_list.append(f"label_content_group '{name}': probable misalignment ({vals_str}) -- verify visually")
+
+
 def check_alignment_groups(spans, alignment_groups, passed, failed):
-    """Check x-coordinate alignment across groups of labels."""
+    """Check x-coordinate alignment across groups of label x positions."""
     for group in alignment_groups:
         name = group.get("name", "unnamed_group")
         texts = group.get("texts", [])
@@ -119,6 +185,11 @@ def main():
     alignment_groups = profile.get("alignment_groups", [])
     if alignment_groups:
         check_alignment_groups(spans, alignment_groups, passed, failed)
+
+    # Check label content alignment groups
+    label_content_groups = profile.get("label_content_alignment_groups", [])
+    if label_content_groups:
+        check_label_content_alignment_groups(spans, label_content_groups, passed, failed, warnings)
 
     print(f"\nRESULT: {'PASS' if not failed else 'FAIL'}")
     print(f"  profile: {profile_path}")
