@@ -1,6 +1,6 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-05-16  
+**Last Updated:** 2026-05-22  
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT (DO NOT USE)  
 **Renderer:** v6 PDF (ReportLab)
@@ -75,11 +75,39 @@
 - ✅ **Closeout documentation**: `docs/C10_FROM_TO_PLAIN_CLOSEOUT.md`
 - ✅ **Visual review checklist**: `docs/C10_FROM_TO_PLAIN_VISUAL_REVIEW_CHECKLIST.md`
 - ✅ **Protected fixtures**:
-  - `examples/audit_c10_from_to_plain_basic.json`
-  - `examples/audit_c10_from_to_plain_with_refs.json`
-  - `examples/audit_c10_from_to_plain_with_encls.json`
-- ✅ **Protected renderer path**: `render_from_to_plain_pdf()` in `src/pdf_v6_render.py`
-- ✅ **Protected runner**: `tools/run_c10_regression.py`
+    - `examples/audit_c10_from_to_plain_basic.json`
+    - `examples/audit_c10_from_to_plain_with_refs.json`
+    - `examples/audit_c10_from_to_plain_with_encls.json`
+- **Protected renderer path**: `render_from_to_plain_pdf()` in `src/pdf_v6_render.py`
+- **Protected runner**: `tools/run_c10_regression.py`
+
+### Automated Layout Audit Coverage (2026-05-22)
+
+The project now has automated PDF layout audits wired into each chapter's regression suite. These are **rule/profile-based figure checks, not pixel-image comparison**. Manual visual review is still required for final compliance.
+
+**Wired audit coverage:**
+- **C7 Phase 1 regression**: Figure 7-1 (Standard Letter), Figure 7-2 (Continuation Page)
+- **C8 regression**: Figure 8-1 (Multiple-Address To-line), Figure 8-2 (Distribution-line), Figure 8-3 (To + Distribution)
+- **C9 regression**: Figure 9-2 (New Page Endorsement)
+- **C10 regression**: Figure 10-1 MFR (Memorandum for the Record)
+
+**How it works:**
+For each chapter, the regression runner:
+1. Runs validators on chapter fixtures
+2. Renders PDFs from chapter fixtures
+3. Runs the layout audit tool (`tools/audit_pdf_layout.py`) with the chapter's profile
+4. Layout audit failure causes the chapter regression to fail
+
+**Audit scope notes:**
+- All wired audit failures fail their respective regression suites
+- Figures checked: label presence, vertical ordering, alignment, spacing, page numbers (where applicable)
+- Figures NOT checked: visual appearance, font quality, margins, exact pixel positioning
+- Manual visual review remains required for final compliance
+- Status of each runner:
+  - C7: `python tools/run_c7_phase1_regression.py` — layout audit runs after PDF render
+  - C8: `python tools/run_c8_regression.py` — layout audit runs after PDF render
+  - C9: `python tools/run_c9_regression.py` — layout audit runs after PDF render
+  - C10: `python tools/run_c10_regression.py` — layout audit runs after PDF render
 
 ### Repository Status
 - **Active repo:** https://github.com/sullydw/SECNAV_ComplianceGPT
