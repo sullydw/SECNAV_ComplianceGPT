@@ -1,0 +1,55 @@
+{
+  "figure_id": "9-2",
+  "manual_reference": "SECNAV M-5216.5 Figure 9-2",
+  "doc_type": "DT_NEW_PAGE_ENDORSEMENT",
+  "target_pdf": "output/audit_c9_new_page_endorsement.pdf",
+  "required_text": [
+    "SECOND ENDORSEMENT",
+    "From:",
+    "To:",
+    "Subj:",
+    "Encl:",
+    "1.",
+    "Copy to:",
+    "2"
+  ],
+  "optional_text": [],
+  "order_rules": [
+    ["SECOND ENDORSEMENT", "From:"],
+    ["From:", "To:"],
+    ["To:", "Subj:"],
+    ["Subj:", "Encl:"],
+    ["Encl:", "1."],
+    ["1.", "Copy to:"]
+  ],
+  "alignment_groups": [
+    {
+      "name": "header_label_column",
+      "texts": ["From:", "To:", "Subj:", "Encl:"],
+      "x_field": "x0",
+      "tolerance_pt": 3
+    }
+  ],
+  "label_content_alignment_groups": [
+    {
+      "name": "header_text_column",
+      "labels": ["From:", "To:", "Subj:", "Encl:"],
+      "tolerance_pt": 3
+    }
+  ],
+  "page_number_rules": [
+    {
+      "name": "page_number_bottom_center",
+      "text": "2",
+      "text_regex": "^\\s*2\\s*$",
+      "expected_y_from_bottom_pt": 36,
+      "expected_center_x_pt": 306,
+      "tolerance_pt": 6,
+      "search_y_tolerance_pt": 12
+    }
+  ],
+  "spacing_tolerances": {
+    "x_tolerance_pt": 3,
+    "y_tolerance_pt": 4
+  }
+}
