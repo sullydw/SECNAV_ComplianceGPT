@@ -104,6 +104,39 @@ def check_label_content_alignment_groups(spans, groups, passed, failed, warnings
             warnings_list.append(f"label_content_group '{name}': probable misalignment ({vals_str}) -- verify visually")
 
 
+def check_vertical_spacing_rules(spans, rules, passed, failed, warnings_list):
+    """Check vertical spacing (y-delta) between labeled elements."""
+    for rule in rules:
+        name = rule.get("name", "unnamed_rule")
+        from_text = rule.get("from_text", "")
+        to_text = rule.get("to_text", "")
+        expected = rule.get("expected_delta_pt", 0)
+        tolerance = rule.get("tolerance_pt", 2.5)
+
+        if not from_text or not to_text:
+            continue
+
+        from_span = find_first_span(spans, from_text)
+        to_span = find_first_span(spans, to_text)
+
+        if from_span is None:
+            failed.append(f"vertical_spacing '{name}': missing '{from_text}'")
+            continue
+        if to_span is None:
+            failed.append(f"vertical_spacing '{name}': missing '{to_text}'")
+            continue
+
+        actual = abs(to_span.get("y0", 0) - from_span.get("y0", 0))
+        diff = abs(actual - expected)
+
+        if diff <= tolerance:
+            passed.append(f"vertical_spacing '{name}': delta={actual:.1f}pt (expected={expected}pt, tolerance=±{tolerance}pt)")
+        else:
+            warnings_list.append(
+                f"vertical_spacing '{name}': delta={actual:.1f}pt vs expected={expected}pt (outside ±{tolerance}pt) -- verify visually"
+            )
+
+
 def check_alignment_groups(spans, alignment_groups, passed, failed):
     """Check x-coordinate alignment across groups of label x positions."""
     for group in alignment_groups:
@@ -190,6 +223,11 @@ def main():
     label_content_groups = profile.get("label_content_alignment_groups", [])
     if label_content_groups:
         check_label_content_alignment_groups(spans, label_content_groups, passed, failed, warnings)
+
+    # Check vertical spacing rules
+    vertical_spacing_rules = profile.get("vertical_spacing_rules", [])
+    if vertical_spacing_rules:
+        check_vertical_spacing_rules(spans, vertical_spacing_rules, passed, failed, warnings)
 
     print(f"\nRESULT: {'PASS' if not failed else 'FAIL'}")
     print(f"  profile: {profile_path}")

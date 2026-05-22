@@ -37,6 +37,29 @@
       "tolerance_pt": 3
     }
   ],
+  "vertical_spacing_rules": [
+    {
+      "name": "from_to_normal_line",
+      "from_text": "From:",
+      "to_text": "To:",
+      "expected_delta_pt": 14.4,
+      "tolerance_pt": 2.5
+    },
+    {
+      "name": "to_subj_blank_line",
+      "from_text": "To:",
+      "to_text": "Subj:",
+      "expected_delta_pt": 28.8,
+      "tolerance_pt": 3.0
+    },
+    {
+      "name": "subj_body_blank_line",
+      "from_text": "Subj:",
+      "to_text": "1.",
+      "expected_delta_pt": 28.8,
+      "tolerance_pt": 3.0
+    }
+  ],
   "spacing_tolerances": {
     "x_tolerance_pt": 3,
     "y_tolerance_pt": 4

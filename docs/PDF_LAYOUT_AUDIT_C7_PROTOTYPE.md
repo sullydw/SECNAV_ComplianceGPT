@@ -18,6 +18,7 @@ The tool checks:
 - Vertical ordering of headers
 - Header label-column alignment for `From:` / `To:` / `Subj:`
 - Header text-column alignment for text content after `From:` / `To:` / `Subj:`
+- Coarse vertical spacing between header/body elements
 - Body paragraph placement below final header block
 - Continuation-marker alignment when applicable (Ref / Encl)
 
@@ -71,6 +72,7 @@ The profile JSON includes:
 - `order_rules`: Expected vertical ordering
 - `alignment_groups`: Coarse x-coordinate alignment groups (e.g., `header_label_column` for `From:` / `To:` / `Subj:`)
 - `label_content_alignment_groups`: Coarse x-coordinate alignment for text content after labels (e.g., `header_text_column`)
+- `vertical_spacing_rules`: Coarse vertical spacing rules between header/body elements (e.g., `from_to_normal_line`, `to_subj_blank_line`)
 - `alignment_rules`: Continuation marker alignment rules
 - `spacing_tolerances`: X/Y tolerances
 
