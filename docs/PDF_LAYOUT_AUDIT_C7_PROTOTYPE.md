@@ -76,7 +76,7 @@ The profile JSON includes:
 - `vertical_spacing_rules`: Legacy fixed-pair vertical spacing rules (e.g., `from_to_normal_line`)
 - `vertical_sequence`: Sequence-aware vertical spacing rules that measure between actually adjacent visible elements, accounting for optional header blocks (Via/Ref/Encl). Supports `adjacent_pairs`, `from_any_previous_visible`, and `from_final_header_entry_before_body` for body-start spacing.
 - `alignment_rules`: Ref/Encl continuation marker alignment rules (regex-based marker matching scoped to header block above body `1.`)
-- `page_number_rules`: Page number placement checks. Each rule specifies `text`, `page_index` (zero-based), `expected_y_from_bottom_pt`, `expected_center_x_pt`, and `tolerance_pt`. The tool calculates center_x and y_from_bottom and compares to expected values.
+- `page_number_rules`: Page number placement checks. Each rule specifies `text` (exact match), optional `text_regex` (regex match), `page_index` (zero-based), `expected_y_from_bottom_pt`, `expected_center_x_pt`, and `tolerance_pt`. Optional `search_y_tolerance_pt` and `search_x_tolerance_pt` restrict the search to a window around the expected position to avoid false matches (e.g., paragraph markers that share the same text). The tool first searches within the window, then falls back to a full-page search if needed. If the page number is not found, the check FAILs rather than warning, because a required page number must be rendered.
 - `spacing_tolerances`: X/Y tolerances
 
 ## Implementation

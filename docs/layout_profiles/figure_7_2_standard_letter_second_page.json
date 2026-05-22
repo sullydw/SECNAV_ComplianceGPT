@@ -22,10 +22,12 @@
     {
       "name": "page_number_bottom_center",
       "text": "2",
+      "text_regex": "^\\s*2\\s*$",
       "page_index": 1,
       "expected_y_from_bottom_pt": 36,
       "expected_center_x_pt": 306,
-      "tolerance_pt": 6
+      "tolerance_pt": 6,
+      "search_y_tolerance_pt": 12
     }
   ],
   "spacing_tolerances": {

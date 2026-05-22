@@ -421,16 +421,26 @@ def check_alignment_groups(spans, alignment_groups, passed, failed):
 
 
 def check_page_number_rules(spans, page_dimensions, rules, passed, failed, warnings):
-    """Check page number placement: horizontal center and vertical distance from bottom."""
+    """Check page number placement: horizontal center and vertical distance from bottom.
+
+    Supports robust detection via:
+    - exact standalone span match (text field)
+    - regex match (text_regex field)
+    - vertical/horizontal search window filtering (search_y_tolerance_pt, search_x_tolerance_pt)
+    Falls back to full-page search if scoped search yields no match.
+    """
     for rule in rules:
         name = rule.get("name", "unnamed_rule")
         text = rule.get("text", "")
+        text_regex = rule.get("text_regex", "")
         page_index = rule.get("page_index", 0)
         expected_y_from_bottom = rule.get("expected_y_from_bottom_pt", 0)
         expected_center_x = rule.get("expected_center_x_pt", 0)
         tolerance = rule.get("tolerance_pt", 6)
+        search_y_tolerance = rule.get("search_y_tolerance_pt", tolerance)
+        search_x_tolerance = rule.get("search_x_tolerance_pt", tolerance)
 
-        if not text:
+        if not text and not text_regex:
             continue
 
         # Verify page exists
@@ -439,16 +449,41 @@ def check_page_number_rules(spans, page_dimensions, rules, passed, failed, warni
             continue
 
         page_height = page_dimensions[page_index].get("height", 0)
-        target_page = page_index + 1  # spans are 1-based
+        target_page = page_index + 1
 
-        # Find spans on the target page matching the text exactly (standalone page number)
-        matches = []
-        for s in spans:
-            if s.get("page") == target_page and s.get("text", "").strip() == text:
-                matches.append(s)
+        def _match_text(span_text):
+            """Return True if span text matches the rule's text or text_regex."""
+            if text and span_text.strip() == text:
+                return True
+            if text_regex and re.search(text_regex, span_text):
+                return True
+            return False
+
+        def _within_search_window(s):
+            """Return True if span center is within optional x/y search tolerances."""
+            if expected_y_from_bottom > 0 and page_height:
+                center_y = (s.get("y0", 0) + s.get("y1", 0)) / 2.0
+                y_from_bottom = page_height - center_y
+                if abs(y_from_bottom - expected_y_from_bottom) > search_y_tolerance:
+                    return False
+            if expected_center_x > 0 and search_x_tolerance is not None:
+                center_x = (s.get("x0", 0) + s.get("x1", 0)) / 2.0
+                if abs(center_x - expected_center_x) > search_x_tolerance:
+                    return False
+            return True
+
+        # 1. Try scoped search (window + exact/text_regex match)
+        matches = [s for s in spans if s.get("page") == target_page and _within_search_window(s) and _match_text(s.get("text", ""))]
+
+        # 2. Broaden to all spans on target page with same text/regex
+        if not matches:
+            matches = [s for s in spans if s.get("page") == target_page and _match_text(s.get("text", ""))]
 
         if not matches:
-            warnings.append(f"page_number '{name}': text '{text}' not found on page {target_page}; check skipped")
+            failed.append(
+                f"page_number '{name}': text '{text}' (regex: {text_regex!r}) not found on page {target_page} "
+                f"(searched y_from_bottom={expected_y_from_bottom}pt ±{search_y_tolerance}pt); expected page number required by profile"
+            )
             continue
 
         # Use first match
