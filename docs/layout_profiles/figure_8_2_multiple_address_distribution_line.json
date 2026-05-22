@@ -1,0 +1,39 @@
+{
+  "figure_id": "8-2",
+  "manual_reference": "SECNAV M-5216.5 Figure 8-2",
+  "doc_type": "DT_MULTIPLE_ADDRESS_LETTER_DISTRIBUTION_LINE",
+  "target_pdf": "output/audit_c8_distribution_only_letter.pdf",
+  "required_text": ["From:", "Subj:", "1.", "Distribution:"],
+  "optional_text": ["Copy to:"],
+  "order_rules": [
+    ["From:", "Subj:"],
+    ["Subj:", "1."],
+    ["1.", "Distribution:"]
+  ],
+  "alignment_groups": [
+    {
+      "name": "header_label_column",
+      "texts": ["From:", "Subj:"],
+      "x_field": "x0",
+      "tolerance_pt": 3
+    },
+    {
+      "name": "distribution_label_left_margin",
+      "texts": ["Distribution:", "Copy to:"],
+      "x_field": "x0",
+      "tolerance_pt": 3,
+      "expected_x_pt": 72
+    }
+  ],
+  "label_content_alignment_groups": [
+    {
+      "name": "header_text_column",
+      "labels": ["From:", "Subj:"],
+      "tolerance_pt": 3
+    }
+  ],
+  "spacing_tolerances": {
+    "x_tolerance_pt": 3,
+    "y_tolerance_pt": 4
+  }
+}

@@ -24,9 +24,9 @@ The tool checks:
 
 Currently supports:
 - **Figure 8-1 Multiple-Address Letter (To-line Only)** — wired into `tools/run_c8_regression.py`
+- **Figure 8-2 Multiple-Address Letter (Distribution-line Only)** — standalone profile, not wired into regression yet
 
 Future profiles should cover:
-- Figure 8-2 Distribution-line only
 - Figure 8-3 To + Distribution line
 - Additional Chapter 8 letter variants as needed
 
@@ -34,6 +34,12 @@ Future profiles should cover:
 
 ```bash
 python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_8_1_multiple_address_to_line.json --pdf output/audit_c8_to_only_letter.pdf
+```
+
+### Figure 8-2 Distribution-line Only
+
+```bash
+python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_8_2_multiple_address_distribution_line.json --pdf output/audit_c8_distribution_only_letter.pdf
 ```
 
 ## Tolerances
@@ -72,9 +78,23 @@ The profile verifies that multiple To addressees (e.g., "Commanding Officer, Exa
 
 Note: Copy to lines are typically single-item lists without rich text content. Content extraction may be unreliable for these lines in single-span structure.
 
+### Multi-Address Distribution-Line Check
+
+The Figure 8-2 profile verifies that:
+- `To:` is **omitted** — action addressees are listed in the `Distribution:` block instead
+- `Distribution:` appears after the signature block, not in the header area
+- `Distribution:` entries appear below the `Distribution:` label
+- `Distribution:` and `Copy to:` labels align to the left margin (expected ~72pt)
+- `Distribution:` and `Copy to:` labels align with each other in the `distribution_label_left_margin` group
+- `From:` and `Subj:` labels maintain normal header-column alignment
+
+The `header_text_column` check only includes `From:` and `Subj:` (no `To:` because Figure 8-2 omits To line).
+
 ### Continuation Entries
 
 If present, Figure 8-1 may include multiple To entries for addressees. The audit currently checks that all `To:` labels align with the header_label_column. Content verification for individual To entries is not performed.
+
+If present, Figure 8-2 may include multiple `Distribution:` entries for action addressees. The audit checks that `Distribution:` and `Copy to:` labels align to the left margin and with each other. Individual distribution-entry content alignment is not checked.
 
 ## Implementation
 
@@ -95,7 +115,8 @@ This prevents body-level markers from interfering with header-level alignment ch
 ## Status
 
 - **Prototype only**
-- **Wired into C8 regression runner** — Figure 8-1 layout audit now runs in `tools/run_c8_regression.py`
-- Audit failure causes C8 regression failure
+- **Figure 8-1 wired into C8 regression runner** — layout audit now runs in `tools/run_c8_regression.py`
+- **Figure 8-2 created as standalone profile** — not wired into regression yet; audit failure does not yet cause C8 regression failure
+- Audit failure causes C8 regression failure (for wired profiles)
 - Manual review still required for final compliance
-- Future C8 profiles will expand coverage to Figures 8-2 and 8-3
+- Future C8 profiles will expand coverage to Figure 8-3
