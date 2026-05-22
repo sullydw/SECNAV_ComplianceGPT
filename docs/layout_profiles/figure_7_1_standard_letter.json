@@ -6,8 +6,17 @@
   "required_text": ["From:", "To:", "Subj:", "1."],
   "optional_text": ["Via:", "Ref:", "Encl:"],
   "order_rules": [
+    ["From:", "To:"],
     ["To:", "Subj:"],
     ["Subj:", "1."]
+  ],
+  "alignment_groups": [
+    {
+      "name": "header_label_column",
+      "texts": ["From:", "To:", "Subj:"],
+      "x_field": "x0",
+      "tolerance_pt": 3
+    }
   ],
   "alignment_rules": [
     {

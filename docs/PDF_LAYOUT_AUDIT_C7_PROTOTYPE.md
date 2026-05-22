@@ -16,7 +16,9 @@ The tool checks:
 - Presence of required labels: `From:`, `To:`, `Subj:`, `1.`
 - Optional labels if present: `Via:`, `Ref:`, `Encl:`
 - Vertical ordering of headers
+- Header label-column alignment for `From:` / `To:` / `Subj:`
 - Body paragraph placement below final header block
+- Continuation-marker alignment when applicable (Ref / Encl)
 
 ### Scope
 
@@ -66,6 +68,7 @@ The profile JSON includes:
 - `required_text`: ["From:", "To:", "Subj:", "1."]
 - `optional_text`: ["Via:", "Ref:", "Encl:"]
 - `order_rules`: Expected vertical ordering
+- `alignment_groups`: Coarse x-coordinate alignment groups (e.g., `header_label_column` for `From:` / `To:` / `Subj:`)
 - `alignment_rules`: Continuation marker alignment rules
 - `spacing_tolerances`: X/Y tolerances
 

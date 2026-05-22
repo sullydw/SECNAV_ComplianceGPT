@@ -26,8 +26,54 @@ def extract_text_spans(pdf_path: str) -> list[dict]:
 
 
 def find_positions(spans, label):
-    """Find y positions for label."""
-    return [s["y0"] for s in spans if label.lower() in s["text"].lower()]
+    """Find spans matching label (case-insensitive contains)."""
+    return [s for s in spans if label.lower() in s["text"].lower()]
+
+
+def find_first_span(spans, label):
+    """Return first span matching label, or None."""
+    for s in spans:
+        if label.lower() in s["text"].lower():
+            return s
+    return None
+
+
+def check_alignment_groups(spans, alignment_groups, passed, failed):
+    """Check x-coordinate alignment across groups of labels."""
+    for group in alignment_groups:
+        name = group.get("name", "unnamed_group")
+        texts = group.get("texts", [])
+        x_field = group.get("x_field", "x0")
+        tolerance = group.get("tolerance_pt", 3)
+
+        if not texts:
+            continue
+
+        values = []
+        for text in texts:
+            span = find_first_span(spans, text)
+            if span is None:
+                failed.append(f"alignment_group '{name}': missing '{text}'")
+            else:
+                values.append((text, span.get(x_field, None)))
+
+        if len(values) < 2:
+            continue
+
+        # Compare all to first found value
+        first_val = values[0][1]
+        all_within = True
+        for text, val in values:
+            if abs(val - first_val) > tolerance:
+                all_within = False
+                break
+
+        if all_within:
+            vals_str = ", ".join(f"{t}={v:.1f}" for t, v in values)
+            passed.append(f"alignment_group '{name}': aligned within {tolerance}pt ({vals_str})")
+        else:
+            vals_str = ", ".join(f"{t}={v:.1f}" for t, v in values)
+            failed.append(f"alignment_group '{name}': misaligned ({vals_str})")
 
 
 def main():
@@ -54,21 +100,25 @@ def main():
 
     # Check required labels
     passed, failed, warnings = [], [], []
-    labels = {"from:", "to:", "subj:", "via:", "ref:", "encl:"}
-    
+
     for label in required:
         positions = find_positions(spans, label)
         if positions:
-            passed.append(f"{label}: found at y={positions[0]}")
+            passed.append(f"{label}: found at y={positions[0]['y0']:.1f}")
         else:
             failed.append(f"{label}: not found")
 
     for label in optional:
         positions = find_positions(spans, label)
         if positions:
-            passed.append(f"{label}: found at y={positions[0]}")
+            passed.append(f"{label}: found at y={positions[0]['y0']:.1f}")
         else:
             warnings.append(f"{label}: not present (optional)")
+
+    # Check alignment groups
+    alignment_groups = profile.get("alignment_groups", [])
+    if alignment_groups:
+        check_alignment_groups(spans, alignment_groups, passed, failed)
 
     print(f"\nRESULT: {'PASS' if not failed else 'FAIL'}")
     print(f"  profile: {profile_path}")
@@ -76,6 +126,18 @@ def main():
     print(f"  passed:  {len(passed)}")
     print(f"  failed:  {len(failed)}")
     print(f"  warnings: {len(warnings)}")
+    if passed:
+        print(f"\n  passed details:")
+        for p in passed:
+            print(f"    + {p}")
+    if failed:
+        print(f"\n  failed details:")
+        for f in failed:
+            print(f"    - {f}")
+    if warnings:
+        print(f"\n  warnings:")
+        for w in warnings:
+            print(f"    ! {w}")
 
     sys.exit(0 if not failed else 1)
 
