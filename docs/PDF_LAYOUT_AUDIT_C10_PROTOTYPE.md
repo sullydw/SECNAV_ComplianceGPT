@@ -87,10 +87,9 @@ The Figure 10-3 basic profile verifies that:
 - `MEMORANDUM` heading appears at the left margin
 - `From:`, `To:`, and `Subj:` labels are vertically ordered
 - `From:`, `To:`, `Subj:` labels align in the same label column
-- `Subj:` text aligns at the header text column
+- `Subj:` text aligns at the header text column (content alignment is checked only for `Subj:` because `From:` and `To:` render as single-span label+content lines)
 - Body paragraph `1.` appears after `Subj:`
 - Date appears right-aligned in the top-right area
-- Note: `From:` and `To:` text content may render in a single span (label+content combined), so content_x extraction may produce a warning; this is expected behavior for the current renderer
 
 ## Implementation
 
