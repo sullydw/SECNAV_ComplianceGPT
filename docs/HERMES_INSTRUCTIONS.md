@@ -13,6 +13,47 @@
 
 **docs/HERMES_INSTRUCTIONS.md is an overlay for Hermes behavior only**. docs/OPENCLAW_INSTRUCTIONS.md remains the authoritative shared SECNAV execution policy. Do not duplicate OpenClaw policy in this file; only add Hermes-specific workflow differences.
 
+## Hermes-Specific Repository Safety Rule
+
+Hermes must use this working directory for SECNAV_ComplianceGPT work:
+
+```text
+C:\Users\drryl\SECNAV_ComplianceGPT
+```
+
+Before every task that may read, modify, commit, or push repository files, Hermes must run:
+
+```bat
+cd C:\Users\drryl\SECNAV_ComplianceGPT
+git remote -v
+git branch --show-current
+git log --oneline -5
+git status
+```
+
+Required safety checks:
+
+- Remote must be `https://github.com/sullydw/SECNAV_ComplianceGPT.git`
+- Branch must be `main`
+- Recent history must show the SECNAV project history, including the latest verified safe checkpoint when applicable
+- Working tree must be clean unless the current task intentionally modifies files
+
+Hermes must stop and report if:
+
+- the repo path is different
+- the remote points to Hermes, OpenClaw, NousResearch, or any repo other than `sullydw/SECNAV_ComplianceGPT`
+- git history does not show the SECNAV project history
+- Git reports unrelated history
+- a push would require `--force` or `--force-with-lease`
+
+Hermes must never change remotes or force-push unless the user explicitly provides an emergency recovery instruction.
+
+Normal task pushes must use only:
+
+```bat
+git push origin main
+```
+
 ## Hermes-Specific Workflow Rules
 
 - Use TUI or terminal-first workflow (leveraging Hermes' terminal/TUI capabilities)
@@ -21,6 +62,9 @@
 - Run `git status` before and after every edit to verify changes
 - Do NOT operate from workspace/root directories outside the repository
 - Do NOT create loose files outside the repository boundaries
+- Do NOT work from any Hermes/OpenClaw app directory
+- Do NOT change Git remotes during normal task execution
+- Do NOT use `git push --force` or `git push --force-with-lease` during normal task execution
 
 ## Sync Rule
 
