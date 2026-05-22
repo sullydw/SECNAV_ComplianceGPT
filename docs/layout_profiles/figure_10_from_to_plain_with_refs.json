@@ -1,0 +1,50 @@
+{
+  "figure_id": "10-3-refs",
+  "manual_reference": "SECNAV M-5216.5 Figure 10-3 Plain-Paper From-To with References",
+  "doc_type": "DT_MEMO_FROM_TO_PLAIN_REFS",
+  "target_pdf": "output/audit_c10_from_to_plain_with_refs.pdf",
+  "required_text": [
+    "MEMORANDUM",
+    "From:",
+    "To:",
+    "Subj:",
+    "Ref:",
+    "(a)",
+    "(b)",
+    "1."
+  ],
+  "optional_text": [],
+  "order_rules": [
+    ["MEMORANDUM", "From:"],
+    ["From:", "To:"],
+    ["To:", "Subj:"],
+    ["Subj:", "Ref:"],
+    ["Ref:", "1."]
+  ],
+  "alignment_groups": [
+    {
+      "name": "header_label_column",
+      "texts": ["MEMORANDUM", "From:", "To:", "Subj:", "Ref:"],
+      "x_field": "x0",
+      "tolerance_pt": 3
+    }
+  ],
+  "label_content_alignment_groups": [
+    {
+      "name": "header_text_column",
+      "labels": ["Subj:", "Ref:"],
+      "tolerance_pt": 3
+    }
+  ],
+  "alignment_rules": [
+    {
+      "name": "ref_continuation_markers",
+      "marker_regex": "^\\([a-z]\\)",
+      "tolerance_pt": 3
+    }
+  ],
+  "spacing_tolerances": {
+    "x_tolerance_pt": 3,
+    "y_tolerance_pt": 4
+  }
+}

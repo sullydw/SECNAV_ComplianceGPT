@@ -24,6 +24,7 @@ The tool checks:
 Currently supports:
 - **Figure 10-1 Memorandum for the Record** — wired into C10 regression; audit failure fails C10 regression
 - **Figure 10-3 Plain-Paper From-To (Basic)** — wired into C10 regression; audit failure fails C10 regression
+- **Figure 10-3 Plain-Paper From-To (With References)** — standalone profile, not wired into regression yet
 
 Future profiles should cover:
 - Figure 10-2 (if applicable)
@@ -35,6 +36,12 @@ Future profiles should cover:
 
 ```bash
 python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_10_1_mfr.json --pdf output/audit_c10_mfr_with_subject.pdf
+```
+
+### Figure 10-3 Plain-Paper From-To With References
+
+```bash
+python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_10_from_to_plain_with_refs.json --pdf output/audit_c10_from_to_plain_with_refs.pdf
 ```
 
 ### Figure 10-3 Plain-Paper From-To Basic
@@ -89,6 +96,17 @@ The Figure 10-3 basic profile verifies that:
 - `From:`, `To:`, `Subj:` labels align in the same label column
 - `Subj:` text aligns at the header text column (content alignment is checked only for `Subj:` because `From:` and `To:` render as single-span label+content lines)
 - Body paragraph `1.` appears after `Subj:`
+- Date appears right-aligned in the top-right area
+
+### From-To Plain with References Check
+
+The Figure 10-3 with references profile verifies that:
+- `MEMORANDUM` heading appears at the left margin
+- `From:`, `To:`, `Subj:`, and `Ref:` labels are vertically ordered
+- `From:`, `To:`, `Subj:`, `Ref:` labels align in the same label column
+- `Subj:` and `Ref:` text aligns at the header text column
+- Reference continuation markers `(a)` and `(b)` align
+- Body paragraph `1.` appears after `Ref:`
 - Date appears right-aligned in the top-right area
 
 ## Implementation
