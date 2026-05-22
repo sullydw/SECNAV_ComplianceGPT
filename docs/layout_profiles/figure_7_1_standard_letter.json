@@ -3,8 +3,8 @@
   "manual_reference": "SECNAV M-5216.5 Figure 7-1",
   "doc_type": "DT_STANDARD_LETTER",
   "target_pdf": "output/audit_c7_phase1_standard_letter.pdf",
-  "required_text": ["To:", "Subj:", "1."],
-  "optional_text": ["From:", "Via:", "Ref:", "Encl:"],
+  "required_text": ["From:", "To:", "Subj:", "1."],
+  "optional_text": ["Via:", "Ref:", "Encl:"],
   "order_rules": [
     ["To:", "Subj:"],
     ["Subj:", "1."]
