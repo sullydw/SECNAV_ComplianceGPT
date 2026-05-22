@@ -169,6 +169,18 @@ def main() -> int:
     else:
         passed = False
 
+    # ── C9 layout audit checks ──
+    layout_audit_figure_9_2_args = [
+        py,
+        "tools/audit_pdf_layout.py",
+        "--profile",
+        "docs/layout_profiles/figure_9_2_new_page_endorsement.json",
+        "--pdf",
+        "output/audit_c9_new_page_endorsement.pdf",
+    ]
+    if not run_command(root, layout_audit_figure_9_2_args, "C9 layout audit Figure 9-2"):
+        passed = False
+
     if not run_command(root, [py, "tools/run_c7_phase1_regression.py"], "Run C7 Phase 1 regression guard"):
         passed = False
 

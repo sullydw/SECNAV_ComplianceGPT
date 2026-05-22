@@ -23,7 +23,7 @@ The tool checks:
 ### Scope
 
 Currently supports:
-- **Figure 9-2 New Page Endorsement** — created as standalone profile, not wired into C9 regression yet
+- **Figure 9-2 New Page Endorsement** — wired into `tools/run_c9_regression.py`
 
 Future profiles should cover:
 - Same-page endorsements (deferred)
@@ -87,6 +87,7 @@ Uses PyMuPDF (`fitz`) for text extraction:
 ## Status
 
 - **Prototype only**
-- **Figure 9-2 created as standalone profile** — not wired into C9 regression yet; audit failure does not yet cause C9 regression failure
+- **Figure 9-2 wired into C9 regression runner** — layout audit now runs in `tools/run_c9_regression.py`
+- Audit failure causes C9 regression failure (for wired profiles)
 - Manual review still required for final compliance
 - Same-page endorsements remain deferred
