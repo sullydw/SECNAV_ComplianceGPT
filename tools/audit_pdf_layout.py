@@ -137,6 +137,144 @@ def check_vertical_spacing_rules(spans, rules, passed, failed, warnings_list):
             )
 
 
+def check_vertical_sequence(spans, vertical_sequence, passed, failed, warnings_list):
+    """Sequence-aware vertical spacing: measure between actual adjacent visible elements."""
+    elements = vertical_sequence.get("elements", [])
+    rules = vertical_sequence.get("rules", [])
+
+    if not elements:
+        return
+
+    # Determine which elements are present, sorted by y position (top to bottom; y0 is larger at top in PDF)
+    present = []
+    for elem in elements:
+        span = find_first_span(spans, elem)
+        if span is not None:
+            present.append((elem, span))
+
+    if len(present) < 2:
+        return
+
+    # Sort by y position ascending: smaller y0 = higher on page (PDF coords)
+    present.sort(key=lambda item: item[1].get("y0", 0))
+
+    for rule in rules:
+        name = rule.get("name", "unnamed_rule")
+        rule_type = None
+
+        if "pairs" in rule:
+            rule_type = "adjacent_pairs"
+        elif rule.get("from_any_previous_visible", False):
+            rule_type = "from_any_previous_visible"
+        elif rule.get("from_last_visible_before_body"):
+            rule_type = "from_last_visible_before_body"
+        else:
+            # Check if from_text/to_text exist for backward compatibility with simple rules
+            from_text = rule.get("from_text")
+            to_text = rule.get("to_text")
+            if from_text and to_text:
+                expected = rule.get("expected_delta_pt", 0)
+                tolerance = rule.get("tolerance_pt", 2.5)
+                from_span = find_first_span(spans, from_text)
+                to_span = find_first_span(spans, to_text)
+                if from_span is None or to_span is None:
+                    continue
+                actual = abs(to_span.get("y0", 0) - from_span.get("y0", 0))
+                diff = abs(actual - expected)
+                if diff <= tolerance:
+                    passed.append(f"vertical_seq '{name}': delta={actual:.1f}pt within tol")
+                else:
+                    warnings_list.append(f"vertical_seq '{name}': delta={actual:.1f}pt outside tol")
+            continue
+
+        if rule_type == "adjacent_pairs":
+            pairs = rule.get("pairs", [])
+            expected = rule.get("expected_delta_pt", 14.4)
+            tolerance = rule.get("tolerance_pt", 2.5)
+
+            for a_text, b_text in pairs:
+                # Find indices in present list
+                a_idx = None
+                b_idx = None
+                for i, (text, _) in enumerate(present):
+                    if text == a_text:
+                        a_idx = i
+                    if text == b_text:
+                        b_idx = i
+                if a_idx is None or b_idx is None:
+                    continue
+                if abs(a_idx - b_idx) != 1:
+                    # Not adjacent in rendered output; skip this check
+                    continue
+                a_span = present[a_idx][1]
+                b_span = present[b_idx][1]
+                actual = abs(b_span.get("y0", 0) - a_span.get("y0", 0))
+                diff = abs(actual - expected)
+                if diff <= tolerance:
+                    passed.append(f"vertical_seq '{name}': {a_text} -> {b_text} delta={actual:.1f}pt (ok)")
+                else:
+                    warnings_list.append(
+                        f"vertical_seq '{name}': {a_text} -> {b_text} delta={actual:.1f}pt vs exp={expected}pt"
+                    )
+
+        elif rule_type == "from_any_previous_visible":
+            to_text = rule.get("to_text", "")
+            expected = rule.get("expected_delta_pt", 28.8)
+            tolerance = rule.get("tolerance_pt", 3.0)
+
+            target_idx = None
+            for i, (text, _) in enumerate(present):
+                if text == to_text:
+                    target_idx = i
+                    break
+            if target_idx is None or target_idx == 0:
+                continue
+            # Previous visible element
+            prev_span = present[target_idx - 1][1]
+            target_span = present[target_idx][1]
+            actual = abs(target_span.get("y0", 0) - prev_span.get("y0", 0))
+            diff = abs(actual - expected)
+            prev_label = present[target_idx - 1][0]
+            if diff <= tolerance:
+                passed.append(
+                    f"vertical_seq '{name}': {prev_label} -> {to_text} delta={actual:.1f}pt (ok)"
+                )
+            else:
+                warnings_list.append(
+                    f"vertical_seq '{name}': {prev_label} -> {to_text} delta={actual:.1f}pt vs exp={expected}pt"
+                )
+
+        elif rule_type == "from_last_visible_before_body":
+            candidates = rule.get("from_last_visible_before_body", [])
+            to_text = rule.get("to_text", "1.")
+            expected = rule.get("expected_delta_pt", 28.8)
+            tolerance = rule.get("tolerance_pt", 3.0)
+
+            body_idx = None
+            for i, (text, _) in enumerate(present):
+                if text == to_text:
+                    body_idx = i
+                    break
+            if body_idx is None or body_idx == 0:
+                continue
+            # Check if element immediately above body is one of candidates
+            prev_label = present[body_idx - 1][0]
+            if prev_label not in candidates:
+                continue
+            prev_span = present[body_idx - 1][1]
+            body_span = present[body_idx][1]
+            actual = abs(body_span.get("y0", 0) - prev_span.get("y0", 0))
+            diff = abs(actual - expected)
+            if diff <= tolerance:
+                passed.append(
+                    f"vertical_seq '{name}': {prev_label} -> {to_text} delta={actual:.1f}pt (ok)"
+                )
+            else:
+                warnings_list.append(
+                    f"vertical_seq '{name}': {prev_label} -> {to_text} delta={actual:.1f}pt vs exp={expected}pt"
+                )
+
+
 def check_alignment_groups(spans, alignment_groups, passed, failed):
     """Check x-coordinate alignment across groups of label x positions."""
     for group in alignment_groups:
@@ -224,10 +362,15 @@ def main():
     if label_content_groups:
         check_label_content_alignment_groups(spans, label_content_groups, passed, failed, warnings)
 
-    # Check vertical spacing rules
+    # Check vertical spacing rules (legacy, kept for compatibility)
     vertical_spacing_rules = profile.get("vertical_spacing_rules", [])
     if vertical_spacing_rules:
         check_vertical_spacing_rules(spans, vertical_spacing_rules, passed, failed, warnings)
+
+    # Check vertical spacing sequence-aware
+    vertical_sequence = profile.get("vertical_sequence", {})
+    if vertical_sequence:
+        check_vertical_sequence(spans, vertical_sequence, passed, failed, warnings)
 
     print(f"\nRESULT: {'PASS' if not failed else 'FAIL'}")
     print(f"  profile: {profile_path}")

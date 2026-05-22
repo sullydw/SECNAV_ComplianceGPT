@@ -18,7 +18,7 @@ The tool checks:
 - Vertical ordering of headers
 - Header label-column alignment for `From:` / `To:` / `Subj:`
 - Header text-column alignment for text content after `From:` / `To:` / `Subj:`
-- Coarse vertical spacing between header/body elements
+- Sequence-aware vertical spacing between adjacent visible header/body elements
 - Body paragraph placement below final header block
 - Continuation-marker alignment when applicable (Ref / Encl)
 
@@ -72,7 +72,8 @@ The profile JSON includes:
 - `order_rules`: Expected vertical ordering
 - `alignment_groups`: Coarse x-coordinate alignment groups (e.g., `header_label_column` for `From:` / `To:` / `Subj:`)
 - `label_content_alignment_groups`: Coarse x-coordinate alignment for text content after labels (e.g., `header_text_column`)
-- `vertical_spacing_rules`: Coarse vertical spacing rules between header/body elements (e.g., `from_to_normal_line`, `to_subj_blank_line`)
+- `vertical_spacing_rules`: Legacy fixed-pair vertical spacing rules (e.g., `from_to_normal_line`)
+- `vertical_sequence`: Sequence-aware vertical spacing rules that measure between actually adjacent visible elements, accounting for optional header blocks (Via/Ref/Encl)
 - `alignment_rules`: Continuation marker alignment rules
 - `spacing_tolerances`: X/Y tolerances
 
@@ -82,6 +83,15 @@ Uses PyMuPDF (`fitz`) for text extraction:
 1. Extract visible text spans/words
 2. Get page number, text, x0, y0, x1, y1
 3. Profile matching and rule checking
+
+### Sequence-Aware Spacing
+
+The tool avoids fixed non-adjacent spacing checks (e.g., `To:` -> `Subj:`) because optional sections like `Via:`, `Ref:`, or `Encl:` can intervene and cause false warnings. Instead, it determines which header elements are actually present, sorts them by vertical position, and measures between adjacent rendered elements.
+
+The `vertical_sequence` profile field supports:
+- `adjacent_pairs`: check distance between adjacent pairs that are present
+- `from_any_previous_visible`: check distance from whatever is immediately above a target element
+- `from_last_visible_before_body`: check distance from the last header element before body paragraph `1.`
 
 ## Status
 
