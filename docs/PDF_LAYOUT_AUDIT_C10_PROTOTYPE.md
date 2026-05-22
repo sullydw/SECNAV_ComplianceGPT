@@ -22,7 +22,7 @@ The tool checks:
 ### Scope
 
 Currently supports:
-- **Figure 10-1 Memorandum for the Record** — created as standalone profile, not wired into C10 regression yet
+- **Figure 10-1 Memorandum for the Record** — wired into C10 regression; audit failure fails C10 regression
 
 Future profiles should cover:
 - Figure 10-2 (if applicable)
@@ -84,5 +84,5 @@ Uses PyMuPDF (`fitz`) for text extraction:
 ## Status
 
 - **Prototype only**
-- **Figure 10-1 created as standalone profile** — not wired into C10 regression yet; audit failure does not yet cause C10 regression failure
+- **Figure 10-1 wired into C10 regression** — audit failure causes C10 regression failure
 - Manual review still required for final compliance

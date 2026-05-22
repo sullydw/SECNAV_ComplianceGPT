@@ -113,6 +113,17 @@ def main() -> int:
             else:
                 print(f"PDF CHECK: {output_pdf} — {size} bytes — PASS")
 
+    # --- C10 layout audit Figure 10-1 MFR ---
+
+    label = "C10 layout audit Figure 10-1 MFR"
+    audit_cmd = [
+        py, "tools/audit_pdf_layout.py",
+        "--profile", "docs/layout_profiles/figure_10_1_mfr.json",
+        "--pdf", "output/audit_c10_mfr_with_subject.pdf",
+    ]
+    if not run_command(root, audit_cmd, label):
+        passed = False
+
     # --- Baseline guards ---
 
     if not run_command(root, [py, "tools/run_c7_phase1_regression.py"], "Run C7 Phase 1 regression guard"):
