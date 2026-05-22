@@ -8,12 +8,17 @@ import sys
 from pathlib import Path
 
 
-def extract_text_spans(pdf_path: str) -> list[dict]:
-    """Extract text spans from PDF."""
+def extract_text_spans(pdf_path: str) -> tuple[list[dict], list[dict]]:
+    """Extract text spans from PDF and return (spans, page_dimensions).
+    page_dimensions is a list of dicts with 'width' and 'height' per page.
+    """
     import fitz
     doc = fitz.open(pdf_path)
     spans = []
+    page_dimensions = []
     for page_num, page in enumerate(doc, start=1):
+        rect = page.rect
+        page_dimensions.append({"width": rect.width, "height": rect.height})
         text_dict = page.get_text("dict", flags=fitz.TEXT_PRESERVE_WHITESPACE)
         for block in text_dict.get("blocks", []):
             for line in block.get("lines", []):
@@ -23,7 +28,7 @@ def extract_text_spans(pdf_path: str) -> list[dict]:
                         bbox = span.get("bbox", [0, 0, 0, 0])
                         spans.append({"page": page_num, "text": text, "x0": bbox[0], "y0": bbox[1], "x1": bbox[2], "y1": bbox[3]})
     doc.close()
-    return spans
+    return spans, page_dimensions
 
 
 def find_positions(spans, label):
@@ -368,6 +373,7 @@ def check_alignment_groups(spans, alignment_groups, passed, failed):
         texts = group.get("texts", [])
         x_field = group.get("x_field", "x0")
         tolerance = group.get("tolerance_pt", 3)
+        expected_x = group.get("expected_x_pt")
 
         if not texts:
             continue
@@ -380,23 +386,92 @@ def check_alignment_groups(spans, alignment_groups, passed, failed):
             else:
                 values.append((text, span.get(x_field, None)))
 
-        if len(values) < 2:
+        if len(values) < 1:
             continue
 
-        # Compare all to first found value
-        first_val = values[0][1]
-        all_within = True
-        for text, val in values:
-            if abs(val - first_val) > tolerance:
-                all_within = False
-                break
-
-        if all_within:
-            vals_str = ", ".join(f"{t}={v:.1f}" for t, v in values)
-            passed.append(f"alignment_group '{name}': aligned within {tolerance}pt ({vals_str})")
+        if expected_x is not None:
+            # Compare each text to expected_x
+            all_within = True
+            for text, val in values:
+                if val is not None and abs(val - expected_x) > tolerance:
+                    all_within = False
+                    break
+            if all_within:
+                vals_str = ", ".join(f"{t}={v:.1f}" for t, v in values)
+                passed.append(f"alignment_group '{name}': aligned within {tolerance}pt to expected {expected_x}pt ({vals_str})")
+            else:
+                vals_str = ", ".join(f"{t}={v:.1f}" for t, v in values)
+                failed.append(f"alignment_group '{name}': misaligned vs expected {expected_x}pt ({vals_str})")
         else:
-            vals_str = ", ".join(f"{t}={v:.1f}" for t, v in values)
-            failed.append(f"alignment_group '{name}': misaligned ({vals_str})")
+            # Compare all to first found value
+            if len(values) < 2:
+                continue
+            first_val = values[0][1]
+            all_within = True
+            for text, val in values:
+                if val is not None and abs(val - first_val) > tolerance:
+                    all_within = False
+                    break
+            if all_within:
+                vals_str = ", ".join(f"{t}={v:.1f}" for t, v in values)
+                passed.append(f"alignment_group '{name}': aligned within {tolerance}pt ({vals_str})")
+            else:
+                vals_str = ", ".join(f"{t}={v:.1f}" for t, v in values)
+                failed.append(f"alignment_group '{name}': misaligned ({vals_str})")
+
+
+def check_page_number_rules(spans, page_dimensions, rules, passed, failed, warnings):
+    """Check page number placement: horizontal center and vertical distance from bottom."""
+    for rule in rules:
+        name = rule.get("name", "unnamed_rule")
+        text = rule.get("text", "")
+        page_index = rule.get("page_index", 0)
+        expected_y_from_bottom = rule.get("expected_y_from_bottom_pt", 0)
+        expected_center_x = rule.get("expected_center_x_pt", 0)
+        tolerance = rule.get("tolerance_pt", 6)
+
+        if not text:
+            continue
+
+        # Verify page exists
+        if page_index < 0 or page_index >= len(page_dimensions):
+            failed.append(f"page_number '{name}': page_index {page_index} out of range (pdf has {len(page_dimensions)} pages)")
+            continue
+
+        page_height = page_dimensions[page_index].get("height", 0)
+        target_page = page_index + 1  # spans are 1-based
+
+        # Find spans on the target page matching the text exactly (standalone page number)
+        matches = []
+        for s in spans:
+            if s.get("page") == target_page and s.get("text", "").strip() == text:
+                matches.append(s)
+
+        if not matches:
+            warnings.append(f"page_number '{name}': text '{text}' not found on page {target_page}; check skipped")
+            continue
+
+        # Use first match
+        match = matches[0]
+        x0 = match.get("x0", 0)
+        x1 = match.get("x1", 0)
+        y0 = match.get("y0", 0)
+        y1 = match.get("y1", 0)
+        center_x = (x0 + x1) / 2.0
+        center_y = (y0 + y1) / 2.0
+        y_from_bottom = page_height - center_y if page_height else 0
+
+        x_diff = abs(center_x - expected_center_x)
+        y_diff = abs(y_from_bottom - expected_y_from_bottom)
+
+        if x_diff <= tolerance and y_diff <= tolerance:
+            passed.append(
+                f"page_number '{name}': center_x={center_x:.1f}pt, y_from_bottom={y_from_bottom:.1f}pt (expected center_x={expected_center_x}pt, y_from_bottom={expected_y_from_bottom}pt, tolerance=±{tolerance}pt)"
+            )
+        else:
+            failed.append(
+                f"page_number '{name}': center_x={center_x:.1f}pt (diff={x_diff:.1f}pt), y_from_bottom={y_from_bottom:.1f}pt (diff={y_diff:.1f}pt) vs expected center_x={expected_center_x}pt, y_from_bottom={expected_y_from_bottom}pt (tolerance=±{tolerance}pt)"
+            )
 
 
 def main():
@@ -415,8 +490,18 @@ def main():
     print(f"PDF:     {args.pdf}")
     print("-" * 70)
 
-    spans = extract_text_spans(args.pdf)
-    print(f"Extracted {len(spans)} text spans")
+    spans, page_dimensions = extract_text_spans(args.pdf)
+    print(f"Extracted {len(spans)} text spans across {len(page_dimensions)} page(s)")
+
+    page_index = profile.get("page_index")
+    if page_index is not None:
+        target_page = page_index + 1  # spans are 1-based
+        if target_page > len(page_dimensions) or target_page < 1:
+            print(f"\nRESULT: FAIL")
+            print(f"  profile specifies page_index={page_index} (page {target_page}), but PDF only has {len(page_dimensions)} page(s)")
+            sys.exit(1)
+        spans = [s for s in spans if s.get("page") == target_page]
+        print(f"Filtered to page_index={page_index} (page {target_page}): {len(spans)} spans")
 
     required = profile.get("required_text", [])
     optional = profile.get("optional_text", [])
@@ -462,6 +547,11 @@ def main():
     alignment_rules = profile.get("alignment_rules", [])
     if alignment_rules:
         check_continuation_marker_alignment(spans, alignment_rules, passed, failed, warnings)
+
+    # Check page number rules
+    page_number_rules = profile.get("page_number_rules", [])
+    if page_number_rules:
+        check_page_number_rules(spans, page_dimensions, page_number_rules, passed, failed, warnings)
 
     print(f"\nRESULT: {'PASS' if not failed else 'FAIL'}")
     print(f"  profile: {profile_path}")

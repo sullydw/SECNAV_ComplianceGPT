@@ -25,10 +25,10 @@ The tool checks:
 ### Scope
 
 Currently supports:
-- **Figure 7-1 Standard Letter (First Page)**
+- **Figure 7-1 Standard Letter (First Page)** — wired into C7 Phase 1 regression runner.
+- **Figure 7-2 Standard Letter (Second Page / Continuation)** — standalone profile for second-page validation; checks repeated subject placement and bottom-centered page number.
 
 Future profiles can be added for:
-- Figure 7-2
 - Figure 8-1/8-2/8-3
 - Figure 9-2
 - Figure 10-1
@@ -67,14 +67,16 @@ The profile JSON includes:
 - `manual_reference`: "SECNAV M-5216.5 Figure 7-1"
 - `doc_type`: "DT_STANDARD_LETTER"
 - `target_pdf`: "output/audit_c7_phase1_standard_letter.pdf"
+- `page_index`: Optional zero-based page index. When present, required text, ordering, alignment, and page-number checks are scoped to that page only. If the page does not exist, the audit fails immediately.
 - `required_text`: ["From:", "To:", "Subj:", "1."]
 - `optional_text`: ["Via:", "Ref:", "Encl:"]
 - `order_rules`: Expected vertical ordering
-- `alignment_groups`: Coarse x-coordinate alignment groups (e.g., `header_label_column` for `From:` / `To:` / `Subj:`)
+- `alignment_groups`: Coarse x-coordinate alignment groups (e.g., `header_label_column` for `From:` / `To:` / `Subj:`). May include `expected_x_pt` to compare each text to an absolute expected position instead of comparing to the first found item.
 - `label_content_alignment_groups`: Coarse x-coordinate alignment for text content after labels (e.g., `header_text_column`)
 - `vertical_spacing_rules`: Legacy fixed-pair vertical spacing rules (e.g., `from_to_normal_line`)
 - `vertical_sequence`: Sequence-aware vertical spacing rules that measure between actually adjacent visible elements, accounting for optional header blocks (Via/Ref/Encl). Supports `adjacent_pairs`, `from_any_previous_visible`, and `from_final_header_entry_before_body` for body-start spacing.
 - `alignment_rules`: Ref/Encl continuation marker alignment rules (regex-based marker matching scoped to header block above body `1.`)
+- `page_number_rules`: Page number placement checks. Each rule specifies `text`, `page_index` (zero-based), `expected_y_from_bottom_pt`, `expected_center_x_pt`, and `tolerance_pt`. The tool calculates center_x and y_from_bottom and compares to expected values.
 - `spacing_tolerances`: X/Y tolerances
 
 ## Implementation

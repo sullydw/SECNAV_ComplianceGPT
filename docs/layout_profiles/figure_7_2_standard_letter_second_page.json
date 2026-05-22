@@ -1,0 +1,35 @@
+{
+  "figure_id": "7-2",
+  "manual_reference": "SECNAV M-5216.5 Figure 7-2",
+  "doc_type": "DT_STANDARD_LETTER_CONTINUATION_PAGE",
+  "target_pdf": "output/audit_c7_phase1_standard_letter.pdf",
+  "page_index": 1,
+  "required_text": ["Subj:", "2"],
+  "optional_text": [],
+  "order_rules": [
+    ["Subj:", "2"]
+  ],
+  "alignment_groups": [
+    {
+      "name": "continuation_subj_label_left_margin",
+      "texts": ["Subj:"],
+      "x_field": "x0",
+      "expected_x_pt": 72,
+      "tolerance_pt": 3
+    }
+  ],
+  "page_number_rules": [
+    {
+      "name": "page_number_bottom_center",
+      "text": "2",
+      "page_index": 1,
+      "expected_y_from_bottom_pt": 36,
+      "expected_center_x_pt": 306,
+      "tolerance_pt": 6
+    }
+  ],
+  "spacing_tolerances": {
+    "x_tolerance_pt": 3,
+    "y_tolerance_pt": 4
+  }
+}
