@@ -1,6 +1,6 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-05-22  
+**Last Updated:** 2026-05-23  
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT (DO NOT USE)  
 **Renderer:** v6 PDF (ReportLab)  
@@ -83,9 +83,17 @@
 - **Protected renderer path**: `render_from_to_plain_pdf()` in `src/pdf_v6_render.py`
 - **Protected runner**: `tools/run_c10_regression.py`
 
-### Automated Layout Audit Coverage (2026-05-22)
+### Automated Layout Audit Coverage (2026-05-23)
 
-The project now has automated PDF layout audits wired into each chapter's regression suite. These are **rule/profile-based figure checks, not pixel-image comparison**. Manual visual review is still required for final compliance.
+The project now has automated PDF layout audits wired into each chapter's regression suite. These are **profile-based coordinate checking, not pixel-image comparison**. Manual visual review is still required for final compliance.
+
+**Current tool capabilities:**
+- **forbidden_text checks** — verify prohibited elements are absent (e.g., no "To:" in distribution-only letters)
+- **vertical_spacing_rules** — validate exact gaps between elements against manual-derived expectations
+- **layout_regions** — check elements fall within expected x/y bounding boxes
+- **layout_relationships** — verify geometric relationships (above, left_of, same_row) between elements
+- **--dump-spans diagnostic mode** — print extracted text spans with coordinates for manual-and-figure profile building
+- **manual-and-figure source standard** — every new profile must be grounded in all available manual guidance (chapter/section text rules, figure title/caption, instructional text, visual geometry, existing rule files and renderer behavior)
 
 **Wired audit coverage:**
 - **C7 Phase 1 regression**: Figure 7-1 (Standard Letter), Figure 7-2 (Continuation Page)
@@ -108,12 +116,13 @@ For each chapter, the regression runner:
 
 **Audit scope notes:**
 - All wired audit failures fail their respective regression suites
-- Figures checked: label presence, vertical ordering, alignment, spacing, page numbers (where applicable)
+- Figures checked: label presence, vertical ordering, alignment, spacing, page numbers (where applicable), layout regions, layout relationships, forbidden text
 - Figures NOT checked: visual appearance, font quality, margins, exact pixel positioning
-- Manual visual review remains required for final compliance
+- The tool is now better prepared for complex future formats such as Figure 7-4 Joint Letter (left/right command blocks, multiple signature blocks)
+- Manual visual review remains required when creating new profiles and for final compliance
 
 **Manual-and-Figure Source Standard:**
-Every new layout profile must be grounded in all available manual guidance, not just visible geometry. Before creating a profile, review: (1) the chapter/section text rules surrounding the figure, (2) the figure title/caption, (3) the instructional text inside the figure example itself, (4) the actual visual/layout geometry, and (5) existing project rule files and renderer behavior. Profiles encode manual-derived expectations as required/forbidden text, order rules, alignment groups, layout regions, marker alignment, page-number checks, and vertical spacing rules. Manual visual review remains required when creating a new profile.
+Every new layout profile must be grounded in all available manual guidance, not just visible geometry. Before creating a profile, review: (1) the chapter/section text rules surrounding the figure, (2) the figure title/caption, (3) the instructional text inside the figure example itself, (4) the actual visual/layout geometry, and (5) existing project rule files and renderer behavior. Profiles encode manual-derived expectations as required/forbidden text, order rules, alignment groups, layout regions, marker alignment, page-number checks, and vertical spacing rules.
 
 - Status of each runner:
   - C7: `python tools/run_c7_phase1_regression.py` — layout audit runs after PDF render
