@@ -1,0 +1,56 @@
+{
+  "_comment": "SECNAV M-5216.5 Figure 7-4 Joint Letter — Phase J1 fixture",
+  "doc_type": "DT_JOINT_LTR",
+  "joint_heading": "JOINT LETTER",
+  "senior_command_index": 1,
+  "commands": [
+    {
+      "command_title": "Commander, Naval Sea Systems Command",
+      "letterhead_title": "NAVAL SEA SYSTEMS COMMAND",
+      "short_code": "NAVSEA",
+      "ssic": 5216,
+      "serial": "Ser 02/318",
+      "date": "9 Jan 15",
+      "unit_identity": {
+        "letterhead_family": "LH_NAVY_ACTIVITY",
+        "UNIT_OR_ACTIVITY_NAME": "NAVAL SEA SYSTEMS COMMAND",
+        "INSTALLATION_OR_LOCATION": "WASHINGTON",
+        "STATE": "DC"
+      },
+      "signature": {
+        "name": "J. K. JANICKI",
+        "title_or_role": "Acting"
+      }
+    },
+    {
+      "command_title": "Commander, Naval Supply Systems Command",
+      "letterhead_title": "NAVAL SUPPLY SYSTEMS COMMAND",
+      "short_code": "NAVSUP",
+      "ssic": 5216,
+      "serial": "Ser 07/207",
+      "date": "16 Jan 15",
+      "unit_identity": {
+        "letterhead_family": "LH_NAVY_ACTIVITY",
+        "UNIT_OR_ACTIVITY_NAME": "NAVAL SUPPLY SYSTEMS COMMAND",
+        "INSTALLATION_OR_LOCATION": "WASHINGTON",
+        "STATE": "DC"
+      },
+      "signature": {
+        "name": "A. N. PIDGEON",
+        "title_or_role": "Deputy"
+      }
+    }
+  ],
+  "to": "Chief of Naval Operations",
+  "subj": "HOW TO PREPARE A JOINT LETTER",
+  "body": [
+    "1. A joint letter may be used to establish an agreement between two or more activities or for other matters of mutual concern.",
+    "2. On plain bond paper, list the command titles in the letterhead so the senior is at the top. If the activities are in different cities or states, follow each title with its Standard Navy Distribution List address.",
+    "3. Arrange signature lines so the senior official is at the right. Place the signature line of a third cosigner in the middle of the page. The senior official signs the letter last.",
+    "4. If your activity is the last to sign, send copies of the signed letter to all cosigners."
+  ],
+  "copy_to": [
+    "Commander, Naval Sea Systems Command",
+    "Commander, Naval Supply Systems Command"
+  ]
+}
