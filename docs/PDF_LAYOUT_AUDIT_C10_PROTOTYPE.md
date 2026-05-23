@@ -103,6 +103,8 @@ The Figure 10-3 basic profile verifies that:
 - `From:`, `To:`, `Subj:` labels align in the same label column
 - `Subj:` text aligns at the header text column (content alignment is checked only for `Subj:` because `From:` and `To:` render as single-span label+content lines)
 - Body paragraph `1.` appears after `Subj:`
+- Vertical spacing between `MEMORANDUM` and `From:` is approximately 28.8pt (tolerance 4pt)
+- Vertical spacing between `Subj:` and `1.` is approximately 28.8pt (tolerance 4pt)
 - Date appears right-aligned in the top-right area
 
 ### From-To Plain with References Check

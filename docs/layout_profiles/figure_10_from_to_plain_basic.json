@@ -32,6 +32,22 @@
       "tolerance_pt": 3
     }
   ],
+  "vertical_spacing_rules": [
+    {
+      "name": "mem_to_from_gap",
+      "from_text": "MEMORANDUM",
+      "to_text": "From:",
+      "expected_gap_pt": 28.8,
+      "tolerance_pt": 4
+    },
+    {
+      "name": "subj_to_body_gap",
+      "from_text": "Subj:",
+      "to_text": "1.",
+      "expected_gap_pt": 28.8,
+      "tolerance_pt": 4
+    }
+  ],
   "spacing_tolerances": {
     "x_tolerance_pt": 3,
     "y_tolerance_pt": 4
