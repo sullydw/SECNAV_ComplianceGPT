@@ -985,7 +985,7 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, ri
 
 
 def render_joint_letter_pdf(payload, output_path):
-    """Joint Letter partial renderer (J3a). Validates payload; draws top/header block only."""
+    """Joint Letter partial renderer (J3a/J3b). Validates payload; draws top/header block and body."""
     errors = validate_joint_letter(payload)
     if errors:
         print("=== PDF BUILD ===")
@@ -1103,6 +1103,25 @@ def render_joint_letter_pdf(payload, output_path):
     c.setFont("Times-Roman", 12)
     c.drawString(115.0, y, payload.get("subj", ""))
     y -= leading
+    y -= blank_line  # one blank line before body per SECNAV spacing
+
+    # ── Body block ──
+    normalized_for_body = {
+        "subj": payload.get("subj", ""),
+        "body": payload.get("body", []),
+    }
+    # Spacing constants mirror standard-letter path
+    bottom_margin_pt = 72.0
+    signature_gap = 4 * leading
+    copy_gap = 2 * leading
+    y, page_count, body_lines_on_last_page = draw_body_block(
+        c, left_margin, y, leading, body_font_size, normalized_for_body,
+        page_height, top_margin, bottom_margin_pt, signature_gap, copy_gap,
+        reserve_signature_space=False,
+        page_number_start=None, force_page_number_on_first_page=False,
+    )
+    print(f"DEBUG Total pages generated: {page_count}")
+    print(f"DEBUG Body lines on last page: {body_lines_on_last_page}")
 
     c.save()
 
