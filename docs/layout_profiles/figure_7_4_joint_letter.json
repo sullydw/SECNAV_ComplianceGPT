@@ -1,0 +1,209 @@
+{
+  "figure_id": "7-4",
+  "manual_reference": "SECNAV M-5216.5 Figure 7-4",
+  "doc_type": "DT_JOINT_LTR",
+  "target_pdf": "output/audit_c7_joint_letter.pdf",
+  "required_text": [
+    "DEPARTMENT OF THE NAVY",
+    "NAVAL SUPPLY SYSTEMS COMMAND",
+    "NAVAL SEA SYSTEMS COMMAND",
+    "WASHINGTON DC",
+    "NAVSEA",
+    "NAVSUP",
+    "JOINT LETTER",
+    "From:",
+    "To:",
+    "Subj:",
+    "HOW TO PREPARE A JOINT LETTER",
+    "J. K. JANICKI",
+    "A. N. PIDGEON",
+    "Copy to:"
+  ],
+  "optional_text": [],
+  "order_rules": [
+    ["DEPARTMENT OF THE NAVY", "NAVAL SUPPLY SYSTEMS COMMAND"],
+    ["NAVAL SUPPLY SYSTEMS COMMAND", "NAVAL SEA SYSTEMS COMMAND"],
+    ["JOINT LETTER", "From:"],
+    ["From:", "To:"],
+    ["To:", "Subj:"],
+    ["Subj:", "1."],
+    ["4.", "J. K. JANICKI"],
+    ["J. K. JANICKI", "Copy to:"],
+    ["A. N. PIDGEON", "Copy to:"]
+  ],
+  "alignment_groups": [
+    {
+      "name": "header_label_column",
+      "texts": ["From:", "To:", "Subj:"],
+      "x_field": "x0",
+      "tolerance_pt": 3
+    }
+  ],
+  "layout_relationships": [
+    {
+      "name": "navsea_left_of_navsup",
+      "type": "left_of",
+      "first_text": "NAVSEA",
+      "second_text": "NAVSUP",
+      "page_index": 0,
+      "min_delta_pt": 100
+    },
+    {
+      "name": "janicki_left_of_pidgeon",
+      "type": "left_of",
+      "first_text": "J. K. JANICKI",
+      "second_text": "A. N. PIDGEON",
+      "page_index": 0,
+      "min_delta_pt": 100
+    },
+    {
+      "name": "janicki_same_row_pidgeon",
+      "type": "same_row",
+      "first_text": "J. K. JANICKI",
+      "second_text": "A. N. PIDGEON",
+      "page_index": 0,
+      "tolerance_pt": 4
+    },
+    {
+      "name": "acting_same_row_deputy",
+      "type": "same_row",
+      "first_text": "Acting",
+      "second_text": "Deputy",
+      "page_index": 0,
+      "tolerance_pt": 4
+    },
+    {
+      "name": "joint_letter_above_from",
+      "type": "above",
+      "first_text": "JOINT LETTER",
+      "second_text": "From:",
+      "page_index": 0,
+      "min_delta_pt": 5
+    },
+    {
+      "name": "from_above_to",
+      "type": "above",
+      "first_text": "From:",
+      "second_text": "To:",
+      "page_index": 0,
+      "min_delta_pt": 5
+    },
+    {
+      "name": "to_above_subj",
+      "type": "above",
+      "first_text": "To:",
+      "second_text": "Subj:",
+      "page_index": 0,
+      "min_delta_pt": 5
+    },
+    {
+      "name": "subj_above_body",
+      "type": "above",
+      "first_text": "Subj:",
+      "second_text": "1.",
+      "page_index": 0,
+      "min_delta_pt": 5
+    },
+    {
+      "name": "acting_above_copy_to",
+      "type": "above",
+      "first_text": "Acting",
+      "second_text": "Copy to:",
+      "page_index": 0,
+      "min_delta_pt": 5
+    },
+    {
+      "name": "deputy_above_copy_to",
+      "type": "above",
+      "first_text": "Deputy",
+      "second_text": "Copy to:",
+      "page_index": 0,
+      "min_delta_pt": 5
+    }
+  ],
+  "layout_regions": [
+    {
+      "name": "joint_heading_region",
+      "text": "JOINT LETTER",
+      "page_index": 0,
+      "x_min_pt": 150,
+      "x_max_pt": 500,
+      "y_min_pt": 120,
+      "y_max_pt": 180,
+      "required": true
+    },
+    {
+      "name": "from_label_region",
+      "text": "From:",
+      "page_index": 0,
+      "x_min_pt": 60,
+      "x_max_pt": 90,
+      "y_min_pt": 150,
+      "y_max_pt": 220,
+      "required": true
+    },
+    {
+      "name": "navsea_sender_block_region",
+      "text": "NAVSEA",
+      "page_index": 0,
+      "x_min_pt": 60,
+      "x_max_pt": 110,
+      "y_min_pt": 85,
+      "y_max_pt": 150,
+      "required": true
+    },
+    {
+      "name": "navsup_sender_block_region",
+      "text": "NAVSUP",
+      "page_index": 0,
+      "x_min_pt": 450,
+      "x_max_pt": 540,
+      "y_min_pt": 85,
+      "y_max_pt": 150,
+      "required": true
+    },
+    {
+      "name": "left_signature_region",
+      "text": "J. K. JANICKI",
+      "page_index": 0,
+      "x_min_pt": 60,
+      "x_max_pt": 130,
+      "y_min_pt": 470,
+      "y_max_pt": 510,
+      "required": true
+    },
+    {
+      "name": "right_signature_region",
+      "text": "A. N. PIDGEON",
+      "page_index": 0,
+      "x_min_pt": 320,
+      "x_max_pt": 430,
+      "y_min_pt": 470,
+      "y_max_pt": 510,
+      "required": true
+    },
+    {
+      "name": "copy_to_region",
+      "text": "Copy to:",
+      "page_index": 0,
+      "x_min_pt": 60,
+      "x_max_pt": 110,
+      "y_min_pt": 510,
+      "y_max_pt": 560,
+      "required": true
+    }
+  ],
+  "vertical_spacing_rules": [
+    {
+      "name": "copy_to_after_signature_title",
+      "from_text": "Acting",
+      "to_text": "Copy to:",
+      "expected_gap_pt": 28.8,
+      "tolerance_pt": 4
+    }
+  ],
+  "spacing_tolerances": {
+    "x_tolerance_pt": 3,
+    "y_tolerance_pt": 4
+  }
+}
