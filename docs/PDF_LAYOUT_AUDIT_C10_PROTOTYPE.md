@@ -25,6 +25,7 @@ Currently supports:
 - **Figure 10-1 Memorandum for the Record** — wired into C10 regression; audit failure fails C10 regression
 - **Figure 10-3 Plain-Paper From-To (Basic)** — wired into C10 regression; audit failure fails C10 regression
 - **Figure 10-3 Plain-Paper From-To (With References)** — wired into C10 regression; audit failure fails C10 regression
+- **Figure 10-3 Plain-Paper From-To (With Enclosures)** — standalone profile, not wired into regression yet
 
 Future profiles should cover:
 - Figure 10-2 (if applicable)
@@ -42,6 +43,12 @@ python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_10_1_mfr.
 
 ```bash
 python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_10_from_to_plain_with_refs.json --pdf output/audit_c10_from_to_plain_with_refs.pdf
+```
+
+### Figure 10-3 Plain-Paper From-To With Enclosures
+
+```bash
+python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_10_from_to_plain_with_encls.json --pdf output/audit_c10_from_to_plain_with_encls.pdf
 ```
 
 ### Figure 10-3 Plain-Paper From-To Basic
@@ -107,6 +114,17 @@ The Figure 10-3 with references profile verifies that:
 - `Subj:` and `Ref:` text aligns at the header text column
 - Reference continuation markers `(a)` and `(b)` align
 - Body paragraph `1.` appears after `Ref:`
+- Date appears right-aligned in the top-right area
+
+### From-To Plain with Enclosures Check
+
+The Figure 10-3 with enclosures profile verifies that:
+- `MEMORANDUM` heading appears at the left margin
+- `From:`, `To:`, `Subj:`, and `Encl:` labels are vertically ordered
+- `From:`, `To:`, `Subj:`, `Encl:` labels align in the same label column
+- `Subj:` and `Encl:` text aligns at the header text column
+- Enclosure continuation markers `(1)` and `(2)` align
+- Body paragraph `1.` appears after `Encl:`
 - Date appears right-aligned in the top-right area
 
 ## Implementation
