@@ -194,6 +194,44 @@ Example:
 }
 ```
 
+### Layout Relationships
+
+The tool supports figure-aware geometric relationship checks via `layout_relationships`. Each relationship declares a constraint between two detected layout elements (e.g., "From: must be above To:", "Commanding Officer block must be left of another Commanding Officer block", "two signature lines must be on the same row"). This prepares the tool for complex manual-defined figures such as Figure 7-4 Joint Letter, where left/right command blocks and multiple signature blocks must be positioned relative to each other.
+
+Supported relationship types:
+- `above` — `first_text` y0 must be above `second_text` y0 by at least `min_delta_pt`
+- `left_of` — `first_text` x0 must be left of `second_text` x0 by at least `min_delta_pt`
+- `same_row` — `first_text` and `second_text` y0 must be within `tolerance_pt`
+
+Each relationship specifies:
+- `name`: descriptive name for the check
+- `type`: one of `above`, `left_of`, `same_row`
+- `first_text`: the first label to match (case-insensitive substring)
+- `second_text`: the second label to match (case-insensitive substring)
+- `page_index`: optional 0-based page index; defaults to `profile.page_index` then all pages
+- `min_delta_pt`: required for `above` and `left_of` — minimum required delta
+- `tolerance_pt`: required for `same_row` — maximum allowed y-difference
+
+If either text is missing, the check FAILs. If the relationship is not satisfied, the check FAILs with actual x/y values. If it passes, the check reports `PASS` with the measured delta.
+
+This remains **profile-based coordinate checking derived from the manual figure**, not unknown-document guessing or pixel-image comparison.
+
+Example:
+```json
+{
+  "layout_relationships": [
+    {
+      "name": "from_before_to_vertical",
+      "type": "above",
+      "first_text": "From:",
+      "second_text": "To:",
+      "page_index": 0,
+      "min_delta_pt": 5
+    }
+  ]
+}
+```
+
 ## Status
 
 - **Prototype only**

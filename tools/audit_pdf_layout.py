@@ -598,6 +598,90 @@ def check_layout_regions(spans, regions, passed, failed, warnings_list, profile_
             failed.append(f"layout_region '{name}': FAIL {' '.join(fail_parts)} (expected x in [{x_min}, {x_max}], y in [{y_min}, {y_max}])")
 
 
+def check_layout_relationships(spans, relationships, passed, failed, profile_page_index=None):
+    """Check geometric relationships between two detected layout elements.
+
+    Supported types:
+      - "above": first_text y0 must be above second_text y0 by at least min_delta_pt
+      - "left_of": first_text x0 must be left of second_text x0 by at least min_delta_pt
+      - "same_row": first_text and second_text y0 must be within tolerance_pt
+
+    Each relationship dict may contain:
+      - name: str (required)
+      - type: str (required) — one of above, left_of, same_row
+      - first_text: str (required)
+      - second_text: str (required)
+      - page_index: int (optional, 0-based; defaults to profile_page_index then all pages)
+      - min_delta_pt: float (required for above/left_of)
+      - tolerance_pt: float (required for same_row)
+    """
+    for rel in relationships:
+        name = rel.get("name", "unnamed_relationship")
+        rel_type = rel.get("type", "")
+        first_text = rel.get("first_text", "")
+        second_text = rel.get("second_text", "")
+        page_index = rel.get("page_index")
+        min_delta_pt = rel.get("min_delta_pt", 0)
+        tolerance_pt = rel.get("tolerance_pt", 4)
+
+        if not first_text or not second_text or not rel_type:
+            failed.append(f"layout_relationship '{name}': missing required fields (type, first_text, second_text)")
+            continue
+
+        target_page = page_index if page_index is not None else profile_page_index
+        if target_page is not None:
+            target_page_1based = target_page + 1
+            search_spans = [s for s in spans if s.get("page") == target_page_1based]
+        else:
+            search_spans = spans
+
+        first_span = None
+        second_span = None
+        for s in search_spans:
+            if first_span is None and first_text.lower() in s.get("text", "").lower():
+                first_span = s
+            if second_span is None and second_text.lower() in s.get("text", "").lower():
+                second_span = s
+            if first_span is not None and second_span is not None:
+                break
+
+        if first_span is None:
+            failed.append(f"layout_relationship '{name}': missing '{first_text}'")
+            continue
+        if second_span is None:
+            failed.append(f"layout_relationship '{name}': missing '{second_text}'")
+            continue
+
+        x0_first = first_span.get("x0", 0)
+        y0_first = first_span.get("y0", 0)
+        x0_second = second_span.get("x0", 0)
+        y0_second = second_span.get("y0", 0)
+
+        if rel_type == "above":
+            delta = y0_second - y0_first
+            if delta >= min_delta_pt:
+                passed.append(f"layout_relationship '{name}': PASS (first y={y0_first:.1f}, second y={y0_second:.1f}, delta={delta:.1f}pt)")
+            else:
+                failed.append(f"layout_relationship '{name}': FAIL '{first_text}' y={y0_first:.1f} not above '{second_text}' y={y0_second:.1f} by >= {min_delta_pt}pt (actual delta={delta:.1f}pt)")
+
+        elif rel_type == "left_of":
+            delta = x0_second - x0_first
+            if delta >= min_delta_pt:
+                passed.append(f"layout_relationship '{name}': PASS (first x={x0_first:.1f}, second x={x0_second:.1f}, delta={delta:.1f}pt)")
+            else:
+                failed.append(f"layout_relationship '{name}': FAIL '{first_text}' x={x0_first:.1f} not left of '{second_text}' x={x0_second:.1f} by >= {min_delta_pt}pt (actual delta={delta:.1f}pt)")
+
+        elif rel_type == "same_row":
+            delta = abs(y0_first - y0_second)
+            if delta <= tolerance_pt:
+                passed.append(f"layout_relationship '{name}': PASS (first y={y0_first:.1f}, second y={y0_second:.1f}, delta={delta:.1f}pt within ±{tolerance_pt}pt)")
+            else:
+                failed.append(f"layout_relationship '{name}': FAIL '{first_text}' y={y0_first:.1f} and '{second_text}' y={y0_second:.1f} not same row (delta={delta:.1f}pt > ±{tolerance_pt}pt)")
+
+        else:
+            failed.append(f"layout_relationship '{name}': unsupported type '{rel_type}'")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile", required=True)
@@ -671,6 +755,11 @@ def main():
     layout_regions = profile.get("layout_regions", [])
     if layout_regions:
         check_layout_regions(spans, layout_regions, passed, failed, warnings, profile_page_index=page_index)
+
+    # Check layout relationships
+    layout_relationships = profile.get("layout_relationships", [])
+    if layout_relationships:
+        check_layout_relationships(spans, layout_relationships, passed, failed, profile_page_index=page_index)
 
     # Check continuation marker alignment
     alignment_rules = profile.get("alignment_rules", [])
