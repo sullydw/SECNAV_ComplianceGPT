@@ -232,6 +232,31 @@ Example:
 }
 ```
 
+### Span Dump Diagnostic Mode
+
+The tool supports a `--dump-spans` CLI option that prints a clean table of every extracted text span with its page number and bounding-box coordinates. This is a **diagnostic-only** mode; it does not affect pass/fail results and can be used alongside any profile.
+
+This mode supports manual-and-figure-based profile building by exposing the exact coordinates the tool sees, which is especially useful when constructing:
+- `layout_regions` — to determine x_min/x_max and y_min/y_max bounds
+- `layout_relationships` — to confirm relative positions before writing rules
+- `vertical_spacing_rules` — to measure actual gaps between elements
+
+Output format:
+
+```
+SPAN DUMP
+page  x0      y0      x1      y1      text
+1     72.0    135.6   102.0   149.4   From:
+1     72.0    150.0   92.0    163.8   To:
+```
+
+Usage:
+```bash
+python tools/audit_pdf_layout.py --profile docs/layout_profiles/figure_7_1_standard_letter.json --pdf output/audit_c7_phase1_standard_letter.pdf --dump-spans
+```
+
+Spans are sorted by page, then by y0 (top), then by x0 (left). This remains diagnostic output; the normal audit checks run unchanged after the dump.
+
 ## Status
 
 - **Prototype only**

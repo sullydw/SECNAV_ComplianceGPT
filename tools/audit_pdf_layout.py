@@ -44,6 +44,21 @@ def find_first_span(spans, label):
     return None
 
 
+def dump_spans(spans):
+    """Print a diagnostic table of extracted text spans sorted by page, y0, x0."""
+    sorted_spans = sorted(spans, key=lambda s: (s.get("page", 1), s.get("y0", 0), s.get("x0", 0)))
+    print("\nSPAN DUMP")
+    print(f"{'page':<5} {'x0':<8} {'y0':<8} {'x1':<8} {'y1':<8} text")
+    for s in sorted_spans:
+        page = s.get("page", 1)
+        x0 = s.get("x0", 0)
+        y0 = s.get("y0", 0)
+        x1 = s.get("x1", 0)
+        y1 = s.get("y1", 0)
+        text = s.get("text", "")
+        print(f"{page:<5} {x0:<8.1f} {y0:<8.1f} {x1:<8.1f} {y1:<8.1f} {text}")
+
+
 def check_label_content_alignment_groups(spans, groups, passed, failed, warnings_list):
     """Check x-coordinate of text content after labels (e.g., From text, To text, Subj text)."""
     for group in groups:
@@ -686,6 +701,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile", required=True)
     parser.add_argument("--pdf", required=True)
+    parser.add_argument("--dump-spans", action="store_true", help="Print extracted text spans (page/x/y/text) for diagnostic use")
     args = parser.parse_args()
 
     profile_path = Path(args.profile)
@@ -700,6 +716,9 @@ def main():
 
     spans, page_dimensions = extract_text_spans(args.pdf)
     print(f"Extracted {len(spans)} text spans across {len(page_dimensions)} page(s)")
+
+    if args.dump_spans:
+        dump_spans(spans)
 
     page_index = profile.get("page_index")
     if page_index is not None:
