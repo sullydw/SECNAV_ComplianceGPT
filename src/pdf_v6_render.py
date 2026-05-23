@@ -18,6 +18,7 @@ from letter_model_v6 import normalize_payload
 from body_v6_validate import validate_body
 from letterhead_v6_resolve import resolve_letterhead
 from body_v6_parse import detect_marker_level
+from joint_letter_validate import validate_joint_letter
 
 
 # =============================================================================
@@ -983,6 +984,36 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, ri
     return y
 
 
+def render_joint_letter_pdf(payload, output_path):
+    """Joint Letter renderer stub (J2). Validates payload; emits diagnostic PDF."""
+    from reportlab.lib.pagesizes import LETTER
+    from reportlab.pdfgen import canvas
+
+    errors = validate_joint_letter(payload)
+    if errors:
+        print("=== PDF BUILD ===")
+        print("FAIL")
+        print("JOINT LETTER VALIDATION FAILED")
+        for err in errors:
+            print(f"  ERROR: {err}")
+        return
+
+    # Validation passed: create minimal diagnostic PDF
+    c = canvas.Canvas(output_path, pagesize=LETTER)
+    page_width, page_height = LETTER
+    c.setFont("Courier-Bold", 16)
+    y = page_height / 2 + 30
+    c.drawCentredString(page_width / 2, y, "JOINT LETTER RENDERER STUB")
+    c.setFont("Courier", 12)
+    c.drawCentredString(page_width / 2, y - 30, "VALIDATION PASSED")
+    c.drawCentredString(page_width / 2, y - 50, "FULL RENDERING NOT YET IMPLEMENTED")
+    c.save()
+
+    print("=== PDF BUILD ===")
+    print("PASS")
+    print(f"output\\{os.path.basename(output_path)}")
+
+
 def main(input_path=None, output_path=None):
     # Paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1107,6 +1138,11 @@ def main(input_path=None, output_path=None):
     c = canvas.Canvas(output_path, pagesize=LETTER)
 
     y = page_height - top_margin_pt
+
+    # ── Joint Letter render branch (DT_JOINT_LTR only) ──
+    if payload.get("doc_type") == "DT_JOINT_LTR":
+        render_joint_letter_pdf(payload, output_path)
+        return  # Exit early; standard-letter path continues below
 
     # ── MFR render branch (DT_MEMO_MFR only) ──
     if payload.get("doc_type") == "DT_MEMO_MFR":
