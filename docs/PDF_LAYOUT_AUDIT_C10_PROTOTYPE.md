@@ -130,6 +130,9 @@ The Figure 10-3 with enclosures profile verifies that:
 - `Subj:` and `Encl:` text aligns at the header text column
 - Enclosure continuation markers `(1)` and `(2)` align
 - Body paragraph `1.` appears after `Encl:`
+- Vertical spacing between `MEMORANDUM` and `From:` is approximately 28.8pt (tolerance 4pt)
+- Vertical spacing between `Subj:` and `Encl:` is approximately 28.8pt (tolerance 4pt)
+- Vertical spacing between `Encl:` and `1.` is approximately 43.2pt (tolerance 4pt)
 - Date appears right-aligned in the top-right area
 
 ## Implementation
