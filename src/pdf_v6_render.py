@@ -1123,6 +1123,29 @@ def render_joint_letter_pdf(payload, output_path):
     print(f"DEBUG Total pages generated: {page_count}")
     print(f"DEBUG Body lines on last page: {body_lines_on_last_page}")
 
+    y -= signature_gap
+
+    # ── Joint signature blocks (senior on right, non-senior on left) ──
+    left_sig_x = left_margin + 50
+    right_sig_x = (page_width / 2) + 100
+    c.setFont("Times-Roman", 12)
+
+    senior_sig = senior_cmd.get("signature", {})
+    non_senior_sig = non_senior_cmd.get("signature", {})
+
+    # Names on same row
+    c.drawCentredString(left_sig_x, y, non_senior_sig.get("name", ""))
+    c.drawCentredString(right_sig_x, y, senior_sig.get("name", ""))
+    y -= leading
+
+    # Optional title/role lines
+    senior_title = senior_sig.get("title_or_role", "")
+    non_senior_title = non_senior_sig.get("title_or_role", "")
+    if non_senior_title:
+        c.drawCentredString(left_sig_x, y, non_senior_title)
+    if senior_title:
+        c.drawCentredString(right_sig_x, y, senior_title)
+
     c.save()
 
     print("=== PDF BUILD ===")
