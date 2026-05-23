@@ -44,6 +44,13 @@
       "to_text": "To:",
       "expected_delta_pt": 14.4,
       "tolerance_pt": 2.5
+    },
+    {
+      "name": "subj_to_body_gap",
+      "from_text": "Subj:",
+      "to_text": "1.",
+      "expected_gap_pt": 129.6,
+      "tolerance_pt": 4
     }
   ],
   "vertical_sequence": {

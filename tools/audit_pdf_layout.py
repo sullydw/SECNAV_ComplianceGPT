@@ -111,12 +111,16 @@ def check_label_content_alignment_groups(spans, groups, passed, failed, warnings
 
 
 def check_vertical_spacing_rules(spans, rules, passed, failed, warnings_list):
-    """Check vertical spacing (y-delta) between labeled elements."""
+    """Check vertical spacing (y-gap) between labeled elements.
+
+    Supports both legacy 'expected_delta_pt' and preferred 'expected_gap_pt'.
+    Uses absolute y-difference between the top-left y0 of each element.
+    """
     for rule in rules:
         name = rule.get("name", "unnamed_rule")
         from_text = rule.get("from_text", "")
         to_text = rule.get("to_text", "")
-        expected = rule.get("expected_delta_pt", 0)
+        expected = rule.get("expected_gap_pt", rule.get("expected_delta_pt", 0))
         tolerance = rule.get("tolerance_pt", 2.5)
 
         if not from_text or not to_text:
@@ -136,10 +140,10 @@ def check_vertical_spacing_rules(spans, rules, passed, failed, warnings_list):
         diff = abs(actual - expected)
 
         if diff <= tolerance:
-            passed.append(f"vertical_spacing '{name}': delta={actual:.1f}pt (expected={expected}pt, tolerance=±{tolerance}pt)")
+            passed.append(f"vertical_spacing '{name}': gap={actual:.1f}pt (expected={expected}pt, tolerance=±{tolerance}pt)")
         else:
-            warnings_list.append(
-                f"vertical_spacing '{name}': delta={actual:.1f}pt vs expected={expected}pt (outside ±{tolerance}pt) -- verify visually"
+            failed.append(
+                f"vertical_spacing '{name}': gap={actual:.1f}pt vs expected={expected}pt (outside ±{tolerance}pt)"
             )
 
 

@@ -73,7 +73,7 @@ The profile JSON includes:
 - `order_rules`: Expected vertical ordering
 - `alignment_groups`: Coarse x-coordinate alignment groups (e.g., `header_label_column` for `From:` / `To:` / `Subj:`). May include `expected_x_pt` to compare each text to an absolute expected position instead of comparing to the first found item.
 - `label_content_alignment_groups`: Coarse x-coordinate alignment for text content after labels (e.g., `header_text_column`)
-- `vertical_spacing_rules`: Legacy fixed-pair vertical spacing rules (e.g., `from_to_normal_line`)
+- `vertical_spacing_rules`: Profile-driven vertical gap checks between specified text elements. Each rule uses `from_text` / `to_text` to identify two spans, then measures the absolute y-difference between their top-left positions (`y0`). This is a profile-based gap check, not pixel-image comparison. Supports `expected_gap_pt` (preferred) and the legacy alias `expected_delta_pt`. If either text is missing, or the actual gap exceeds tolerance_pt, the check FAILs with the actual value shown.
 - `vertical_sequence`: Sequence-aware vertical spacing rules that measure between actually adjacent visible elements, accounting for optional header blocks (Via/Ref/Encl). Supports `adjacent_pairs`, `from_any_previous_visible`, and `from_final_header_entry_before_body` for body-start spacing.
 - `alignment_rules`: Ref/Encl continuation marker alignment rules (regex-based marker matching scoped to header block above body `1.`)
 - `page_number_rules`: Page number placement checks. Each rule specifies `text` (exact match), optional `text_regex` (regex match), `page_index` (zero-based), `expected_y_from_bottom_pt`, `expected_center_x_pt`, and `tolerance_pt`. Optional `search_y_tolerance_pt` and `search_x_tolerance_pt` restrict the search to a window around the expected position to avoid false matches (e.g., paragraph markers that share the same text). The tool first searches within the window, then falls back to a full-page search if needed. If the page number is not found, the check FAILs rather than warning, because a required page number must be rendered.
@@ -98,6 +98,26 @@ For each `alignment_rules` entry:
 - PASS if all markers are within tolerance_pt; FAIL if any are outside
 
 This prevents body-level paragraph markers (like `(1)` in subdivisions) from interfering with header-level Ref/Encl marker alignment checks.
+
+### Vertical Spacing Rules
+
+The tool supports profile-driven vertical gap checks via `vertical_spacing_rules`. Each rule specifies:
+- `from_text` and `to_text` to identify two text spans
+- `expected_gap_pt` (or the legacy alias `expected_delta_pt`) for the expected y-distance
+- `tolerance_pt` for acceptable deviation
+
+The tool measures the absolute y-difference between the top-left positions (`y0`) of the matching spans. This is a **profile-based gap check**, not pixel-image comparison. If either span is missing, or the actual gap exceeds tolerance, the check FAILs and reports the actual value.
+
+Example:
+```json
+{
+  "name": "subj_to_body_gap",
+  "from_text": "Subj:",
+  "to_text": "1.",
+  "expected_gap_pt": 129.6,
+  "tolerance_pt": 4
+}
+```
 
 ### Sequence-Aware Spacing
 
