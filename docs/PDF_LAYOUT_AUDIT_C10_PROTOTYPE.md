@@ -10,6 +10,38 @@ This is a **prototype** PDF layout audit tool for checking SECNAV M-5216.5 Chapt
 - **Figure comparison is rule/profile-based**, not pixel-image comparison.
 - Manual figures contain instructional dots, percent signs, captions, and artifacts, so **raw screenshot comparison is intentionally avoided**.
 
+## Manual-and-Figure Source Standard
+
+Every new layout profile must be grounded in **all available manual guidance**, not just the visible geometry of the figure. Before creating a profile, review:
+
+1. **The chapter/section text rules surrounding the figure** — the manual prose that defines when the format is used, what fields are required or optional, and any conditional logic (e.g., single vs. multiple addressees, endorsement types).
+2. **The figure title/caption** — it often states the exact document type, intended use case, or distinguishing characteristics.
+3. **The instructional text inside the figure example itself** — labels, placeholders, and annotations printed within the figure boundary that describe field semantics (e.g., "Distribution:", "Copy to:", "SECOND ENDORSEMENT on ...").
+4. **The actual visual/layout geometry of the figure** — x/y positions, alignment columns, vertical gaps, page placement, and spatial relationships between blocks.
+5. **Existing project rule files and renderer behavior** — cross-reference `rules_v6/C*/*.json`, renderer source, and already-passing profiles to ensure consistency with established conventions.
+
+### Examples
+
+- **Figure 8-3** — The figure text and surrounding section explain when both `To:` and `Distribution:` are used together (group title + distribution list), which is distinct from Figure 8-1 (To-line only) and Figure 8-2 (Distribution-line only). A profile for Figure 8-3 must encode that both labels are present and ordered correctly.
+- **Figure 7-4 Joint Letter** — The figure text and layout explain multiple command blocks and multiple signature placement. A future profile for joint letters must use `layout_regions` to enforce left/right command block boundaries and signature block positioning, derived from the manual's joint-letter instructions rather than inferred from a standard single-signature letter.
+- **Figure 10-3 Plain-Paper From-To** — The figure text and layout support three memo variants (basic, with references, with enclosures). Each variant's profile encodes which labels are required, optional, or forbidden, and what vertical gaps apply, all sourced from the figure's own instructional text and geometry.
+
+### Profile encoding
+
+The audit tool remains **profile-based coordinate checking**, not pixel-image comparison. Manual-derived expectations should be encoded in the profile as:
+
+- `required_text` / `forbidden_text` — presence/absence rules from the manual
+- `order_rules` — vertical ordering derived from figure layout
+- `alignment_groups` — x-coordinate alignment of label columns from figure geometry
+- `layout_regions` — bounded areas for complex block placement (e.g., joint-letter command blocks)
+- `alignment_rules` — continuation marker alignment from figure annotation
+- `page_number_rules` — page placement from figure continuation-page examples
+- `vertical_spacing_rules` — measured gaps between adjacent elements from figure geometry
+
+### Manual visual review requirement
+
+Even with thorough manual sourcing, **manual visual review remains required when creating a new profile**. The profile author must render a test PDF, open it alongside the manual figure, and verify that the encoded rules match both the text instructions and the visual layout before wiring the profile into a regression suite.
+
 ## Profile-Based Checking
 
 The tool checks:

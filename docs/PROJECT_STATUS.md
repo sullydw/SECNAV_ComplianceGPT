@@ -111,6 +111,10 @@ For each chapter, the regression runner:
 - Figures checked: label presence, vertical ordering, alignment, spacing, page numbers (where applicable)
 - Figures NOT checked: visual appearance, font quality, margins, exact pixel positioning
 - Manual visual review remains required for final compliance
+
+**Manual-and-Figure Source Standard:**
+Every new layout profile must be grounded in all available manual guidance, not just visible geometry. Before creating a profile, review: (1) the chapter/section text rules surrounding the figure, (2) the figure title/caption, (3) the instructional text inside the figure example itself, (4) the actual visual/layout geometry, and (5) existing project rule files and renderer behavior. Profiles encode manual-derived expectations as required/forbidden text, order rules, alignment groups, layout regions, marker alignment, page-number checks, and vertical spacing rules. Manual visual review remains required when creating a new profile.
+
 - Status of each runner:
   - C7: `python tools/run_c7_phase1_regression.py` — layout audit runs after PDF render
   - C8: `python tools/run_c8_regression.py` — layout audit runs after PDF render
