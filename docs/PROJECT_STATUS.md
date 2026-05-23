@@ -96,7 +96,7 @@ The project now has automated PDF layout audits wired into each chapter's regres
 - **manual-and-figure source standard** — every new profile must be grounded in all available manual guidance (chapter/section text rules, figure title/caption, instructional text, visual geometry, existing rule files and renderer behavior)
 
 **Wired audit coverage:**
-- **C7 Phase 1 regression**: Figure 7-1 (Standard Letter), Figure 7-2 (Continuation Page)
+- **C7 Phase 1 regression**: Figure 7-1 (Standard Letter), Figure 7-2 (Continuation Page), Figure 7-4 (Joint Letter)
 - **C8 regression**: Figure 8-1 (Multiple-Address To-line), Figure 8-2 (Distribution-line), Figure 8-3 (To + Distribution)
 - **C9 regression**: Figure 9-2 (New Page Endorsement)
 - **C10 regression**:

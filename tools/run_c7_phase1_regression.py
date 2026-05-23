@@ -100,6 +100,19 @@ def main() -> int:
             [py, "src/pdf_v6_render.py"],
             "Default renderer smoke test",
         ),
+        (
+            [py, "src/joint_letter_validate.py", "examples/audit_c7_joint_letter.json"],
+            "Joint letter validator on C7 joint letter fixture",
+        ),
+        (
+            [
+                py,
+                "src/pdf_v6_render.py",
+                "examples/audit_c7_joint_letter.json",
+                "output/audit_c7_joint_letter.pdf",
+            ],
+            "Render C7 joint letter fixture",
+        ),
     ]
 
     passed = True
@@ -109,6 +122,9 @@ def main() -> int:
             passed = False
 
     if not check_pdf(root, "output/audit_c7_phase1_standard_letter.pdf"):
+        passed = False
+
+    if not check_pdf(root, "output/audit_c7_joint_letter.pdf"):
         passed = False
 
     # Standalone layout audit (now wired into regression)
@@ -132,6 +148,17 @@ def main() -> int:
         "output/audit_c7_phase1_standard_letter.pdf",
     ]
     if not run_command(root, layout_audit_args_2, "C7 layout audit Figure 7-2"):
+        passed = False
+
+    layout_audit_args_joint = [
+        py,
+        "tools/audit_pdf_layout.py",
+        "--profile",
+        "docs/layout_profiles/figure_7_4_joint_letter.json",
+        "--pdf",
+        "output/audit_c7_joint_letter.pdf",
+    ]
+    if not run_command(root, layout_audit_args_joint, "C7 layout audit Figure 7-4"):
         passed = False
 
     print("=" * 72)

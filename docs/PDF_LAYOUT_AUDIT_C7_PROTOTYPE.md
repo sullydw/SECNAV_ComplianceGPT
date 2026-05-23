@@ -59,7 +59,7 @@ The tool checks:
 Currently supports:
 - **Figure 7-1 Standard Letter (First Page)** — wired into C7 Phase 1 regression runner.
 - **Figure 7-2 Standard Letter (Second Page / Continuation)** — wired into C7 Phase 1 regression runner; checks repeated subject placement and bottom-centered page number.
-- **Figure 7-4 Joint Letter** — standalone profile (not yet wired into C7 Phase 1 regression).
+- **Figure 7-4 Joint Letter** — wired into C7 Phase 1 regression runner.
 
 Future profiles can be added for:
 - Figure 8-1/8-2/8-3
