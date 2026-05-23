@@ -985,10 +985,7 @@ def draw_header_block(c, label_x, text_x, y, leading, normalized, page_width, ri
 
 
 def render_joint_letter_pdf(payload, output_path):
-    """Joint Letter renderer stub (J2). Validates payload; emits diagnostic PDF."""
-    from reportlab.lib.pagesizes import LETTER
-    from reportlab.pdfgen import canvas
-
+    """Joint Letter partial renderer (J3a). Validates payload; draws top/header block only."""
     errors = validate_joint_letter(payload)
     if errors:
         print("=== PDF BUILD ===")
@@ -998,15 +995,115 @@ def render_joint_letter_pdf(payload, output_path):
             print(f"  ERROR: {err}")
         return
 
-    # Validation passed: create minimal diagnostic PDF
     c = canvas.Canvas(output_path, pagesize=LETTER)
     page_width, page_height = LETTER
-    c.setFont("Courier-Bold", 16)
-    y = page_height / 2 + 30
-    c.drawCentredString(page_width / 2, y, "JOINT LETTER RENDERER STUB")
-    c.setFont("Courier", 12)
-    c.drawCentredString(page_width / 2, y - 30, "VALIDATION PASSED")
-    c.drawCentredString(page_width / 2, y - 50, "FULL RENDERING NOT YET IMPLEMENTED")
+
+    # Margins / spacing
+    left_margin = 72.0
+    right_margin = 72.0
+    top_margin = 45.0
+    body_font_size = 12
+    leading = body_font_size * 1.2
+    blank_line = leading
+
+    y = page_height - top_margin
+
+    # Resolve commands
+    commands = payload.get("commands", [])
+    senior_index = payload.get("senior_command_index", 0)
+    if senior_index < 0 or senior_index >= len(commands):
+        senior_index = 0
+    senior_cmd = commands[senior_index]
+    non_senior_cmd = commands[1 - senior_index] if len(commands) == 2 else commands[0]
+
+    # ── Combined Letterhead ──
+    # Senior command appears first per SECNAV M-5216.5 Figure 7-4
+    letterhead_lines = [
+        ("DEPARTMENT OF THE NAVY", "Times-Bold", 10),
+        (senior_cmd.get("letterhead_title", ""), "Times-Roman", 8),
+        (non_senior_cmd.get("letterhead_title", ""), "Times-Roman", 8),
+    ]
+    # Shared location if both commands share the same city/state
+    loc_parts = []
+    for cmd in (senior_cmd, non_senior_cmd):
+        ui = cmd.get("unit_identity", {})
+        city = ui.get("INSTALLATION_OR_LOCATION", "")
+        state = ui.get("STATE", "")
+        if city and state:
+            loc_parts.append(f"{city} {state}")
+    if loc_parts and len(set(loc_parts)) == 1:
+        letterhead_lines.append((loc_parts[0], "Times-Roman", 8))
+
+    for text, font, size in letterhead_lines:
+        if not text:
+            continue
+        c.setFont(font, size)
+        c.drawCentredString(page_width / 2, y, text)
+        y -= size * 1.2
+
+    y -= blank_line  # boundary after letterhead
+
+    # ── Dual sender-symbol / date blocks ──
+    # Non-senior on the left, senior on the right for visual consistency
+    # with the signature senior-on-right convention.
+    def draw_sender_block(cmd, block_x, align="left"):
+        lines = [
+            str(cmd.get("short_code", "")),
+            str(cmd.get("ssic", "")),
+            str(cmd.get("serial", "")),
+            str(cmd.get("date", "")),
+        ]
+        block_y = y
+        c.setFont("Times-Roman", 10)
+        for line in lines:
+            if not line:
+                continue
+            if align == "right":
+                c.drawRightString(block_x, block_y, line)
+            else:
+                c.drawString(block_x, block_y, line)
+            block_y -= 10 * 1.2
+        return block_y
+
+    left_bottom = draw_sender_block(non_senior_cmd, left_margin, align="left")
+    right_bottom = draw_sender_block(senior_cmd, page_width - right_margin, align="right")
+    y = min(left_bottom, right_bottom)
+    y -= blank_line
+
+    # ── Joint Heading ──
+    heading = payload.get("joint_heading", "JOINT LETTER")
+    c.setFont("Times-Bold", 12)
+    c.drawCentredString(page_width / 2, y, heading)
+    y -= 12 * 1.2
+    y -= blank_line
+
+    # ── From block ──
+    c.setFont("Times-Bold", 12)
+    c.drawString(left_margin, y, "From:")
+    y -= leading
+    c.setFont("Times-Roman", 12)
+    c.drawString(115.0, y, senior_cmd.get("command_title", ""))
+    y -= leading
+    c.drawString(115.0, y, non_senior_cmd.get("command_title", ""))
+    y -= blank_line
+
+    # ── To block ──
+    c.setFont("Times-Bold", 12)
+    c.drawString(left_margin, y, "To:")
+    c.setFont("Times-Roman", 12)
+    to_val = payload.get("to", "")
+    if isinstance(to_val, list):
+        to_val = to_val[0] if to_val else ""
+    c.drawString(115.0, y, to_val)
+    y -= blank_line
+
+    # ── Subj block ──
+    c.setFont("Times-Bold", 12)
+    c.drawString(left_margin, y, "Subj:")
+    c.setFont("Times-Roman", 12)
+    c.drawString(115.0, y, payload.get("subj", ""))
+    y -= leading
+
     c.save()
 
     print("=== PDF BUILD ===")
