@@ -25,7 +25,7 @@ Currently supports:
 - **Figure 10-1 Memorandum for the Record** — wired into C10 regression; audit failure fails C10 regression
 - **Figure 10-3 Plain-Paper From-To (Basic)** — wired into C10 regression; audit failure fails C10 regression
 - **Figure 10-3 Plain-Paper From-To (With References)** — wired into C10 regression; audit failure fails C10 regression
-- **Figure 10-3 Plain-Paper From-To (With Enclosures)** — standalone profile, not wired into regression yet
+- **Figure 10-3 Plain-Paper From-To (With Enclosures)** — wired into C10 regression; audit failure fails C10 regression
 
 Future profiles should cover:
 - Figure 10-2 (if applicable)
@@ -137,5 +137,5 @@ Uses PyMuPDF (`fitz`) for text extraction:
 ## Status
 
 - **Prototype only**
-- **Figure 10-1 and Figures 10-3 (basic and with references) wired into C10 regression** — audit failure causes C10 regression failure
+- **Figure 10-1 and all Figures 10-3 (basic, with references, and with enclosures) wired into C10 regression** — audit failure causes C10 regression failure
 - Manual review still required for final compliance
