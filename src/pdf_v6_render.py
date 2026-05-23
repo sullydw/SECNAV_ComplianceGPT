@@ -1146,6 +1146,17 @@ def render_joint_letter_pdf(payload, output_path):
     if senior_title:
         c.drawCentredString(right_sig_x, y, senior_title)
 
+    # -- Copy to block (J3d) --
+    y -= leading  # one blank line after title/role line
+    copy_to_list = payload.get("copy_to")
+    if copy_to_list:
+        c.setFont("Times-Roman", 12)
+        c.drawString(left_margin, y, "Copy to:")
+        y -= leading
+        for entry in copy_to_list:
+            c.drawString(left_margin, y, entry)
+            y -= leading
+
     c.save()
 
     print("=== PDF BUILD ===")
