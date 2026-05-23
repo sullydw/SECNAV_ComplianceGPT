@@ -68,7 +68,8 @@
 #### C10 Plain-Paper From-To Closeout (5e27b4e)
 - ✅ C10 Plain-Paper From-To renderer implemented (`render_from_to_plain_pdf()`)
 - ✅ C10 Plain-Paper From-To validator implemented
-- ✅ C10 regression runner validates and render-checks From-To fixtures
+- ✅ C10 regression runner validates and render-checks MFR and From-To fixtures (basic, references, enclosures)
+- ✅ C10 layout audits wired for: Figure 10-1 MFR, Figure 10-3 From-To Basic, Figure 10-3 From-To With References, Figure 10-3 From-To With Enclosures
 - ✅ C7/C8/C9 guards remained passing after C10 changes
 - ✅ Manual visual review accepted as "looks pretty good"
 - ✅ Same-page endorsements remain deferred/not implemented
@@ -90,7 +91,13 @@ The project now has automated PDF layout audits wired into each chapter's regres
 - **C7 Phase 1 regression**: Figure 7-1 (Standard Letter), Figure 7-2 (Continuation Page)
 - **C8 regression**: Figure 8-1 (Multiple-Address To-line), Figure 8-2 (Distribution-line), Figure 8-3 (To + Distribution)
 - **C9 regression**: Figure 9-2 (New Page Endorsement)
-- **C10 regression**: Figure 10-1 MFR (Memorandum for the Record)
+- **C10 regression**:
+  - Figure 10-1 MFR (Memorandum for the Record)
+  - Figure 10-3 Plain-Paper From-To (Basic)
+  - Figure 10-3 Plain-Paper From-To (With References)
+  - Figure 10-3 Plain-Paper From-To (With Enclosures)
+  - All wired C10 layout audits fail C10 regression on audit failure
+  - All current C10 wired audits pass with 0 warnings
 
 **How it works:**
 For each chapter, the regression runner:
