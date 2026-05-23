@@ -116,6 +116,9 @@ The Figure 10-3 with references profile verifies that:
 - `Subj:` and `Ref:` text aligns at the header text column
 - Reference continuation markers `(a)` and `(b)` align
 - Body paragraph `1.` appears after `Ref:`
+- Vertical spacing between `MEMORANDUM` and `From:` is approximately 28.8pt (tolerance 4pt)
+- Vertical spacing between `Subj:` and `Ref:` is approximately 28.8pt (tolerance 4pt)
+- Vertical spacing between `Ref:` and `1.` is approximately 43.2pt (tolerance 4pt)
 - Date appears right-aligned in the top-right area
 
 ### From-To Plain with Enclosures Check
