@@ -1147,7 +1147,7 @@ def render_joint_letter_pdf(payload, output_path):
         c.drawCentredString(right_sig_x, y, senior_title)
 
     # -- Copy to block (J3d) --
-    y -= leading  # one blank line after title/role line
+    y -= copy_gap  # at least two blank lines after signature title/role before Copy to
     copy_to_list = payload.get("copy_to")
     if copy_to_list:
         c.setFont("Times-Roman", 12)
