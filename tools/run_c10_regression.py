@@ -135,6 +135,17 @@ def main() -> int:
     if not run_command(root, audit_cmd, label):
         passed = False
 
+    # --- C10 layout audit Figure 10-3 From-To Plain Refs ---
+
+    label = "C10 layout audit Figure 10-3 From-To Plain Refs"
+    audit_cmd = [
+        py, "tools/audit_pdf_layout.py",
+        "--profile", "docs/layout_profiles/figure_10_from_to_plain_with_refs.json",
+        "--pdf", "output/audit_c10_from_to_plain_with_refs.pdf",
+    ]
+    if not run_command(root, audit_cmd, label):
+        passed = False
+
     # --- Baseline guards ---
 
     if not run_command(root, [py, "tools/run_c7_phase1_regression.py"], "Run C7 Phase 1 regression guard"):
