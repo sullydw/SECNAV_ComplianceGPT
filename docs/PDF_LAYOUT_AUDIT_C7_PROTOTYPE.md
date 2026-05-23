@@ -77,6 +77,7 @@ The profile JSON includes:
 - `vertical_sequence`: Sequence-aware vertical spacing rules that measure between actually adjacent visible elements, accounting for optional header blocks (Via/Ref/Encl). Supports `adjacent_pairs`, `from_any_previous_visible`, and `from_final_header_entry_before_body` for body-start spacing.
 - `alignment_rules`: Ref/Encl continuation marker alignment rules (regex-based marker matching scoped to header block above body `1.`)
 - `page_number_rules`: Page number placement checks. Each rule specifies `text` (exact match), optional `text_regex` (regex match), `page_index` (zero-based), `expected_y_from_bottom_pt`, `expected_center_x_pt`, and `tolerance_pt`. Optional `search_y_tolerance_pt` and `search_x_tolerance_pt` restrict the search to a window around the expected position to avoid false matches (e.g., paragraph markers that share the same text). The tool first searches within the window, then falls back to a full-page search if needed. If the page number is not found, the check FAILs rather than warning, because a required page number must be rendered.
+- `layout_regions`: Named layout regions for figure-aware coordinate checks. Each region specifies `name`, `text` (case-insensitive match), optional `page_index` (0-based, defaults to `profile.page_index` then all pages), `x_min_pt`/`x_max_pt`/`y_min_pt`/`y_max_pt` bounds, and `required` (default true). If the matched span falls inside the bounds the check passes; if it is outside, the check FAILs and reports actual x/y. If `required` is false and the text is absent, the check is skipped with a warning. This supports future complex formats (e.g., joint letters with left/right command blocks and multiple signature blocks) by allowing profiles to declare where specific labels must appear, not just that they exist. It is still profile-based coordinate checking, not pixel-image comparison.
 - `spacing_tolerances`: X/Y tolerances
 
 ## Implementation
@@ -129,6 +130,37 @@ The `vertical_sequence` profile field supports:
 - `adjacent_pairs`: check distance between adjacent pairs that are present
 - `from_any_previous_visible`: check distance from whatever is immediately above a target element
 - `from_final_header_entry_before_body`: check distance from the final header entry line before body paragraph `1.`
+
+### Layout Regions
+
+The tool supports figure-aware coordinate checks via `layout_regions`. Each region declares that a specific text label must appear inside a bounded page area. This prepares the tool for complex future formats (e.g., joint letters with left/right command blocks and multiple signature blocks) by allowing profiles to reason about where labels must be, not merely that they exist.
+
+Each region specifies:
+- `name`: descriptive name for the check
+- `text`: exact or substring text to match (case-insensitive)
+- `page_index`: optional 0-based page index; defaults to `profile.page_index` then falls back to all pages
+- `x_min_pt`, `x_max_pt`, `y_min_pt`, `y_max_pt`: optional coordinate bounds
+- `required`: default true; optional regions that are missing are skipped with a warning instead of failing
+
+If the matched span falls inside the defined bounds, the check passes and reports the actual x/y. If it is outside, the check FAILs and reports the actual coordinates versus expected bounds. This remains profile-based PDF coordinate checking, not pixel-image comparison.
+
+Example:
+```json
+{
+  "layout_regions": [
+    {
+      "name": "from_label_region",
+      "text": "From:",
+      "page_index": 0,
+      "x_min_pt": 60,
+      "x_max_pt": 90,
+      "y_min_pt": 120,
+      "y_max_pt": 160,
+      "required": true
+    }
+  ]
+}
+```
 
 ## Status
 

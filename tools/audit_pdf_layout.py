@@ -528,6 +528,76 @@ def check_page_number_rules(spans, page_dimensions, rules, passed, failed, warni
             )
 
 
+def check_layout_regions(spans, regions, passed, failed, warnings_list, profile_page_index=None):
+    """Check that labeled text spans fall within expected page regions.
+
+    Each region dict may contain:
+      - name: str (required)
+      - text: str (required) — case-insensitive match against span text
+      - page_index: int (optional, 0-based; defaults to profile_page_index then all pages)
+      - x_min_pt, x_max_pt, y_min_pt, y_max_pt: float bounds
+      - required: bool (default True)
+    """
+    for region in regions:
+        name = region.get("name", "unnamed_region")
+        text = region.get("text", "")
+        if not text:
+            warnings_list.append(f"layout_region '{name}': no 'text' specified; skipped")
+            continue
+
+        target_page = region.get("page_index")
+        if target_page is None:
+            target_page = profile_page_index
+        if target_page is not None:
+            target_page_1based = target_page + 1  # spans are 1-based
+            search_spans = [s for s in spans if s.get("page") == target_page_1based]
+        else:
+            search_spans = spans
+
+        match = None
+        for s in search_spans:
+            if text.lower() in s.get("text", "").lower():
+                match = s
+                break
+
+        required = region.get("required", True)
+        x_min = region.get("x_min_pt")
+        x_max = region.get("x_max_pt")
+        y_min = region.get("y_min_pt")
+        y_max = region.get("y_max_pt")
+
+        if match is None:
+            if required:
+                failed.append(f"layout_region '{name}': missing required text '{text}'")
+            else:
+                warnings_list.append(f"layout_region '{name}': skipped optional missing")
+            continue
+
+        x0 = match.get("x0", 0)
+        y0 = match.get("y0", 0)
+        page = match.get("page", 1)
+        page_desc = f" page={page}" if target_page is None else ""
+
+        in_x = (x_min is None or x0 >= x_min) and (x_max is None or x0 <= x_max)
+        in_y = (y_min is None or y0 >= y_min) and (y_max is None or y0 <= y_max)
+
+        if in_x and in_y:
+            bounds_parts = []
+            if x_min is not None or x_max is not None:
+                bounds_parts.append(f"x={x0:.1f}")
+            if y_min is not None or y_max is not None:
+                bounds_parts.append(f"y={y0:.1f}")
+            detail = ", ".join(bounds_parts) + page_desc
+            passed.append(f"layout_region '{name}': PASS {detail}")
+        else:
+            fail_parts = [f"x={x0:.1f}", f"y={y0:.1f}{page_desc}"]
+            if not in_x:
+                fail_parts.append("outside x bounds")
+            if not in_y:
+                fail_parts.append("outside y bounds")
+            failed.append(f"layout_region '{name}': FAIL {' '.join(fail_parts)} (expected x in [{x_min}, {x_max}], y in [{y_min}, {y_max}])")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile", required=True)
@@ -596,6 +666,11 @@ def main():
     vertical_sequence = profile.get("vertical_sequence", {})
     if vertical_sequence:
         check_vertical_sequence(spans, vertical_sequence, passed, failed, warnings)
+
+    # Check layout regions
+    layout_regions = profile.get("layout_regions", [])
+    if layout_regions:
+        check_layout_regions(spans, layout_regions, passed, failed, warnings, profile_page_index=page_index)
 
     # Check continuation marker alignment
     alignment_rules = profile.get("alignment_rules", [])

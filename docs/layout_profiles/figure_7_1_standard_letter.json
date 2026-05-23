@@ -79,6 +79,18 @@
       }
     ]
   },
+  "layout_regions": [
+    {
+      "name": "from_label_region",
+      "text": "From:",
+      "page_index": 0,
+      "x_min_pt": 60,
+      "x_max_pt": 90,
+      "y_min_pt": 120,
+      "y_max_pt": 160,
+      "required": true
+    }
+  ],
   "spacing_tolerances": {
     "x_tolerance_pt": 3,
     "y_tolerance_pt": 4
