@@ -27,7 +27,10 @@
     ["From:", "To:"],
     ["To:", "Subj:"],
     ["Subj:", "1."],
-    ["4.", "J. K. JANICKI"],
+    ["1.", "A joint letter may be used to establish an agreement between two or more activities or for other matters of mutual concern."],
+    ["2.", "On plain bond paper, list the command titles in the letterhead so the senior is at the top. If the activities are in different cities or states, follow each title with its Standard Navy Distribution List address."],
+    ["3.", "Arrange signature lines so the senior official is at the right. Place the signature line of a third cosigner in the middle of the page. The senior official signs the letter last."],
+    ["4.", "If your activity is the last to sign, send copies of the signed letter to all cosigners."],
     ["J. K. JANICKI", "Copy to:"],
     ["A. N. PIDGEON", "Copy to:"]
   ],
@@ -166,20 +169,20 @@
       "name": "left_signature_region",
       "text": "J. K. JANICKI",
       "page_index": 0,
-      "x_min_pt": 144,
-      "x_max_pt": 180,
-      "y_min_pt": 470,
-      "y_max_pt": 510,
+      "x_min_pt": 60,
+      "x_max_pt": 220,
+      "y_min_pt": 440,
+      "y_max_pt": 530,
       "required": true
     },
     {
       "name": "right_signature_region",
       "text": "A. N. PIDGEON",
       "page_index": 0,
-      "x_min_pt": 360,
+      "x_min_pt": 280,
       "x_max_pt": 420,
-      "y_min_pt": 470,
-      "y_max_pt": 510,
+      "y_min_pt": 440,
+      "y_max_pt": 530,
       "required": true
     },
     {
@@ -187,9 +190,9 @@
       "text": "Copy to:",
       "page_index": 0,
       "x_min_pt": 60,
-      "x_max_pt": 110,
-      "y_min_pt": 510,
-      "y_max_pt": 560,
+      "x_max_pt": 140,
+      "y_min_pt": 500,
+      "y_max_pt": 670,
       "required": true
     }
   ],
@@ -198,7 +201,7 @@
       "name": "copy_to_after_signature_title",
       "from_text": "Acting",
       "to_text": "Copy to:",
-      "expected_gap_pt": 28.8,
+      "expected_gap_pt": 43.2,
       "tolerance_pt": 4
     }
   ],
