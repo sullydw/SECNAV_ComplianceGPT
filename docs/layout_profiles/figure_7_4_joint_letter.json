@@ -166,8 +166,8 @@
       "name": "left_signature_region",
       "text": "J. K. JANICKI",
       "page_index": 0,
-      "x_min_pt": 60,
-      "x_max_pt": 130,
+      "x_min_pt": 144,
+      "x_max_pt": 180,
       "y_min_pt": 470,
       "y_max_pt": 510,
       "required": true
@@ -176,8 +176,8 @@
       "name": "right_signature_region",
       "text": "A. N. PIDGEON",
       "page_index": 0,
-      "x_min_pt": 320,
-      "x_max_pt": 430,
+      "x_min_pt": 360,
+      "x_max_pt": 420,
       "y_min_pt": 470,
       "y_max_pt": 510,
       "required": true

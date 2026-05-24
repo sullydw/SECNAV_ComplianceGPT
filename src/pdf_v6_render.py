@@ -1130,25 +1130,26 @@ def render_joint_letter_pdf(payload, output_path):
     y -= signature_gap
 
     # ── Joint signature blocks (senior on right, non-senior on left) ──
-    left_sig_x = left_margin + 50
-    right_sig_x = (page_width / 2) + 100
+    # Signature blocks as left-aligned columns
+    left_sig_x = 144.0
+    right_sig_x = 360.0
     c.setFont("Times-Roman", 12)
 
     senior_sig = senior_cmd.get("signature", {})
     non_senior_sig = non_senior_cmd.get("signature", {})
 
-    # Names on same row
-    c.drawCentredString(left_sig_x, y, non_senior_sig.get("name", ""))
-    c.drawCentredString(right_sig_x, y, senior_sig.get("name", ""))
+    # Names on same row using drawString (not drawCentredString)
+    c.drawString(left_sig_x, y, non_senior_sig.get("name", ""))
+    c.drawString(right_sig_x, y, senior_sig.get("name", ""))
     y -= leading
 
-    # Optional title/role lines
+    # Optional title/role lines - same x alignment as name
     senior_title = senior_sig.get("title_or_role", "")
     non_senior_title = non_senior_sig.get("title_or_role", "")
     if non_senior_title:
-        c.drawCentredString(left_sig_x, y, non_senior_title)
+        c.drawString(left_sig_x, y, non_senior_title)
     if senior_title:
-        c.drawCentredString(right_sig_x, y, senior_title)
+        c.drawString(right_sig_x, y, senior_title)
 
     # -- Copy to block (J3d) --
     y -= copy_gap  # at least two blank lines after signature title/role before Copy to
