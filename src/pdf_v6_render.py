@@ -1114,25 +1114,25 @@ def render_joint_letter_pdf(payload, output_path):
         "subj": payload.get("subj", ""),
         "body": payload.get("body", []),
     }
-    # Spacing constants mirror standard-letter path
-    bottom_margin_pt = 72.0
-    signature_gap = 4 * leading
-    copy_gap = 2 * leading
+
+    # Spacing constants for Joint Letter signatures only
+    joint_letter_signature_gap = 6 * leading
+    joint_letter_copy_gap = 3 * leading
+
     y, page_count, body_lines_on_last_page = draw_body_block(
         c, left_margin, y, leading, body_font_size, normalized_for_body,
-        page_height, top_margin, bottom_margin_pt, signature_gap, copy_gap,
+        page_height, top_margin, 72.0, joint_letter_signature_gap, joint_letter_copy_gap,
         reserve_signature_space=False,
         page_number_start=None, force_page_number_on_first_page=False,
     )
     print(f"DEBUG Total pages generated: {page_count}")
     print(f"DEBUG Body lines on last page: {body_lines_on_last_page}")
 
-    y -= signature_gap
-
     # ── Joint signature blocks (senior on right, non-senior on left) ──
     # Signature blocks as left-aligned columns
-    left_sig_x = 144.0
-    right_sig_x = 360.0
+    # Left: at left margin; Right: at standard signature position (page_width / 2)
+    left_sig_x = left_margin
+    right_sig_x = page_width / 2.0
     c.setFont("Times-Roman", 12)
 
     senior_sig = senior_cmd.get("signature", {})
@@ -1152,7 +1152,7 @@ def render_joint_letter_pdf(payload, output_path):
         c.drawString(right_sig_x, y, senior_title)
 
     # -- Copy to block (J3d) --
-    y -= copy_gap  # at least two blank lines after signature title/role before Copy to
+    y -= joint_letter_copy_gap  # additional space after signature title/role before Copy to
     copy_to_list = payload.get("copy_to")
     if copy_to_list:
         c.setFont("Times-Roman", 12)
