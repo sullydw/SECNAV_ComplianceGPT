@@ -1128,6 +1128,10 @@ def render_joint_letter_pdf(payload, output_path):
     print(f"DEBUG Total pages generated: {page_count}")
     print(f"DEBUG Body lines on last page: {body_lines_on_last_page}")
 
+    # Joint Letter: explicitly move down 4 lines after body before signatures
+    # This creates a visible signature gap (final paragraph line to signature row ~57.6 pt)
+    y -= 4 * leading
+
     # ── Joint signature blocks (senior on right, non-senior on left) ──
     # Signature blocks as left-aligned columns
     # Left: at left margin; Right: at standard signature position (page_width / 2)
