@@ -1077,7 +1077,7 @@ def render_joint_letter_pdf(payload, output_path):
     y -= 12 * 1.2
     y -= blank_line
 
-    # ── From block ──
+    # From block
     c.setFont("Times-Bold", 12)
     c.drawString(left_margin, y, "From:")
     y -= leading
@@ -1086,8 +1086,10 @@ def render_joint_letter_pdf(payload, output_path):
     y -= leading
     c.drawString(115.0, y, non_senior_cmd.get("command_title", ""))
     y -= blank_line
+    # Rule: one full blank line after second From entry before To
+    y -= blank_line
 
-    # ── To block ──
+    # To block
     c.setFont("Times-Bold", 12)
     c.drawString(left_margin, y, "To:")
     c.setFont("Times-Roman", 12)
@@ -1096,14 +1098,16 @@ def render_joint_letter_pdf(payload, output_path):
         to_val = to_val[0] if to_val else ""
     c.drawString(115.0, y, to_val)
     y -= blank_line
+    # Rule: one full blank line after To before Subj
+    y -= blank_line
 
-    # ── Subj block ──
+    # Subj block
     c.setFont("Times-Bold", 12)
     c.drawString(left_margin, y, "Subj:")
     c.setFont("Times-Roman", 12)
     c.drawString(115.0, y, payload.get("subj", ""))
     y -= leading
-    y -= blank_line  # one blank line before body per SECNAV spacing
+    y -= blank_line
 
     # ── Body block ──
     normalized_for_body = {
