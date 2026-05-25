@@ -40,6 +40,32 @@
       "texts": ["From:", "To:", "Subj:"],
       "x_field": "x0",
       "tolerance_pt": 3
+    },
+    {
+      "name": "from_command_x_column",
+      "texts": ["Commander, Naval Sea Systems Command", "Commander, Naval Supply Systems Command"],
+      "x_field": "x0",
+      "tolerance_pt": 2
+    }
+  ],
+  "alignment_rules": [
+    {
+      "name": "ref_continuation_markers",
+      "marker_regex": "^\\([a-z]+\\)",
+      "tolerance_pt": 3
+    },
+    {
+      "name": "encl_continuation_markers",
+      "marker_regex": "^\\([0-9]+\\)",
+      "tolerance_pt": 3
+    }
+  ],
+  "label_content_alignment_groups": [
+    {
+      "name": "from_label_and_command",
+      "labels": ["From:", "Commander, Naval Sea Systems Command"],
+      "x_field": "x0",
+      "tolerance_pt": 2
     }
   ],
   "layout_relationships": [
@@ -108,20 +134,12 @@
       "min_delta_pt": 5
     },
     {
-      "name": "acting_above_copy_to",
-      "type": "above",
-      "first_text": "Acting",
-      "second_text": "Copy to:",
+      "name": "from_label_content_alignment",
+      "type": "same_row",
+      "first_text": "From:",
+      "second_text": "Commander, Naval Sea Systems Command",
       "page_index": 0,
-      "min_delta_pt": 5
-    },
-    {
-      "name": "deputy_above_copy_to",
-      "type": "above",
-      "first_text": "Deputy",
-      "second_text": "Copy to:",
-      "page_index": 0,
-      "min_delta_pt": 5
+      "tolerance_pt": 2
     }
   ],
   "layout_regions": [
