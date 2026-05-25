@@ -1077,17 +1077,18 @@ def render_joint_letter_pdf(payload, output_path):
     y -= 12 * 1.2
     y -= blank_line
 
-    # From block
+    # From block - list commands in array order (matches Figure 7-4 fixture order)
+    first_cmd = commands[0]
+    second_cmd = commands[1] if len(commands) > 1 else commands[0]
     c.setFont("Times-Roman", 12)
-    c.drawString(left_margin, y, "From:")
+    label_x = left_margin
+    text_x = 115.0
+    # "From:" label and first command title share the same baseline
+    c.drawString(label_x, y, "From:")
+    c.drawString(text_x, y, first_cmd.get("command_title", ""))
     y -= leading
-    c.drawString(115.0, y, senior_cmd.get("command_title", ""))
-    y -= leading
-    c.drawString(115.0, y, non_senior_cmd.get("command_title", ""))
-    y -= blank_line
-    # Rule: one full blank line after second From entry before To
-    y -= blank_line
-
+    c.drawString(text_x, y, second_cmd.get("command_title", ""))
+    y -= 2 * leading  # blank-line gap after From block before To
     # To block
     c.setFont("Times-Roman", 12)
     c.drawString(left_margin, y, "To:")
