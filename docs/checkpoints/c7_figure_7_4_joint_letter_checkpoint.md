@@ -10,6 +10,7 @@
 - c733b6b  pruned Joint Letter debug artifacts
 - 2d57e7d  normalized Joint Letter heading and sender-symbol font
 - 56a272e  normalized Joint Letter From/To/Subj label font
+- 64c0bd0  corrected Joint Letter From block order and spacing
 
 ## Final layout rules captured
 
@@ -25,10 +26,19 @@
 - JOINT LETTER heading uses Times-Roman 12 pt and starts at the left margin.
 - From/To/Subj labels use Times-Roman 12 pt to match Figure 7-4.
 - Header/body/signature content uses Times-Roman 12 pt.
+- The first From command appears on the same baseline as "From:".
+- The second From command appears one line below and aligns under the first From command text.
+- The Figure 7-4 From block uses figure order: Naval Sea Systems Command first, Naval Supply Systems Command second.
+- There is one visible blank-line gap between the second From command and the To line.
 
 ## Final measured Figure 7-4 positions
 
 - final paragraph 4 line y=438.0
+- From label x=72.0, y=178.76
+- first From command x=115.0, y=178.76
+- second From command x=115.0, y=193.16
+- To label x=72.0, y=221.96
+- second From command to To label gap=28.8 pt
 - J. K. JANICKI x=72.0, y=510.0
 - A. N. PIDGEON x=306.0, y=510.0
 - Acting x=72.0, y=524.4
