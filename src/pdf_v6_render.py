@@ -1054,7 +1054,7 @@ def render_joint_letter_pdf(payload, output_path):
             str(cmd.get("date", "")),
         ]
         block_y = y
-        c.setFont("Times-Roman", 10)
+        c.setFont("Times-Roman", 12)
         for line in lines:
             if not line:
                 continue
@@ -1072,8 +1072,8 @@ def render_joint_letter_pdf(payload, output_path):
 
     # ── Joint Heading ──
     heading = payload.get("joint_heading", "JOINT LETTER")
-    c.setFont("Times-Bold", 12)
-    c.drawCentredString(page_width / 2, y, heading)
+    c.setFont("Times-Roman", 12)
+    c.drawString(left_margin, y, heading)
     y -= 12 * 1.2
     y -= blank_line
 
