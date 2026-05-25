@@ -1078,10 +1078,9 @@ def render_joint_letter_pdf(payload, output_path):
     y -= blank_line
 
     # From block
-    c.setFont("Times-Bold", 12)
+    c.setFont("Times-Roman", 12)
     c.drawString(left_margin, y, "From:")
     y -= leading
-    c.setFont("Times-Roman", 12)
     c.drawString(115.0, y, senior_cmd.get("command_title", ""))
     y -= leading
     c.drawString(115.0, y, non_senior_cmd.get("command_title", ""))
@@ -1090,21 +1089,19 @@ def render_joint_letter_pdf(payload, output_path):
     y -= blank_line
 
     # To block
-    c.setFont("Times-Bold", 12)
-    c.drawString(left_margin, y, "To:")
     c.setFont("Times-Roman", 12)
-    to_val = payload.get("to", "")
-    if isinstance(to_val, list):
-        to_val = to_val[0] if to_val else ""
-    c.drawString(115.0, y, to_val)
+    c.drawString(left_margin, y, "To:")
+    to_display = payload.get("to", "")
+    if isinstance(to_display, list):
+        to_display = to_display[0] if to_display else ""
+    c.drawString(115.0, y, to_display if to_display else "")
     y -= blank_line
     # Rule: one full blank line after To before Subj
     y -= blank_line
 
     # Subj block
-    c.setFont("Times-Bold", 12)
-    c.drawString(left_margin, y, "Subj:")
     c.setFont("Times-Roman", 12)
+    c.drawString(left_margin, y, "Subj:")
     c.drawString(115.0, y, payload.get("subj", ""))
     y -= leading
     y -= blank_line
