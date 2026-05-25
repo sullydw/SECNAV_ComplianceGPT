@@ -216,6 +216,13 @@
   ],
   "vertical_spacing_rules": [
     {
+      "name": "from_to_gap",
+      "from_text": "Commander, Naval Supply Systems Command",
+      "to_text": "To:",
+      "expected_gap_pt": 28.8,
+      "tolerance_pt": 4
+    },
+    {
       "name": "copy_to_after_signature_title",
       "from_text": "Acting",
       "to_text": "Copy to:",
