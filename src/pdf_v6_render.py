@@ -1047,21 +1047,27 @@ def render_joint_letter_pdf(payload, output_path):
     # Non-senior on the left, senior on the right for visual consistency
     # with the signature senior-on-right convention.
     def draw_sender_block(cmd, block_x, align="left"):
-        lines = [
+        lines_raw = [
             str(cmd.get("short_code", "")),
             str(cmd.get("ssic", "")),
             str(cmd.get("serial", "")),
             str(cmd.get("date", "")),
         ]
+        lines = [line for line in lines_raw if line]
         block_y = y
         c.setFont("Times-Roman", 12)
+        if not lines:
+            return block_y
+        # Compute widths for all lines to find the longest
+        line_widths = [c.stringWidth(line, "Times-Roman", 12) for line in lines]
+        longest_width = max(line_widths)
+        if align == "right":
+            # Anchor so the longest line fits within the right margin region
+            anchor_x = block_x - longest_width
+        else:
+            anchor_x = block_x
         for line in lines:
-            if not line:
-                continue
-            if align == "right":
-                c.drawRightString(block_x, block_y, line)
-            else:
-                c.drawString(block_x, block_y, line)
+            c.drawString(anchor_x, block_y, line)
             block_y -= 10 * 1.2
         return block_y
 
