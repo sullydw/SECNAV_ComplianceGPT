@@ -44,6 +44,38 @@ def find_first_span(spans, label):
     return None
 
 
+def find_span_with_bounds(spans, label, x_min=None, x_max=None, y_min=None, y_max=None):
+    """Return first span matching label that also falls within optional bounding box.
+    
+    When bounds are omitted (all None), behaves like find_first_span().
+    When bounds are provided, collects all matching spans, filters to those inside
+    the bounds, and returns the first match inside bounds.
+    
+    Returns None if no span matches inside the bounds.
+    """
+    candidates = []
+    for s in spans:
+        if label.lower() not in s["text"].lower():
+            continue
+        x0 = s.get("x0", 0)
+        y0 = s.get("y0", 0)
+        # Check bounds if specified
+        if x_min is not None and x0 < x_min:
+            continue
+        if x_max is not None and x0 > x_max:
+            continue
+        if y_min is not None and y0 < y_min:
+            continue
+        if y_max is not None and y0 > y_max:
+            continue
+        candidates.append(s)
+    
+    if not candidates:
+        return None
+    # Return first candidate (spans are already in extraction order)
+    return candidates[0]
+
+
 def dump_spans(spans):
     """Print a diagnostic table of extracted text spans sorted by page, y0, x0."""
     sorted_spans = sorted(spans, key=lambda s: (s.get("page", 1), s.get("y0", 0), s.get("x0", 0)))
@@ -401,20 +433,35 @@ def check_forbidden_text(spans, forbidden_text, passed, failed):
 
 
 def check_alignment_groups(spans, alignment_groups, passed, failed):
-    """Check x-coordinate alignment across groups of label x positions."""
+    """Check x-coordinate alignment across groups of label x positions.
+    
+    Each alignment group may include optional bounding-box filters:
+      - x_min_pt, x_max_pt, y_min_pt, y_max_pt
+    
+    When bounds are present, only spans inside the bounds are considered.
+    When bounds are omitted, behavior is identical to the original implementation.
+    """
     for group in alignment_groups:
         name = group.get("name", "unnamed_group")
         texts = group.get("texts", [])
         x_field = group.get("x_field", "x0")
         tolerance = group.get("tolerance_pt", 3)
         expected_x = group.get("expected_x_pt")
+        x_min = group.get("x_min_pt")
+        x_max = group.get("x_max_pt")
+        y_min = group.get("y_min_pt")
+        y_max = group.get("y_max_pt")
 
         if not texts:
             continue
 
         values = []
         for text in texts:
-            span = find_first_span(spans, text)
+            # Use bounds-aware lookup if any bound is specified
+            if x_min is not None or x_max is not None or y_min is not None or y_max is not None:
+                span = find_span_with_bounds(spans, text, x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max)
+            else:
+                span = find_first_span(spans, text)
             if span is None:
                 failed.append(f"alignment_group '{name}': missing '{text}'")
             else:
