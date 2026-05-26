@@ -2,6 +2,7 @@
 
 ## Final commits
 
+- 7e11ab7  added production Figure 7-4 From-to-To gap audit rule
 - 0b2f8a3  fixed Joint Letter From-block spacing
 - 8255d65  aligned Joint Letter signature columns
 - c04fceb  corrected two-signature horizontal placement
@@ -46,6 +47,22 @@
 - Copy to y=567.6
 - final paragraph 4 line to signature row gap=72.0 pt
 - Acting/Deputy to Copy to gap=43.2 pt
+
+## Audit Hardening Proof
+
+- Positive control passed with 34 checks.
+- Collapsed From-to-To gap negative test failed as expected.
+- Failure check: vertical_spacing from_to_gap.
+- Expected gap: 28.8 pt.
+- Collapsed actual gap: 14.4 pt.
+- This proves the production profile catches the missing blank-line gap between the second From command and the To line.
+
+## Notes
+
+- The production audit now catches:
+  - From: alone on its own line.
+  - Wrong command on the From: baseline.
+  - Collapsed From-to-To gap.
 
 ## Validation
 
