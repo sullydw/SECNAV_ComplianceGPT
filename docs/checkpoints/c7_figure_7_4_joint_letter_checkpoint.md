@@ -2,6 +2,7 @@
 
 ## Final commits
 
+- b92bc58  added bounded alignment-group lookup and right-side 5216 audit coverage
 - 583a1be  aligned Joint Letter sender-symbol block lines with shared x starts
 - 48c7f73  hardened Figure 7-4 audit for sender-symbol block internal alignment
 - 7e11ab7  added production Figure 7-4 From-to-To gap audit rule
@@ -54,19 +55,23 @@
 - final paragraph 4 line to signature row gap=72.0 pt
 - Acting/Deputy to Copy to gap=43.2 pt
 
-## Audit Hardening Proof
+## Audit Tool Improvement
+
+- alignment_groups now support optional x_min_pt, x_max_pt, y_min_pt, and y_max_pt filters.
+- This allows duplicate text such as "5216" to be checked inside the correct page region.
+- Figure 7-4 now checks the right-side 5216 inside the right sender-symbol block.
+- Existing alignment groups without bounds remain backward compatible.
+
+## Proof
 
 - Positive control passed 36/36 checks.
-- Negative right-block alignment test failed as expected.
+- Negative sender-symbol alignment test failed as expected.
 - Failure check: right_sender_symbol_block_x_alignment.
-- Normal right block x starts: NAVSUP=487.7, Ser 07/207=487.7, 16 Jan 15=487.7.
-- Mutated right block x starts: NAVSUP=492.0, Ser 07/207=487.7, 16 Jan 15=494.0.
-- This proves the production profile catches misaligned right sender-symbol block lines.
+- The bounded right-block group caught misalignment within x=400-560 and y=70-140.
 
 ## Known Audit Limitations
 
-- Right-side 5216 is not currently included in the right sender-symbol alignment group because duplicate text lookup grabs the left-side 5216 first.
-- Future audit-tool improvement: support region-qualified or instance-qualified span lookup so duplicate text can be checked independently.
+- Right-side 5216 detection now works correctly with region-qualified span lookup.
 
 ## Notes
 
