@@ -46,6 +46,18 @@
       "texts": ["Commander, Naval Sea Systems Command", "Commander, Naval Supply Systems Command"],
       "x_field": "x0",
       "tolerance_pt": 2
+    },
+    {
+      "name": "left_sender_symbol_block_x_alignment",
+      "texts": ["NAVSEA", "5216", "Ser 02/318", "9 Jan 15"],
+      "x_field": "x0",
+      "tolerance_pt": 2
+    },
+    {
+      "name": "right_sender_symbol_block_x_alignment",
+      "texts": ["NAVSUP", "Ser 07/207", "16 Jan 15"],
+      "x_field": "x0",
+      "tolerance_pt": 2
     }
   ],
   "alignment_rules": [
