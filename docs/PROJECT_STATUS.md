@@ -1,6 +1,6 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-05-23  
+**Last Updated:** 2026-05-28  
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT (DO NOT USE)  
 **Renderer:** v6 PDF (ReportLab)  
@@ -48,8 +48,8 @@
   - C7 regression runner passed after C9 changes: `python tools/run_c7_phase1_regression.py` — PASS
   - C8 regression runner passed after C9 changes: `python tools/run_c8_regression.py` — PASS
   - Same-page endorsement support not yet implemented
-  - C9 reference/enclosure sequence validation not yet implemented
-  - C9 copy-to significance/complete annotation logic not yet implemented
+  - C9 reference/enclosure sequence validation is implemented and guarded by run_c9_regression.py.
+  - C9 copy-to significance and complete-annotation validation is implemented and guarded by run_c9_regression.py.
   - C9 assembly remains advisory/procedural for later checklist support
 
 ### Chapter 10 — Candidate Components Complete
