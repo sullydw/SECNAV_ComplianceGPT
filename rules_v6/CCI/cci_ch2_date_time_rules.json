@@ -1,0 +1,184 @@
+[
+  {
+    "rule_id": "CCI-DTM-001",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, paragraph 2-4.2",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Military time is written as four digits from 0000 through 2359 with no colon. Examples: 1400, 0000, 2359.",
+    "enforcement": "deterministic",
+    "validator": "cci_date_time_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-DTM-002",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, paragraph 2-4.2",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Military time must be a valid four-digit value in the range 0000 through 2359. Values such as 2400 or 2561 are non-compliant.",
+    "enforcement": "deterministic",
+    "validator": "cci_date_time_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-DTM-003",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, paragraph 2-4.2",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Standard text date for military correspondence uses the format day Month year with no leading zero for a single-digit day. Example: 5 May 2026 (not 05 May 2026).",
+    "enforcement": "deterministic",
+    "validator": "cci_date_time_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-DTM-004",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, paragraph 2-4.2",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "The top-level date field must use the standard military text date format: day Month year with full four-digit year and no leading zero on single-digit day. Civilian formats such as May 5, 2026 or ISO dates such as 2026-05-05 are non-compliant.",
+    "enforcement": "deterministic",
+    "validator": "cci_date_time_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-DTM-005",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, paragraph 2-4.2",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Civilian date format (Month day, year) detected in body text. Military correspondence should normally use day Month year. Warning only, because civilian correspondence or congressional responses may legitimately use civilian format.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_date_time_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-DTM-006",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, paragraph 2-4.2",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Abbreviated two-digit year detected in body date text. Body text should use the full four-digit year. Abbreviated year (day Month yy) is reserved for sender-symbol blocks.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_date_time_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-DTM-007",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, paragraph 2-4.2",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Top-level date field does not clearly match expected standard military text date format. Verify that the date uses day Month year with no leading zero and full four-digit year.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_date_time_validate.py",
+    "severity": "warning"
+  }
+]

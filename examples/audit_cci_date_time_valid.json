@@ -1,0 +1,17 @@
+{
+  "_comment": "CCI date/time valid fixture. Body uses valid military time and standard military date format.",
+  "doc_type": "DT_STD_LTR",
+  "date": "15 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "DATE AND TIME COMPLIANCE VALIDATION",
+  "body": [
+    "1. The unit must report readiness status by 1400 on 15 May 2026.",
+    "2. All personnel shall observe the 0000 to 2359 watch schedule.",
+    "3. Coordination begins at 0800 and concludes at 1600."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "_comment": "CCI date/time invalid fixture — military time with colon and out-of-range value.",
+  "doc_type": "DT_STD_LTR",
+  "date": "15 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "INVALID MILITARY TIME USAGE",
+  "body": [
+    "1. The meeting is scheduled for 14:00.",
+    "2. The deadline is 2400.",
+    "3. All hands must report by 0800."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}

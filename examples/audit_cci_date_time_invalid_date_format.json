@@ -1,0 +1,17 @@
+{
+  "_comment": "CCI date/time invalid fixture — leading zero in date and civilian date format.",
+  "doc_type": "DT_STD_LTR",
+  "date": "05 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "INVALID DATE FORMAT USAGE",
+  "body": [
+    "1. The report is due on 05 May 2026.",
+    "2. Additional instructions issued on May 5, 2026.",
+    "3. Follow-up required by 17 May 2026."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}

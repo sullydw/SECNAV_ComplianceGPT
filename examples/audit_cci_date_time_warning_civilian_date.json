@@ -1,0 +1,17 @@
+{
+  "_comment": "CCI date/time warning fixture — civilian date format and abbreviated year in body.",
+  "doc_type": "DT_STD_LTR",
+  "date": "15 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "WARNING CIVILIAN DATE FORMAT",
+  "body": [
+    "1. The congressional response dated January 14, 2014 serves as precedent.",
+    "2. Historical records show the directive took effect on 1 May 26.",
+    "3. Current policy remains in effect through 15 May 2026."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}
