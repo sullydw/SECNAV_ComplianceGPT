@@ -1,0 +1,20 @@
+{
+  "_comment": "CCI ref/encl invalid fixture: References are not in body-appearance order. Ref (b) is cited first in body, but ref list orders (a) before (b).",
+  "doc_type": "DT_STD_LTR",
+  "date": "20 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "CORRESPONDENCE REFERENCE AND ENCLOSURE COMPLIANCE",
+  "ref": [
+    "(a) SECNAV Manual 5216.5 Correspondence Manual",
+    "(b) OPNAVINST 5216.5 Correspondence Instructions"
+  ],
+  "body": [
+    "1. Per reference (b), OPNAVINST 5216.5 Correspondence Instructions, administrative procedures must be reviewed annually.",
+    "2. Per reference (a), SECNAV Manual 5216.5 Correspondence Manual, all units shall comply with established correspondence standards."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}

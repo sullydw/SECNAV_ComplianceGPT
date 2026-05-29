@@ -1,0 +1,277 @@
+[
+  {
+    "rule_id": "CCI-REF-001",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_and_figure_text",
+    "source_location": "Chapter 7, paragraph 7-3.3 and Figure 7-1",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Every listed reference must be cited or substantively mentioned in the body of the correspondence. Bare listing without body citation is non-compliant.",
+    "enforcement": "deterministic",
+    "validator": "cci_ref_encl_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-REF-002",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_and_figure_text",
+    "source_location": "Chapter 7, paragraph 7-3.3 and Figure 7-1",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Every listed enclosure must be substantively mentioned in the body of the correspondence. Bare listing without body mention is non-compliant.",
+    "enforcement": "deterministic",
+    "validator": "cci_ref_encl_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-REF-003",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_and_figure_text",
+    "source_location": "Chapter 7, paragraph 7-3.3",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "References must be listed in the order of their first appearance or substantive citation in the body.",
+    "enforcement": "deterministic",
+    "validator": "cci_ref_encl_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-REF-004",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_and_figure_text",
+    "source_location": "Chapter 7, paragraph 7-3.3",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Enclosures must be listed in the order of their first appearance or substantive mention in the body.",
+    "enforcement": "deterministic",
+    "validator": "cci_ref_encl_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-REF-005",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 7, paragraph 7-3.3",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "The same item must not appear as both a reference and an enclosure in the same correspondence.",
+    "enforcement": "deterministic",
+    "validator": "cci_ref_encl_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-REF-006",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_and_figure_text",
+    "source_location": "Chapter 7, paragraph 7-3.3 and Figure 7-1",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "For non-endorsement correspondence, reference markers must follow a valid lowercase alphabetical sequence without skips or duplicates: (a), (b), (c), etc. A single reference still uses (a).",
+    "enforcement": "deterministic",
+    "validator": "cci_ref_encl_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-REF-007",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_and_figure_text",
+    "source_location": "Chapter 7, paragraph 7-3.3 and Figure 7-1",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "For non-endorsement correspondence, enclosure markers must follow a valid numeric sequence without skips or duplicates: (1), (2), (3), etc. A single enclosure still uses (1).",
+    "enforcement": "deterministic",
+    "validator": "cci_ref_encl_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-REF-008",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 7, paragraph 7-3.3",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Enclosures noted as 'sep cover', 'separate cover', 'under separate cover', or 'provided separately' should trigger a review warning for human confirmation of proper handling.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_ref_encl_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-REF-009",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 7, paragraph 7-3.3",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Reference or enclosure entries with fewer than three meaningful tokens are vague and may be incomplete; flag for review only.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_ref_encl_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-REF-010",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 7, paragraph 7-3.3",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "ENDORSEMENT",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "A reference cited in the body as a bare marker citation alone, without a substantive substantive explanatory or applying sentence nearby, may be unnecessary or merely decorative; warn only.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_ref_encl_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-REF-NOTE-001",
+    "source": "SECNAV M-5216.5",
+    "source_type": "implementation_note",
+    "source_location": "Cross-reference to C9 validator",
+    "applies_to": [
+      "endorsement"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Endorsement-specific continuation of prior reference and enclosure marker sequences (C9-004 and C9-005) is validated by src/c9_validate.py. The CCI ref/encl validator does not duplicate those checks. It does retain universal checks for body citation, duplicate ref/encl items, and warnings.",
+    "enforcement": "not_implemented_here",
+    "validator": "c9_validate.py",
+    "severity": "info"
+  }
+]

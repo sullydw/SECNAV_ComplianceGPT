@@ -1,0 +1,26 @@
+{
+  "_comment": "CCI ref/encl warning fixture: Proper citations but contains enclosure under separate cover notation, plus a vague reference entry.",
+  "doc_type": "DT_STD_LTR",
+  "date": "20 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "CORRESPONDENCE REFERENCE AND ENCLOSURE COMPLIANCE",
+  "ref": [
+    "(a) SECNAV Manual 5216.5 Correspondence Manual",
+    "(b) Change One"
+  ],
+  "encl": [
+    "(1) Annual Training Schedule for Fiscal Year 2026",
+    "(2) Administrative Action Review Checklist (under separate cover)"
+  ],
+  "body": [
+    "1. Per reference (a), SECNAV Manual 5216.5 Correspondence Manual, all units shall comply with established correspondence standards.",
+    "2. Per reference (b), Change One, administrative procedures must be reviewed annually.",
+    "3. Enclosure (1), Annual Training Schedule for Fiscal Year 2026, provides the training schedule for all departments.",
+    "4. Enclosure (2), Administrative Action Review Checklist (under separate cover), is provided under separate cover for your review."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}

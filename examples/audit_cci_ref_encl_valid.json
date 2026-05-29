@@ -1,0 +1,26 @@
+{
+  "_comment": "CCI ref/encl valid fixture. Standard letter with properly cited refs and encls in correct body-appearance order.",
+  "doc_type": "DT_STD_LTR",
+  "date": "20 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "CORRESPONDENCE REFERENCE AND ENCLOSURE COMPLIANCE",
+  "ref": [
+    "(a) SECNAV Manual 5216.5 Correspondence Manual",
+    "(b) OPNAVINST 5216.5 Correspondence Instructions"
+  ],
+  "encl": [
+    "(1) Annual Training Schedule for Fiscal Year 2026",
+    "(2) Administrative Action Review Checklist"
+  ],
+  "body": [
+    "1. Per reference (a), SECNAV Manual 5216.5 Correspondence Manual, all units shall comply with established correspondence standards.",
+    "2. Additionally, per reference (b), OPNAVINST 5216.5 Correspondence Instructions, administrative procedures must be reviewed annually.",
+    "3. Enclosure (1), Annual Training Schedule for Fiscal Year 2026, provides the training schedule for all departments.",
+    "4. Enclosure (2), Administrative Action Review Checklist, provides a checklist for administrative review."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}
