@@ -1,0 +1,17 @@
+{
+  "_comment": "CCI acronym invalid fixture. Uses SNDL without ever defining it.",
+  "doc_type": "DT_STD_LTR",
+  "date": "20 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "CORRESPONDENCE ACRONYM COMPLIANCE",
+  "body": [
+    "1. All commands must update their SNDL entries before sending official correspondence.",
+    "2. The SNDL review is conducted quarterly by each activity.",
+    "3. Failure to maintain accurate SNDL entries may result in misrouted correspondence."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "_comment": "CCI acronym warning fixture. Uses approved acronyms without definition; should warn but pass.",
+  "doc_type": "DT_STD_LTR",
+  "date": "20 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "CORRESPONDENCE ACRONYM COMPLIANCE",
+  "body": [
+    "1. SECNAV requires all units to comply with OPNAV instructions regarding correspondence standards.",
+    "2. The USN and USMC shall follow DoD guidelines for official correspondence.",
+    "3. All commands must report compliance to CNO and CMC by the end of the fiscal year."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}

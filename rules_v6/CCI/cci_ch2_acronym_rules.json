@@ -1,0 +1,80 @@
+[
+  {
+    "rule_id": "CCI-ACR-001",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, paragraph 2-4.1",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "In body text, an acronym must be spelled out in full the first time it is used, followed by the acronym in parentheses. Subsequent uses may employ the acronym alone. Acronyms used before their first parenthetical definition are non-compliant.",
+    "enforcement": "deterministic",
+    "validator": "cci_acronym_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-ACR-002",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, paragraph 2-4.1",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Approved acronyms listed in the manual (SECNAV, DON, USN, USMC, DoD, NATO, SSIC, MCO, OPNAV, NAVMC, CNO, CMC, FOIA, PII, CUI, FOUO) may be used without explicit definition, but a warning is issued to encourage spelling out on first use for maximum clarity.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_acronym_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-ACR-003",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, paragraph 2-4.1",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "An acronym defined in the body but never used afterward may indicate unnecessary definition or incomplete drafting; flag for review only.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_acronym_validate.py",
+    "severity": "warning"
+  }
+]

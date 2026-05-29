@@ -1,0 +1,18 @@
+{
+  "_comment": "CCI acronym valid fixture. Body defines acronyms before use.",
+  "doc_type": "DT_STD_LTR",
+  "date": "20 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "CORRESPONDENCE ACRONYM COMPLIANCE",
+  "body": [
+    "1. The Department of the Navy (DON) requires all units to comply with established correspondence standards.",
+    "2. Per the Standard Navy Distribution List (SNDL), all commands must update their distribution lists quarterly.",
+    "3. The DON will conduct a review of all correspondence practices annually.",
+    "4. Commands shall verify SNDL entries before sending official correspondence."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}
