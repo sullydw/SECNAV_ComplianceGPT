@@ -1,0 +1,17 @@
+{
+  "_comment": "CCI subject-line invalid fixture. Standard letter with mixed-case subject and terminal punctuation.",
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "date": "15 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "Subject line is Not All Caps.",
+  "body": [
+    "1. This paragraph provides sample content for the invalid subject-line fixture.",
+    "2. The subject above is mixed case and ends with a period."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}

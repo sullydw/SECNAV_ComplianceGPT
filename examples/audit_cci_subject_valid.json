@@ -1,0 +1,17 @@
+{
+  "_comment": "CCI subject-line valid fixture. Standard letter with proper all-caps subject.",
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "date": "15 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "STANDARD LETTER PHASE 1 AUDIT AND VALIDATION",
+  "body": [
+    "1. This paragraph provides sample content for the subject-line validation fixture.",
+    "2. The subject above is all caps, has no terminal punctuation, and contains no labels."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}

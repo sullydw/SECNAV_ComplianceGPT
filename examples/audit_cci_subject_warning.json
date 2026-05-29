@@ -1,0 +1,16 @@
+{
+  "_comment": "CCI subject-line warning fixture. From-To memo with short subject and embedded Subj: label.",
+  "doc_type": "DT_MEMO_FROM_TO_PLAIN",
+  "date": "19 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "Subj: STAFF MEETING",
+  "body": [
+    "1. This memorandum requests administrative support for the upcoming inspection.",
+    "2. Action items will be tracked separately."
+  ],
+  "signature": [
+    "J. DOE",
+    "Chief of Staff"
+  ]
+}

@@ -1,0 +1,124 @@
+[
+  {
+    "rule_id": "CCI-CH7-SUBJ-001",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_and_figure_text",
+    "source_location": "Chapter 7, paragraph 7-2.9 and Figure 7-1",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Subject line uses normal word order, all letters capitalized after the colon, and no acronyms in correspondence subject lines.",
+    "enforcement": "deterministic",
+    "validator": "cci_subject_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-CH7-SUBJ-002",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_and_figure_text",
+    "source_location": "Chapter 7, paragraph 7-2.9 and Figure 7-1",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Subject line has no terminal punctuation (period, question mark, exclamation mark).",
+    "enforcement": "deterministic",
+    "validator": "cci_subject_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-CH7-SUBJ-003",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 7, paragraph 7-2.9",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Do not include the Subj: label inside the subject text; only subject content should appear in the subject field.",
+    "enforcement": "deterministic",
+    "validator": "cci_subject_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-CH7-SUBJ-004",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 7, paragraph 7-2.9 and Figure 7-1",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Avoid acronyms in correspondence subject lines unless they appear on a narrow approved list.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_subject_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-CH7-SUBJ-005",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 7, paragraph 7-2.9",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "Subject line should be a clear sentence fragment in normal word order with enough detail to identify the correspondence topic; very short or vague subjects may indicate incomplete drafting.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_subject_validate.py",
+    "severity": "warning"
+  }
+]
