@@ -1,0 +1,9 @@
+{
+  "_comment": "CCI personnel valid fixture. No all-caps last names; proper capitalization of Sailor and Marine.",
+  "doc_type": "DT_STD_LTR",
+  "component": "joint",
+  "body": [
+    "1. All Marines and Sailors must report for training at 0800.",
+    "2. The commanding officer directed that personnel readiness remains the top priority."
+  ]
+}

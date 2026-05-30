@@ -1,0 +1,10 @@
+{
+  "_comment": "CCI personnel invalid fixture. Last name appears in all caps after a known rank/rate/grade prefix.",
+  "doc_type": "DT_STD_LTR",
+  "component": "navy",
+  "body": [
+    "1. CDR SMITH briefed the staff on readiness requirements.",
+    "2. Captain JONES provided the safety briefing.",
+    "3. All personnel should report to the quarterdeck."
+  ]
+}

@@ -1,0 +1,164 @@
+[
+  {
+    "rule_id": "CCI-PER-001",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, personnel-identification rules (paragraph requiring refinement)",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat",
+      "unknown"
+    ],
+    "rule_text_summary": "Personnel last names in body text shall not appear in all capital letters when preceded by a rank, rate, or grade.",
+    "enforcement": "deterministic",
+    "validator": "cci_personnel_validate.py",
+    "severity": "error"
+  },
+  {
+    "rule_id": "CCI-PER-002",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, personnel-identification rules (paragraph requiring refinement)",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat",
+      "unknown"
+    ],
+    "rule_text_summary": "Capitalize Sailor, Marine, and Service Member when referring to U.S. Navy or U.S. Marine Corps personnel.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_personnel_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-PER-003",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, personnel-identification rules (paragraph requiring refinement)",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat",
+      "unknown"
+    ],
+    "rule_text_summary": "Possible Navy/Marine Corps convention mix detected when service-specific rank terminology from both services appears in the same document or conflicts with the stated component.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_personnel_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-PER-004",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, personnel-identification rules (paragraph requiring refinement)",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat",
+      "unknown"
+    ],
+    "rule_text_summary": "Social Security Number patterns shall not appear in correspondence body text.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_personnel_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-PER-005",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, personnel-identification rules (paragraph requiring refinement)",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat",
+      "unknown"
+    ],
+    "rule_text_summary": "EDIPI or DoD ID numbers shall not appear in correspondence body text.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_personnel_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-PER-006",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, personnel-identification rules (paragraph requiring refinement)",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat",
+      "unknown"
+    ],
+    "rule_text_summary": "Personnel identification context is present but the document component (navy, marine_corps, joint) is unknown or missing.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_personnel_validate.py",
+    "severity": "warning"
+  }
+]

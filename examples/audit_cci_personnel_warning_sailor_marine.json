@@ -1,0 +1,10 @@
+{
+  "_comment": "CCI personnel warning fixture. Lowercase marine and sailor used as personnel references in body text.",
+  "doc_type": "DT_STD_LTR",
+  "component": "marine_corps",
+  "body": [
+    "1. All marine personnel must report for training at 0800.",
+    "2. Every sailor is required to complete the annual training.",
+    "3. The commanding officer directed that personnel readiness remains the top priority."
+  ]
+}
