@@ -2,7 +2,7 @@
 
 ## Baseline Commit
 
-- **Commit hash:** `dd1f600ac61d6fe507eedac25f7ac8a592521ade`
+- **Commit hash:** `29a353bf42d54d4851d6f0c2ae97e06b014445cb`
 - **Tag:** none at HEAD
 - **Date:** 2026-05-30
 - **Branch:** `main`
@@ -236,6 +236,32 @@ python tools/run_c10_regression.py
 
 All eleven regressions passed on the checkpoint commit.
 
+## CI / GitHub Actions Coverage
+
+The full regression suite (seven CCI + C7-C10) is now protected by GitHub Actions.
+
+- **Workflow file:** `.github/workflows/regression.yml`
+- **Job name:** `compliance-regression`
+- **Timeout:** `15 minutes`
+- **Trigger:** `push`, `pull_request`
+- **CI baseline commit:** `29a353bf42d54d4851d6f0c2ae97e06b014445cb`
+- **Status:** manually verified PASS by user after push
+
+**CI step order:**
+1. CCI subject regression
+2. CCI ref/encl regression
+3. CCI acronym regression
+4. CCI date/time regression
+5. CCI personnel regression
+6. CCI POC regression
+7. CCI routing regression
+8. C7 Phase 1 regression
+9. C8 regression
+10. C9 regression
+11. C10 regression
+
+Future CCI validators should be added to the workflow before the C7-C10 steps, keeping the fast pure-Python checks first and the slower PDF-based checks last.
+
 ## Baseline Integrity Note
 
 The C7-C10 layout and render baseline remains fully intact. Every CCI validator was added as a new file; no existing renderer, validator, layout profile, example, or regression tool was edited. The CCI layer is strictly additive.
@@ -246,8 +272,7 @@ These are proposed for future CCI work, in no particular order:
 
 1. Privacy / security / PII warning layer - scan body text for potential PII patterns (SSN, DoD ID, home addresses, personal phone numbers) and flag for review before release.
 2. Context schema / intake orchestration - define a unified intake schema so multiple CCI validators can run in a single pass and produce a consolidated audit report with cross-referenced rule IDs.
-3. GitHub Actions integration for CCI regressions - add a CI workflow that runs all seven CCI regression runners on every push/PR, similar to the existing C7-C10 regression workflow.
 
 ---
 
-*Checkpoint generated 2026-05-30. See commit `dd1f600ac61d6fe507eedac25f7ac8a592521ade`.*
+*Checkpoint generated 2026-05-30. See commit `29a353bf42d54d4851d6f0c2ae97e06b014445cb`.*
