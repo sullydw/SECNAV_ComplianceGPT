@@ -1,0 +1,17 @@
+{
+  "_comment": "CCI Routing valid fixture. Single unnumbered Via, reasonable Copy-to list, proper distribution mode.",
+  "doc_type": "standard_letter",
+  "component": "navy",
+  "to": "Commander, Navy Installations Command",
+  "via": [
+    "Commander, Naval Surface Force Atlantic"
+  ],
+  "copy_to": [
+    "Commander, U.S. Fleet Forces Command",
+    "Commander, Naval Air Force Atlantic"
+  ],
+  "distribution_mode": null,
+  "body": [
+    "1. This is a routine correspondence with proper routing and copy-to recipients."
+  ]
+}

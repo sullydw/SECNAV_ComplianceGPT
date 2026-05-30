@@ -1,0 +1,15 @@
+{
+  "_comment": "CCI Routing warning fixture. Copy-to includes vague/overly broad entries. Expected WARNING CCI-ROUTE-006.",
+  "doc_type": "standard_letter",
+  "component": "navy",
+  "to": "Commander, Navy Installations Command",
+  "copy_to": [
+    "All Hands",
+    "Interested Parties",
+    "Commander, U.S. Fleet Forces Command"
+  ],
+  "distribution_mode": null,
+  "body": [
+    "1. This correspondence is for general awareness and action as required."
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "_schema_version": 1,
+  "_catalog_id": "CCI-CH2-ROUTING",
+  "chapter": "2",
+  "title": "Routing, Via, Copy-to, and Distribution Intelligence",
+  "rules": [
+    {
+      "rule_id": "CCI-ROUTE-001",
+      "source": "SECNAV M-5216.5 Chapter 7 / Chapter 8 addressing conventions",
+      "source_type": "manual_text",
+      "source_location": "Requires refinement — Via numbering is described in figure examples and chapter narrative but not assigned a single paragraph number",
+      "applies_to": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "memorandum_for_record", "from_to_memo", "plain_paper_memo", "letterhead_memo"],
+      "component_scope": "universal",
+      "rule_text_summary": "When two or more Via addressees are used, they must be numbered in routing order beginning with (1).",
+      "enforcement": "heuristic_warning",
+      "validator": "cci_routing",
+      "severity": "warning"
+    },
+    {
+      "rule_id": "CCI-ROUTE-002",
+      "source": "SECNAV M-5216.5 Chapter 7 / Chapter 8 addressing conventions",
+      "source_type": "manual_text",
+      "source_location": "Requires refinement",
+      "applies_to": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "memorandum_for_record", "from_to_memo", "plain_paper_memo", "letterhead_memo"],
+      "component_scope": "universal",
+      "rule_text_summary": "Via numbering must start at (1) and be consecutive.",
+      "enforcement": "heuristic_warning",
+      "validator": "cci_routing",
+      "severity": "warning"
+    },
+    {
+      "rule_id": "CCI-ROUTE-003",
+      "source": "SECNAV M-5216.5 Chapter 7 / Chapter 8 addressing conventions",
+      "source_type": "manual_text",
+      "source_location": "Requires refinement",
+      "applies_to": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "memorandum_for_record", "from_to_memo", "plain_paper_memo", "letterhead_memo"],
+      "component_scope": "universal",
+      "rule_text_summary": "A single Via addressee should not be numbered.",
+      "enforcement": "heuristic_warning",
+      "validator": "cci_routing",
+      "severity": "warning"
+    },
+    {
+      "rule_id": "CCI-ROUTE-004",
+      "source": "SECNAV M-5216.5 Chapter 2 routing conventions",
+      "source_type": "manual_text",
+      "source_location": "Requires refinement — routing through channels / chain of command narrative",
+      "applies_to": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "memorandum_for_record", "from_to_memo", "plain_paper_memo", "letterhead_memo"],
+      "component_scope": "universal",
+      "rule_text_summary": "Via text should name specific addressees rather than generic routing phrases such as 'through appropriate channels'.",
+      "enforcement": "heuristic_warning",
+      "validator": "cci_routing",
+      "severity": "warning"
+    },
+    {
+      "rule_id": "CCI-ROUTE-005",
+      "source": "SECNAV M-5216.5 Chapter 2 and Chapter 7 copy distribution rules",
+      "source_type": "manual_text",
+      "source_location": "Chapter 2 copy distribution and need-to-know limitations; Chapter 7 addressing",
+      "applies_to": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "memorandum_for_record", "from_to_memo", "plain_paper_memo", "letterhead_memo"],
+      "component_scope": "universal",
+      "rule_text_summary": "Copy-to lists should be limited to addressees with a need to know; excessive copy-to lists should be reviewed.",
+      "enforcement": "heuristic_warning",
+      "validator": "cci_routing",
+      "severity": "warning"
+    },
+    {
+      "rule_id": "CCI-ROUTE-006",
+      "source": "SECNAV M-5216.5 Chapter 2 copy distribution rules",
+      "source_type": "manual_text",
+      "source_location": "Chapter 2 need-to-know and copy limitations",
+      "applies_to": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "memorandum_for_record", "from_to_memo", "plain_paper_memo", "letterhead_memo"],
+      "component_scope": "universal",
+      "rule_text_summary": "Copy-to entries should be specific; vague or overly broad entries such as 'All Hands' or 'Distribution' should be reviewed.",
+      "enforcement": "heuristic_warning",
+      "validator": "cci_routing",
+      "severity": "warning"
+    },
+    {
+      "rule_id": "CCI-ROUTE-007",
+      "source": "SECNAV M-5216.5 Chapter 7 addressing conventions",
+      "source_type": "manual_text",
+      "source_location": "Chapter 7 To / Via / Copy-to separation",
+      "applies_to": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "memorandum_for_record", "from_to_memo", "plain_paper_memo", "letterhead_memo"],
+      "component_scope": "universal",
+      "rule_text_summary": "The same addressee should not appear as both an action addressee (To or Via) and a Copy-to recipient.",
+      "enforcement": "heuristic_warning",
+      "validator": "cci_routing",
+      "severity": "warning"
+    },
+    {
+      "rule_id": "CCI-ROUTE-008",
+      "source": "SECNAV M-5216.5 Chapter 8 multiple-address letters",
+      "source_type": "manual_text",
+      "source_location": "Chapter 8 multiple-address letter addressing",
+      "applies_to": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter"],
+      "component_scope": "universal",
+      "rule_text_summary": "Four or fewer action addressees may use To-line format; using Distribution-only with four or fewer entries is unusual unless copy variation or other reason exists.",
+      "enforcement": "heuristic_warning",
+      "validator": "cci_routing",
+      "severity": "warning"
+    },
+    {
+      "rule_id": "CCI-ROUTE-009",
+      "source": "SECNAV M-5216.5 Chapter 8 multiple-address letters",
+      "source_type": "manual_text",
+      "source_location": "Chapter 8 To-plus-Distribution format",
+      "applies_to": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter"],
+      "component_scope": "universal",
+      "rule_text_summary": "To-plus-Distribution format should use a group title in the To line and individual members in the Distribution line.",
+      "enforcement": "heuristic_warning",
+      "validator": "cci_routing",
+      "severity": "warning"
+    }
+  ]
+}

@@ -168,6 +168,35 @@ All CCI work is **additive** — no existing C7-C10 layout profiles, validators,
 - Does not enforce strict phone/e-mail format validation.
 - Does not require POC on every letter type (only when expectation keywords appear).
 
+### 7. CCI Routing / Via / Copy-to Intelligence Validator
+- **Source:** Chapter 2 routing/copy-to conventions and Chapter 7/8 Via/multiple-address context
+- **Validator file:** `src/cci_routing_validate.py`
+- **Rule file:** `rules_v6/CCI/cci_ch2_routing_rules.json`
+- **Regression runner:** `tools/run_cci_routing_regression.py`
+- **Example files:**
+  - `examples/audit_cci_routing_valid.json`
+  - `examples/audit_cci_routing_warning_via_unnumbered.json`
+  - `examples/audit_cci_routing_warning_copyto_excess.json`
+  - `examples/audit_cci_routing_warning_need_to_know.json`
+
+**What it checks:**
+- Warns when multiple Via addressees exist but are not numbered with `(1)`, `(2)`, etc.
+- Warns when Via numbering does not start at `(1)` or is not consecutive.
+- Warns when a single Via addressee is numbered even though a single Via line normally should not be.
+- Warns when Via text contains vague routing phrases (e.g., "through appropriate channels") instead of specific addressees.
+- Warns when Copy-to list exceeds 6 entries; flags for need-to-know review.
+- Warns when Copy-to entries are vague or overly broad (e.g., "All Hands", "Distribution", "Interested Parties").
+- Warns when the same addressee appears as both an action addressee (To or Via) and a Copy-to recipient.
+- Warns when `distribution_only` mode is used with 4 or fewer entries (unusual; consider To-line format).
+- Warns when `to_plus_distribution` mode appears to lack a group title in To or individual members in Distribution.
+
+**What it does not check yet:**
+- Does not validate C8 structural correctness (mode, list emptiness) — `src/c8_validate.py` owns that.
+- Does not validate C9 endorsement-specific copy_to completeness (originator, prior endorsers) — `src/c9_validate.py` owns that.
+- Does not perform real chain-of-command validation or verify actual routing order.
+- Does not inspect rendered PDF layout or physical addressing block positions.
+- v1 is warnings-only; no hard errors are returned.
+
 ---
 
 ## Regression Commands
@@ -180,6 +209,7 @@ python tools/run_cci_acronym_regression.py
 python tools/run_cci_date_time_regression.py
 python tools/run_cci_personnel_regression.py
 python tools/run_cci_poc_regression.py
+python tools/run_cci_routing_regression.py
 
 # C7-C10 layout/render regressions
 python tools/run_c7_phase1_regression.py
@@ -198,12 +228,13 @@ python tools/run_c10_regression.py
 | CCI Date/Time | PASS |
 | CCI Personnel | PASS |
 | CCI POC | PASS |
+| CCI Routing | PASS |
 | C7 Phase 1 | PASS |
 | C8 | PASS |
 | C9 | PASS |
 | C10 | PASS |
 
-All ten regressions passed on the checkpoint commit.
+All eleven regressions passed on the checkpoint commit.
 
 ## Baseline Integrity Note
 
@@ -213,10 +244,9 @@ The C7-C10 layout and render baseline remains fully intact. Every CCI validator 
 
 These are proposed for future CCI work, in no particular order:
 
-1. Routing / Via / Copy-to intelligence - validate that Via addressees are listed in correct order, that Copy-to includes required recipients per SECNAV distribution rules, and that endorsement copy-to includes prior endorsers and originator.
-2. Privacy / security / PII warning layer - scan body text for potential PII patterns (SSN, DoD ID, home addresses, personal phone numbers) and flag for review before release.
-3. Context schema / intake orchestration - define a unified intake schema so multiple CCI validators can run in a single pass and produce a consolidated audit report with cross-referenced rule IDs.
-4. GitHub Actions integration for CCI regressions - add a CI workflow that runs all six CCI regression runners on every push/PR, similar to the existing C7-C10 regression workflow.
+1. Privacy / security / PII warning layer - scan body text for potential PII patterns (SSN, DoD ID, home addresses, personal phone numbers) and flag for review before release.
+2. Context schema / intake orchestration - define a unified intake schema so multiple CCI validators can run in a single pass and produce a consolidated audit report with cross-referenced rule IDs.
+3. GitHub Actions integration for CCI regressions - add a CI workflow that runs all seven CCI regression runners on every push/PR, similar to the existing C7-C10 regression workflow.
 
 ---
 

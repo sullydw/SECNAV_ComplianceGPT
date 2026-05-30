@@ -1,0 +1,18 @@
+{
+  "_comment": "CCI Routing warning fixture. Multiple Via entries without numbering. Expected WARNING CCI-ROUTE-001.",
+  "doc_type": "standard_letter",
+  "component": "navy",
+  "to": "Chief of Naval Operations",
+  "via": [
+    "Commander, Naval Surface Force Atlantic",
+    "Commander, U.S. Pacific Fleet",
+    "Commander, Navy Installations Command"
+  ],
+  "copy_to": [
+    "Commander, Fleet Cyber Command"
+  ],
+  "distribution_mode": null,
+  "body": [
+    "1. Submit the requested information to the action addressee."
+  ]
+}

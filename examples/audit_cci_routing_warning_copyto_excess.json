@@ -1,0 +1,20 @@
+{
+  "_comment": "CCI Routing warning fixture. Copy-to list with more than 6 entries. Expected WARNING CCI-ROUTE-005.",
+  "doc_type": "standard_letter",
+  "component": "navy",
+  "to": "Chief of Naval Operations",
+  "copy_to": [
+    "Commander, U.S. Fleet Forces Command",
+    "Commander, Naval Air Force Atlantic",
+    "Commander, Naval Surface Force Atlantic",
+    "Commander, Submarine Forces",
+    "Commander, Navy Expeditionary Combat Command",
+    "Commander, Fleet Cyber Command",
+    "Commander, Naval Information Warfare Systems Command",
+    "Commander, Naval Sea Systems Command"
+  ],
+  "distribution_mode": null,
+  "body": [
+    "1. Distribute the attached plan to all listed commands."
+  ]
+}
