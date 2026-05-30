@@ -2,15 +2,15 @@
 
 ## Baseline Commit
 
-- **Commit hash:** `693786fad6b9433ea7c13e88a87766b147ac35e0`
+- **Commit hash:** `dd1f600ac61d6fe507eedac25f7ac8a592521ade`
 - **Tag:** none at HEAD
-- **Date:** 2026-05-29
+- **Date:** 2026-05-30
 - **Branch:** `main`
 - **Status:** clean, up to date with `origin/main`
 
 ## Purpose of the CCI Layer
 
-The Correspondence Content Intelligence (CCI) layer is a deterministic and heuristic content-validation system that sits above the layout/render pipeline. It checks that the *textual content* of a correspondence draft complies with SECNAV M-5216.5 rules, independent of whether the PDF layout is correct. CCI validators examine subject lines, references/enclosures, acronyms, dates, and military time usage inside the JSON payload before rendering.
+The Correspondence Content Intelligence (CCI) layer is a deterministic and heuristic content-validation system that sits above the layout/render pipeline. It checks that the *textual content* of a correspondence draft complies with SECNAV M-5216.5 rules, independent of whether the PDF layout is correct. CCI validators examine subject lines, references/enclosures, acronyms, dates, military time usage, and personnel identification inside the JSON payload before rendering.
 
 All CCI work is **additive** — no existing C7-C10 layout profiles, validators, renderers, examples, or README files have been modified.
 
@@ -118,6 +118,34 @@ All CCI work is **additive** — no existing C7-C10 layout profiles, validators,
 
 ---
 
+### 5. CCI Personnel Identification Validator
+- **Source:** Chapter 2, paragraph 2-4.3 and general military correspondence conventions
+- **Validator file:** `src/cci_personnel_validate.py`
+- **Rule file:** `rules_v6/CCI/cci_ch2_personnel_rules.json`
+- **Regression runner:** `tools/run_cci_personnel_regression.py`
+- **Example files:**
+  - `examples/audit_cci_personnel_valid.json`
+  - `examples/audit_cci_personnel_invalid_lastname_allcaps.json`
+  - `examples/audit_cci_personnel_warning_sailor_marine.json`
+
+**What it checks:**
+- All-caps last name after a known rank/rate/grade prefix is flagged as a hard error (e.g., "Capt JOHN DOE" or "SgtMaj SMITH").
+- Lowercase `Sailor`, `Marine`, or `Service Member` usage is warned — these terms must be capitalized when referring to personnel.
+- Possible Navy/Marine Corps convention mixing is warned when Navy rank/rate patterns appear alongside Marine grade patterns in the same document.
+- SSN pattern (three-dash-two-four format) detected in body text is flagged as a privacy warning.
+- EDIPI / DoD ID pattern near a 10-digit number is flagged as a privacy warning.
+- Missing or unknown military component context (Navy vs Marine Corps) is warned when the validator cannot determine which rank/grade system applies.
+
+**What it does not check yet:**
+- Full Navy rank/rate database correctness — the validator uses a representative subset, not the complete BUPERS catalog.
+- Full Marine Corps grade/MOS completeness — only common grades are recognized.
+- Personnel identification inside `From`, `To`, `Via`, or signature blocks — these are header fields, not body text.
+- Subject-line or signature last-name casing — handled by other validators.
+- Required presence of EDIPI / DoD ID — the validator only warns when one is found, not when one is missing.
+- Full privacy/PII policy enforcement — SSN and EDIPI patterns are detected, but other PII (addresses, phone numbers, family names) is not yet scanned.
+
+---
+
 ## Regression Commands
 
 ```bash
@@ -126,6 +154,7 @@ python tools/run_cci_subject_regression.py
 python tools/run_cci_ref_encl_regression.py
 python tools/run_cci_acronym_regression.py
 python tools/run_cci_date_time_regression.py
+python tools/run_cci_personnel_regression.py
 
 # C7-C10 layout/render regressions
 python tools/run_c7_phase1_regression.py
@@ -142,12 +171,13 @@ python tools/run_c10_regression.py
 | CCI Ref/Encl | PASS |
 | CCI Acronym | PASS |
 | CCI Date/Time | PASS |
+| CCI Personnel | PASS |
 | C7 Phase 1 | PASS |
 | C8 | PASS |
 | C9 | PASS |
 | C10 | PASS |
 
-All eight regressions passed on the checkpoint commit.
+All nine regressions passed on the checkpoint commit.
 
 ## Baseline Integrity Note
 
@@ -157,13 +187,12 @@ The C7-C10 layout and render baseline remains fully intact. Every CCI validator 
 
 These are proposed for future CCI work, in no particular order:
 
-1. **Personnel identification** — validate that `From`, `To`, `Via`, and signature blocks use proper military rank/title conventions and that acting/by-direction notation is consistent.
-2. **Point-of-contact expectations** — detect when correspondence requires a point-of-contact line (e.g., policy guidance, action requests) and warn if it is missing.
-3. **Routing / Via / Copy-to intelligence** — validate that Via addressees are listed in correct order, that Copy-to includes required recipients per SECNAV distribution rules, and that endorsement copy-to includes prior endorsers and originator.
-4. **Privacy / security / PII warning layer** — scan body text for potential PII patterns (SSN, DoD ID, home addresses, personal phone numbers) and flag for review before release.
-5. **Context schema / intake orchestration** — define a unified intake schema so multiple CCI validators can run in a single pass and produce a consolidated audit report with cross-referenced rule IDs.
-6. **GitHub Actions integration for CCI regressions** — add a CI workflow that runs all four CCI regression runners on every push/PR, similar to the existing C7-C10 regression workflow.
+1. **Point-of-contact expectations** — detect when correspondence requires a point-of-contact line (e.g., policy guidance, action requests) and warn if it is missing.
+2. **Routing / Via / Copy-to intelligence** — validate that Via addressees are listed in correct order, that Copy-to includes required recipients per SECNAV distribution rules, and that endorsement copy-to includes prior endorsers and originator.
+3. **Privacy / security / PII warning layer** — scan body text for potential PII patterns (SSN, DoD ID, home addresses, personal phone numbers) and flag for review before release.
+4. **Context schema / intake orchestration** — define a unified intake schema so multiple CCI validators can run in a single pass and produce a consolidated audit report with cross-referenced rule IDs.
+5. **GitHub Actions integration for CCI regressions** — add a CI workflow that runs all five CCI regression runners on every push/PR, similar to the existing C7-C10 regression workflow.
 
 ---
 
-*Checkpoint generated 2026-05-29. See commit `693786fad6b9433ea7c13e88a87766b147ac35e0`.*
+*Checkpoint generated 2026-05-30. See commit `dd1f600ac61d6fe507eedac25f7ac8a592521ade`.*
