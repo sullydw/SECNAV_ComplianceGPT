@@ -1,0 +1,83 @@
+[
+  {
+    "rule_id": "CCI-POC-001",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, point-of-contact expectations (paragraph requiring refinement)",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat",
+      "unknown"
+    ],
+    "rule_text_summary": "When correspondence may prompt a reply, inquiry, or action, the body or a top-level point-of-contact field should include contact information.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_poc_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-POC-002",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, point-of-contact expectations (paragraph requiring refinement)",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat",
+      "unknown"
+    ],
+    "rule_text_summary": "A point-of-contact field that is present but lacks telephone number or e-mail address is considered incomplete.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_poc_validate.py",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-POC-003",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 2, point-of-contact expectations (paragraph requiring refinement)",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat",
+      "unknown"
+    ],
+    "rule_text_summary": "Body text that suggests follow-up is expected but contains no telephone number or e-mail markers should carry a reminder.",
+    "enforcement": "heuristic_warning",
+    "validator": "cci_poc_validate.py",
+    "severity": "warning"
+  }
+]

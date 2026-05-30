@@ -1,0 +1,9 @@
+{
+  "_comment": "CCI POC warning fixture. Body suggests action expectation but no point_of_contact field and no body contact markers.",
+  "doc_type": "standard_letter",
+  "component": "navy",
+  "body": [
+    "1. Please respond to the inquiry regarding readiness reporting.",
+    "2. Provide feedback on the draft proposal before the deadline."
+  ]
+}

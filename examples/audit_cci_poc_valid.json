@@ -1,0 +1,13 @@
+{
+  "_comment": "CCI POC valid fixture. Body suggests inquiry expectation and a complete point_of_contact block is present.",
+  "doc_type": "standard_letter",
+  "component": "navy",
+  "body": [
+    "1. Please submit your completed action review checklist by the end of the month.",
+    "2. Coordinate with your chain of command before forwarding any requests."
+  ],
+  "point_of_contact": {
+    "telephone": "703-555-1234",
+    "email": "j.doe@example.mil"
+  }
+}

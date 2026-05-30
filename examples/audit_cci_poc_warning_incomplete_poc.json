@@ -1,0 +1,12 @@
+{
+  "_comment": "CCI POC incomplete fixture. Body suggests action expectation and a point_of_contact field is present but only telephone is supplied (missing email).",
+  "doc_type": "standard_letter",
+  "component": "navy",
+  "body": [
+    "1. Please forward the completed documents for review and endorsement.",
+    "2. Submit any comments to the task force lead."
+  ],
+  "point_of_contact": {
+    "telephone": "703-555-1234"
+  }
+}

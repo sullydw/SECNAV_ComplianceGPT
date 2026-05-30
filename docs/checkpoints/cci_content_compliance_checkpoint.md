@@ -146,6 +146,30 @@ All CCI work is **additive** — no existing C7-C10 layout profiles, validators,
 
 ---
 
+### 6. CCI Point-of-Contact (POC) Validator
+- **Source:** Chapter 2, point-of-contact expectations
+- **Validator file:** `src/cci_poc_validate.py`
+- **Rule file:** `rules_v6/CCI/cci_ch2_poc_rules.json`
+- **Regression runner:** `tools/run_cci_poc_regression.py`
+- **Example files:**
+  - `examples/audit_cci_poc_valid.json`
+  - `examples/audit_cci_poc_invalid_missing_poc.json`
+  - `examples/audit_cci_poc_warning_incomplete_poc.json`
+
+**What it checks:**
+- Body text scanned for action/response/request/inquiry/follow-up expectation keywords (e.g., reply, respond, inquiry, action required, follow up, coordinate, submit, review, endorse, contact).
+- Warns when action keywords are detected but no top-level POC field (`point_of_contact`, `poc`, `contact`, `pointOfContact`) and no contact markers appear in body text.
+- Warns when a POC field is present but appears incomplete (missing telephone number or e-mail address).
+- Warns when body text suggests follow-up but contains no telephone or e-mail markers.
+
+**What it does not check yet:**
+- Does not inspect rendered PDF layout or signature blocks for POC.
+- Does not inspect From/To/Via lines for POC data.
+- Does not enforce strict phone/e-mail format validation.
+- Does not require POC on every letter type (only when expectation keywords appear).
+
+---
+
 ## Regression Commands
 
 ```bash
@@ -155,6 +179,7 @@ python tools/run_cci_ref_encl_regression.py
 python tools/run_cci_acronym_regression.py
 python tools/run_cci_date_time_regression.py
 python tools/run_cci_personnel_regression.py
+python tools/run_cci_poc_regression.py
 
 # C7-C10 layout/render regressions
 python tools/run_c7_phase1_regression.py
@@ -172,12 +197,13 @@ python tools/run_c10_regression.py
 | CCI Acronym | PASS |
 | CCI Date/Time | PASS |
 | CCI Personnel | PASS |
+| CCI POC | PASS |
 | C7 Phase 1 | PASS |
 | C8 | PASS |
 | C9 | PASS |
 | C10 | PASS |
 
-All nine regressions passed on the checkpoint commit.
+All ten regressions passed on the checkpoint commit.
 
 ## Baseline Integrity Note
 
@@ -187,11 +213,10 @@ The C7-C10 layout and render baseline remains fully intact. Every CCI validator 
 
 These are proposed for future CCI work, in no particular order:
 
-1. **Point-of-contact expectations** — detect when correspondence requires a point-of-contact line (e.g., policy guidance, action requests) and warn if it is missing.
-2. **Routing / Via / Copy-to intelligence** — validate that Via addressees are listed in correct order, that Copy-to includes required recipients per SECNAV distribution rules, and that endorsement copy-to includes prior endorsers and originator.
-3. **Privacy / security / PII warning layer** — scan body text for potential PII patterns (SSN, DoD ID, home addresses, personal phone numbers) and flag for review before release.
-4. **Context schema / intake orchestration** — define a unified intake schema so multiple CCI validators can run in a single pass and produce a consolidated audit report with cross-referenced rule IDs.
-5. **GitHub Actions integration for CCI regressions** — add a CI workflow that runs all five CCI regression runners on every push/PR, similar to the existing C7-C10 regression workflow.
+1. Routing / Via / Copy-to intelligence - validate that Via addressees are listed in correct order, that Copy-to includes required recipients per SECNAV distribution rules, and that endorsement copy-to includes prior endorsers and originator.
+2. Privacy / security / PII warning layer - scan body text for potential PII patterns (SSN, DoD ID, home addresses, personal phone numbers) and flag for review before release.
+3. Context schema / intake orchestration - define a unified intake schema so multiple CCI validators can run in a single pass and produce a consolidated audit report with cross-referenced rule IDs.
+4. GitHub Actions integration for CCI regressions - add a CI workflow that runs all six CCI regression runners on every push/PR, similar to the existing C7-C10 regression workflow.
 
 ---
 
