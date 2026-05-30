@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cci_context_schema_v1",
+  "title": "CCI Correspondence Context Schema",
+  "description": "Canonical context object for Correspondence Content Intelligence validators and AI drafting. Schema version CCI_CONTEXT_V1.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "document",
+    "component",
+    "routing",
+    "audience",
+    "privacy_security",
+    "response",
+    "correction_memory"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "CCI_CONTEXT_V1",
+      "description": "Schema version identifier. Changed when breaking structural changes are introduced."
+    },
+    "document": {
+      "type": "object",
+      "required": ["doc_type", "classification_context", "ssic", "originator_code", "serial_number"],
+      "properties": {
+        "doc_type": {
+          "type": ["string", "null"],
+          "enum": [
+            "standard_letter",
+            "multiple_address_letter",
+            "endorsement",
+            "joint_letter",
+            "memorandum_for_record",
+            "from_to_memo",
+            "plain_paper_memo",
+            "letterhead_memo",
+            "decision_memo",
+            "memo_of_agreement",
+            "memo_of_understanding",
+            "unknown",
+            null
+          ],
+          "description": "Normalized correspondence type."
+        },
+        "classification_context": {
+          "type": ["string", "null"],
+          "enum": ["unclassified", "fouo_cui", "classified", "unknown", null]
+        },
+        "ssic": { "type": ["string", "null"], "description": "Subject-specific identifier code." },
+        "originator_code": { "type": ["string", "null"], "description": "Local originator code or office symbol." },
+        "serial_number": { "type": ["string", "null"], "description": "Serial number for classified or serialized correspondence." }
+      }
+    },
+    "component": {
+      "type": "object",
+      "required": ["service", "origin_activity_type", "activity_name", "activity_address_source"],
+      "properties": {
+        "service": {
+          "type": ["string", "null"],
+          "enum": ["navy", "marine_corps", "joint", "don_secretariat", "unknown", null],
+          "description": "Department of Navy service component or joint/secretariat context."
+        },
+        "origin_activity_type": {
+          "type": ["string", "null"],
+          "enum": [
+            "ship", "squadron", "shore_activity", "headquarters",
+            "marine_unit", "joint_activity", "unknown", null
+          ]
+        },
+        "activity_name": { "type": ["string", "null"], "description": "Name of the originating command or activity." },
+        "activity_address_source": {
+          "type": ["string", "null"],
+          "enum": ["sndl", "marine_corps_directive", "dodaad", "local", "unknown", null],
+          "description": "Authoritative source for the activity name/address."
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "required": [
+        "via_required", "chain_of_command_expected", "dirlauth_authorized",
+        "tv5_tasker_used", "distribution_mode", "action_addressee_count",
+        "copy_to_count", "via_count"
+      ],
+      "properties": {
+        "via_required": { "type": ["boolean", "null"], "description": "Does this correspondence require Via intermediaries?" },
+        "chain_of_command_expected": { "type": ["boolean", "null"], "description": "Is chain-of-command routing expected?" },
+        "dirlauth_authorized": { "type": ["boolean", "null"], "description": "Is direct liaison (DIRLAUTH) authorized?" },
+        "tv5_tasker_used": { "type": ["boolean", "null"], "description": "Is a TV-5 tasker or equivalent routing system used?" },
+        "distribution_mode": {
+          "type": ["string", "null"],
+          "enum": ["to_only", "distribution_only", "to_plus_distribution", null],
+          "description": "Multiple-address distribution format. Null when not applicable."
+        },
+        "action_addressee_count": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "Count of To/Via action addressees. Derived from payload."
+        },
+        "copy_to_count": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "Count of information-only copy-to entries. Derived from payload."
+        },
+        "via_count": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "Count of Via routing intermediaries. Derived from payload."
+        }
+      }
+    },
+    "audience": {
+      "type": "object",
+      "required": ["primary_audience", "external_release", "congressional_correspondence", "foia_expected"],
+      "properties": {
+        "primary_audience": {
+          "type": ["string", "null"],
+          "enum": [
+            "internal_command", "dod", "navy", "marine_corps",
+            "congress", "civilian_agency", "business", "individual",
+            "nato", "unknown", null
+          ],
+          "description": "Target audience for the correspondence."
+        },
+        "external_release": { "type": ["boolean", "null"], "description": "Is this addressed to an external organization?" },
+        "congressional_correspondence": { "type": ["boolean", "null"], "description": "Is this addressed to Congress?" },
+        "foia_expected": { "type": ["boolean", "null"], "description": "Is a FOIA release or Congressional/Privacy Act response expected?" }
+      }
+    },
+    "privacy_security": {
+      "type": "object",
+      "required": [
+        "contains_pii", "contains_ssn", "contains_edipi",
+        "classified_or_sensitive", "cui_fouo",
+        "email_transmission", "fax_transmission"
+      ],
+      "properties": {
+        "contains_pii": { "type": ["boolean", "null"], "description": "Payload or body contains potential PII." },
+        "contains_ssn": { "type": ["boolean", "null"], "description": "Social Security Number pattern detected." },
+        "contains_edipi": { "type": ["boolean", "null"], "description": "DoD ID / EDIPI pattern detected." },
+        "classified_or_sensitive": { "type": ["boolean", "null"], "description": "Classification or sensitive wording detected." },
+        "cui_fouo": { "type": ["boolean", "null"], "description": "CUI or FOUO marking or wording detected." },
+        "email_transmission": { "type": ["boolean", "null"], "description": "Indication that the correspondence may be transmitted by e-mail." },
+        "fax_transmission": { "type": ["boolean", "null"], "description": "Indication that the correspondence may be transmitted by fax." }
+      }
+    },
+    "response": {
+      "type": "object",
+      "required": [
+        "reply_expected",
+        "action_required",
+        "deadline_required",
+        "deadline_date",
+        "point_of_contact_required"
+      ],
+      "properties": {
+        "reply_expected": { "type": ["boolean", "null"], "description": "Body text indicates a reply is expected." },
+        "action_required": { "type": ["boolean", "null"], "description": "Body text indicates action is required." },
+        "deadline_required": { "type": ["boolean", "null"], "description": "A deadline or due-by date is referenced." },
+        "deadline_date": { "type": ["string", "null"], "description": "Deadline date string if explicitly detected." },
+        "point_of_contact_required": { "type": ["boolean", "null"], "description": "Body text indicates follow-up / contact is needed." }
+      }
+    },
+    "correction_memory": {
+      "type": "object",
+      "required": ["active_profile", "session_corrections_applied", "pending_conflicts"],
+      "properties": {
+        "active_profile": { "type": ["string", "null"], "description": "Name of the active local command correction profile." },
+        "session_corrections_applied": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of correction IDs already applied in this session."
+        },
+        "pending_conflicts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of unresolved conflict descriptions."
+        }
+      }
+    }
+  }
+}

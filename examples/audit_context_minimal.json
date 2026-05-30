@@ -1,0 +1,13 @@
+{
+  "doc_type": null,
+  "ssic": "5216",
+  "from": "Commanding Officer",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "STANDARD LETTER EXAMPLE",
+  "body": [
+    "1. This is a standard letter with no explicit component or audience context.",
+    "2. The purpose is to demonstrate a minimal payload where context must be inferred or left unknown."
+  ],
+  "signature": ["J. DOE", "By direction"],
+  "copy_to": ["File"]
+}

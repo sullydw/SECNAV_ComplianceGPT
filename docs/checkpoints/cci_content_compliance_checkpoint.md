@@ -2,7 +2,7 @@
 
 ## Baseline Commit
 
-- **Commit hash:** `29a353bf42d54d4851d6f0c2ae97e06b014445cb`
+- **Commit hash:** `91d58ae06d7b098b9f5a966a7de8783e1a501a68`
 - **Tag:** none at HEAD
 - **Date:** 2026-05-30
 - **Branch:** `main`
@@ -266,13 +266,70 @@ Future CCI validators should be added to the workflow before the C7-C10 steps, k
 
 The C7-C10 layout and render baseline remains fully intact. Every CCI validator was added as a new file; no existing renderer, validator, layout profile, example, or regression tool was edited. The CCI layer is strictly additive.
 
+## Foundation Layer: CCI Context Schema
+
+A canonical context schema and resolver have been added to support future CCI validators and AI drafting workflows.
+
+- **Schema file:** `rules_v6/CCI/cci_context_schema.json`
+- **Resolver source:** `src/context_resolver.py`
+- **Public API:** `resolve_context(payload, user_answers=None)` -> `(context, warnings)`
+- **Regression runner:** `tools/run_context_schema_regression.py`
+- **Example fixtures:**
+  - `examples/audit_context_full.json` — fully explicit context
+  - `examples/audit_context_minimal.json` — minimal payload, multiple unknowns
+  - `examples/audit_context_inferred.json` — mixed Navy/Marine body, automatic inference
+
+**What it provides:**
+- Normalized `document.doc_type`, `component.service`, `audience.primary_audience`
+- Routing counts and `distribution_mode` normalization
+- Privacy/security keyword detection (SSN/EDIPI/FOUO/CUI/classified)
+- Response context from body keywords (reply_expected, action_required, deadline_required, POC_required)
+- Correction memory metadata placeholder (active_profile, session_corrections_applied, pending_conflicts)
+- Non-blocking warnings for all inferred fields
+
+**What it does not do (by design in Phase 1):**
+- No intake questioning UI
+- No validator_runner.py orchestrator
+- No SSIC resolution
+- No correction memory behavior
+- No AI drafting integration
+- Does not modify existing CCI validators, C7-C10 validators, renderer, layout profiles, or examples
+
+**Integration instruction:**
+Future CCI validators can call `from context_resolver import resolve_context` and use the returned context object to scope rules by doc_type and component/service. Phase 2 will add validator_runner.py and intake orchestration.
+
+## Regression Results (at checkpoint)
+
+| Regression | Result |
+|---|---|
+| CCI Subject | PASS |
+| CCI Ref/Encl | PASS |
+| CCI Acronym | PASS |
+| CCI Date/Time | PASS |
+| CCI Personnel | PASS |
+| CCI POC | PASS |
+| CCI Routing | PASS |
+| Context Schema | PASS |
+| C7 Phase 1 | PASS |
+| C8 | PASS |
+| C9 | PASS |
+| C10 | PASS |
+
+All twelve regressions (seven CCI + Context Schema + C7-C10) passed on the checkpoint commit.
+
+## Known Limitations
+
+- `rule_reuse.py` and `correction_reuse.py` are not yet integrated into the CCI layer.
+- Future context fields (activity_source, distribution_mode, via_required, chain_of_command) rely on planned intake orchestration and are not inferred beyond keyword heuristics.
+- Privacy/security detection is keyword-based only and may produce false positives for redacted or placeholder text.
+
 ## Recommended Next CCI Areas
 
-These are proposed for future CCI work, in no particular order:
+These remain proposed for future CCI work, in no particular order:
 
-1. Privacy / security / PII warning layer - scan body text for potential PII patterns (SSN, DoD ID, home addresses, personal phone numbers) and flag for review before release.
-2. Context schema / intake orchestration - define a unified intake schema so multiple CCI validators can run in a single pass and produce a consolidated audit report with cross-referenced rule IDs.
+1. Privacy / security / PII warning layer — enhance keyword detection with false-positive suppression and integration into context resolver.
+2. Intake orchestration / validator runner — build `src/validator_runner.py` and `src/intake_orchestrator.py` to run all CCI validators in a single pass and produce a consolidated audit report.
 
 ---
 
-*Checkpoint generated 2026-05-30. See commit `29a353bf42d54d4851d6f0c2ae97e06b014445cb`.*
+*Checkpoint generated 2026-05-30. See commit `91d58ae06d7b098b9f5a966a7de8783e1a501a68`.*

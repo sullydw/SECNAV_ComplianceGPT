@@ -1,0 +1,21 @@
+{
+  "doc_type": "standard_letter",
+  "ssic": "5216",
+  "originator_code": "S-1",
+  "serial_number": null,
+  "component": {
+    "service": "marine_corps",
+    "origin_activity_type": "marine_unit",
+    "activity_name": "3d Battalion, 6th Marines"
+  },
+  "from": "Commanding Officer, 3d Battalion, 6th Marines",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "STANDARD LETTER EXAMPLE",
+  "body": [
+    "1. This standard letter has full explicit context.",
+    "2. No inference is needed."
+  ],
+  "via": [],
+  "copy_to": ["File"],
+  "signature": ["J. DOE", "By direction"]
+}
