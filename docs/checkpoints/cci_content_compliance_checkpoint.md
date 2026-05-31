@@ -2,20 +2,20 @@
 
 ## Baseline Commit
 
-- **Commit hash:** `50636a012ee0cfd75cdf471e8eb0db775e6cad60`
+- **Commit hash:** `1ccf26b43399b2cfad89284418b2500f14dff2fb`
 - **Tag:** none at HEAD
 - **Date:** 2026-05-31
 - **Branch:** `main`
 - **Status:** clean, up to date with `origin/main`
-- **Previous baseline:** `a114c8f46fc87f900e3b30b559a4bcd51528293e` (intake orchestrator CI verified)
-- **Stable baseline before intake/profile integration:** `50636a0`
+- **Previous baseline:** `50636a012ee0cfd75cdf471e8eb0db775e6cad60` (local profile foundation verified)
+- **Stable baseline before correction memory implementation:** `1ccf26b`
 
 ## GitHub Actions Verification
 
 - **Workflow:** Regression
 - **Job:** compliance-regression
-- **Run:** completed / success (manually verified by user for commit `50636a0`)
-- **Commit verified:** `50636a0`
+- **Run:** completed / success (manually verified by user for commit `1ccf26b`)
+- **Commit verified:** `1ccf26b`
 - **CI steps passed:** 15
   - 7 CCI validator regressions
   - context schema regression
@@ -26,11 +26,10 @@
   - C8 regression
   - C9 regression
   - C10 regression
-- **Intake orchestrator:** now GitHub Actions verified
-- **Local command profile foundation:** now GitHub Actions verified
-- **Intake regression runner:** `tools/run_intake_regression.py`
+- **Profile-enabled intake orchestrator:** now GitHub Actions verified
 - **Profile regression runner:** `tools/run_profile_regression.py`
-- **Stable baseline before intake/profile integration:** `50636a0`
+- **Intake regression runner (now with profile integration):** `tools/run_intake_regression.py`
+- **Stable baseline before correction memory implementation:** `1ccf26b`
 - **Note:** Real user/command profiles should not be committed to public repositories. Only the example template (`profiles/example_local_profile.json`) is committed.
 
 ## Purpose of the CCI Layer
@@ -607,4 +606,4 @@ These remain proposed for future CCI work, in no particular order:
 
 ---
 
->*Checkpoint updated after intake/profile integration — Phase 2 complete.*
+>*Checkpoint updated after commit 1ccf26b — profile-enabled intake GitHub Actions verified.*
