@@ -1,0 +1,63 @@
+{
+  "schema_version": "LOCAL_PROFILE_V1",
+  "profile_id": "example_local_profile",
+  "profile_name": "Example Local Command Profile",
+  "created_date": "2026-05-31",
+  "last_modified": "2026-05-31",
+  "command_info": {
+    "command_name": "Example Activity",
+    "component_service": "marine_corps",
+    "unit_identity": "Example Battalion",
+    "command_address": [
+      "123 Example Road",
+      "Example Base, EX 00000"
+    ]
+  },
+  "defaults": {
+    "from": "Commanding Officer, Example Activity",
+    "originator_code": "EX-1",
+    "ssic": "5216",
+    "letterhead_lines": [
+      "UNITED STATES MARINE CORPS",
+      "EXAMPLE ACTIVITY",
+      "EXAMPLE BASE, EX 00000"
+    ]
+  },
+  "signature_blocks": {
+    "standard_letter": [
+      "J. DOE",
+      "By direction"
+    ],
+    "memorandum_for_record": [
+      "J. DOE",
+      "EX-1"
+    ]
+  },
+  "poc_defaults": {
+    "name": "J. Doe",
+    "telephone": "703-555-0100",
+    "email": "j.doe@example.mil"
+  },
+  "style_preferences": {
+    "salutation": "Sir or Madam,",
+    "closing": "Respectfully,",
+    "signature_title": "By direction"
+  },
+  "override_rules": [
+    {
+      "field_path": "from",
+      "value": "Commanding Officer, Example Activity",
+      "doc_type_filter": ["standard_letter", "from_to_memo"],
+      "component_filter": ["marine_corps"]
+    }
+  ],
+  "scope_tags": {
+    "doc_types": ["standard_letter", "memorandum_for_record", "from_to_memo"],
+    "components": ["marine_corps"]
+  },
+  "safety_notes": [
+    "Fake example profile only. Do not store real sensitive data in public repositories.",
+    "Real profiles may contain phone numbers, addresses, or other contact information.",
+    "Protect real profile files and do not commit them to public version control."
+  ]
+}

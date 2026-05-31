@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cci_local_profile_schema_v1",
+  "title": "CCI Local Command Profile Schema",
+  "description": "Schema for local command profile JSON files that store command-specific defaults and preferences. Schema version LOCAL_PROFILE_SCHEMA_V1. Profile instances must use schema_version LOCAL_PROFILE_V1.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "profile_id",
+    "profile_name",
+    "command_info",
+    "defaults"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "LOCAL_PROFILE_V1",
+      "description": "Profile instance schema version."
+    },
+    "profile_id": {
+      "type": "string",
+      "description": "Machine-readable profile identifier. Should be unique."
+    },
+    "profile_name": {
+      "type": "string",
+      "description": "Human-readable profile display name."
+    },
+    "created_date": {
+      "type": "string",
+      "description": "ISO 8601 date string when the profile was created."
+    },
+    "last_modified": {
+      "type": "string",
+      "description": "ISO 8601 date string of last modification."
+    },
+    "command_info": {
+      "type": "object",
+      "description": "Identity and address information for the command or activity.",
+      "required": ["command_name", "component_service"],
+      "properties": {
+        "command_name": { "type": "string" },
+        "component_service": {
+          "type": "string",
+          "enum": ["navy", "marine_corps", "joint", "don_secretariat", "unknown"]
+        },
+        "unit_identity": { "type": "string" },
+        "command_address": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "description": "Default field values applied when the payload does not explicitly provide them.",
+      "properties": {
+        "from": { "type": "string" },
+        "ssic": { "type": "string" },
+        "originator_code": { "type": "string" },
+        "letterhead_lines": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "signature_blocks": {
+      "type": "object",
+      "description": "Signature block templates keyed by doc_type. Applied when payload signature is missing.",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "poc_defaults": {
+      "type": "object",
+      "description": "Default point-of-contact information applied when payload point_of_contact is missing.",
+      "properties": {
+        "name": { "type": "string" },
+        "telephone": { "type": "string" },
+        "email": { "type": "string" }
+      }
+    },
+    "style_preferences": {
+      "type": "object",
+      "description": "Local style preferences that comply with SECNAV rules. Do not store preferences that conflict with validator rules.",
+      "properties": {
+        "salutation": { "type": "string" },
+        "closing": { "type": "string" },
+        "signature_title": { "type": "string" }
+      }
+    },
+    "override_rules": {
+      "type": "array",
+      "description": "Conditional override rules with doc_type and component filters.",
+      "items": {
+        "type": "object",
+        "required": ["field_path", "value"],
+        "properties": {
+          "field_path": { "type": "string" },
+          "value": {},
+          "doc_type_filter": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "component_filter": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "scope_tags": {
+      "type": "object",
+      "description": "Tags describing which doc_types and components this profile targets.",
+      "properties": {
+        "doc_types": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "components": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "safety_notes": {
+      "type": "array",
+      "description": "Warnings about profile content. Real profiles may contain contact information or local command data and should be protected.",
+      "items": { "type": "string" }
+    }
+  }
+}

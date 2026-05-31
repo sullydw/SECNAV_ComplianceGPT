@@ -1,0 +1,9 @@
+{
+  "_comment": "User answers with dot notation and direct keys. originator_code fills missing field. ssic conflicts with payload explicit.",
+  "_test_case": "audit_profile_user_answers",
+  "via.0": "Example Intermediate Activity",
+  "ssic": "9999",
+  "originator_code": "UA-1",
+  "point_of_contact.name": "User Poc",
+  "point_of_contact.telephone": "703-555-9999"
+}

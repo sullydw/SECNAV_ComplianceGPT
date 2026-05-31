@@ -2,12 +2,12 @@
 
 ## Baseline Commit
 
-- **Commit hash:** `22d7de6abc11b3cbdb9043b797085f4ef54181f7`
+- **Commit hash:** `a114c8f46fc87f900e3b30b559a4bcd51528293e`
 - **Tag:** none at HEAD
 - **Date:** 2026-05-31
 - **Branch:** `main`
 - **Status:** clean, up to date with `origin/main`
-- **Previous baseline:** `a876fd17da216029ba80820ea0da223acb01f4d4` (consolidated validator runner)
+- **Previous baseline:** `22d7de6abc11b3cbdb9043b797085f4ef54181f7` (intake orchestrator CI verified)
 
 ## GitHub Actions Verification
 
@@ -230,6 +230,16 @@ python tools/run_cci_personnel_regression.py
 python tools/run_cci_poc_regression.py
 python tools/run_cci_routing_regression.py
 
+# Context schema and consolidated audit
+python tools/run_context_schema_regression.py
+python tools/run_cci_audit_regression.py
+
+# Intake orchestrator
+python tools/run_intake_regression.py
+
+# Local command profile
+python tools/run_profile_regression.py
+
 # C7-C10 layout/render regressions
 python tools/run_c7_phase1_regression.py
 python tools/run_c8_regression.py
@@ -277,12 +287,15 @@ The full regression suite (seven CCI + context schema + consolidated audit + C7-
 7. CCI routing regression
 8. Context schema regression
 9. CCI consolidated audit regression
-10. C7 Phase 1 regression
-11. C8 regression
-12. C9 regression
-13. C10 regression
+10. Intake orchestrator regression
+11. C7 Phase 1 regression
+12. C8 regression
+13. C9 regression
+14. C10 regression
 
 Future CCI validators should be added to the workflow before the C7-C10 steps, keeping the fast pure-Python checks first and the slower PDF-based checks last.
+
+**Note:** Local Command Profile regression (`tools/run_profile_regression.py`) runs locally but is not yet included in the GitHub Actions workflow. It will be added in a future task.
 
 ## Baseline Integrity Note
 
@@ -458,6 +471,55 @@ An intake orchestration layer has been added to transform user intent into a str
 **Integration instruction:**
 Future intake UIs or AI drafting layers should instantiate `IntakeOrchestrator` with a partial payload, call `get_status()` to understand gaps, present `next_questions()` to the user, and call `apply_answers()` iteratively until `blocking` is false. Only then should the downstream system call the renderer.
 
+## Phase 1: Local Command Profile Foundation
+
+A standalone local command profile module has been added to support pre-populating common draft fields from a profile JSON without modifying existing validators, renderers, examples, layout profiles, README, or GitHub Actions.
+
+- **Source:** `src/local_profile.py`
+- **Profile schema:** `rules_v6/CCI/cci_local_profile_schema.json`
+- **Example profile:** `profiles/example_local_profile.json`
+- **Public API:**
+  - `list_profiles(profile_dir="profiles")` -> `list[str]`
+  - `load_profile(profile_name_or_path, profile_dir="profiles")` -> `dict`
+  - `validate_profile(profile)` -> `tuple[list[str], list[str]]`
+  - `apply_profile_defaults(payload, profile, user_answers=None)` -> `tuple[dict, dict]`
+- **Regression runner:** `tools/run_profile_regression.py`
+- **Example fixtures:**
+  - `examples/audit_profile_merge.json` — partial payload after profile defaults applied
+  - `examples/audit_profile_user_answers.json` — user answers with dot-notation and direct keys
+
+**Phase 1 scope:**
+- Profile JSON loading and validation against schema.
+- Merge priority: payload explicit > user_answers > profile defaults > empty.
+- Profile defaults supported: `from`, `ssic`, `originator_code`, `point_of_contact`, `letterhead_lines`, and `signature` (doc-type-aware).
+- Merge report returned with `fields_from_payload`, `fields_from_user_answers`, `fields_from_profile`, `fields_still_missing`.
+- No intake_orchestrator.py integration yet (Phase 2).
+- No correction memory behavior.
+- No CLI editor.
+- No auto-activation.
+- No renderer changes.
+
+**Profile storage policy:**
+- Example profile uses fake data only.
+- Real user profiles should live outside the repo or be gitignored.
+- Profile JSON may contain contact information; protect accordingly.
+
+**Merge priority:**
+1. Explicit non-empty payload values always win.
+2. user_answers fill missing fields.
+3. Profile defaults fill remaining missing fields.
+4. Empty remains empty.
+
+**Current v1 limitations:**
+- Standalone module only — not yet wired into intake_orchestrator.
+- No persistent correction memory.
+- No natural-language parsing.
+- No CLI profile editor.
+- No auto-activation of a default profile.
+- No renderer changes.
+
+---
+
 ## Regression Results (post-intake)
 
 | Regression | Result |
@@ -472,12 +534,13 @@ Future intake UIs or AI drafting layers should instantiate `IntakeOrchestrator` 
 | Context Schema | PASS |
 | CCI Consolidated Audit | PASS |
 | Intake Orchestrator | PASS |
+| Local Command Profile | PASS |
 | C7 Phase 1 | PASS |
 | C8 | PASS |
 | C9 | PASS |
 | C10 | PASS |
 
-All fourteen regressions (seven CCI + context schema + consolidated audit + intake orchestration + C7-C10) passed locally after adding the intake orchestration foundation.
+All fifteen regressions (seven CCI + context schema + consolidated audit + intake orchestration + local command profile + C7-C10) passed locally after adding the local command profile foundation.
 
 ## Known Limitations
 
@@ -496,4 +559,4 @@ These remain proposed for future CCI work, in no particular order:
 
 ---
 
->*Checkpoint updated after commit 22d7de6 — intake orchestrator GitHub Actions baseline verified.*
+>*Checkpoint updated after commit a114c8f — Phase 1 local command profile foundation added.*

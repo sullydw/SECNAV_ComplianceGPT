@@ -1,0 +1,17 @@
+{
+  "_comment": "Partial standard letter payload missing from, originator_code, point_of_contact. Has explicit ssic, signature.",
+  "_test_case": "audit_profile_merge",
+  "doc_type": "standard_letter",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "date": "15 May 2026",
+  "ssic": "1111",
+  "subj": "AUDIT PROFILE MERGE TEST",
+  "body": [
+    "1. This is a test body for the profile merge audit fixture.",
+    "2. It should receive from, originator_code, and point_of_contact from the profile defaults."
+  ],
+  "signature": [
+    "J. TEST signer",
+    "Test authority"
+  ]
+}
