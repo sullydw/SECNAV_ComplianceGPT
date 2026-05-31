@@ -2,30 +2,36 @@
 
 ## Baseline Commit
 
-- **Commit hash:** `a114c8f46fc87f900e3b30b559a4bcd51528293e`
+- **Commit hash:** `50636a012ee0cfd75cdf471e8eb0db775e6cad60`
 - **Tag:** none at HEAD
 - **Date:** 2026-05-31
 - **Branch:** `main`
 - **Status:** clean, up to date with `origin/main`
-- **Previous baseline:** `22d7de6abc11b3cbdb9043b797085f4ef54181f7` (intake orchestrator CI verified)
+- **Previous baseline:** `a114c8f46fc87f900e3b30b559a4bcd51528293e` (intake orchestrator CI verified)
+- **Stable baseline before intake/profile integration:** `50636a0`
 
 ## GitHub Actions Verification
 
 - **Workflow:** Regression
 - **Job:** compliance-regression
-- **Run #21:** completed / success
-- **Commit verified:** `22d7de6`
-- **CI steps passed:** 14
+- **Run:** completed / success (manually verified by user for commit `50636a0`)
+- **Commit verified:** `50636a0`
+- **CI steps passed:** 15
   - 7 CCI validator regressions
   - context schema regression
   - consolidated CCI audit regression
   - intake regression
+  - **local profile regression**
   - C7 Phase 1 regression
   - C8 regression
   - C9 regression
   - C10 regression
 - **Intake orchestrator:** now GitHub Actions verified
+- **Local command profile foundation:** now GitHub Actions verified
 - **Intake regression runner:** `tools/run_intake_regression.py`
+- **Profile regression runner:** `tools/run_profile_regression.py`
+- **Stable baseline before intake/profile integration:** `50636a0`
+- **Note:** Real user/command profiles should not be committed to public repositories. Only the example template (`profiles/example_local_profile.json`) is committed.
 
 ## Purpose of the CCI Layer
 
@@ -559,4 +565,4 @@ These remain proposed for future CCI work, in no particular order:
 
 ---
 
->*Checkpoint updated after commit a114c8f — Phase 1 local command profile foundation added.*
+>*Checkpoint updated after commit 50636a0 — local command profile foundation GitHub Actions verified.*
