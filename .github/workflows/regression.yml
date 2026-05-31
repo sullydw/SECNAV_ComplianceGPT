@@ -50,6 +50,9 @@ jobs:
       - name: Run CCI consolidated audit regression
         run: python tools/run_cci_audit_regression.py
 
+      - name: Run intake regression
+        run: python tools/run_intake_regression.py
+
       - name: Run C7 regression
         run: python tools/run_c7_phase1_regression.py
 
