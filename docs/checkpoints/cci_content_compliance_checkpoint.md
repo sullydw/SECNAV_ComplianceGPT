@@ -2,11 +2,30 @@
 
 ## Baseline Commit
 
-- **Commit hash:** `a876fd17da216029ba80820ea0da223acb01f4d4`
+- **Commit hash:** `22d7de6abc11b3cbdb9043b797085f4ef54181f7`
 - **Tag:** none at HEAD
 - **Date:** 2026-05-31
 - **Branch:** `main`
 - **Status:** clean, up to date with `origin/main`
+- **Previous baseline:** `a876fd17da216029ba80820ea0da223acb01f4d4` (consolidated validator runner)
+
+## GitHub Actions Verification
+
+- **Workflow:** Regression
+- **Job:** compliance-regression
+- **Run #21:** completed / success
+- **Commit verified:** `22d7de6`
+- **CI steps passed:** 14
+  - 7 CCI validator regressions
+  - context schema regression
+  - consolidated CCI audit regression
+  - intake regression
+  - C7 Phase 1 regression
+  - C8 regression
+  - C9 regression
+  - C10 regression
+- **Intake orchestrator:** now GitHub Actions verified
+- **Intake regression runner:** `tools/run_intake_regression.py`
 
 ## Purpose of the CCI Layer
 
@@ -477,4 +496,4 @@ These remain proposed for future CCI work, in no particular order:
 
 ---
 
->*Checkpoint updated after intake orchestration foundation — Phase 1 complete.*
+>*Checkpoint updated after commit 22d7de6 — intake orchestrator GitHub Actions baseline verified.*
