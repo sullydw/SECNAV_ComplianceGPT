@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-CCI Intake Orchestrator — Phase 1 Foundation
+CCI Intake Orchestrator — Phase 2: Profile Integration
 
 Public API:
     class IntakeOrchestrator:
-        __init__(self, payload=None, user_answers=None)
+        __init__(self, payload=None, user_answers=None, active_profile=None)
+        set_active_profile(active_profile) -> None
         get_status() -> dict
         next_questions(limit=None) -> list[dict]
         apply_answers(answers) -> None
@@ -21,6 +22,7 @@ Design choices:
     - Deterministic JSON-driven question generation.
     - No natural-language parsing.
     - No correction apply/capture/reuse.
+    - No profile auto-activation.
     - Purely additive; does not modify existing validators, renderers, layout profiles, or examples.
 """
 
@@ -39,13 +41,18 @@ if str(_REPO_ROOT / "src") not in sys.path:
 
 from context_resolver import resolve_context
 from validator_runner import run_cci_audit
+from local_profile import (
+    apply_profile_defaults,
+    load_profile,
+    validate_profile,
+)
 
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
-_SCHEMA_VERSION = "CCI_INTAKE_V1"
+_SCHEMA_VERSION = "CCI_INTAKE_V2"
 
 _RULES_DIR = _REPO_ROOT / "rules_v6" / "CCI"
 _FIELD_POLICY_PATH = _RULES_DIR / "cci_intake_field_policy.json"
@@ -115,21 +122,96 @@ def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _resolve_profile(active_profile: Any) -> tuple[dict[str, Any] | None, list[str]]:
+    """Resolve active_profile into a validated profile dict and warning list.
+
+    Accepts:
+      - None -> (None, [])
+      - str -> load via local_profile.load_profile(), then validate
+      - dict -> validate directly
+
+    Returns (profile_dict_or_None, warnings).
+    Load/validation errors are captured as warnings, not raised.
+    """
+    if active_profile is None:
+        return None, []
+
+    profile: dict[str, Any] | None = None
+    warnings: list[str] = []
+
+    if isinstance(active_profile, dict):
+        profile = copy.deepcopy(active_profile)
+    elif isinstance(active_profile, str):
+        try:
+            profile = load_profile(active_profile)
+        except FileNotFoundError as exc:
+            warnings.append(f"Profile load failed: {exc}")
+            return None, warnings
+        except Exception as exc:
+            warnings.append(f"Profile load failed unexpectedly: {exc}")
+            return None, warnings
+    else:
+        warnings.append(f"active_profile must be None, str, or dict; got {type(active_profile).__name__}")
+        return None, warnings
+
+    if profile is not None:
+        errors, validate_warnings = validate_profile(profile)
+        if errors:
+            warnings.extend(f"Profile validation: {e}" for e in errors)
+            # Return profile anyway so caller can decide; but warn
+        if validate_warnings:
+            warnings.extend(f"Profile validation warning: {w}" for w in validate_warnings)
+
+    return profile, warnings
+
+
 # ---------------------------------------------------------------------------
 # IntakeOrchestrator
 # ---------------------------------------------------------------------------
 
 class IntakeOrchestrator:
-    def __init__(self, payload: dict[str, Any] | None = None, user_answers: dict[str, Any] | None = None):
+    def __init__(
+        self,
+        payload: dict[str, Any] | None = None,
+        user_answers: dict[str, Any] | None = None,
+        active_profile: Any = None,
+    ):
         self._payload: dict[str, Any] = copy.deepcopy(payload) if payload else {}
         self._user_answers: dict[str, Any] = copy.deepcopy(user_answers if user_answers else {})
         # Normalize any flat dot-notation keys immediately into nested dict
         self._user_answers = _flatten_aliases(self._user_answers)
 
+        self._active_profile: dict[str, Any] | None = None
+        self._profile_warnings: list[str] = []
+        self._merge_report: dict[str, Any] | None = None
+
+        if active_profile is not None:
+            self.set_active_profile(active_profile)
+
+    # -- profile management ---------------------------------------------------
+
+    def set_active_profile(self, active_profile: Any) -> None:
+        """Switch or clear the active local command profile.
+
+        Accepts None, str (profile name/path), or dict (loaded profile).
+        Revalidates profile and updates internal state.
+        Does not mutate payload or user_answers.
+        """
+        if active_profile is None:
+            self._active_profile = None
+            self._profile_warnings = []
+            self._merge_report = None
+            return
+
+        profile, warnings = _resolve_profile(active_profile)
+        self._active_profile = profile
+        self._profile_warnings = warnings
+        self._merge_report = None
+
     # -- public methods -------------------------------------------------------
 
     def get_status(self) -> dict[str, Any]:
-        """Return intake status including resolved context, audit summary, and missing/question fields."""
+        """Return intake status including resolved context, audit summary, missing/question fields, and profile state."""
         payload = self.build_payload()
         context, context_warnings = resolve_context(payload, self._user_answers)
         audit = self.run_audit()
@@ -161,6 +243,23 @@ class IntakeOrchestrator:
 
         blocking = bool(missing_required)
 
+        # Profile state
+        active_profile_id: str | None = None
+        prefilled_from_profile: list[str] = []
+        profile_warnings = list(self._profile_warnings)
+        missing_after_profile: list[str] = []
+
+        if self._active_profile is not None:
+            active_profile_id = self._active_profile.get("profile_id")
+            if self._merge_report is not None:
+                prefilled_from_profile = list(self._merge_report.get("fields_from_profile", []))
+                missing_after_profile = list(self._merge_report.get("fields_still_missing", []))
+            else:
+                # build_payload not called yet; compute from current payload
+                missing_after_profile = missing_required + missing_recommended + missing_optional
+        else:
+            missing_after_profile = missing_required + missing_recommended + missing_optional
+
         return {
             "schema_version": _SCHEMA_VERSION,
             "resolved_context": context,
@@ -172,10 +271,19 @@ class IntakeOrchestrator:
             "inferred": inferred,
             "blocking": blocking,
             "correction_memory": context.get("correction_memory", {}),
+            # Profile integration additions
+            "active_profile": active_profile_id,
+            "prefilled_from_profile": prefilled_from_profile,
+            "profile_warnings": profile_warnings,
+            "missing_after_profile": missing_after_profile,
         }
 
     def next_questions(self, limit: int | None = None) -> list[dict[str, Any]]:
-        """Return prioritized missing-field questions. Required first, then recommended, then optional."""
+        """Return prioritized missing-field questions. Required first, then recommended, then optional.
+
+        Fields filled by profile defaults are automatically skipped because
+        build_payload() merges the profile before presence checks.
+        """
         status = self.get_status()
         missing_required = set(status["missing_required"])
         missing_recommended = set(status["missing_recommended"])
@@ -189,9 +297,10 @@ class IntakeOrchestrator:
 
         for q in questions:
             field = q["field_path"]
-            # Skip if already present in payload or user_answers
-            if _field_is_present_in_payload(self._payload, field):
+            # Skip if already present in the merged payload (includes profile fills)
+            if _field_is_present_in_payload(self.build_payload(), field):
                 continue
+            # Skip if explicitly answered by user
             if _field_is_present_in_payload(self._user_answers, field):
                 continue
             # Determine bucket
@@ -235,9 +344,27 @@ class IntakeOrchestrator:
         self._merge_answers(normalized, self._user_answers)
 
     def build_payload(self) -> dict[str, Any]:
-        """Return a merged payload: payload explicit values take priority over user_answers."""
+        """Return a merged payload.
+
+        Merge priority:
+          1. explicit non-empty payload values (always win)
+          2. user_answers values (fill missing)
+          3. profile defaults (fill remaining missing)
+          4. empty remains empty
+
+        If no active profile, preserves legacy behavior (payload + user_answers only).
+        """
+        if self._active_profile is not None:
+            merged, merge_report = apply_profile_defaults(
+                self._payload, self._active_profile, self._user_answers
+            )
+            self._merge_report = merge_report
+            return merged
+
+        # Legacy path: no active profile
         merged = copy.deepcopy(self._payload)
         self._merge_answers(self._user_answers, merged, override=False)
+        self._merge_report = None
         return merged
 
     def run_audit(self) -> dict[str, Any]:
@@ -279,6 +406,15 @@ def _print_status(status: dict[str, Any]) -> None:
     comp = status.get("resolved_context", {}).get("component", {})
     print(f"  Service        : {comp.get('service')}")
     print()
+
+    if status.get("active_profile"):
+        print(f"  Active profile : {status['active_profile']}")
+        if status.get("prefilled_from_profile"):
+            print(f"  Prefilled      : {', '.join(status['prefilled_from_profile'])}")
+        if status.get("profile_warnings"):
+            for w in status["profile_warnings"]:
+                print(f"  Profile WARN   : {w}")
+        print()
 
     print("Missing Required Fields")
     print("-" * 72)

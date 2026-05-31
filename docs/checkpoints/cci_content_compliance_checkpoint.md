@@ -526,6 +526,48 @@ A standalone local command profile module has been added to support pre-populati
 
 ---
 
+## Phase 2: Intake/Profile Integration
+
+The intake orchestrator now optionally accepts an active local command profile to prefill missing fields, reducing repeated user corrections.
+
+- **Modified:** `src/intake_orchestrator.py`
+- **Intake public API additions:**
+  - `IntakeOrchestrator(payload, user_answers, active_profile=None)` — constructor now accepts profile
+  - `set_active_profile(profile)` — runtime profile switching (accepts `None`, `str`, or `dict`)
+- **Merge priority enforced:**
+  1. Explicit non-empty payload values always win.
+  2. `user_answers` fill missing fields.
+  3. Profile defaults fill remaining missing fields.
+  4. Empty remains empty.
+- **get_status() additions:**
+  - `active_profile` — profile id or `None`
+  - `prefilled_from_profile` — list of field paths filled by profile
+  - `profile_warnings` — validation/load warnings
+  - `missing_after_profile` — flat list of fields still missing after merge
+- **next_questions() behavior:** automatically skips fields filled by profile because `build_payload()` merges profile before presence checks.
+- **run_audit() behavior:** audits the profile-merged payload; no separate logic needed.
+- **New fixture:** `examples/audit_intake_with_profile.json` — partial payload that becomes complete after profile defaults.
+- **Regression runner updated:** `tools/run_intake_regression.py` — 14 existing tests + 7 new profile integration tests (all pass).
+
+**What changed:**
+- `build_payload()` now calls `local_profile.apply_profile_defaults()` when an active profile is set.
+- `_resolve_profile()` helper handles loading and validation for string/dict/None inputs.
+- Validation errors are stored as warnings, not raised.
+- `get_status()` computes missing fields from the post-profile merged payload.
+
+**What did not change:**
+- No renderer modifications.
+- No validator modifications.
+- No layout profile modifications.
+- No example modifications beyond the new fixture.
+- No README modifications.
+- No GitHub Actions modifications.
+- No correction memory behavior.
+- No profile auto-activation.
+- No real user profiles committed.
+
+---
+
 ## Regression Results (post-intake)
 
 | Regression | Result |
@@ -546,7 +588,7 @@ A standalone local command profile module has been added to support pre-populati
 | C9 | PASS |
 | C10 | PASS |
 
-All fifteen regressions (seven CCI + context schema + consolidated audit + intake orchestration + local command profile + C7-C10) passed locally after adding the local command profile foundation.
+All fifteen regressions (seven CCI + context schema + consolidated audit + intake orchestration with profile integration + local command profile + C7-C10) passed locally after intake/profile integration.
 
 ## Known Limitations
 
@@ -565,4 +607,4 @@ These remain proposed for future CCI work, in no particular order:
 
 ---
 
->*Checkpoint updated after commit 50636a0 — local command profile foundation GitHub Actions verified.*
+>*Checkpoint updated after intake/profile integration — Phase 2 complete.*

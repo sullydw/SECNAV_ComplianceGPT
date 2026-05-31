@@ -1,0 +1,12 @@
+{
+  "_comment": "Partial standard_letter payload missing from, originator_code, point_of_contact. Intended for intake+profile integration test with example_local_profile.json.",
+  "doc_type": "standard_letter",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "date": "15 May 2026",
+  "subj": "PROFILE INTEGRATION TEST",
+  "body": [
+    "1. This standard letter fixture omits from, originator_code, and point_of_contact.",
+    "2. The example local profile should prefill those fields during intake."
+  ],
+  "signature": ["J. DOE", "By direction"]
+}
