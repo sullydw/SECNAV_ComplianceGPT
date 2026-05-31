@@ -56,6 +56,9 @@ jobs:
       - name: Run profile regression
         run: python tools/run_profile_regression.py
 
+      - name: Run correction memory regression
+        run: python tools/run_correction_regression.py
+
       - name: Run C7 regression
         run: python tools/run_c7_phase1_regression.py
 
