@@ -44,6 +44,9 @@ jobs:
       - name: Run CCI routing regression
         run: python tools/run_cci_routing_regression.py
 
+      - name: Run context schema regression
+        run: python tools/run_context_schema_regression.py
+
       - name: Run C7 regression
         run: python tools/run_c7_phase1_regression.py
 
