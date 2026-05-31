@@ -1,0 +1,22 @@
+{
+  "doc_type": "standard_letter",
+  "component": {
+    "service": "marine_corps"
+  },
+  "subj": "POLICY UPDATE.",
+  "body": [
+    "1. This is the first paragraph of the body.",
+    "2. This is the second paragraph of the body."
+  ],
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Receiving Activity",
+  "point_of_contact": {
+    "name": "John Smith",
+    "email": "john.smith@example.mil",
+    "phone": "123-456-7890"
+  },
+  "signature": {
+    "name": "J. DOE",
+    "title": "By direction"
+  }
+}

@@ -16,12 +16,12 @@
 - **Job:** compliance-regression
 - **Run:** completed / success (manually verified by user for commit `1ccf26b`)
 - **Commit verified:** `1ccf26b`
-- **CI steps passed:** 15
+- **CI steps passed:** 16
   - 7 CCI validator regressions
   - context schema regression
   - consolidated CCI audit regression
   - intake regression
-  - **local profile regression**
+  - **active-draft correction memory regression**
   - C7 Phase 1 regression
   - C8 regression
   - C9 regression
@@ -586,8 +586,9 @@ The intake orchestrator now optionally accepts an active local command profile t
 | C8 | PASS |
 | C9 | PASS |
 | C10 | PASS |
+| Correction Memory | PASS |
 
-All fifteen regressions (seven CCI + context schema + consolidated audit + intake orchestration with profile integration + local command profile + C7-C10) passed locally after intake/profile integration.
+All sixteen regressions (seven CCI + context schema + consolidated audit + intake orchestration with profile integration + local command profile + active-draft correction memory + C7-C10) passed locally after Phase 1 correction memory implementation.
 
 ## Known Limitations
 
