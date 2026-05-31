@@ -1,0 +1,17 @@
+{
+  "_comment": "Example user answers demonstrating dot-notation and nested values.",
+  "subj": "INTAKE ORCHESTRATION TEST",
+  "component.service": "marine_corps",
+  "point_of_contact": {
+    "name": "J. Doe",
+    "telephone": "703-555-1234",
+    "email": "j.doe@example.mil"
+  },
+  "basic_letter_id": "CO USS NEVERSAIL ltr ser 123/26",
+  "endorsement_ordinal": "First",
+  "joint_heading": "JOINT LETTER Example Naval Activity and Example Marine Activity",
+  "commands": [
+    "Example Naval Activity — By direction of Commanding Officer",
+    "Example Marine Activity — By direction of Commanding Officer"
+  ]
+}

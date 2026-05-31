@@ -1,0 +1,237 @@
+{
+  "schema_version": "CCI_INTAKE_QUESTIONS_V1",
+  "description": "Deterministic intake question definitions for SECNAV correspondence. Filtered by doc_type and component. Consumed by IntakeOrchestrator.next_questions().",
+  "questions": [
+    {
+      "question_id": "q_doc_type",
+      "field_path": "doc_type",
+      "prompt_text": "What type of correspondence is this? (e.g., standard_letter, endorsement, joint_letter, memorandum_for_record, from_to_memo)",
+      "importance": "required",
+      "applies_to_doc_types": [],
+      "applies_to_component": [],
+      "data_type": "choice",
+      "choices": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "memorandum_for_record", "from_to_memo", "plain_paper_memo", "decision_memo"],
+      "aliases": ["type", "correspondence_type"]
+    },
+    {
+      "question_id": "q_component_service",
+      "field_path": "component.service",
+      "prompt_text": "Which service or component is this correspondence from? (navy, marine_corps, joint, don_secretariat)",
+      "importance": "required",
+      "applies_to_doc_types": [],
+      "applies_to_component": [],
+      "data_type": "choice",
+      "choices": ["navy", "marine_corps", "joint", "don_secretariat"],
+      "aliases": ["service", "component"]
+    },
+    {
+      "question_id": "q_from",
+      "field_path": "from",
+      "prompt_text": "Who is this correspondence from? (Use activity head title, e.g., 'Commanding Officer, USS NEVERSAIL')",
+      "importance": "required",
+      "applies_to_doc_types": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "from_to_memo", "plain_paper_memo", "decision_memo"],
+      "applies_to_component": [],
+      "data_type": "string",
+      "choices": null,
+      "aliases": ["sender", "from_line"]
+    },
+    {
+      "question_id": "q_to",
+      "field_path": "to",
+      "prompt_text": "Who is this correspondence addressed to?",
+      "importance": "required",
+      "applies_to_doc_types": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "from_to_memo", "plain_paper_memo", "decision_memo"],
+      "applies_to_component": [],
+      "data_type": "string",
+      "choices": null,
+      "aliases": ["addressee"]
+    },
+    {
+      "question_id": "q_date",
+      "field_path": "date",
+      "prompt_text": "What is the correspondence date? (Military format: day Month year, e.g., '15 May 2026')",
+      "importance": "required",
+      "applies_to_doc_types": ["standard_letter", "endorsement", "from_to_memo", "plain_paper_memo", "decision_memo", "memorandum_for_record"],
+      "applies_to_component": [],
+      "data_type": "string",
+      "choices": null,
+      "aliases": ["correspondence_date"]
+    },
+    {
+      "question_id": "q_subj",
+      "field_path": "subj",
+      "prompt_text": "What is the subject line? (ALL CAPS for letters; no terminal punctuation)",
+      "importance": "required",
+      "applies_to_doc_types": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "from_to_memo", "plain_paper_memo", "decision_memo"],
+      "applies_to_component": [],
+      "data_type": "string",
+      "choices": null,
+      "aliases": ["subject", "subject_line"]
+    },
+    {
+      "question_id": "q_body",
+      "field_path": "body",
+      "prompt_text": "Enter the body text. Provide numbered paragraphs as a list of strings.",
+      "importance": "required",
+      "applies_to_doc_types": [],
+      "applies_to_component": [],
+      "data_type": "list",
+      "choices": null,
+      "aliases": ["body_text", "body_paragraphs", "paragraphs"]
+    },
+    {
+      "question_id": "q_signature",
+      "field_path": "signature",
+      "prompt_text": "Provide the signature block. List of strings: typed name, followed by authority line if needed (e.g., ['J. DOE', 'By direction']).",
+      "importance": "required",
+      "applies_to_doc_types": ["standard_letter", "multiple_address_letter", "endorsement", "joint_letter", "from_to_memo", "plain_paper_memo", "decision_memo"],
+      "applies_to_component": [],
+      "data_type": "list",
+      "choices": null,
+      "aliases": ["sig_block", "signer"]
+    },
+    {
+      "question_id": "q_ssic",
+      "field_path": "ssic",
+      "prompt_text": "What is the SSIC (Subject Standard Identification Code), if any? (e.g., 5216)",
+      "importance": "recommended",
+      "applies_to_doc_types": ["standard_letter", "multiple_address_letter", "joint_letter", "from_to_memo", "plain_paper_memo", "decision_memo"],
+      "applies_to_component": [],
+      "data_type": "string",
+      "choices": null,
+      "aliases": ["subject_code"]
+    },
+    {
+      "question_id": "q_originator_code",
+      "field_path": "originator_code",
+      "prompt_text": "What is the originator code, if any? (e.g., S-1)",
+      "importance": "recommended",
+      "applies_to_doc_types": ["standard_letter", "multiple_address_letter", "joint_letter", "from_to_memo", "plain_paper_memo", "decision_memo"],
+      "applies_to_component": [],
+      "data_type": "string",
+      "choices": null,
+      "aliases": ["code"]
+    },
+    {
+      "question_id": "q_poc",
+      "field_path": "point_of_contact",
+      "prompt_text": "Provide point-of-contact information (name, telephone, email). Supply as a JSON object if possible.",
+      "importance": "recommended",
+      "applies_to_doc_types": [],
+      "applies_to_component": [],
+      "data_type": "dict",
+      "choices": null,
+      "aliases": ["poc", "contact", "pointOfContact"]
+    },
+    {
+      "question_id": "q_distribution_mode",
+      "field_path": "distribution_mode",
+      "prompt_text": "Select the distribution mode. (to_only, distribution_only, to_plus_distribution)",
+      "importance": "required",
+      "applies_to_doc_types": ["multiple_address_letter"],
+      "applies_to_component": [],
+      "data_type": "choice",
+      "choices": ["to_only", "distribution_only", "to_plus_distribution"],
+      "aliases": ["dist_mode"]
+    },
+    {
+      "question_id": "q_distribution",
+      "field_path": "distribution",
+      "prompt_text": "Provide the distribution list. List of addressees.",
+      "importance": "recommended",
+      "applies_to_doc_types": ["multiple_address_letter"],
+      "applies_to_component": [],
+      "data_type": "list",
+      "choices": null,
+      "aliases": ["dist_list"]
+    },
+    {
+      "question_id": "q_via",
+      "field_path": "via",
+      "prompt_text": "Provide any Via addressees. List of strings; use numbered Via entries for multiple addressees.",
+      "importance": "optional",
+      "applies_to_doc_types": [],
+      "applies_to_component": [],
+      "data_type": "list",
+      "choices": null,
+      "aliases": ["via_addressees"]
+    },
+    {
+      "question_id": "q_copy_to",
+      "field_path": "copy_to",
+      "prompt_text": "Provide copy-to recipients, if any. List of strings.",
+      "importance": "optional",
+      "applies_to_doc_types": [],
+      "applies_to_component": [],
+      "data_type": "list",
+      "choices": null,
+      "aliases": ["copy", "copy_recipients"]
+    },
+    {
+      "question_id": "q_basic_letter_id",
+      "field_path": "basic_letter_id",
+      "prompt_text": "What is the basic letter identifier that this endorsement continues? (e.g., CO USS NEVERSAIL ltr ser 123/26)",
+      "importance": "required",
+      "applies_to_doc_types": ["endorsement"],
+      "applies_to_component": [],
+      "data_type": "string",
+      "choices": null,
+      "aliases": ["basic_letter"]
+    },
+    {
+      "question_id": "q_endorsement_ordinal",
+      "field_path": "endorsement_ordinal",
+      "prompt_text": "What is the endorsement number? (e.g., First, Second, Third)",
+      "importance": "required",
+      "applies_to_doc_types": ["endorsement"],
+      "applies_to_component": [],
+      "data_type": "string",
+      "choices": null,
+      "aliases": ["endorsement_number"]
+    },
+    {
+      "question_id": "q_joint_heading",
+      "field_path": "joint_heading",
+      "prompt_text": "Provide the JOINT LETTER heading text that lists both commands.",
+      "importance": "required",
+      "applies_to_doc_types": ["joint_letter"],
+      "applies_to_component": [],
+      "data_type": "string",
+      "choices": null,
+      "aliases": ["heading"]
+    },
+    {
+      "question_id": "q_commands",
+      "field_path": "commands",
+      "prompt_text": "List the commands participating in this joint letter. Each entry should include command name, from line, and sender symbol.",
+      "importance": "required",
+      "applies_to_doc_types": ["joint_letter"],
+      "applies_to_component": [],
+      "data_type": "list",
+      "choices": null,
+      "aliases": ["command_list"]
+    },
+    {
+      "question_id": "q_title",
+      "field_path": "title",
+      "prompt_text": "What is the title of this Memorandum for Record? (e.g., 'Exercise Participation Log')",
+      "importance": "recommended",
+      "applies_to_doc_types": ["memorandum_for_record"],
+      "applies_to_component": [],
+      "data_type": "string",
+      "choices": null,
+      "aliases": ["mfr_title"]
+    },
+    {
+      "question_id": "q_signer_name",
+      "field_path": "signer_name",
+      "prompt_text": "Who is signing this Memorandum for Record? (e.g., 'J. DOE')",
+      "importance": "recommended",
+      "applies_to_doc_types": ["memorandum_for_record"],
+      "applies_to_component": [],
+      "data_type": "string",
+      "choices": null,
+      "aliases": ["signer"]
+    }
+  ]
+}

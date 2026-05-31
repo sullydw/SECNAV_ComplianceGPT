@@ -1,0 +1,12 @@
+{
+  "_comment": "Memorandum for Record with body/date present but missing title and signer_name. Expected blocking false when body/date present, recommended missing includes title and signer_name.",
+  "doc_type": "memorandum_for_record",
+  "date": "15 May 2026",
+  "body": [
+    "1. Unit participated in fleet readiness exercise.",
+    "2. All equipment accounted for."
+  ],
+  "component": {
+    "service": "marine_corps"
+  }
+}

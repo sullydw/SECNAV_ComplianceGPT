@@ -1,0 +1,52 @@
+{
+  "schema_version": "CCI_INTAKE_POLICY_V1",
+  "description": "Required/recommended/optional field policy for SECNAV correspondence intake. Governed by doc_type and applied by the intake orchestrator.",
+  "policies": {
+    "standard_letter": {
+      "required_fields": ["from", "to", "date", "subj", "body", "signature"],
+      "recommended_fields": ["ssic", "originator_code", "point_of_contact"],
+      "optional_fields": ["body_paragraphs", "ref", "encl", "via", "copy_to", "serial_number", "distribution_mode", "distribution"]
+    },
+    "multiple_address_letter": {
+      "required_fields": ["from", "body", "signature", "distribution_mode"],
+      "recommended_fields": ["to", "distribution", "copy_to", "ssic", "point_of_contact"],
+      "optional_fields": ["body_paragraphs", "ref", "encl", "via", "serial_number", "subj"]
+    },
+    "endorsement": {
+      "required_fields": ["basic_letter_id", "endorsement_ordinal", "from", "to", "body", "signature"],
+      "recommended_fields": ["ref", "encl", "copy_to"],
+      "optional_fields": ["body_paragraphs", "via", "date", "ssic", "originator_code", "point_of_contact", "serial_number"]
+    },
+    "joint_letter": {
+      "required_fields": ["joint_heading", "commands", "from", "to", "subj", "body", "signature"],
+      "recommended_fields": ["ssic", "originator_code", "point_of_contact"],
+      "optional_fields": ["body_paragraphs", "ref", "encl", "via", "copy_to", "serial_number", "distribution_mode", "distribution"]
+    },
+    "memorandum_for_record": {
+      "required_fields": ["body", "date"],
+      "recommended_fields": ["title", "subj", "signer_name", "point_of_contact"],
+      "optional_fields": ["body_paragraphs", "from", "to", "ref", "encl", "via", "copy_to", "serial_number", "signature", "ssic", "originator_code"]
+    },
+    "from_to_memo": {
+      "required_fields": ["from", "to", "subj", "body", "date", "signature"],
+      "recommended_fields": ["ssic", "originator_code", "point_of_contact"],
+      "optional_fields": ["body_paragraphs", "ref", "encl", "via", "copy_to", "serial_number"]
+    },
+    "plain_paper_memo": {
+      "required_fields": ["from", "to", "subj", "body", "date", "signature"],
+      "recommended_fields": ["ssic", "originator_code", "point_of_contact"],
+      "optional_fields": ["body_paragraphs", "ref", "encl", "via", "copy_to", "serial_number"]
+    },
+    "decision_memo": {
+      "required_fields": ["from", "to", "subj", "body", "date", "signature"],
+      "recommended_fields": ["ssic", "originator_code", "point_of_contact"],
+      "optional_fields": ["body_paragraphs", "ref", "encl", "via", "copy_to", "serial_number"]
+    }
+  },
+  "notes": [
+    "Fields present in payload as non-empty values take priority; the orchestrator does not ask for them again.",
+    "List fields (ref, encl, via, copy_to, commands, distribution, signature) are considered present if they are a non-empty list.",
+    "Unknown doc_type defers to a minimal conservative policy requiring only doc_type itself.",
+    "This policy is deterministic and JSON-driven; no AI inference is used for field presence classification."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "_comment": "Endorsement with from/to/body/signature present but missing basic_letter_id and endorsement_ordinal. Expected blocking true before answers.",
+  "doc_type": "endorsement",
+  "from": "Commanding Officer, USS NEVERSAIL",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "body": [
+    "1. This endorsement provides concurrence on the basic letter.",
+    "2. All required actions have been completed."
+  ],
+  "signature": ["A. B. SMITH", "By direction"],
+  "component": {
+    "service": "navy"
+  }
+}

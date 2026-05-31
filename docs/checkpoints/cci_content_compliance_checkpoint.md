@@ -391,3 +391,90 @@ These remain proposed for future CCI work, in no particular order:
 ---
 
 >*Checkpoint updated after commit a876fd1 — consolidated validator runner CI baseline verified.*
+
+---
+
+## Phase 1: Intake Orchestrator Foundation
+
+An intake orchestration layer has been added to transform user intent into a structured draft payload, ask only for missing information, normalize answers, resolve context, run the consolidated CCI audit, and prepare a validated payload for future rendering without touching the renderer, validators, examples, layout profiles, README, or GitHub Actions in v1.
+
+- **Source:** `src/intake_orchestrator.py`
+- **Public API:**
+  - `IntakeOrchestrator(payload, user_answers)` — constructor
+  - `get_status()` -> `dict` — resolved context, missing fields, blocking status, audit summary
+  - `next_questions(limit)` -> `list[dict]` — prioritized missing-field questions
+  - `apply_answers(answers)` -> `None` — merge new answers into internal state
+  - `build_payload()` -> `dict` — merge payload + user_answers without overriding explicit values
+  - `run_audit()` -> `dict` — convenience wrapper for `run_cci_audit`
+- **Schema version:** `CCI_INTAKE_V1`
+- **CLI command:** `python src/intake_orchestrator.py <payload.json> [answers.json]`
+- **Field policy file:** `rules_v6/CCI/cci_intake_field_policy.json`
+- **Question definitions:** `rules_v6/CCI/cci_intake_questions.json`
+- **Regression runner:** `tools/run_intake_regression.py`
+- **Example fixtures:**
+  - `examples/audit_intake_standard_letter.json` — partial standard letter missing subj
+  - `examples/audit_intake_mfr.json` — partial MFR missing title/signer_name
+  - `examples/audit_intake_endorsement.json` — partial endorsement missing basic_letter_id/endorsement_ordinal
+  - `examples/audit_intake_joint.json` — partial joint letter missing joint_heading/commands
+  - `examples/audit_intake_user_answers.json` — example dot-notation and nested user answers
+
+**What it does:**
+- Loads deterministic field policy and question definitions from JSON files.
+- Supports flat dot-notation answer keys (`component.service`) and normalizes them to nested dictionaries.
+- Payload explicit values take priority over user_answers when both exist.
+- Calls `resolve_context` and `run_cci_audit` from existing modules.
+- Prioritizes questions as required -> recommended -> optional.
+- Filters questions by doc_type and component.service.
+- Skips questions for fields already present in payload or user_answers.
+- Surfaces `correction_memory` from resolved context as a reserved future field.
+
+**Current v1 limitations:**
+- No natural-language parsing.
+- No renderer calls. PDF generation is a future downstream step.
+- No correction apply/capture/reuse behavior.
+- No SSIC suggestion.
+- In-memory only; no persistent sessions, SQLite, or filesystem state.
+- Purely additive; does not modify existing validators, renderers, layout profiles, examples, README, or GitHub Actions.
+
+**Integration instruction:**
+Future intake UIs or AI drafting layers should instantiate `IntakeOrchestrator` with a partial payload, call `get_status()` to understand gaps, present `next_questions()` to the user, and call `apply_answers()` iteratively until `blocking` is false. Only then should the downstream system call the renderer.
+
+## Regression Results (post-intake)
+
+| Regression | Result |
+|---|---|
+| CCI Subject | PASS |
+| CCI Ref/Encl | PASS |
+| CCI Acronym | PASS |
+| CCI Date/Time | PASS |
+| CCI Personnel | PASS |
+| CCI POC | PASS |
+| CCI Routing | PASS |
+| Context Schema | PASS |
+| CCI Consolidated Audit | PASS |
+| Intake Orchestrator | PASS |
+| C7 Phase 1 | PASS |
+| C8 | PASS |
+| C9 | PASS |
+| C10 | PASS |
+
+All fourteen regressions (seven CCI + context schema + consolidated audit + intake orchestration + C7-C10) passed locally after adding the intake orchestration foundation.
+
+## Known Limitations
+
+- `rule_reuse.py` and `correction_reuse.py` are not yet integrated into the CCI layer.
+- Future context fields (activity_source, via_required, chain_of_command) rely on planned intake orchestration and are not inferred beyond keyword heuristics.
+- Privacy/security detection is keyword-based only and may produce false positives for redacted or placeholder text.
+- Intake orchestrator v1 is deterministic JSON-driven only; no natural-language understanding or AI-assisted question generation.
+
+## Recommended Next CCI Areas
+
+These remain proposed for future CCI work, in no particular order:
+
+1. Privacy / security / PII warning layer — enhance keyword detection with false-positive suppression and integration into context resolver.
+
+2. Intake orchestrator Phase 2 — natural-language intent parsing, paragraph-by-paragraph drafting, persistent sessions/correction memory.
+
+---
+
+>*Checkpoint updated after intake orchestration foundation — Phase 1 complete.*

@@ -1,0 +1,16 @@
+{
+  "_comment": "Joint letter with from/to/subj/body/signature present but missing joint_heading and commands. Expected blocking true before answers.",
+  "doc_type": "joint_letter",
+  "from": "Commanding Officer, Example Naval Activity",
+  "to": "Commanding Officer, Example Marine Activity",
+  "subj": "JOINT LETTER EXAMPLE",
+  "date": "15 May 2026",
+  "body": [
+    "1. This joint letter demonstrates the missing heading and commands.",
+    "2. Coordination between services is required."
+  ],
+  "signature": ["J. DOE", "By direction"],
+  "component": {
+    "service": "joint"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "_comment": "Partial standard letter with from/to/date/body/signature present but missing subj. Expected missing_required includes subj before answers.",
+  "doc_type": "standard_letter",
+  "from": "Commanding Officer, USS NEVERSAIL",
+  "to": "Commanding Officer, MARINE CORPS BASE QUANTICO",
+  "date": "15 May 2026",
+  "body": [
+    "1. This is a standard letter with partial context.",
+    "2. The subject line is intentionally omitted."
+  ],
+  "signature": ["J. DOE", "By direction"],
+  "component": {
+    "service": "navy"
+  }
+}
