@@ -53,6 +53,9 @@ jobs:
       - name: Run intake regression
         run: python tools/run_intake_regression.py
 
+      - name: Run profile regression
+        run: python tools/run_profile_regression.py
+
       - name: Run C7 regression
         run: python tools/run_c7_phase1_regression.py
 
