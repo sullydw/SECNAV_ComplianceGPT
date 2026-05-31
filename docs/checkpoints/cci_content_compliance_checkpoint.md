@@ -2,20 +2,20 @@
 
 ## Baseline Commit
 
-- **Commit hash:** `1ccf26b43399b2cfad89284418b2500f14dff2fb`
+- **Commit hash:** `64dc2d5888538b8c992c42e1121ffabc7e55ef77`
 - **Tag:** none at HEAD
 - **Date:** 2026-05-31
 - **Branch:** `main`
 - **Status:** clean, up to date with `origin/main`
-- **Previous baseline:** `50636a012ee0cfd75cdf471e8eb0db775e6cad60` (local profile foundation verified)
-- **Stable baseline before correction memory implementation:** `1ccf26b`
+- **Previous baseline:** `1ccf26b43399b2cfad89284418b2500f14dff2fb` (profile/intake integration verified)
+- **Stable baseline before correction memory intake integration:** `64dc2d5`
 
 ## GitHub Actions Verification
 
 - **Workflow:** Regression
 - **Job:** compliance-regression
-- **Run:** completed / success (manually verified by user for commit `1ccf26b`)
-- **Commit verified:** `1ccf26b`
+- **Run:** completed / success (manually verified by user for commit `64dc2d5`)
+- **Commit verified:** `64dc2d5`
 - **CI steps passed:** 16
   - 7 CCI validator regressions
   - context schema regression
@@ -245,6 +245,9 @@ python tools/run_intake_regression.py
 # Local command profile
 python tools/run_profile_regression.py
 
+# Active-draft correction memory
+python tools/run_correction_regression.py
+
 # C7-C10 layout/render regressions
 python tools/run_c7_phase1_regression.py
 python tools/run_c8_regression.py
@@ -278,9 +281,9 @@ The full regression suite (seven CCI + context schema + consolidated audit + C7-
 - **Job name:** `compliance-regression`
 - **Timeout:** `15 minutes`
 - **Trigger:** `push`, `pull_request`
-- **CI baseline commit:** `a876fd17da216029ba80820ea0da223acb01f4d4`
-- **GitHub Actions run:** Run #18 completed successfully
-- **Status:** GitHub Actions verified PASS (API-confirmed `completed` / `success`)
+- **CI baseline commit:** `64dc2d5888538b8c992c42e1121ffabc7e55ef77`
+- **GitHub Actions run:** Run completed successfully for commit `64dc2d5`
+- **Status:** GitHub Actions verified PASS (manually verified by user for commit `64dc2d5`)
 
 **CI step order:**
 1. CCI subject regression
@@ -293,14 +296,16 @@ The full regression suite (seven CCI + context schema + consolidated audit + C7-
 8. Context schema regression
 9. CCI consolidated audit regression
 10. Intake orchestrator regression
-11. C7 Phase 1 regression
-12. C8 regression
-13. C9 regression
-14. C10 regression
+11. Local command profile regression
+12. Active-draft correction memory regression
+13. C7 Phase 1 regression
+14. C8 regression
+15. C9 regression
+16. C10 regression
 
 Future CCI validators should be added to the workflow before the C7-C10 steps, keeping the fast pure-Python checks first and the slower PDF-based checks last.
 
-**Note:** Local Command Profile regression (`tools/run_profile_regression.py`) runs locally but is not yet included in the GitHub Actions workflow. It will be added in a future task.
+**Note:** All 16 regressions are now included in the GitHub Actions workflow.
 
 ## Baseline Integrity Note
 
@@ -592,6 +597,8 @@ All sixteen regressions (seven CCI + context schema + consolidated audit + intak
 
 ## Known Limitations
 
+- Phase 1 correction memory (`src/correction_apply.py`, `src/correction_capture.py`) does not persist corrections to disk, does not promote corrections to local profiles, and does not promote corrections to global SECNAV rules.
+- Phase 1 correction memory is not yet integrated into the intake orchestrator; it is a standalone foundation for future intake integration.
 - `rule_reuse.py` and `correction_reuse.py` are not yet integrated into the CCI layer.
 - Future context fields (activity_source, via_required, chain_of_command) rely on planned intake orchestration and are not inferred beyond keyword heuristics.
 - Privacy/security detection is keyword-based only and may produce false positives for redacted or placeholder text.
