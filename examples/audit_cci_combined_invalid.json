@@ -1,0 +1,23 @@
+{
+  "_comment": "CCI combined invalid fixture. Hard errors from at least three validators. Expected CLI exit 1.",
+  "doc_type": "DT_STD_LTR",
+  "date": "05 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "Invalid subject line.",
+  "body": [
+    "1. The meeting is scheduled for 14:00.",
+    "2. All commands must update their SNDL entries before sending official correspondence.",
+    "3. Per reference (a), all commands must maintain accurate distribution lists.",
+    "4. The sailor should review the schedule."
+  ],
+  "ref": [
+    "(a) SECNAV Manual 5216.5 Correspondence Manual",
+    "(b) OPNAVINST 5216.5 Correspondence Instructions"
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ],
+  "component": "navy"
+}

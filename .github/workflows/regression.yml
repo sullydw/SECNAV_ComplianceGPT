@@ -47,6 +47,9 @@ jobs:
       - name: Run context schema regression
         run: python tools/run_context_schema_regression.py
 
+      - name: Run CCI consolidated audit regression
+        run: python tools/run_cci_audit_regression.py
+
       - name: Run C7 regression
         run: python tools/run_c7_phase1_regression.py
 

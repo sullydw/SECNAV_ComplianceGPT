@@ -1,0 +1,27 @@
+{
+  "_comment": "CCI combined warning fixture. Triggers warnings only from multiple validators and context resolver. Expected CLI exit 0.",
+  "doc_type": "standard_letter",
+  "component": "navy",
+  "to": "Chief of Naval Operations",
+  "via": [
+    "Commander, Naval Surface Force Atlantic",
+    "Commander, U.S. Pacific Fleet",
+    "Commander, Navy Installations Command"
+  ],
+  "copy_to": [
+    "Commander, Fleet Cyber Command",
+    "All Hands",
+    "Commander, Naval Surface Force Atlantic"
+  ],
+  "subj": "WARNING FIXTURE FOR COMBINED AUDIT",
+  "date": "15 May 2026",
+  "body": [
+    "1. Please submit your completed action review checklist by the end of the month.",
+    "2. Coordinate with your chain of command before forwarding any requests.",
+    "3. The sailor should review the schedule."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}

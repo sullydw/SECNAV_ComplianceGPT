@@ -317,10 +317,64 @@ Future CCI validators can call `from context_resolver import resolve_context` an
 
 All twelve regressions (seven CCI + Context Schema + C7-C10) passed on the checkpoint commit.
 
+## CCI Consolidated Validator Runner (New)
+
+A centralized validator runner has been added to execute all seven CCI validators in a single pass, include resolved context, and produce a consolidated audit report.
+
+- **Runner source:** `src/validator_runner.py`
+- **Public API:** `run_cci_audit(payload, user_answers=None)` -> `dict`
+- **Schema version:** `CCI_AUDIT_V1`
+- **CLI command:** `python src/validator_runner.py <payload.json>`
+- **CLI JSON mode:** `python src/validator_runner.py --json <payload.json>`
+- **Regression runner:** `tools/run_cci_audit_regression.py`
+- **Example fixtures:**
+  - `examples/audit_cci_combined_valid.json` — clean payload, expected overall PASS
+  - `examples/audit_cci_combined_warning.json` — warnings only, expected overall PASS (exit 0)
+  - `examples/audit_cci_combined_invalid.json` — hard errors from ≥3 validators, expected overall FAIL (exit 1)
+
+**What it does:**
+- Calls `resolve_context(payload)` first and stores the resolved context object.
+- Runs all seven CCI validators in a deterministic order (subject → ref_encl → acronyms → date_time → personnel → poc → routing).
+- Collects errors and warnings verbatim from each validator, preserving original rule IDs.
+- Returns a structured `CCI_AUDIT_V1` dict with `context`, `context_warnings`, `validators`, and `summary`.
+- CLI prints a human-readable report by default; `--json` emits raw audit JSON.
+- Exit 0 when `overall_pass` is true (no hard errors); exit 1 when `total_errors > 0`.
+- Warnings alone never cause a nonzero exit in v1.
+
+**What it does not do:**
+- Does not render PDFs.
+- Does not run C7-C10 layout validators.
+- Does not deduplicate or rewrite validator messages in v1.
+- Does not include strict mode in v1.
+- Does not modify existing validators.
+
+**Integration instruction:**
+Future AI drafting and intake workflows should call `run_cci_audit(payload)` as the single entry point for all CCI content validation. The returned `CCI_AUDIT_V1` object provides rule IDs, context, and pass/fail status without requiring per-validator imports.
+
+## Regression Results (post-runner)
+
+| Regression | Result |
+|---|---|
+| CCI Subject | PASS |
+| CCI Ref/Encl | PASS |
+| CCI Acronym | PASS |
+| CCI Date/Time | PASS |
+| CCI Personnel | PASS |
+| CCI POC | PASS |
+| CCI Routing | PASS |
+| Context Schema | PASS |
+| CCI Consolidated Audit | PASS |
+| C7 Phase 1 | PASS |
+| C8 | PASS |
+| C9 | PASS |
+| C10 | PASS |
+
+All thirteen regressions passed after adding the consolidated validator runner.
+
 ## Known Limitations
 
 - `rule_reuse.py` and `correction_reuse.py` are not yet integrated into the CCI layer.
-- Future context fields (activity_source, distribution_mode, via_required, chain_of_command) rely on planned intake orchestration and are not inferred beyond keyword heuristics.
+- Future context fields (activity_source, via_required, chain_of_command) rely on planned intake orchestration and are not inferred beyond keyword heuristics.
 - Privacy/security detection is keyword-based only and may produce false positives for redacted or placeholder text.
 
 ## Recommended Next CCI Areas
@@ -328,8 +382,7 @@ All twelve regressions (seven CCI + Context Schema + C7-C10) passed on the check
 These remain proposed for future CCI work, in no particular order:
 
 1. Privacy / security / PII warning layer — enhance keyword detection with false-positive suppression and integration into context resolver.
-2. Intake orchestration / validator runner — build `src/validator_runner.py` and `src/intake_orchestrator.py` to run all CCI validators in a single pass and produce a consolidated audit report.
 
 ---
 
-*Checkpoint generated 2026-05-30. See commit `91d58ae06d7b098b9f5a966a7de8783e1a501a68`.*
+*Checkpoint updated after commit adding consolidated validator runner.*
