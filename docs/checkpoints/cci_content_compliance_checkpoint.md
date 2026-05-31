@@ -2,9 +2,9 @@
 
 ## Baseline Commit
 
-- **Commit hash:** `91d58ae06d7b098b9f5a966a7de8783e1a501a68`
+- **Commit hash:** `a876fd17da216029ba80820ea0da223acb01f4d4`
 - **Tag:** none at HEAD
-- **Date:** 2026-05-30
+- **Date:** 2026-05-31
 - **Branch:** `main`
 - **Status:** clean, up to date with `origin/main`
 
@@ -238,14 +238,15 @@ All eleven regressions passed on the checkpoint commit.
 
 ## CI / GitHub Actions Coverage
 
-The full regression suite (seven CCI + C7-C10) is now protected by GitHub Actions.
+The full regression suite (seven CCI + context schema + consolidated audit + C7-C10) is now protected by GitHub Actions.
 
 - **Workflow file:** `.github/workflows/regression.yml`
 - **Job name:** `compliance-regression`
 - **Timeout:** `15 minutes`
 - **Trigger:** `push`, `pull_request`
-- **CI baseline commit:** `29a353bf42d54d4851d6f0c2ae97e06b014445cb`
-- **Status:** manually verified PASS by user after push
+- **CI baseline commit:** `a876fd17da216029ba80820ea0da223acb01f4d4`
+- **GitHub Actions run:** Run #18 completed successfully
+- **Status:** GitHub Actions verified PASS (API-confirmed `completed` / `success`)
 
 **CI step order:**
 1. CCI subject regression
@@ -255,10 +256,12 @@ The full regression suite (seven CCI + C7-C10) is now protected by GitHub Action
 5. CCI personnel regression
 6. CCI POC regression
 7. CCI routing regression
-8. C7 Phase 1 regression
-9. C8 regression
-10. C9 regression
-11. C10 regression
+8. Context schema regression
+9. CCI consolidated audit regression
+10. C7 Phase 1 regression
+11. C8 regression
+12. C9 regression
+13. C10 regression
 
 Future CCI validators should be added to the workflow before the C7-C10 steps, keeping the fast pure-Python checks first and the slower PDF-based checks last.
 
@@ -317,7 +320,7 @@ Future CCI validators can call `from context_resolver import resolve_context` an
 
 All twelve regressions (seven CCI + Context Schema + C7-C10) passed on the checkpoint commit.
 
-## CCI Consolidated Validator Runner (New)
+## CCI Consolidated Validator Runner (Verified)
 
 A centralized validator runner has been added to execute all seven CCI validators in a single pass, include resolved context, and produce a consolidated audit report.
 
@@ -350,6 +353,8 @@ A centralized validator runner has been added to execute all seven CCI validator
 
 **Integration instruction:**
 Future AI drafting and intake workflows should call `run_cci_audit(payload)` as the single entry point for all CCI content validation. The returned `CCI_AUDIT_V1` object provides rule IDs, context, and pass/fail status without requiring per-validator imports.
+
+> **Note:** This commit (`a876fd1`) represents the stable baseline before intake orchestration. All 13 regressions (7 CCI + context schema + consolidated audit + C7-C10) have been verified locally and via GitHub Actions Run #18.
 
 ## Regression Results (post-runner)
 
@@ -385,4 +390,4 @@ These remain proposed for future CCI work, in no particular order:
 
 ---
 
-*Checkpoint updated after commit adding consolidated validator runner.*
+>*Checkpoint updated after commit a876fd1 — consolidated validator runner CI baseline verified.*
