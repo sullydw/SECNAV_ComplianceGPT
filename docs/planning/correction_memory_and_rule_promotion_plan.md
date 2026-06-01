@@ -1,9 +1,9 @@
 # Correction Memory and Rule Promotion Layer Plan
 
-**Last Updated:** 2026-05-31
-**Current Verified Baseline:** `2e643db` — CCI: Integrate correction memory with intake
-**Docs Checkpoint:** `8efdff6` — Docs: Record correction intake integration baseline
-**GitHub Actions:** manually verified PASS by user for commit `2e643db`
+**Last Updated:** 2026-06-01  
+**Current Verified Baseline:** `71ddf64` — CCI: Add session correction persistence (Phase A)  
+**Latest Checkpoint:** `8c863ff` — Docs: Add Phase A session persistence checkpoint  
+**Previous Verified Baseline:** `2e643db` — CCI: Integrate correction memory with intake
 
 ---
 
@@ -17,9 +17,11 @@ The Correction Memory and Rule Promotion Layer is not a replacement for determin
 
 ---
 
-## 1a. What Is Already Implemented (Baseline `2e643db`)
+## 1a. What Is Already Implemented
 
-The following items are complete and regression-protected as of the current verified baseline:
+The following items are complete and regression-protected.
+
+### Baseline `2e643db` — Active-Draft Correction + Intake Integration
 
 - **Active-draft correction apply:** `src/correction_apply.py` — apply a single correction to a payload JSON object given a field path and corrected value; supports undo.
 - **Active-draft correction capture:** `src/correction_capture.py` — capture correction metadata from user input and build a structured correction record.
@@ -30,16 +32,30 @@ The following items are complete and regression-protected as of the current veri
   - `tools/run_correction_regression.py` — tests capture, apply, undo, conflict detection.
   - `tools/run_intake_regression.py` — tests before/after audit with correction, undo restoration, and conflict surfacing.
 
+### Baseline `71ddf64` — Phase A Session Correction Persistence
+
+- **Session JSONL store:** `src/correction_store.py` stores opt-in session corrections under `corrections/session/`.
+- **Gitignore safety:** `.gitignore` excludes `corrections/session/*.jsonl`, `corrections/pending_corrections.jsonl`, and `corrections/approved_rule_promotions.json`.
+- **Session directory:** `corrections/session/.gitkeep` and `corrections/session/README.md` document local-only session storage.
+- **Current-session scope:** `src/correction_capture.py` allows `current_session` scope.
+- **Intake support:** `src/intake_orchestrator.py` supports optional `session_id`, `set_session_id()`, `_preapply_session_corrections()`, `persist_correction()`, `reject_session_correction()`, and `session_notes` in `get_status()`.
+- **Session rejection:** rejected corrections are soft-marked with `user_rejected=True` and excluded from future matching.
+- **One-time wording safety:** `one_time_wording` corrections are not persisted unless explicitly scoped to `current_session`.
+- **Regression coverage:** `tools/run_correction_session_regression.py` passed 30/30 checks.
+
 ### Current Limits (by design)
 
-- Corrections are **active-draft / in-memory only**.
-- No disk persistence across sessions.
+- Session persistence is opt-in only; `session_id=None` preserves active-draft/in-memory-only behavior.
+- Session JSONL files are local and gitignored.
+- 30-day session retention is advisory only; no automatic cleanup is implemented.
 - No automatic classification into one of the four correction types.
 - No local command profile promotion.
+- No pending global rule candidate log.
 - No global SECNAV rule promotion.
-- No `src/correction_reuse.py` module (session reuse is currently handled inside `IntakeOrchestrator`).
+- No review/promotion utility.
+- No natural-language correction command UI.
 
-These limits are intentional in the current baseline and are planned for future phases (see Section 10).
+These limits are intentional and are planned for future phases only after separate review and approval.
 
 ---
 
@@ -59,13 +75,13 @@ The layer operates on three principles:
 
 ## 3. Correction Scopes
 
-| Scope | Auto-reuse | Description |
-|---|---|---|
-| `active_draft` | Yes — immediate | Correction applies only to the draft currently being edited. It is used once, immediately, and discarded afterward unless the user chooses to remember it. |
-| `current_session` | Yes — when context matches | Correction persists for the remainder of the current user session. Reused automatically when document type, component, and affected field match. |
-| `local_command_profile` | Yes — after explicit user approval | Correction becomes part of a named local command profile (e.g., "USS NEVERSAIL local preferences"). Must be approved by the user before activation. |
-| `pending_global_rule_candidate` | No — manual review only | Correction is logged as a candidate for a global SECNAV compliance rule or validator update. It is never auto-applied. A human reviewer must evaluate whether it reflects a real manual requirement, a validator gap, or a local preference. |
-| `approved_global_rule` | Yes — enforced | Correction has been reviewed, validated against SECNAV M-5216.5 text, and promoted into the rule catalog, validator code, or AI prompt contract. |
+| Scope | Auto-reuse | Status | Description |
+|---|---|---|---|
+| `active_draft` | Yes — immediate | Implemented | Correction applies only to the draft currently being edited. It is used once, immediately, and tracked in memory. |
+| `current_session` | Yes — when context matches | Implemented in Phase A | Correction persists to a local, gitignored JSONL session store when `session_id` is provided and scope is explicitly `current_session`. Reused when document type, component, and affected field match. |
+| `local_command_profile` | Yes — after explicit user approval | Future Phase C | Correction becomes part of a named local command profile. Must be approved by the user before activation. |
+| `pending_global_rule_candidate` | No — manual review only | Future Phase D | Correction is logged as a candidate for a global SECNAV compliance rule or validator update. It is never auto-applied. |
+| `approved_global_rule` | Yes — enforced | Future Phase E+ | Correction has been reviewed, validated against SECNAV M-5216.5 text, and promoted into the rule catalog, validator code, or AI prompt contract. |
 
 ---
 
@@ -78,131 +94,158 @@ When a user issues a correction command or selects a correction in a future UI:
 3. **Capture field/path affected** — JSON path or canonical field name (e.g., `subj`, `from`, `body[2]`, `via[0]`).
 4. **Capture document type** — standard_letter, endorsement, memorandum_for_record, etc.
 5. **Capture component context** — navy, marine_corps, joint, don_secretariat, unknown.
-6. **Capture user explanation** — free-text reason for the correction, used for classification and audit.
-7. **Classify correction type** — one of:
-   - `one_time_wording` — stylistic or situational change that should not persist.
-   - `local_command_preference` — command-specific convention that is not universal.
-   - `possible_secnav_manual_rule` — the correction suggests a rule from the manual that the system is not yet enforcing.
-   - `bug_validator_gap` — the correction reveals a bug or missing check in a deterministic validator.
-8. **Apply correction to current draft** — mutate the active payload in memory.
-9. **Rerun applicable CCI validators** — run validators that inspect the affected field.
-10. **Rerender PDF if draft passes** — only if all validators pass or the user explicitly overrides.
-11. **Store correction record** — write a structured record to the appropriate scope.
+6. **Capture user explanation** — free-text reason for the correction, used later for classification and audit.
+7. **Apply correction to current draft** — mutate the active payload in memory.
+8. **Rerun applicable CCI validators** — run validators that inspect the affected field.
+9. **Track conflict status** — surface advisory conflict if audit error count increases.
+10. **Persist only when safe and explicit** — store as `current_session` only when a caller provides `session_id` and the correction is explicitly session-scoped.
+11. **Defer promotion** — do not promote to profile or global rules without future approved workflow.
+
+Automatic classification is not yet implemented. It is the next planning phase.
 
 ---
 
 ## 5. Correction Reuse Behavior
 
-### active_draft
+### `active_draft`
+
 - The correction is applied once to the current payload.
-- If the user does not choose to remember it, the record is discarded after rendering.
+- The correction is tracked inside `IntakeOrchestrator` memory and exposed through `get_status()`.
+- Undo is supported.
 
-### current_session
-- The correction is stored in an in-memory or lightweight JSONL session store.
-- On each new draft generation within the same session, the system checks whether the document type, component, and affected field match a stored correction.
-- If all context keys match, the correction is pre-applied before validators run, and a note is emitted: "Applied session correction for field X."
-- If the user rejects the pre-applied correction, it is removed from session memory for that context combination.
+### `current_session`
 
-### local_command_profile
+- The correction is stored in a local JSONL session store only when `session_id` is provided and scope is explicitly `current_session`.
+- `session_id=None` preserves prior in-memory-only behavior.
+- On a new draft in the same session, the system checks whether document type, component, and field path match a stored correction.
+- If all context keys match, the correction may be pre-applied before validators run.
+- If the user rejects the pre-applied correction, it is soft-marked with `user_rejected=True` and excluded from future matching.
+- Session retention is advisory only; there is no automatic cleanup in Phase A.
+
+### `local_command_profile`
+
+- Future Phase C.
 - The user must explicitly approve adding the correction to a named local profile.
-- The profile is stored as `corrections/local_command_overrides.json` or similar.
-- Corrections in this scope are applied automatically when the active profile is selected.
-- Multiple profiles may exist (e.g., one per command, one per department).
-- A correction in a local profile can be disabled or edited later.
+- Corrections in this scope must not leak into default global behavior.
+- Real profile data must not be committed to the public repository.
 
-### pending_global_rule_candidate
-- Corrections classified as `possible_secnav_manual_rule` or `bug_validator_gap` are written to `corrections/pending_corrections.jsonl`.
-- They are never auto-applied to other users or other sessions.
-- A periodic review process (human or AI-assisted) inspects pending candidates, groups duplicates, and decides whether to:
-  - promote to an approved global rule,
-  - reject as a local preference,
-  - convert into a validator improvement ticket.
+### `pending_global_rule_candidate`
 
-### approved_global_rule
-- Once reviewed and approved, the correction becomes a deterministic rule in `rules_v6/CCI/`, a validator update in `src/cci_*.py`, or a prompt-contract addition.
-- It is enforced through the normal CCI pipeline and requires regression tests before release.
+- Future Phase D.
+- Corrections classified as `possible_secnav_manual_rule` or `bug_validator_gap` may later be written to `corrections/pending_corrections.jsonl`.
+- They must never be auto-applied to other users or other sessions.
+- Candidate logs must remain gitignored and subject to review.
+
+### `approved_global_rule`
+
+- Future Phase E or later.
+- Once reviewed and approved, a correction may become a deterministic rule in `rules_v6/CCI/`, a validator update in `src/cci_*.py`, or a prompt-contract addition.
+- It must be enforced through the normal CCI pipeline and requires regression tests before release.
 
 ---
 
 ## 6. Safety Guardrails
 
-- **User correction shall never silently override a deterministic SECNAV validator.** If a correction conflicts with a validator finding, the system must surface the conflict and require user review.
+- **User correction shall never silently override a deterministic SECNAV validator.** If a correction conflicts with a validator finding, the system must surface the conflict and require review.
 - **If a correction conflicts with a validator, show conflict and require review.** The user may choose to override the validator for this draft only, escalate the correction as a bug/validator gap, or abandon the correction.
 - **User correction shall not become a global rule without review.** The `pending_global_rule_candidate` scope ensures every proposed global change is inspected.
 - **Local overrides must be scoped to command/profile.** A local command preference cannot leak into the default global behavior.
-- **All correction records should be auditable and reversible.** Every record stores original value, corrected value, timestamp, classification, and user explanation. Corrections can be disabled, deleted, or rolled back.
-- **Privacy/PII corrections must not store sensitive data unnecessarily.** If a correction touches a field containing PII, the system should store a sanitized or hashed representation of the change, or store the correction rule without storing the actual sensitive value.
+- **All correction records should be auditable and reversible.** Every record stores original value, corrected value, timestamp, classification or classification candidate, and user explanation where available.
+- **Session JSONL stores may contain sensitive draft values.** They are local-only and gitignored.
+- **Do not log raw original/corrected values at INFO level.** Future logging should prefer field paths and correction IDs.
+- **Do not commit real session stores, command profiles, contact data, or correction logs.**
 
 ---
 
 ## 7. Files Status
 
-### Implemented modules (baseline `2e643db`)
+### Implemented modules
+
 - `src/correction_apply.py` — apply a single correction to a payload JSON object given a field path and corrected value; supports undo via `undo_correction()`.
-- `src/correction_capture.py` — capture correction metadata from user input and build a structured correction record.
-- `src/intake_orchestrator.py` — orchestrates correction capture, apply, undo, and audit rerun within the intake lifecycle.
+- `src/correction_capture.py` — capture correction metadata from user input and build a structured correction record; supports `active_draft` and `current_session` scopes.
+- `src/correction_store.py` — save, load, update, reject, and delete session correction JSONL records.
+- `src/intake_orchestrator.py` — orchestrates correction capture, apply, undo, audit rerun, opt-in session persistence, session pre-application, and rejection.
+
+### Implemented storage safety files
+
+- `.gitignore` — excludes session JSONL and future correction log files.
+- `corrections/session/.gitkeep` — keeps the local session directory structure.
+- `corrections/session/README.md` — explains local-only session correction storage.
 
 ### Future modules (require approval before implementation)
-- `src/correction_classify.py` — classify a correction into one of the four types using heuristics and optional AI assistance.
-- `src/correction_reuse.py` — query stored corrections by context and pre-apply matching ones to a new draft payload.
 
-### Storage files (require approval before implementation)
+- `src/correction_classify.py` — classify a correction into one of the four types using deterministic/heuristic rules.
+- `src/correction_reuse.py` — optional future separation if reuse logic grows beyond `IntakeOrchestrator`.
+
+### Future storage files (require approval before implementation)
+
 - `corrections/pending_corrections.jsonl` — append-only log of pending global rule candidates.
 - `corrections/approved_rule_promotions.json` — record of corrections promoted to global rules, with reviewer, date, and rationale.
 
-### Rule catalog and regression (requires approval)
-- `rules_v6/CCI/cci_correction_feedback_rules.json` — metadata for correction-related feedback rules.
-- `tools/run_correction_session_regression.py` — regression for Phase A session persistence.
-- `tools/run_correction_classify_regression.py` — regression for Phase B classification.
-- `tools/run_correction_promote_regression.py` — regression for Phase C profile promotion.
-- `tools/run_correction_pending_regression.py` — regression for Phase D pending candidate log.
+### Regression files
+
+- `tools/run_correction_regression.py` — active-draft correction regression.
+- `tools/run_intake_regression.py` — intake and correction integration regression.
+- `tools/run_correction_session_regression.py` — Phase A session persistence regression.
+
+Future regression runners requiring approval:
+
+- `tools/run_correction_classify_regression.py` — Phase B classification.
+- `tools/run_correction_promote_regression.py` — Phase C profile promotion.
+- `tools/run_correction_pending_regression.py` — Phase D pending candidate log.
 
 ---
 
 ## 8. Example Scenarios
 
 ### 8.1 Subject punctuation correction
+
 - **Original**: `Subj: POLICY UPDATE.`
 - **Correction**: remove terminal period.
-- **Classification**: `possible_secnav_manual_rule` — the subject-line validator already catches this, so this scenario is more likely a validator miss or user override.
-- **Scope**: if validator missed it, `bug_validator_gap` → pending. If user overrode intentionally, `one_time_wording` → active_draft.
+- **Classification candidate**: `possible_secnav_manual_rule` or `bug_validator_gap` if the validator missed it.
+- **Current safe scope**: `active_draft` unless explicitly persisted to `current_session`.
 
 ### 8.2 From line corrected from individual name to Commanding Officer
+
 - **Original**: `From: John A. Smith`
 - **Correction**: `From: Commanding Officer, USS NEVERSAIL`
-- **Classification**: `possible_secnav_manual_rule` — command letterhead From lines should contain activity head title and command/activity name, not an individual.
-- **Scope**: `pending_global_rule_candidate` if the validator does not already enforce this. If this is a recurring local need, `local_command_preference` after user approval.
+- **Classification candidate**: `possible_secnav_manual_rule` or `local_command_preference` depending on context.
+- **Current safe scope**: `active_draft` or explicit `current_session` only.
 
 ### 8.3 Local originator code preference
+
 - **Original**: sender symbol lacks originator code.
 - **Correction**: add local originator code `N7`.
-- **Classification**: `local_command_preference` — not a universal SECNAV rule.
-- **Scope**: `local_command_profile` after user approval.
+- **Classification candidate**: `local_command_preference`.
+- **Future scope**: `local_command_profile` only after explicit approval.
 
 ### 8.4 Navy vs Marine Corps personnel wording correction
+
 - **Original**: body text uses "Marine" lowercase.
 - **Correction**: capitalize "Marine".
-- **Classification**: `possible_secnav_manual_rule` — the planned personnel validator will catch this, so this scenario mainly exists for validator-gap discovery.
-- **Scope**: `bug_validator_gap` if the validator missed it; otherwise `one_time_wording`.
+- **Classification candidate**: `possible_secnav_manual_rule` or `bug_validator_gap` if a validator missed it.
+- **Current safe scope**: `active_draft` or explicit `current_session` only.
 
 ### 8.5 Missing Via routing rule discovered
+
 - **Original**: draft omits an intermediate Via addressee that chain of command requires.
 - **Correction**: add the Via addressee.
-- **Classification**: `possible_secnav_manual_rule` — routing intelligence is planned but not yet implemented.
-- **Scope**: `pending_global_rule_candidate` for the routing/Via validator backlog.
+- **Classification candidate**: `local_command_preference`, `possible_secnav_manual_rule`, or `bug_validator_gap` depending on whether the requirement is command-specific or manual-based.
+- **Future scope**: profile or pending global candidate only after review.
 
 ### 8.6 One-time wording change that should not become rule
+
 - **Original**: body paragraph uses a specific example sentence.
 - **Correction**: user rewords the example for this particular letter.
-- **Classification**: `one_time_wording`.
-- **Scope**: `active_draft` only. The system must not store this in session or profile memory unless the user explicitly overrides the classification.
+- **Classification candidate**: `one_time_wording`.
+- **Current safe scope**: `active_draft` only by default. It must not persist unless explicitly scoped to `current_session`.
 
 ---
 
 ## 9. Relationship to AI Drafting
 
 - **AI may propose corrections and ask whether to remember them.** When the AI detects a likely error during drafting, it can suggest a correction and ask the user: "Apply this correction to the current draft? Remember for this session? Add to local profile?"
-- **AI may classify likely correction scope.** Using the correction classifier, the AI can suggest a classification and ask the user to confirm.
+- **AI may classify likely correction scope only after Phase B is designed and approved.** Until then, classification is not automatic.
 - **Deterministic validators remain final authority for implemented hard rules.** A user or AI correction that conflicts with a deterministic validator must be surfaced as a conflict, not silently accepted.
 - **Unresolved conflicts become human-review items.** If the user insists on a correction that violates a validator, the draft is flagged for human review before release.
 
@@ -210,31 +253,34 @@ When a user issues a correction command or selects a correction in a future UI:
 
 ## 10. Future Implementation Phases (Require Approval)
 
-| Phase | Task | Scope | Approval Required |
-|---|---|---|---|
-| A | **Session persistence** | Lightweight JSONL session store (`corrections/session/`). Corrections from a session are available to the next draft in the same session if document type, component, and field match. Deleted on session end unless user approves promotion. | Yes |
-| B | **Correction classification** | `src/correction_classify.py` — classify a correction into one of the four types using heuristics (field path + reason). Not required to be AI-powered at first. | Yes |
-| C | **Local command profile promotion** | User approval workflow. Writing approved corrections to `profiles/{profile_id}.json` as local overrides. Only for `local_command_preference` classifications. | Yes |
-| D | **Pending global rule candidate log** | `corrections/pending_corrections.jsonl` append-only log. For `possible_secnav_manual_rule` and `bug_validator_gap` classifications. Never auto-applied. | Yes |
-| E | **Review/promotion utility** | Human or AI-assisted review of pending candidates. Promotion to `approved_global_rule` or rejection as local preference. Integration with `rules_v6/CCI` rule catalog. | Yes |
-| F | **UI/command integration** | Natural user commands for issuing corrections (not raw JSON path editing). Future chat or web interface integration. | Yes |
+| Phase | Task | Scope | Status | Approval Required |
+|---|---|---|---|---|
+| A | **Session persistence** | Lightweight JSONL session store (`corrections/session/`). Corrections from a session are available to the next draft in the same session if document type, component, and field match. | Complete at `71ddf64` | Completed |
+| B | **Correction classification** | `src/correction_classify.py` — classify a correction into one of the four types using heuristics (field path + reason). Not required to be AI-powered at first. | Next planning phase | Yes |
+| C | **Local command profile promotion** | User approval workflow. Writing approved corrections to `profiles/{profile_id}.json` as local overrides. Only for `local_command_preference` classifications. | Future | Yes |
+| D | **Pending global rule candidate log** | `corrections/pending_corrections.jsonl` append-only log. For `possible_secnav_manual_rule` and `bug_validator_gap` classifications. Never auto-applied. | Future | Yes |
+| E | **Review/promotion utility** | Human or AI-assisted review of pending candidates. Promotion to `approved_global_rule` or rejection as local preference. Integration with `rules_v6/CCI` rule catalog. | Future | Yes |
+| F | **UI/command integration** | Natural user commands for issuing corrections (not raw JSON path editing). Future chat or web interface integration. | Future | Yes |
 
-### What Has Already Been Completed
+---
 
-| Phase | Task | Status |
-|---|---|---|
-| 1 | Correction record schema | Complete — `correction_capture.py` defines the record schema with all required fields. |
-| 2 | Active draft correction apply function | Complete — `correction_apply.py` resolves JSON paths and mutates the payload. |
-| 3 | Session memory reuse (in-memory) | Partially complete — `IntakeOrchestrator` handles in-memory tracking; separate `correction_reuse.py` module not yet created. |
-| 4 | Intake orchestrator integration | Complete — `intake_orchestrator.py` captures, applies, undoes, and reruns audit after correction. |
-| 5 | Conflict detection | Complete — `rerun_audit_after_correction()` compares error counts and surfaces conflicts. |
-| 6 | Regression tests | Complete — `tools/run_correction_regression.py` and `tools/run_intake_regression.py` cover apply, capture, undo, and conflict detection. |
+## 11. Phase B Planning Target
 
-### Notes on What Changed from Original Plan
+The next planning-only phase is **Phase B correction classification**.
 
-- `corrections/local_command_overrides.json` was removed from the plan; instead, corrections will be written directly into existing profile JSON files (`profiles/` directory) using the standard profile structure.
-- `src/correction_reuse.py` is still planned (Phase A) but will query disk-stored session corrections rather than in-memory only.
-- Phases A-F are additive; none modify existing renderer/layout behavior or existing C7-C10/CCI validators.
+Phase B should define:
+
+- Required classifier inputs.
+- Deterministic rules for obvious `one_time_wording` cases.
+- Deterministic rules for likely `local_command_preference` cases.
+- Deterministic rules for likely `possible_secnav_manual_rule` cases.
+- Deterministic rules for likely `bug_validator_gap` cases.
+- User override behavior.
+- Interaction with session persistence.
+- Interaction with existing validator conflicts.
+- Regression requirements.
+
+Do not implement Phase B until the design is reviewed and approved.
 
 ---
 
@@ -244,14 +290,15 @@ When a user issues a correction command or selects a correction in a future UI:
 - Do not edit renderer layout or existing C7-C10 validators.
 - Add one correction module at a time.
 - Add regression tests before expanding scope.
-- Run existing C7, C8, C9, C10, and CCI regressions after every new module.
+- Run existing C7, C8, C9, C10, CCI, intake, correction, and session correction regressions after every new module.
 - Verify GitHub Actions remains green before moving to the next phase.
 - Keep all correction storage auditable and reversible.
-- Never store raw PII in correction logs.
+- Never store raw PII in global or review logs.
+- Never commit session JSONL stores.
 
 ---
 
-**Plan updated 2026-05-31.**  
 **Original plan:** commit `84a1b2e`.  
-**Current verified baseline:** `2e643db` — CCI: Integrate correction memory with intake.  
-**Docs checkpoint:** `8efdff6` — Docs: Record correction intake integration baseline.
+**Phase A completed:** commit `71ddf64`.  
+**Latest checkpoint:** `8c863ff` — Docs: Add Phase A session persistence checkpoint.  
+**Next phase:** Phase B correction classification planning.
