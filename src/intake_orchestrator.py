@@ -48,6 +48,11 @@ from local_profile import (
 )
 from correction_apply import get_path_value, apply_correction as apply_correction_record, undo_correction as undo_correction_record
 from correction_capture import capture_correction as capture_correction_record
+from correction_store import (
+    save_session_correction,
+    load_session_corrections,
+    set_session_correction_rejected,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -177,6 +182,7 @@ class IntakeOrchestrator:
         payload: dict[str, Any] | None = None,
         user_answers: dict[str, Any] | None = None,
         active_profile: Any = None,
+        session_id: str | None = None,
     ):
         self._payload: dict[str, Any] = copy.deepcopy(payload) if payload else {}
         self._user_answers: dict[str, Any] = copy.deepcopy(user_answers if user_answers else {})
@@ -192,8 +198,16 @@ class IntakeOrchestrator:
         self._correction_conflicts: list[dict] = []
         self._last_audit_result: dict | None = None
 
+        # Phase A: session correction persistence (opt-in)
+        self._session_id: str | None = session_id
+        self._session_notes: list[str] = []
+
         if active_profile is not None:
             self.set_active_profile(active_profile)
+
+        # Pre-apply session corrections if session_id is set
+        if self._session_id is not None:
+            self._preapply_session_corrections()
 
     # -- profile management ---------------------------------------------------
 
@@ -215,7 +229,86 @@ class IntakeOrchestrator:
         self._profile_warnings = warnings
         self._merge_report = None
 
+    def set_session_id(self, session_id: str | None) -> None:
+        """Set or clear the session id for correction persistence."""
+        self._session_id = session_id
+        self._session_notes = []
+        if session_id is not None:
+            self._preapply_session_corrections()
+
     # -- correction memory ----------------------------------------------------
+
+    def _preapply_session_corrections(self) -> None:
+        """Pre-apply matching session corrections to the current draft payload.
+
+        Called during __init__ if session_id is provided.
+        """
+        if self._session_id is None:
+            return
+        payload = self.build_payload()
+        context, _ = resolve_context(payload, self._user_answers)
+        doc_type = (context.get("document") or {}).get("doc_type")
+        component = (context.get("component") or {}).get("service")
+
+        if not doc_type or doc_type == "unknown":
+            self._session_notes.append(
+                "Skipping session corrections: doc_type is unknown."
+            )
+            return
+        if not component or component == "unknown":
+            self._session_notes.append(
+                "Skipping session corrections: component is unknown."
+            )
+            return
+
+        corrections, warnings = load_session_corrections(
+            self._session_id,
+            doc_type=doc_type,
+            component=component,
+            exclude_rejected=True,
+        )
+        for w in warnings:
+            self._session_notes.append(f"Session correction load warning: {w}")
+
+        # De-duplicate by field_path: use latest timestamp
+        latest_by_field: dict[str, dict] = {}
+        for c in corrections:
+            fp = c.get("field_path", "")
+            if fp in latest_by_field:
+                if c.get("timestamp", "") > latest_by_field[fp].get("timestamp", ""):
+                    latest_by_field[fp] = c
+            else:
+                latest_by_field[fp] = c
+
+        for fp, c in latest_by_field.items():
+            if self._correction_already_applied(c):
+                continue
+            # Skip one_time_wording unless explicitly scoped current_session
+            if c.get("correction_type") == "one_time_wording" and c.get("scope") != "current_session":
+                self._session_notes.append(
+                    f"Skipped session correction for {fp}: one_time_wording."
+                )
+                continue
+            payload = self.build_payload()
+            new_payload, apply_warnings = apply_correction_record(payload, c)
+            self._payload = new_payload
+            if apply_warnings:
+                c["apply_warnings"] = apply_warnings
+            self._corrections_applied.append(c)
+            c["applied_in_draft"] = True
+            save_session_correction(self._session_id, c)
+            self._session_notes.append(
+                f"Applied session correction for field {fp}."
+            )
+
+    def _correction_already_applied(self, correction: dict[str, Any]) -> bool:
+        """Check whether a correction (by correction_id) is already in _corrections_applied."""
+        cid = correction.get("correction_id")
+        if not cid:
+            return False
+        return any(
+            c.get("correction_id") == cid for c in self._corrections_applied
+        )
 
     def capture_correction(
         self,
@@ -273,6 +366,41 @@ class IntakeOrchestrator:
             field_path, corrected_value, reason=reason, correction_type=correction_type, source=source
         )
         return self.apply_correction(correction)
+
+    def persist_correction(self, correction: dict[str, Any]) -> bool:
+        """Persist a correction to session store if session_id is set.
+
+        Returns True if persisted. Does nothing if session_id is None.
+        """
+        if self._session_id is None:
+            return False
+        correction = copy.deepcopy(correction)
+        if correction.get("scope") != "current_session":
+            correction["scope"] = "current_session"
+        correction["session_id"] = self._session_id
+        correction.setdefault("promotion_status", "none")
+        save_session_correction(self._session_id, correction)
+        return True
+
+    def reject_session_correction(self, correction: dict[str, Any]) -> dict[str, Any]:
+        """Undo a session correction and mark it rejected.
+
+        Removes it from the in-memory applied list, undoes the change,
+        marks user_rejected=True in the session store, and returns status.
+        """
+        cid = correction.get("correction_id")
+        if cid:
+            self._corrections_applied = [
+                c for c in self._corrections_applied if c.get("correction_id") != cid
+            ]
+        payload = self.build_payload()
+        new_payload, undo_warnings = undo_correction_record(payload, correction)
+        self._payload = new_payload
+        if undo_warnings:
+            correction["undo_warnings"] = undo_warnings
+        if self._session_id is not None and cid:
+            set_session_correction_rejected(self._session_id, cid, True)
+        return self.get_status()
 
     def undo_correction(self, correction: dict[str, Any]) -> dict[str, Any]:
         """Undo a previously-applied correction and restore the original value."""
@@ -377,6 +505,9 @@ class IntakeOrchestrator:
             "corrections_applied": list(self._corrections_applied),
             "correction_conflicts": list(self._correction_conflicts),
             "correction_count": len(self._corrections_applied),
+            # Phase A session correction persistence
+            "session_id": self._session_id,
+            "session_notes": list(self._session_notes),
         }
 
     def next_questions(self, limit: int | None = None) -> list[dict[str, Any]]:

@@ -41,3 +41,16 @@ output/
 # OS
 .DS_Store
 Thumbs.db
+
+# Session correction stores (Phase A)
+corrections/session/*.jsonl
+
+# Future Phase D pending candidate log (not Phase A)
+corrections/pending_corrections.jsonl
+
+# Future Phase C approved promotions (not Phase A)
+corrections/approved_rule_promotions.json
+
+# Keep directory structure
+!corrections/session/.gitkeep
+!corrections/session/README.md

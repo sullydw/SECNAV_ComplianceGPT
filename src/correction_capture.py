@@ -60,7 +60,7 @@ _ALLOWED_CORRECTION_TYPES = frozenset({
     "unknown",
 })
 
-_ALLOWED_SCOPES = frozenset({"active_draft"})
+_ALLOWED_SCOPES = frozenset({"active_draft", "current_session"})
 
 _ALLOWED_SOURCES = frozenset({"user", "ai_suggestion", "unknown"})
 
