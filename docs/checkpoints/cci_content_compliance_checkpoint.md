@@ -2,7 +2,7 @@
 
 ## Baseline Commit
 
-- **Commit hash:** `ea46715011f8f1cee510f5960bb3cf92d045478c`
+- **Commit hash:** `2e643dbbb28639fff38a865df45e9108df43ccbd`
 - **Tag:** none at HEAD
 - **Date:** 2026-05-31
 - **Branch:** `main`
@@ -14,20 +14,20 @@
 
 - **Workflow:** Regression
 - **Job:** compliance-regression
-- **Run:** completed / success (manually verified by user for commit `64dc2d5`)
-- **Commit verified:** `64dc2d5`
+- **Run:** completed / success (manually verified by user for commit `2e643db`)
+- **Commit verified:** `2e643db`
 - **CI steps passed:** 16
   - 7 CCI validator regressions
   - context schema regression
   - consolidated CCI audit regression
-  - intake regression
-  - **local command profile regression**
-  - **active-draft correction memory regression**
+  - intake regression (now includes correction memory integration tests)
+  - local command profile regression
+  - active-draft correction memory regression
   - C7 Phase 1 regression
   - C8 regression
   - C9 regression
   - C10 regression
-- **Correction memory intake integration:** in progress after `ea46715`
+- **Correction memory intake integration:** completed and verified at `2e643db`
 - **Note:** Real user/command profiles should not be committed to public repositories. Only the example template (`profiles/example_local_profile.json`) is committed.
 
 ## Purpose of the CCI Layer
