@@ -1,627 +1,249 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-05-28  
+**Last Updated:** 2026-05-31  
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
-**GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT (DO NOT USE)  
+**GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE  
 **Renderer:** v6 PDF (ReportLab)  
-**Line Endings:** .gitattributes (new) enforces LF for Python/MD/JSON configs; CRLF for Windows batch scripts to reduce warning noise
+**Branch:** `main`
 
 ---
 
-## Milestone: Chapters 7, 8, 9, & 10 Candidate Rules Complete
+## Current Handoff Summary
 
-### Chapter 7 — Complete and Audited
-- ✅ All 20 candidate rules (C7-001 through C7-020) created and audited
-- ✅ C7-012 enclosure rule corrected: single enclosure IS numbered, full 7-2.11 a-g source_text applied
-- ✅ C7 cleanup completed: removed implementation leakage (ReportLab, BOUNDARY_SPACINGS, CRITICAL notes) from C7-002/003/004/005/006/008/009/010/011
-- ✅ All C7 rules in `rules_v6/C7/` directory with standardized schema
-- ✅ Figure enhancements applied to C7-014/C7-016/C7-017/C7-018/C7-019/C7-020 with Figure 7-2/7-8/7-9/7-10 details
-- ✅ Commit history preserved on `main` branch
+This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-### Chapter 8 — Complete and Audited
-- ✅ All 6 candidate rules (C8-001 through C8-006) created and populated
-- ✅ All source_text resolved from manual (8-1 through 8-4)
-- ✅ C8-004 schema normalized (added severity, category, target_fields)
-- ✅ C8-003/C8-004/C8-006 figure-enhanced with Figure 8-2/8-3/8-4 details
-- ✅ C8 compatibility file (`C8-candidate-rules.json`) replaced with lightweight index pointer
-- ✅ All C8 rules in `rules_v6/C8/` directory with standardized schema
-- ✅ Index file (`rules_v6/C8/index.json`) tracks all rules with source_text_state
-- ✅ Final audit passed: all 6 rules resolved, JSON syntax fixed
+**Latest documentation checkpoint commit:** `8efdff6` — `Docs: Record correction intake integration baseline`  
+**Current verified functional baseline:** `2e643db` — `CCI: Integrate correction memory with intake`  
+**GitHub Actions:** manually verified PASS by user for commit `2e643db`  
+**Expected repository state:** clean and up to date with `origin/main`
 
-### Chapter 9 — Complete and Audited
-- ✅ All 8 candidate rules (C9-001 through C9-008) created and populated
-- ✅ All source_text resolved from manual (9-1, 9-2.1 through 9-2.7)
-- ✅ C9-001 scope leakage cleaned (removed header-omission language from 9-1)
-- ✅ C9-002/C9-008 figure-enhanced with Figure 9-1/9-2/9-3 details
-- ✅ C9 compatibility file (`C9-candidate-rules.json`) created as lightweight index pointer
-- ✅ All C9 rules in `rules_v6/C9/` directory with standardized schema
-- ✅ Index file (`rules_v6/C9/index.json`) tracks all rules with source_text_state: resolved
-- ✅ Final audit passed: all 8 rules resolved, compatibility pointer updated
-- ✅ C9 new-page endorsement Phase 1 implemented (2026-05-16):
-  - New-page endorsement audit fixture added: `examples/audit_c9_new_page_endorsement.json`
-  - C9 renderer Phase 1 support added:
-    - new-page endorsement heading renders from: `endorsement_ordinal` + " ENDORSEMENT on " + `basic_letter_id`
-    - explicit endorsement page-number continuation works using: `page_number_start`, `force_page_number_on_first_page`
-  - Page number is not inferred from endorsement_ordinal: FIRST/SECOND/THIRD identifies endorsement sequence only, not displayed page number
-  - Page-number continuation applies only to: `doc_type: DT_ENDORSEMENT`, `endorsement_type: new_page`
-  - C9 output: `output/audit_c9_new_page_endorsement.pdf`
-  - C7 regression runner passed after C9 changes: `python tools/run_c7_phase1_regression.py` — PASS
-  - C8 regression runner passed after C9 changes: `python tools/run_c8_regression.py` — PASS
-  - Same-page endorsement support not yet implemented
-  - C9 reference/enclosure sequence validation is implemented and guarded by run_c9_regression.py.
-  - C9 copy-to significance and complete-annotation validation is implemented and guarded by run_c9_regression.py.
-  - C9 assembly remains advisory/procedural for later checklist support
+### Start Here For New Chat
 
-### Chapter 10 — Candidate Components Complete
+1. Read `docs/BOOTSTRAP.md`.
+2. Read this file: `docs/PROJECT_STATUS.md`.
+3. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` for detailed CCI/intake/correction status.
+4. Do not modify renderer/layout unless explicitly asked.
+5. Continue from the **Recommended Next Work** section below.
+6. Run all regressions before committing.
 
-#### Protected and Closed Components
-- ✅ **C10 MFR** — Closed/protected implementation (separate branch, not modified)
-- ✅ **C10 Plain-Paper From-To (From-To Memorandum)** — Closed/protected implementation
-  - **Latest verified commit**: `5e27b4e58eba3753a939b96efc53aa38df7357c6`
-  - **Full Chapter 10 is NOT fully implemented**
-  - **Other C10 memo types remain out of scope**:
-    - printed From-To memorandum
-    - letterhead memorandum
-    - decision memorandum
-    - MOA/MOU memorandum
+Suggested startup prompt:
 
-#### C10 Plain-Paper From-To Closeout (5e27b4e)
-- ✅ C10 Plain-Paper From-To renderer implemented (`render_from_to_plain_pdf()`)
-- ✅ C10 Plain-Paper From-To validator implemented
-- ✅ C10 regression runner validates and render-checks MFR and From-To fixtures (basic, references, enclosures)
-- ✅ C10 layout audits wired for: Figure 10-1 MFR, Figure 10-3 From-To Basic, Figure 10-3 From-To With References, Figure 10-3 From-To With Enclosures
-- ✅ C7/C8/C9 guards remained passing after C10 changes
-- ✅ Manual visual review accepted as "looks pretty good"
-- ✅ Same-page endorsements remain deferred/not implemented
-- ⏳ Same-page endorsements support not yet implemented (deferred)
-- ✅ **Closeout documentation**: `docs/C10_FROM_TO_PLAIN_CLOSEOUT.md`
-- ✅ **Visual review checklist**: `docs/C10_FROM_TO_PLAIN_VISUAL_REVIEW_CHECKLIST.md`
-- ✅ **Protected fixtures**:
-    - `examples/audit_c10_from_to_plain_basic.json`
-    - `examples/audit_c10_from_to_plain_with_refs.json`
-    - `examples/audit_c10_from_to_plain_with_encls.json`
-- **Protected renderer path**: `render_from_to_plain_pdf()` in `src/pdf_v6_render.py`
-- **Protected runner**: `tools/run_c10_regression.py`
-
-### Automated Layout Audit Coverage (2026-05-23)
-
-The project now has automated PDF layout audits wired into each chapter's regression suite. These are **profile-based coordinate checking, not pixel-image comparison**. Manual visual review is still required for final compliance.
-
-**Current tool capabilities:**
-- **forbidden_text checks** — verify prohibited elements are absent (e.g., no "To:" in distribution-only letters)
-- **vertical_spacing_rules** — validate exact gaps between elements against manual-derived expectations
-- **layout_regions** — check elements fall within expected x/y bounding boxes
-- **layout_relationships** — verify geometric relationships (above, left_of, same_row) between elements
-- **--dump-spans diagnostic mode** — print extracted text spans with coordinates for manual-and-figure profile building
-- **manual-and-figure source standard** — every new profile must be grounded in all available manual guidance (chapter/section text rules, figure title/caption, instructional text, visual geometry, existing rule files and renderer behavior)
-
-**Wired audit coverage:**
-- **C7 Phase 1 regression**: Figure 7-1 (Standard Letter), Figure 7-2 (Continuation Page), Figure 7-4 (Joint Letter)
-- **C8 regression**: Figure 8-1 (Multiple-Address To-line), Figure 8-2 (Distribution-line), Figure 8-3 (To + Distribution)
-- **C9 regression**: Figure 9-2 (New Page Endorsement)
-- **C10 regression**:
-  - Figure 10-1 MFR (Memorandum for the Record)
-  - Figure 10-3 Plain-Paper From-To (Basic)
-  - Figure 10-3 Plain-Paper From-To (With References)
-  - Figure 10-3 Plain-Paper From-To (With Enclosures)
-  - All wired C10 layout audits fail C10 regression on audit failure
-  - All current C10 wired audits pass with 0 warnings
-
-**How it works:**
-For each chapter, the regression runner:
-1. Runs validators on chapter fixtures
-2. Renders PDFs from chapter fixtures
-3. Runs the layout audit tool (`tools/audit_pdf_layout.py`) with the chapter's profile
-4. Layout audit failure causes the chapter regression to fail
-
-**Audit scope notes:**
-- All wired audit failures fail their respective regression suites
-- Figures checked: label presence, vertical ordering, alignment, spacing, page numbers (where applicable), layout regions, layout relationships, forbidden text
-- Figures NOT checked: visual appearance, font quality, margins, exact pixel positioning
-- The tool is now better prepared for complex future formats such as Figure 7-4 Joint Letter (left/right command blocks, multiple signature blocks)
-- Manual visual review remains required when creating new profiles and for final compliance
-
-**Manual-and-Figure Source Standard:**
-Every new layout profile must be grounded in all available manual guidance, not just visible geometry. Before creating a profile, review: (1) the chapter/section text rules surrounding the figure, (2) the figure title/caption, (3) the instructional text inside the figure example itself, (4) the actual visual/layout geometry, and (5) existing project rule files and renderer behavior. Profiles encode manual-derived expectations as required/forbidden text, order rules, alignment groups, layout regions, marker alignment, page-number checks, and vertical spacing rules.
-
-- Status of each runner:
-  - C7: `python tools/run_c7_phase1_regression.py` — layout audit runs after PDF render
-  - C8: `python tools/run_c8_regression.py` — layout audit runs after PDF render
-  - C9: `python tools/run_c9_regression.py` — layout audit runs after PDF render
-  - C10: `python tools/run_c10_regression.py` — layout audit runs after PDF render
-
-### Repository Status
-- **Active repo:** https://github.com/sullydw/SECNAV_ComplianceGPT
-- **Invalid repo:** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE
-- **Branch:** main
-- **Working tree:** Clean (all commits pushed)
-
-### New Rule-Source Policy
-- **Figures are rule-bearing** and must be reviewed when referenced
-- Manual-derived truth only — no implementation leakage
-- Figure-derived advisory details included in target_fields and renderer_impact
-- No validators implemented yet; validator implementation planning pending
-
-### Next Recommended Phases
-1. **Validator implementation planning** — Design validator specs for automatable rules
-2. **Renderer integration** — Connect rule catalog to PDF v6 renderer for automated compliance checking
-
-### C7 Phase 1 Visual Audit Completion (2026-05-15)
-
-- **PDF visual review completed** using `output/audit_c7_phase1_standard_letter.pdf`
-- **Fixture data cleanup completed**:
-  - To line activity/title fixed
-  - Via activity/title fixed
-  - Subject uppercase
-  - Ref markers added
-  - Encl markers added
-  - Distribution-only mode removed from standard-letter fixture
-- **Renderer spacing fixes completed**:
-  - SSIC/date to From blank line
-  - parent paragraph to child subparagraph blank line
-  - continuation-page subject to body blank line
-  - signature block to Copy to blank line
-- **Subparagraph marker indentation corrected** (reduced level 2-4 marker offsets)
-- **SSIC/sender-symbol block alignment reviewed and confirmed correct**
-- **C7 Phase 1 standard-letter visual smoke audit now passes**
-- **No rule files modified** for this visual-audit completion
-
-### C7 Phase 1 Regression Runner (2026-05-15)
-
-- **Runner added and passed**: `tools/run_c7_phase1_regression.py` (9c4086a)
-- **Command**: `python tools/run_c7_phase1_regression.py`
-- **Covers**: body validation, C7 fixture render, default render, and output PDF existence/non-empty check
-- **Visual PDF review remains manual** per `docs/C7_PHASE1_REGRESSION_CHECKLIST.md`
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/cci_content_compliance_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Run all regressions before committing.
 
 ---
 
-## C7 Phase 1 Implementation (2026-05-14)
+## Current Implemented Architecture
 
-- **Renderer CLI patched**: `main(input_path=None, output_path=None)` accepts optional JSON and PDF paths
-- **Default behavior preserved**: `python src/pdf_v6_render.py` → `examples/v6_sample_letter.json` → `output/v6_test_letter.pdf`
-- **C7 Phase 1 audit fixture created and smoke-tested**: `examples/audit_c7_phase1_standard_letter.json`
-- **Fixture smoke render passed**: `output/audit_c7_phase1_standard_letter.pdf` (6.0 KB, 3 pages)
-- **Body validator rewritten** with parent-scoped paragraph/subparagraph sequencing (C7-014 compliant)
-- **Body validator fixtures**: `audit_c7_phase1_body_validator_valid.json` (PASS), `audit_c7_phase1_body_validator_invalid.json` (FAIL)
-- **C7 Phase 1 implementation plan documented**: `docs/C7_PHASE1_IMPLEMENTATION_PLAN.md`
-- **No renderer layout behavior changes** beyond CLI path support
-- **All changes committed and pushed** to `sullydw/SECNAV_ComplianceGPT`
+### Protected Renderer/Layout Baseline
 
-**Next**: Validator implementation planning for automatable rules
+Chapters 7-10 of SECNAV M-5216.5 are implemented and regression-protected for the current project scope:
+
+- C7 standard letters, continuation pages, and joint letters.
+- C8 multiple-address letters using To-line, Distribution, and To-plus-Distribution formats.
+- C9 new-page endorsements.
+- C10 Memorandums for the Record and plain-paper From-To memorandums.
+
+Figure 9-1 same-page endorsements and additional C10 memorandum types remain deferred or outside the current scope unless explicitly reopened.
+
+### Correspondence Content Intelligence Layer
+
+The CCI layer is now a deterministic and heuristic content-compliance layer above the renderer. It validates the JSON payload before rendering and does not change layout behavior.
+
+Implemented CCI validators:
+
+1. Subject-line validator.
+2. Reference/enclosure validator.
+3. Acronym first-use validator.
+4. Date and military-time validator.
+5. Personnel identification validator.
+6. Point-of-contact expectation validator.
+7. Routing / Via / Copy-to intelligence validator.
+
+### Context, Audit, Intake, Profiles, and Correction Memory
+
+Implemented support now includes:
+
+- `src/context_resolver.py` — canonical CCI context object.
+- `src/validator_runner.py` — consolidated CCI audit entry point.
+- `src/intake_orchestrator.py` — missing-field intake, active profile support, CCI audit, active-draft correction integration.
+- `src/local_profile.py` — local command profile loading and default merging.
+- `src/correction_apply.py` — active-draft correction application and undo primitives.
+- `src/correction_capture.py` — active-draft correction record capture.
+
+Current intake capabilities:
+
+- Identifies missing required/recommended/optional fields.
+- Asks only for missing information.
+- Uses active local profile defaults.
+- Suppresses questions for fields filled by profile defaults.
+- Runs the consolidated CCI audit.
+- Captures active-draft corrections.
+- Applies active-draft corrections.
+- Undoes corrections.
+- Reruns audit after correction.
+- Tracks conflicts as advisory only.
 
 ---
 
-## Changelog
+## Current Correction Memory Limits
 
-```
-SECNAV_ComplianceGPT/
-├── src/
-│   ├── pdf_v6_render.py      # Main PDF renderer (ReportLab canvas)
-│   ├── letter_model_v6.py    # ILM normalization
-│   ├── body_v6_parse.py      # Body marker parsing
-│   ├── body_v6_validate.py   # Body validation
-│   ├── letterhead_v6_resolve.py
-│   ├── layout_v6_resolve.py
-│   └── ... (other v6 modules)
-├── rules_v6/
-│   ├── H-series.json         # Letterhead rules
-│   ├── F-series.json         # Font rules
-│   ├── P-series.json         # Paragraph rules
-│   ├── S-series.json         # Spacing rules
-│   ├── V-series.json         # Validation rules
-│   ├── C7/                   # Chapter 7 rules
-│   ├── C8/                   # Chapter 8 rules
-│   ├── C9/                   # Chapter 9 rules
-│   ├── C10/                  # Chapter 10 rules (Memorandums)
-│   ├── C7-candidate-rules.json
-│   ├── C8-candidate-rules.json
-│   ├── C9-candidate-rules.json
-│   ├── C10-candidate-rules.json
-│   └── runtime/              # Compiled JSONL rules
-├── examples/
-│   └── v6_sample_letter.json
-├── output/                   # Generated PDFs (gitignored)
-└── docs/
-    └── PROJECT_STATUS.md     # This file
+Correction memory is intentionally limited in the current verified baseline:
+
+- Active-draft/in-memory only.
+- No disk persistence.
+- No local profile promotion.
+- No global SECNAV rule promotion.
+- No automatic correction classification.
+- No renderer changes.
+- Conflicts are advisory only.
+
+Do not implement persistence, profile promotion, or global rule promotion without a separate planning step and user approval.
+
+---
+
+## Local Profile Safety
+
+`profiles/example_local_profile.json` is fake example data only.
+
+Real user or command profiles may contain contact information or local command data. Real profiles should **not** be committed to this public repository. Future real profiles should live outside the repository or be gitignored.
+
+---
+
+## CI / Regression Coverage
+
+GitHub Actions workflow:
+
+- Workflow: `Regression`
+- Job: `compliance-regression`
+- Verified PASS for current functional baseline commit `2e643db`
+
+Run the full current regression suite before committing changes:
+
+```bash
+python tools/run_intake_regression.py
+python tools/run_correction_regression.py
+python tools/run_profile_regression.py
+python tools/run_cci_audit_regression.py
+python tools/run_context_schema_regression.py
+python tools/run_cci_subject_regression.py
+python tools/run_cci_ref_encl_regression.py
+python tools/run_cci_acronym_regression.py
+python tools/run_cci_date_time_regression.py
+python tools/run_cci_personnel_regression.py
+python tools/run_cci_poc_regression.py
+python tools/run_cci_routing_regression.py
+python tools/run_c7_phase1_regression.py
+python tools/run_c8_regression.py
+python tools/run_c9_regression.py
+python tools/run_c10_regression.py
 ```
 
-**Workflow:**
-1. Load JSON payload from `examples/`
-2. Normalize via `letter_model_v6.py`
-3. Validate body via `body_v6_validate.py`
-4. Resolve letterhead via `letterhead_v6_resolve.py`
-5. Render PDF via `pdf_v6_render.py` (ReportLab)
+The CI suite covers:
+
+- 7 CCI validator regressions.
+- Context schema regression.
+- Consolidated CCI audit regression.
+- Intake regression.
+- Local profile regression.
+- Active-draft correction memory regression.
+- C7-C10 layout/render regressions.
 
 ---
 
-## 2. Current Renderer File
+## Key Files
 
-**File:** `src/pdf_v6_render.py`
-
-**Key features:**
-- ReportLab canvas-based PDF generation
-- Centralized `BOUNDARY_SPACINGS` dict for layout control
-- H-series letterhead rendering (bold first line, smaller subsequent)
-- Body paragraph rendering with marker detection (1, a, (1), (a))
-- Level-based indentation (0, 24, 48, 78 pt offsets)
-- Pagination with continuation headers
-- Signature block placement logic
-- Page numbers (page 2+)
-
----
-
-## 3. Current Confirmed Boundary Values
-
-**File:** `src/pdf_v6_render.py` - `BOUNDARY_SPACINGS` dict
-
-```python
-BOUNDARY_SPACINGS = {
-    ("LETTERHEAD", "SSIC_DATE"): 1,      # 1 line (14.4 pt)
-    ("SSIC_DATE", "HEADER"): 1,          # 1 line (14.4 pt)
-    ("HEADER", "BODY"): 1,               # 1 line (14.4 pt)
-    ("BODY", "SIGNATURE"): 4,            # 4 lines (signature_gap)
-    ("SIGNATURE", "COPY_TO"): 1,         # 1 line after signature
-    ("COPY_TO", "PAGE_END"): 0,
-    ("CONTINUATION_HEADER", "BODY"): 1,  # 1 line after repeated Subj
-}
-```
-
-**Leading calculation:**
-- Font size: 12 pt
-- Leading: `font_size * 1.2 = 14.4 pt`
-
-**Vertical Spacing Model (Next-Baseline Cursor Semantics):**
-- Incoming `y` is always the baseline where the next line should be drawn
-- No pre-subtraction before drawing—draw at current `y`, then advance
-- All spacing is applied AFTER drawing lines
-- All single blank lines = exactly 1 leading unit (14.4 pt)
-- Header and body use identical vertical spacing logic
-- Prior spacing defects were caused by mixing baseline vs. cursor semantics
-- This has been corrected as of 2026-05-07
+- `docs/BOOTSTRAP.md` — first-read guide for new chats/sessions.
+- `docs/PROJECT_STATUS.md` — current status and handoff tracker.
+- `docs/checkpoints/cci_content_compliance_checkpoint.md` — detailed CCI checkpoint.
+- `.github/workflows/regression.yml` — GitHub Actions regression workflow.
+- `src/pdf_v6_render.py` — renderer; do not modify casually.
+- `src/validator_runner.py` — one-call CCI audit runner.
+- `src/intake_orchestrator.py` — intake, profiles, correction memory orchestration.
+- `src/context_resolver.py` — CCI context resolver.
+- `src/local_profile.py` — local profile support.
+- `src/correction_apply.py` and `src/correction_capture.py` — active-draft correction support.
+- `profiles/example_local_profile.json` — fake/template profile only.
 
 ---
 
-## 4. Current Known PDF Output
+## What Not To Do
 
-**Output path:** `output\v6_test_letter.pdf`
-
-**Test run:** 2026-05-04 08:29 EDT
-
-**Build result:**
-- Pages: 2
-- File size: ~3.4 KB
-- Status: PASS
-
-**Debug output:**
-```
-DEBUG BOUNDARY: HEADER -> BODY = 0 lines (0.0 pt)
-DEBUG Total pages generated: 2
-=== PDF BUILD ===
-PASS
-```
+- Do not edit renderer/layout casually.
+- Do not create a parallel renderer.
+- Do not persist corrections yet.
+- Do not promote corrections to local profiles or global SECNAV rules yet.
+- Do not commit real command profiles or contact data publicly.
+- Do not skip regressions.
+- Do not assume Navy and Marine Corps conventions are identical.
+- Do not ignore rules hidden inside manual figures, captions, or example text.
+- Do not modify rules without preserving/updating provenance.
 
 ---
 
-## 5. Current Confirmed Behaviors
+## Recommended Next Work
 
-### Sender-Symbol Block
-- Supports SSIC, optional originator code, or serial ("Ser X")
-- Date format: D Mon YY
-- Uses longest-line anchor alignment (all lines share same left start)
-- One blank line between sender-symbol block and "From:" line
+### Next Phase: Persistent Correction / Session Storage Planning
 
-### Header System
-- Order: From / To or Distribution / Via / Subj / Ref / Encl
-- "To:" omitted when "Distribution" is used
-- REF and ENCL are optional header blocks; omitted blocks leave no label and no blank placeholder
-- Adjacent visible boundaries remain exactly 1 leading unit (14.4 pt): Subj→Body (no REF/ENCL), Subj→REF, Subj→ENCL (no REF), REF→Body (no ENCL), REF→ENCL, ENCL→Body
+The next recommended phase is planning only at first.
 
-### Distribution Block
-- Used for action addressees when applicable
-- Placement: always after signature block
-- `distribution_mode` supports:
- - `distribution_only` → replaces To line (To omitted)
- - `to_plus_distribution` → keeps To line as group title
-- `distribution_layout` supports:
- - `single_column` (entries listed one per line at left margin)
- - `columns` (two-column balanced row order)
- - `paragraph` (comma-separated wrapping text)
-- Label is rule-driven from model (default: "Distribution:")
-- Rendering is rule-driven (no hardcoded placement/order logic)
-- Validation exists for invalid/missing mode and layout values with safe fallbacks
+Goals:
 
-### Subject System
-- Page 1: wraps under subject text column
-- Continuation pages:
- - subject repeats
- - same wrapping logic as page 1
- - correct alignment under subject text column
- - one blank line after subject block
+- Decide what may be stored beyond the active draft.
+- Separate session memory from local command profile promotion.
+- Protect against bad corrections becoming permanent behavior.
+- Design a review/promotion workflow.
+- Keep global SECNAV rule promotion manual and reviewed.
+- Avoid writing real command/user profile data to the public repo.
 
-### Body System
-- Paragraph spacing finalized
-- Continuation lines return to left margin
-- Marker indentation preserved across levels
-- Uses next-baseline cursor semantics (incoming `y` is draw baseline)
-- No pre-subtraction before drawing body records
-- Spacing between paragraphs = exactly 1 leading unit (14.4 pt)
-- Subparagraph transitions match paragraph-to-paragraph spacing
+Recommended planning target:
 
-### Signature System
-- Role-based rendering supported:
- - standard
- - By direction
- - Acting/title variants
-- Signature block protected from orphaning (moves to next page if needed)
+- Persistent session storage for active draft corrections.
+- Clear distinction between:
+  - one-draft corrections,
+  - reusable session corrections,
+  - local command profile candidates,
+  - possible global rule bugs or SECNAV interpretation issues.
 
-### Vertical Spacing Model (Verified)
-- All boundaries use next-baseline cursor semantics
-- All single-line spacing = 1 leading unit (14.4 pt)
-- BODY → SIGNATURE = 4 leading units
-- Subj → Body may span multiple lines when Ref/Encl present (expected behavior)
-
-### Resolved Defects
-- Date → From double spacing fixed (2.0 → 1.0 leading units)
-- Paragraph → subparagraph stacking fixed (3.0 → 1.0 leading units)
-- Signature → Distribution stacking fixed (2.0 → 1.0 leading units)
-- Distribution → Copy to stacking fixed (2.0 → 1.0 leading units)
-- SSIC/Date → Header/Endorsement heading blank line fixed (1.0 → 2.0 leading units)
-
-### Validation
-- Audit Agent measurement confirms baseline-to-baseline accuracy
-- All tested boundaries match expected values per BOUNDARY_SPACINGS dict
-- Pagination stress test (`audit_pagination_stress.json`) generated 3-page PDF with signature/distribution/copy-to staying together on page 3; no overflow below bottom margin (Y=72 pt) and no orphaning observed. Renderer pagination logic confirmed working; no changes required.
-
-### Distribution vs Copy To
-- Distribution = action addressees
-- Copy to = informational addressees
-- Both render after signature block
-- Distribution renders before Copy to when both are present
-- Both support layouts:
- - `single_column` (entries listed one per line)
- - `columns` (two-column balanced row order)
- - `paragraph` (comma-separated wrapping text)
-- Copy to is informational only
-- Copy to NEVER suppresses To, Via, Distribution, or other header fields
-- Rendering is rule-driven:
- - placement determined by model
- - ordering determined by model
- - labels from model when provided (defaults: "Distribution:", "Copy to:")
-- Model guarantees defaults for:
- - `distribution_mode` → `distribution_only` (when distribution present)
- - `distribution_layout` → `single_column`
- - `copy_to_layout` → `single_column`
-- Validation exists for invalid `copy_to_layout` values with safe fallbacks
+Do **not** implement persistence before the storage model and safety rules are reviewed.
 
 ---
 
-## 6. Output Directory Behavior
+## Historical Milestones
 
-- Output path is configurable with the following priority order:
-  1. `output_dir` argument (if provided)
-  2. `SECNAV_OUTPUT_DIR` environment variable
-  3. Default: `./output/` relative to project root
-- Output directory is auto-created if missing
-- No hardcoded absolute paths
-- Note: OpenClaw runs may default to workspace unless overridden; local runs can redirect output via environment variable
+### Chapters 7, 8, 9, and 10 Rule/Layout Baseline
 
----
+- C7 candidate rules created and audited.
+- C8 candidate rules created and audited.
+- C9 new-page endorsement support implemented and guarded by regression.
+- C10 MFR and plain-paper From-To memorandum support implemented and guarded by regression.
+- Figure 9-1 same-page endorsements remain deferred.
+- Additional C10 memorandum types remain outside current scope.
 
-## C8 Core Address-Format Baseline (2026-05-16)
+### Automated Layout Audit Coverage
 
-- **C8 core address-format fixtures added**:
-  - `examples/audit_c8_to_only_letter.json` — C8-002 To-line-only multiple-address letter
-  - `examples/audit_c8_distribution_only_letter.json` — C8-003 Distribution-only multiple-address letter
-  - `examples/audit_c8_to_plus_distribution_letter.json` — C8-004 To + Distribution group title
-- **C8 core renderer support confirmed**:
-  - C8-002 To-line-only renders multiple To addressees as stacked entries
-  - C8-003 Distribution-only renders no To line and lists Distribution addressees
-  - C8-004 To + Distribution renders To group title plus Distribution members
-- **Renderer patch added support for "to" as a list** for C8-002 multiple addressees
-- **Visual audits passed for**:
-  - `output/audit_c8_to_only_letter.pdf` — PASS
-  - `output/audit_c8_distribution_only_letter.pdf` — PASS
-  - `output/audit_c8_to_plus_distribution_letter.pdf` — PASS
-- **C7 Phase 1 regression runner passed after C8 renderer changes**:
-  ```
-  python tools/run_c7_phase1_regression.py
-  C7 PHASE 1 REGRESSION RESULT: PASS
-  ```
-- **C8-005 and C8-006 remain advisory/procedural** for later checklist support
+The project has automated PDF layout audits wired into each chapter regression suite. These are profile-based coordinate checks, not pixel-image comparisons. Manual visual review remains required for final compliance.
 
----
+Covered figures include:
 
-### C8 Validator Regression Coverage (2026-05-16)
+- C7: Figure 7-1 Standard Letter, Figure 7-2 Continuation Page, Figure 7-4 Joint Letter.
+- C8: Figure 8-1 Multiple-Address To-line, Figure 8-2 Distribution-line, Figure 8-3 To + Distribution.
+- C9: Figure 9-2 New Page Endorsement.
+- C10: Figure 10-1 MFR and Figure 10-3 Plain-Paper From-To variants.
 
-- **C8 structural validator added**: `src/c8_validate.py`
-- **C8 validator coverage**:
-  - Valid C8 To-line-only fixture: PASS
-  - Valid C8 Distribution-only fixture: PASS
-  - Valid C8 To + Distribution fixture: PASS
-  - Invalid Distribution-only with To line: expected FAIL
-  - Invalid To + Distribution missing Distribution list: expected FAIL
-  - To-line-only with more than four addressees: WARNING + PASS
-- **C8 regression runner updated and passed**: `python tools/run_c8_regression.py`
-- **Runner covers**:
-  - C8 validator checks
-  - C8 render checks
-  - Output PDF existence/non-empty checks
-  - C7 Phase 1 regression guard
-- **C8 core implementation is baseline-locked** for:
-  - C8-002 To-line-only
-  - C8-003 Distribution-only
-  - C8-004 To + Distribution
-- **C8-005 and C8-006 remain advisory/procedural** for later checklist support
+### Manual-and-Figure Source Standard
+
+Every new layout profile and rule interpretation must be grounded in all available manual guidance, including:
+
+1. Chapter/section text surrounding the figure.
+2. Figure title/caption.
+3. Instructional text inside the figure example itself.
+4. Actual visual/layout geometry.
+5. Existing project rule files and renderer behavior.
+
+Figures are rule-bearing and must be reviewed when referenced.
 
 ---
 
-### C8 Regression Runner (2026-05-16)
+## Disclaimer
 
-- **C8 regression runner added and passed**: `tools/run_c8_regression.py`
-- **Command**:
-  ```
-  python tools/run_c8_regression.py
-  C8 REGRESSION RESULT: PASS
-  ```
-- **Runner covers**:
-  - C8 To-line-only render
-  - C8 Distribution-only render
-  - C8 To + Distribution render
-  - Output PDF existence/non-empty checks
-  - C7 Phase 1 regression guard
-- **Visual PDF review remains manual** per `docs/C8_REGRESSION_CHECKLIST.md`
-
----
-
-## C9 New-Page Endorsement Phase 1 (2026-05-16)
-
-- **C9 regression checklist added**: `docs/C9_REGRESSION_CHECKLIST.md`
-- **C9 regression runner added and passed**: `python tools/run_c9_regression.py`
-- **C9 REGRESSION RESULT: PASS**
-- **Runner covers**:
-  - C9 new-page endorsement render
-  - Output PDF existence/non-empty check
-  - C7 Phase 1 regression guard
-  - C8 regression guard
-- **C9 Phase 1 baseline locked** for:
-  - new-page endorsement heading
-  - explicit page-number continuation for new-page endorsements only
-  - single remaining Via addressee unnumbered
-  - multiple remaining Via addressees numbered
-- **Visual PDF review remains manual** per `docs/C9_REGRESSION_CHECKLIST.md`
-- **Same-page endorsements remain unimplemented**.
-- **Endorsement assembly remains advisory/procedural**.
-
-### C9-003 Via Addressee Fixtures (2026-05-16)
-
-- **C9 Via audit fixtures added and rendered**:
-  - `examples/audit_c9_new_page_endorsement_single_via.json`
-  - `examples/audit_c9_new_page_endorsement_multiple_via.json`
-- **C9-003 Via behavior is now regression-protected**:
-  - Single remaining Via addressee → unnumbered
-  - Multiple remaining Via addressees → numbered (1), (2)
-- **Code-verified visual audit**: both renders PASS
-  - `output/audit_c9_new_page_endorsement_single_via.pdf` — PASS
-  - `output/audit_c9_new_page_endorsement_multiple_via.pdf` — PASS
-- **All regression suites PASS**:
-  - `python tools/run_c7_phase1_regression.py` — PASS
-  - `python tools/run_c8_regression.py` — PASS
-  - `python tools/run_c9_regression.py` — PASS
-- **SSIC/date-to-header spacing regression fixed (shared fix)**:
-  - C7/C8: one blank line between SSIC/date block and From line
-  - C9: one blank line between SSIC/date block and endorsement heading
-  - C9: one blank line between endorsement heading and From line (preserved)
-- **C9 regression runner coverage** (2026-05-17):
-  - Runner includes Via fixtures
-  - Renders/checks:
-    - C9 base new-page endorsement fixture
-    - C9 single remaining Via fixture
-    - C9 multiple remaining Via fixture
-    - C9 Copy to validator fixtures
-    - existing C9 ref/encl validator fixtures
-    - output PDF existence/non-empty checks
-    - C7 Phase 1 regression guard
-    - C8 regression guard
-  - C9 regression runner passed:
-    ```
-    python tools/run_c9_regression.py
-    C9 REGRESSION RESULT: PASS
-    ```
-- **C9 summary**:
-  - C9 new-page endorsement rendering is locked
-  - C9-003 Via behavior is locked
-  - C9-004 reference continuation is validator-protected
-  - C9-005 enclosure continuation is validator-protected
-  - C9-006 significant Copy to expansion is validator-protected
-  - C9-007 complete annotation is validator-protected
-  - Same-page endorsements remain deferred
-  - Endorsement assembly remains advisory/procedural
-  - Do not overstate this as full C9 implementation.
-
-### C9-004/C9-005 Reference/Enclosure Validator Coverage (2026-05-17)
-
-- **C9 reference/enclosure validator added and hardened**: `src/c9_validate.py`
-- **Validator covers**:
-  - C9-004 reference continuation
-  - C9-005 enclosure continuation
-  - repeated prior reference detection
-  - repeated prior enclosure detection
-  - reference marker continuation
-  - enclosure marker continuation
-  - string/list normalization for ref/encl/prior metadata fields
-- **C9 reference/enclosure fixtures added**:
-  - `examples/audit_c9_new_page_endorsement_refs_encls_valid.json`
-  - `examples/audit_c9_invalid_repeated_reference.json`
-  - `examples/audit_c9_invalid_repeated_enclosure.json`
-  - `examples/audit_c9_invalid_ref_encl_sequence.json`
-- **C9 regression runner updated and passed**: `python tools/run_c9_regression.py`
-- **Runner now includes**:
-  - C9 validator checks
-  - C9 base new-page endorsement render
-  - C9 single Via render
-  - C9 multiple Via render
-  - output PDF existence/non-empty checks
-  - C7 Phase 1 regression guard
-  - C8 regression guard
-- **Next planned C9 work**: review remaining Chapter 9 coverage and decide whether same-page endorsements stay deferred.
-
-### C9-006/C9-007 Copy to Validator Coverage (2026-05-17)
-
-- **C9 Copy to validator checks added to `src/c9_validate.py`**:
-  - **C9-006 significant endorsement Copy to expansion**:
-    - Significant endorsements must include `prior_endorsers`, `basic_letter_originator`, and `prior_copy_to` entries in their `copy_to` list
-    - Routine endorsements do not require expanded Copy to list
-  - **C9-007 complete package annotation**:
-    - Complete-package first-time Copy to addressees must include `(complete)`
-    - Annotation checked via case-insensitive, whitespace-normalized matching
-- **C9 Copy to audit fixtures added**:
-  - `examples/audit_c9_copy_to_significant_valid.json`
-  - `examples/audit_c9_copy_to_missing_prior_endorser.json`
-  - `examples/audit_c9_copy_to_missing_originator.json`
-  - `examples/audit_c9_copy_to_routine_valid.json`
-  - `examples/audit_c9_copy_to_missing_complete_annotation.json`
-- **C9 Copy to invalid fixture metadata was corrected**:
-  - Missing prior endorser fixture keeps `prior_endorsers` metadata populated while omitting it from `copy_to`
-  - Missing originator fixture keeps `basic_letter_originator` populated while omitting it from `copy_to`
-- **C9 regression runner updated and passed**: `python tools/run_c9_regression.py`
-- **Runner now includes**:
-  - C9 Copy to validator expected-PASS checks (significant valid, routine valid)
-  - C9 Copy to validator expected-FAIL checks (missing prior endorser, missing originator, missing complete annotation)
-  - existing C9 ref/encl validator checks
-  - existing C9 render checks (base new-page endorsement, single/multiple Via)
-  - C7 and C8 regression guards
-- **All regression suites PASS**
-
-### Chapter 9 Closeout (2026-05-17)
-
-- **Chapter 9 new-page endorsement support is closed/baseline-locked for current scope.**
-- **Covered and protected:**
-  - C9 new-page endorsement heading
-  - Explicit page-number continuation for new-page endorsements
-  - C9-003 remaining Via behavior
-  - C9-004 reference continuation validation
-  - C9-005 enclosure continuation validation
-  - C9-006 significant Copy to expansion validation
-  - C9-007 complete annotation validation
-- **Regression protection:**
-  - Command: `python tools/run_c9_regression.py`
-  - Runner includes C9 validator checks, C9 render checks, C7 guard, and C8 guard
-- **Same-page endorsements remain deferred** and must not be described as implemented.
-- **Endorsement assembly remains advisory/procedural** and is not executable renderer logic.
-- **Future same-page endorsement work** must start as a separate phase with fixtures and checklist updates.
-- **Final Chapter 9 closeout verification completed** after closeout commit:
-  - Command results:
-    - `python tools/run_c9_regression.py` — PASS
-    - `python src/c9_validate.py examples/audit_c9_copy_to_routine_valid.json` — PASS
-  - Issues found: none
-  - Warnings: none
-  - Traceback: none
-  - Chapter 9 new-page endorsement scope remains closed/baseline-locked.
-  - Same-page endorsements remain deferred.
-  - Endorsement assembly remains advisory/procedural.
-
----
-
-## Changelog
-
-See `CHANGELOG.md` for version history.
+This is an independent compliance tooling project and is not official United States Department of Defense software. Always verify generated correspondence against the current SECNAV M-5216.5 manual and the user's command administrative procedures.
