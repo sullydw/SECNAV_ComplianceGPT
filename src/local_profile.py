@@ -188,6 +188,26 @@ def validate_profile(profile: dict[str, Any]) -> tuple[list[str], list[str]]:
     override_rules = profile.get("override_rules")
     if override_rules is not None and not isinstance(override_rules, list):
         errors.append("override_rules must be a list if present")
+    elif isinstance(override_rules, list):
+        for i, rule in enumerate(override_rules):
+            if not isinstance(rule, dict):
+                errors.append(f"override_rules[{i}] must be a dict")
+                continue
+            # Validate new optional fields if present
+            if "source" in rule and not isinstance(rule["source"], str):
+                errors.append(f"override_rules[{i}].source must be a string")
+            if "disabled" in rule and not isinstance(rule["disabled"], bool):
+                errors.append(f"override_rules[{i}].disabled must be a boolean")
+            if "doc_type_filter" in rule and not isinstance(rule["doc_type_filter"], list):
+                errors.append(f"override_rules[{i}].doc_type_filter must be a list")
+            if "component_filter" in rule and not isinstance(rule["component_filter"], list):
+                errors.append(f"override_rules[{i}].component_filter must be a list")
+
+    # Validate optional new top-level fields
+    if "correction_history" in profile and not isinstance(profile["correction_history"], list):
+        errors.append("correction_history must be a list if present")
+    if "promotion_metadata" in profile and not isinstance(profile["promotion_metadata"], dict):
+        errors.append("promotion_metadata must be a dict if present")
 
     safety_notes = profile.get("safety_notes", [])
     if isinstance(safety_notes, list) and safety_notes:
@@ -263,6 +283,30 @@ def apply_profile_defaults(
             if field not in fields_from_profile:
                 fields_from_profile.append(field)
 
+    # Determine applicable override rules (Priority 3 in merge stack)
+    doc_type = merged.get("doc_type") or normalized_answers.get("doc_type")
+    component = merged.get("component") or normalized_answers.get("component") or profile.get("command_info", {}).get("component_service")
+
+    applicable_overrides: dict[str, Any] = {}
+    for rule in profile.get("override_rules", []):
+        if not isinstance(rule, dict):
+            continue
+        if rule.get("disabled"):
+            continue
+        # Respect doc_type_filter
+        dtf = rule.get("doc_type_filter", [])
+        if dtf and doc_type not in dtf:
+            continue
+        # Respect component_filter
+        ctf = rule.get("component_filter", [])
+        if ctf and component not in ctf:
+            continue
+        fp = rule.get("field_path", "")
+        if fp:
+            applicable_overrides[fp] = rule.get("value")
+
+    fields_from_profile_override: list[str] = []
+
     # Merge logic per key
     for key in sorted(all_keys):
         # Priority 1: payload explicit non-empty
@@ -277,7 +321,15 @@ def apply_profile_defaults(
             _track(key, "user_answers")
             continue
 
-        # Priority 3: profile defaults
+        # Priority 3: promoted profile corrections (override_rules)
+        or_val = applicable_overrides.get(key)
+        if not _is_missing(or_val):
+            merged[key] = copy.deepcopy(or_val)
+            _track(key, "profile")
+            fields_from_profile_override.append(key)
+            continue
+
+        # Priority 4: profile defaults
         pd_val = profile_defaults.get(key)
         if not _is_missing(pd_val):
             merged[key] = copy.deepcopy(pd_val)
@@ -322,6 +374,7 @@ def apply_profile_defaults(
         "fields_from_payload": fields_from_payload,
         "fields_from_user_answers": fields_from_user_answers,
         "fields_from_profile": fields_from_profile,
+        "fields_from_profile_override": fields_from_profile_override,
         "fields_still_missing": fields_still_missing,
         "warnings": merge_warnings,
     }

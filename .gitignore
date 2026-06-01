@@ -54,3 +54,6 @@ corrections/approved_rule_promotions.json
 # Keep directory structure
 !corrections/session/.gitkeep
 !corrections/session/README.md
+
+# Defense-in-depth: prevent accidental real profile commits if a user places them in-repo
+profiles/user/
