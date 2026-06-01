@@ -29,6 +29,7 @@ Only corrections meeting **all** of the following criteria are eligible:
 | **Value stability** | The corrected value is non-empty and not a placeholder like "TBD" or "TODO" |
 | **Session recency** | Correction belongs to the current active session only |
 | **Not already logged** | The same `(field_path, corrected_value, doc_type, component)` fingerprint is not already present with `status="pending"` or `"under_review"` |
+| **Field path whitelist** | `field_path` is **not** a `body.*` path. Body text is document-specific and must not become a global rule candidate by default. If a narrow future exception is needed (e.g., mandatory closing paragraph), it must be separately planned and approved. |
 
 Rationale: `possible_secnav_manual_rule` and `bug_validator_gap` represent corrections that may affect all users or indicate a gap in deterministic validators. They must not be auto-applied but deserve structured logging for future review. Requiring `current_session` scope proves the user wants persistence beyond a single draft.
 
@@ -44,6 +45,7 @@ Rationale: `possible_secnav_manual_rule` and `bug_validator_gap` represent corre
 | `user_rejected=True` | User declined reuse | Exclude permanently |
 | `validator_conflict=True` | Contradicts deterministic validator | Block and surface conflict |
 | Empty or placeholder value | Not a real candidate | Block |
+| `body.*` field paths | Document-specific content; global rules apply to structure, not individual body text | Exclude from Phase D eligibility by default |
 | Already logged duplicate | Duplicate candidate | Show existing log entry; allow user to append note instead of re-logging |
 
 ---
@@ -128,7 +130,7 @@ Phase D uses **JSON Lines** (`.jsonl`), one record per line, for these reasons:
 Each line is a compact JSON object (no internal newlines) to preserve line boundaries. Example:
 
 ```json
-{"candidate_id":"cand_20260601_abc123","recorded_at":"2026-06-01T12:00:00Z","status":"pending","correction_type":"possible_secnav_manual_rule","field_path":"subj","sanitized_value":"REDACTED_VALUE","doc_type":"standard_letter","component":"marine_corps","user_reason":"SECNAV manual says subject should not end with a period","classification_confidence":"high","classification_method":"field_path_keyword","source_correction_id":"corr_abc123","review_metadata":null}
+{"candidate_id":"cand_20260601_abc123","recorded_at":"2026-06-01T12:00:00Z","status":"pending","correction_type":"possible_secnav_manual_rule","field_path":"subj","sanitized_value":"POLICY UPDATE","original_value_sanitized":"POLICY UPDATE.","doc_type":"standard_letter","component":"marine_corps","user_reason":"SECNAV manual says subject should not end with a period","classification_confidence":"high","classification_method":"field_path_keyword","source_correction_id":"corr_abc123","session_id":"sess_20260601_001","review_metadata":null}
 ```
 
 ---
@@ -143,12 +145,14 @@ Each line is a compact JSON object (no internal newlines) to preserve line bound
 | `correction_type` | string | Yes | `possible_secnav_manual_rule` or `bug_validator_gap` |
 | `field_path` | string | Yes | Canonical field path affected |
 | `sanitized_value` | string or null | Yes | Abstracted or redacted corrected value (see Section 9) |
+| `original_value_sanitized` | string or null | Yes | Abstracted or redacted original system-generated value, for reviewer comparison |
 | `doc_type` | string | Yes | Document type context |
 | `component` | string | Yes | Service/component context |
 | `user_reason` | string | Yes | User-provided explanation, truncated to 500 chars |
 | `classification_confidence` | enum | Yes | `high`, `medium`, `low` — based on keyword strength |
 | `classification_method` | enum | Yes | `field_path_keyword`, `reason_keyword`, `validator_conflict`, `user_override` |
 | `source_correction_id` | string | Yes | Reference to originating session correction ID |
+| `session_id` | string | Yes | Session identifier for traceability back to the session JSONL store |
 | `review_metadata` | object or null | No | Initially null; populated when status changes (see Section 12) |
 | `duplicate_of` | string or null | No | `candidate_id` of earlier duplicate if merged |
 
@@ -170,17 +174,21 @@ Raw corrected values may contain command names, unit identifiers, personnel name
 | `originator_code` | Abstract to `[ORIGINATOR_CODE]` | `"N7"` → `"[ORIGINATOR_CODE]"` |
 | `unit_identity` | Abstract to `[UNIT_IDENTITY]` | `"NEVERSAIL"` → `"[UNIT_IDENTITY]"` |
 | `subj` | Keep verbatim if the rule is about punctuation/structure; abstract if about content | `"POLICY UPDATE."` → `"POLICY UPDATE."`; `"NEVERSAIL POLICY"` → `"[UNIT] POLICY"` |
-| `body.*` | Keep structural/language changes; abstract command-specific content | `"The USS NEVERSAIL will..."` → `"The [UNIT] will..."` |
+| `body.*` | **Phase D excluded by default** — document-specific content; if ever revisited, keep structural/language changes; abstract command-specific content | `"The USS NEVERSAIL will..."` → `"The [UNIT] will..."` |
 | `ref`, `encl`, `via` | Keep structural changes; abstract specific names | `"Ref (a) USS NEVERSAIL LOI"` → `"Ref (a) [UNIT] LOI"` |
+| **All fields** | Never store raw email addresses, phone numbers, or physical addresses | `"j.doe@example.mil"` → `"[EMAIL]"`; `"123 Example Road"` → `"[ADDRESS]"` |
+| **All fields** | Never store EDIPI, SSN, DoD ID numbers, or UIC | `"1234567890"` → `"[EDIPI]"`; `"123-45-6789"` → `"[SSN]"`; `"N00123"` → `"[UIC]"` |
+| **All fields** | Never store hull numbers, tail numbers, building numbers, or room numbers | `"USS NEVERSAIL (DDG-999)"` → `"[UNIT] ([HULL_NUMBER])"`; `"Bldg 123, Rm 456"` → `"[BUILDING], [ROOM]"` |
 
 ### Implementation Approach
 
 A lightweight `_sanitize_value(field_path, raw_value)` helper performs pattern-based abstraction:
 
-1. Run a small dictionary of regex replacements (command name → `[COMMAND_NAME]`, etc.).
+1. Run a small dictionary of regex replacements (command name → `[COMMAND_NAME]`, EDIPI → `[EDIPI]`, SSN → `[SSN]`, DoD ID → `[DOD_ID]`, UIC → `[UIC]`, hull number → `[HULL_NUMBER]`, tail number → `[TAIL_NUMBER]`, building number → `[BUILDING]`, room number → `[ROOM]`, email → `[EMAIL]`, phone → `[PHONE]`, address → `[ADDRESS]`).
 2. If no known pattern matches, fall back to `[REDACTED_VALUE]`.
-3. Never store raw email addresses, phone numbers, or physical addresses.
+3. Never store raw email addresses, phone numbers, physical addresses, EDIPI, SSN, DoD ID numbers, UIC, hull numbers, tail numbers, building numbers, or room numbers.
 4. The original raw value remains in the session JSONL store only (already gitignored and local-only).
+5. `body.*` field paths are excluded from Phase D eligibility by default; if a future exception is separately approved, the same sanitization rules apply.
 
 If sanitization results in a completely redacted string with no structural information, the candidate should be flagged as `classification_confidence: low` and the user should be warned: "This candidate contains mostly local data. Consider logging as a local command preference instead."
 
@@ -320,23 +328,27 @@ New runner: `tools/run_correction_pending_log_regression.py`
 | 6 | `user_rejected=True` → logging blocked |
 | 7 | `validator_conflict=True` → logging blocked |
 | 8 | Empty or placeholder value → logging blocked |
-| 9 | Example profile path → logging not applicable (log is local-only, not profile-based) |
+| 9 | `body.*` field path → logging blocked (document-specific, excluded by default) |
 | 10 | Sanitization: command name abstracted to `[COMMAND_NAME]` |
 | 11 | Sanitization: originator code abstracted to `[ORIGINATOR_CODE]` |
 | 12 | Sanitization: email/phone redacted |
-| 13 | Duplicate detection: same fingerprint → skip or note-append confirmed by user |
-| 14 | Duplicate detection: rejected earlier → warn, allow override |
-| 15 | Record format: valid JSONL, one record per line |
-| 16 | Record contains all required fields |
-| 17 | `status` defaults to `pending` |
-| 18 | `review_metadata` is initially null |
-| 19 | Log file is gitignored (verify `.gitignore` contains `corrections/pending_corrections.jsonl`) |
-| 20 | No real command data in log (grep for patterns like `@mil`, `555-`, `Commanding Officer`) |
-| 21 | Atomic append: write does not corrupt existing lines |
-| 22 | Log read utility returns all pending candidates |
-| 23 | Log read utility filters by `correction_type` |
-| 24 | Log read utility filters by `status` |
-| 25 | Misclassified local preference → redirect to Phase C proposal works |
+| 13 | Sanitization: EDIPI abstracted to `[EDIPI]` |
+| 14 | Sanitization: SSN abstracted to `[SSN]` |
+| 15 | Sanitization: DoD ID abstracted to `[DOD_ID]` |
+| 16 | Sanitization strips all structural info → `classification_confidence: low` + user warning |
+| 17 | Duplicate detection: same fingerprint → skip or note-append confirmed by user |
+| 18 | Duplicate detection: rejected earlier → warn, allow override |
+| 19 | Record format: valid JSONL, one record per line |
+| 20 | Record contains all required fields |
+| 21 | `status` defaults to `pending` |
+| 22 | `review_metadata` is initially null |
+| 23 | Log file is gitignored (verify `.gitignore` contains `corrections/pending_corrections.jsonl`) |
+| 24 | No real command data in log (grep for patterns like `@mil`, `555-`, `Commanding Officer`) |
+| 25 | Atomic append: write does not corrupt existing lines |
+| 26 | Log read utility returns all pending candidates |
+| 27 | Log read utility filters by `correction_type` |
+| 28 | Log read utility filters by `status` |
+| 29 | Misclassified local preference → redirect to Phase C proposal works |
 
 ---
 
@@ -352,7 +364,7 @@ New runner: `tools/run_correction_pending_log_regression.py`
   - `_compute_fingerprint()`
   - `list_pending_candidates()`
   - `update_candidate_status()`
-- `tools/run_correction_pending_log_regression.py` — 25+ check runner
+- `tools/run_correction_pending_log_regression.py` — 29+ check runner
 - `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` — post-impl checkpoint
 
 ### Modified files
@@ -399,7 +411,7 @@ New runner: `tools/run_correction_pending_log_regression.py`
    - `update_candidate_status()` for lifecycle transitions
 4. Hook pending log proposal into `src/intake_orchestrator.py` after session pre-application, gated by classification.
 5. Add redirect logic: if user says a global candidate is actually local, route to `correction_promote.propose_promotion()`.
-6. Write regression runner (25+ checks) with temp-only fixtures.
+6. Write regression runner (29+ checks) with temp-only fixtures.
 7. Run full regression suite (all 19 existing + new runner).
 8. Commit: `CCI: Add pending global rule candidate logging (Phase D)`.
 9. Create checkpoint and update status docs.
@@ -408,13 +420,11 @@ New runner: `tools/run_correction_pending_log_regression.py`
 
 ## 18. Open Questions Needing Approval
 
-1. **Sanitization strictness** — Should the log store `[REDACTED_VALUE]` universally, or attempt structural abstraction (e.g., preserving punctuation patterns in `subj` while redacting command names)?
-2. **Fingerprint scope** — Should duplicate detection include `user_reason` text, or only `(field_path, sanitized_value, doc_type, component)`?
-3. **Log retention** — Should old `rejected` or `superseded` candidates be pruned after a period, or retained indefinitely for audit?
-4. **Review metadata reviewer identity** — Is `reviewed_by` a free-text name, a user ID, or an email? How is identity validated?
-5. **Cross-user sharing** — If multiple users on the same machine generate candidates, should they share the same `pending_corrections.jsonl`, or should candidates be namespaced by user?
-6. **Notification on duplicate** — When a duplicate is detected, should the system silently append a note, always ask the user, or offer a config toggle?
-7. **Misclassification UX** — Should the Phase D proposal offer a one-click "this is actually local" redirect, or require the user to cancel and re-run Phase C separately?
-8. **Log size limits** — Should there be a hard or soft cap on `pending_corrections.jsonl` size (e.g., warn at 1 MB)?
-9. **Integration with future Phase E** — Should Phase D define a candidate export format (e.g., JSON array) for Phase E review utilities, or should Phase E read the JSONL directly?
-10. **Command-specific vs structural** — For `body.*` corrections, is there ever a legitimate `possible_secnav_manual_rule` candidate (e.g., mandatory closing paragraph), or should `body.*` be excluded from Phase D eligibility entirely?
+1. **Fingerprint scope** — Should duplicate detection include `user_reason` text, or only `(field_path, sanitized_value, doc_type, component)`?
+2. **Log retention** — Should old `rejected` or `superseded` candidates be pruned after a period, or retained indefinitely for audit?
+3. **Review metadata reviewer identity** — Is `reviewed_by` a free-text name, a user ID, or an email? How is identity validated?
+4. **Cross-user sharing** — If multiple users on the same machine generate candidates, should they share the same `pending_corrections.jsonl`, or should candidates be namespaced by user?
+5. **Notification on duplicate** — When a duplicate is detected, should the system silently append a note, always ask the user, or offer a config toggle?
+6. **Misclassification UX** — Should the Phase D proposal offer a one-click "this is actually local" redirect, or require the user to cancel and re-run Phase C separately?
+7. **Log size limits** — Should there be a hard or soft cap on `pending_corrections.jsonl` size (e.g., warn at 1 MB)?
+8. **Integration with future Phase E** — Should Phase D define a candidate export format (e.g., JSON array) for Phase E review utilities, or should Phase E read the JSONL directly?
