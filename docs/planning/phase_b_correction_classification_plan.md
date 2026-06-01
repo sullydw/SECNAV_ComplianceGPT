@@ -3,6 +3,7 @@
 ## Status
 Planning only — not yet implemented.  
 Source baseline: `71ddf64` — CCI: Add session correction persistence (Phase A)  
+Current planning HEAD: `2e51471` — Docs: Add Phase B correction classification plan  
 Documentation checkpoint: `8c863ff` — Docs: Add Phase A session persistence checkpoint
 
 ## Scope
@@ -61,7 +62,7 @@ The classifier does NOT require AI or LLM inference. It uses regex, keyword matc
 A correction is classified as `one_time_wording` if ANY of the following match:
 
 **Field path triggers:**
-- `body[` — any indexed body paragraph. Body rewording is almost always one-time.
+- `body[n]` — any indexed body paragraph path (e.g., `body[2]`, `body[0].text`). Unindexed/general `body` paths do NOT trigger this type; see Section 4.5.
 - `ref[` — reference text edits that do not change citation order or structure.
 - `encl[` — enclosure text edits that do not change sequence or format.
 - `via[` — adding a specific Via addressee for a single letter (context-specific).
@@ -101,7 +102,7 @@ A correction is classified as `possible_secnav_manual_rule` if ANY of the follow
 **Field path triggers:**
 - `subj` — punctuation removal, all-caps enforcement, acronym handling.
 - `date` — date format corrections (`day Month year` vs civilian).
-- `body` — pluralization, capitalization, or formatting corrections that apply to all similar documents.
+- `body` — pluralization, capitalization, or formatting corrections that apply to all similar documents. This applies to unindexed/general `body` paths only; indexed `body[n]` paths are handled in Section 4.1.
 
 **Reason text triggers:**
 - Contains "SECNAV", "manual", "5216.5", "paragraph", "Figure", "regulation", "required by", "must be"
@@ -136,23 +137,31 @@ A correction is classified as `bug_validator_gap` if ANY of the following match:
 
 ---
 
+### 4.5 Conflict Resolution
+
+When field-path and reason-text signals conflict, apply the following priority order:
+
+1. **Explicit user-provided `correction_type` always wins.** If the caller passes a non-`unknown` `correction_type` to `capture_correction()`, the classifier is skipped entirely.
+2. If field-path and reason-text signals agree on a single type, classify with **high** confidence.
+3. If only one signal exists (either field path matches or reason text matches, but not both), classify with **medium** confidence.
+4. If field-path and reason-text signals conflict (e.g., indexed `body[n]` suggests `one_time_wording` but reason contains "local command"), classify as `unknown` **unless** the reason contains strong local-command indicators such as "our SOP", "local policy", "command preference", or "unit standard", in which case classify as `local_command_preference` with **medium** confidence.
+5. Any `low` confidence outcome must produce `unknown` unless explicitly overridden by the user.
+
+---
+
 ## 5. Classification Confidence
 
 Each classification receives a `confidence` score: `high`, `medium`, `low`.
 
-| Type | High confidence rule |
+| Confidence | Rule |
 |---|---|
-| `one_time_wording` | Field path starts with `body[` AND reason contains "one-time" or "this letter" |
-| `local_command_preference` | Field path is `from`, `originator_code`, `unit_identity` AND reason contains "our SOP" or "local" |
-| `possible_secnav_manual_rule` | Field path is `subj` or `date` AND validator error existed before correction AND correction resolves it |
-| `bug_validator_gap` | `validator_conflict` is True AND reason contains "validator" or "false positive" |
+| **High** | Field-path signal and reason-keyword signal agree on the same type. |
+| **Medium** | Only one signal exists (field path or reason keyword), OR a strong local-command reason overrides a conflicting body-field `one_time_wording` signal. |
+| **Low** | Ambiguous or conflicting indicators that cannot be resolved by the rules in Section 4.5. |
 
-Medium/low confidence triggers:
-- Only field path matches, reason is empty.
-- Only reason keyword matches, field is ambiguous.
-- Multiple type indicators conflict (e.g., body edit + "our SOP" reason).
+Low-confidence outcomes must default to `unknown` and emit a warning: "Could not confidently classify correction for {field_path}. Type remains 'unknown'. User may override."
 
-When confidence is `low`, the classifier defaults to `unknown` and emits a warning: "Could not confidently classify correction for {field_path}. Type remains 'unknown'. User may override."
+Explicit override sets confidence to `user_override`.
 
 ---
 
@@ -160,11 +169,12 @@ When confidence is `low`, the classifier defaults to `unknown` and emits a warni
 
 The classifier is advisory only.
 
-1. **Classification runs automatically at capture time** if no explicit `correction_type` is passed by the caller.
-2. **The user may override the classification** before persistence. This requires a UI affordance or an optional parameter on `capture_correction(..., correction_type="local_command_preference")`.
-3. **If the user overrides, the override wins** and confidence is recorded as `user_override`.
-4. **If correction remains `unknown`, session persistence is blocked** for safety. Only corrections with a non-unknown type may be persisted to `current_session`.
-5. **One-time wording always requires user confirmation** even when classified automatically.
+1. **Classification runs automatically at capture time** if no explicit `correction_type` is passed by the caller. If the caller passes a non-`unknown` type, that type is accepted unchanged and confidence is set to `user_override`.
+2. **The user may override the classification** before persistence via the optional `correction_type` parameter on `capture_correction(..., correction_type="local_command_preference")`.
+3. **Phase B supports parameter-only user override.** No UI implementation is included in Phase B.
+4. **If the user overrides, the override wins** and confidence is recorded as `user_override`.
+5. **If correction remains `unknown`, session persistence is blocked** for safety. Only corrections with a non-unknown type may be persisted to `current_session`.
+6. **One-time wording always requires user confirmation** even when classified automatically.
 
 ---
 
@@ -180,7 +190,7 @@ Today `correction_capture.py` and `correction_store.py` already support session 
 | `bug_validator_gap` | Yes | User explicitly scoped to `current_session` |
 | `unknown` | No | Classification required before persistence |
 
-The `IntakeOrchestrator.persist_correction()` method already checks type before writing to disk. Phase B adds a `classify_correction()` helper that runs inside `capture_correction()` or as a pre-persist step.
+The `IntakeOrchestrator.persist_correction()` method already checks type before writing to disk. Phase B adds a `classify_correction()` helper that runs **inside `capture_correction()`**. The correction record must contain `correction_type` and confidence before `persist_correction()` evaluates persistence gates.
 
 ---
 
@@ -199,25 +209,32 @@ If a correction is classified as `possible_secnav_manual_rule` and the validator
 
 Phase B requires a new regression runner: `tools/run_correction_classify_regression.py`
 
-Minimum test matrix:
+### Regression fixture isolation
+- The runner must use synthetic / temporary fixtures only.
+- It must not read from or write to the real `corrections/session/` directory.
+- All test session files must be created in a temporary directory and cleaned up after the run.
 
-1. Body paragraph edit without reason -> `one_time_wording` (high)
-2. Body paragraph edit with "one-time" reason -> `one_time_wording` (high)
-3. Body paragraph edit with "our SOP" reason -> `local_command_preference` (medium/high)
+### Regression output format
+- Use strict labeled output matching existing runner style (e.g., `intake_regression`, `correction_regression`, `session_correction_regression`, `classify_regression`).
+- Exit 0 if all checks pass. Exit 1 on any failure.
+
+### Minimum test matrix
+
+1. Body paragraph edit (indexed `body[2]`) without reason -> `one_time_wording` (medium)
+2. Body paragraph edit (indexed `body[2]`) with "one-time" reason -> `one_time_wording` (high)
+3. Body paragraph edit (indexed `body[2]`) with "our SOP" reason -> `local_command_preference` (medium; conflict resolution applies)
 4. `from` field edit with "local command" reason -> `local_command_preference` (high)
 5. `originator_code` edit -> `local_command_preference` (high)
 6. `subj` period removal with empty reason -> `possible_secnav_manual_rule` (medium)
 7. `subj` edit with "SECNAV requires" reason -> `possible_secnav_manual_rule` (high)
 8. Validator conflict + "false positive" reason -> `bug_validator_gap` (high)
 9. Ambiguous field + ambiguous reason -> `unknown` (low)
-10. User override beats heuristic -> type is `user_override`
+10. User override beats heuristic -> type is override value, confidence is `user_override`
 11. `unknown` classification blocks session persistence
 12. `one_time_wording` blocks session persistence unless user overrides
 13. Existing correction regressions still pass after classification module added
 14. Existing intake regressions still pass after classification module added
 15. Existing session correction regressions still pass after classification module added
-
-Exit 0 if all checks pass. Exit 1 on any failure.
 
 ---
 
@@ -230,7 +247,8 @@ Step 1 — Add `classify_correction()` to `src/correction_classify.py`
 - Returns `(type, confidence, reasons)`.
 
 Step 2 — Integrate classification into `src/correction_capture.py`
-- If `correction_type` is "unknown" at call time, run classifier before recording.
+- `classify_correction()` runs inside `capture_correction()` when `correction_type` is "unknown" at call time.
+- The correction record must contain `correction_type` and `classification_confidence` before returning to the caller.
 - Add `classification_confidence` field to correction record.
 
 Step 3 — Add type gate to `src/intake_orchestrator.py` `persist_correction()`
@@ -239,6 +257,9 @@ Step 3 — Add type gate to `src/intake_orchestrator.py` `persist_correction()`
 
 Step 4 — Add `tools/run_correction_classify_regression.py`
 - Exercise all 15 checks above.
+- Use only synthetic/temporary fixtures; never touch the real `corrections/session/` directory.
+- Emit strict labeled output matching existing runner contracts.
+- Exit 0 on all pass. Exit 1 on any failure.
 
 Step 5 — Run full regression suite (18 runners)
 - Verify no existing behavior breaks.
@@ -255,8 +276,8 @@ What Phase B will do:
 - Add deterministic classification logic.
 - Update capture records with classification + confidence.
 - Gate session persistence by classification.
-- Provide user override paths.
-- Add regression runner.
+- Provide parameter-only user override paths.
+- Add regression runner with synthetic fixtures.
 
 What Phase B will NOT do:
 - Modify renderer or layout behavior.
@@ -265,21 +286,24 @@ What Phase B will NOT do:
 - Change correction scope definitions.
 - Add automatic cleanup or session management.
 - Require AI/LLM inference.
+- Implement UI for user override.
 
 ---
 
 ## 12. Safety Summary
 
 - Classification is advisory, not mandatory.
-- User may always override the classifier.
+- User may always override the classifier via parameter.
 - `unknown` corrections cannot persist to session JSONL.
 - `one_time_wording` corrections cannot persist without explicit user confirmation.
 - All classification decisions are auditable (reasons recorded in correction record).
 - Existing scopes (`active_draft`, `current_session`) remain unchanged.
 - Unreviewed corrections never become global SECNAV rules.
+- Regression runner never touches real session data.
 
 ---
 
 **Plan created:** 2026-06-01  
-**Planning baseline:** `89f7016` — Docs: Update correction memory plan after Phase A  
+**Source functional baseline:** `71ddf64` — CCI: Add session correction persistence (Phase A)  
+**Planning HEAD:** `2e51471` — Docs: Add Phase B correction classification plan  
 **Next step:** Await review and approval before implementing Phase B.
