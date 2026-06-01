@@ -4,166 +4,201 @@
 
 ---
 
-## Quick Start
+## Start Here
 
-**Project:** SECNAV M-5216.5 compliant letter generator (v6 PDF renderer)
+This is the first file a new OpenAI chat, coding agent, or developer should read before continuing work on this repository.
 
-**GitHub:** https://github.com/sullydw/SECNAV_ComplianceGPT
+**Project:** SECNAV_ComplianceGPT  
+**Purpose:** Rule-driven SECNAV M-5216.5 correspondence generation and compliance checking.  
+**GitHub:** https://github.com/sullydw/SECNAV_ComplianceGPT  
+**Local path used in recent work:** `C:\Users\drryl\Projects\SECNAV_ComplianceGPT`  
+**Branch:** `main`
 
-**Local Path:** `C:\Projects\SECNAV_ComplianceGPT`
+Read these files in this order:
+
+1. `docs/BOOTSTRAP.md` — this quick session-start guide.
+2. `docs/PROJECT_STATUS.md` — current handoff/status tracker and next planned work.
+3. `docs/checkpoints/cci_content_compliance_checkpoint.md` — detailed CCI/intake/correction checkpoint.
 
 ---
 
-## Source of Current Behavior
+## Current Verified Baseline
 
-For all current rendering behavior and confirmed compliance decisions, see:
-docs/PROJECT_STATUS.md
+**Latest documentation checkpoint commit:** `8efdff6`  
+**Current verified functional baseline:** `2e643db` — `CCI: Integrate correction memory with intake`  
+**GitHub Actions:** manually verified PASS by user for commit `2e643db`  
+**Expected repo state:** clean and up to date with `origin/main`
 
-This file (BOOTSTRAP.md) provides architecture and setup only.
+The current system supports:
+
+- C7-C10 layout/render regression baseline.
+- Seven Correspondence Content Intelligence (CCI) validators.
+- Context resolver.
+- Consolidated CCI audit runner.
+- Intake orchestrator.
+- Local command profile defaults.
+- Active-draft correction memory.
+- Correction memory integrated into intake.
+
+The next planned phase is **persistent correction/session storage planning**. Do not implement persistence until the design is explicitly planned and approved.
+
+---
+
+## Core Rule For Future Work
+
+New work should be additive whenever possible.
+
+Do not modify renderer/layout behavior unless explicitly requested.
+Do not skip regressions before committing.
+Do not commit real command/user profile data to the public repository.
+Do not promote user corrections to profiles or global SECNAV rules without a manual review/promotion design.
 
 ---
 
 ## Current Architecture
 
-### Core Components
+### Renderer / Layout Baseline
 
-1. **PDF Renderer:** `src/pdf_v6_render.py`
-   - ReportLab canvas-based PDF generation
-   - Centralized `BOUNDARY_SPACINGS` dict for layout control
-   - H-series letterhead, body paragraphs, signature block, pagination
+- `src/pdf_v6_render.py` — ReportLab-based PDF renderer.
+- `src/c7_validate.py` — Chapter 7 validation support.
+- `src/c8_validate.py` — Chapter 8 multiple-address validation support.
+- `src/c9_validate.py` — Chapter 9 endorsement validation support.
+- `src/c10_validate.py` — Chapter 10 memorandum validation support.
+- `tools/audit_pdf_layout.py` — coordinate/layout audit tool.
+- `docs/layout_profiles/` — layout audit profiles.
 
-2. **Rule System:** `rules_v6/`
-   - H-series: Letterhead rules
-   - F-series: Font rules
-   - P-series: Page number rules
-   - S-series: Signature block rules
-   - V-series: Validation rules
-   - Runtime: Compiled JSONL for production
+### CCI Content-Compliance Layer
 
-3. **Supporting Modules:** `src/`
-   - `letter_model_v6.py` - ILM normalization
-   - `body_v6_parse.py` - Marker detection
-   - `body_v6_validate.py` - Body validation
-   - `letterhead_v6_resolve.py` - Letterhead resolution
-   - `layout_v6_resolve.py` - Layout calculations
+Seven CCI validators are currently implemented:
 
-### Typography System
+1. Subject-line validator.
+2. Reference/enclosure validator.
+3. Acronym first-use validator.
+4. Date and military-time validator.
+5. Personnel identification validator.
+6. Point-of-contact expectation validator.
+7. Routing / Via / Copy-to intelligence validator.
 
-**Leading formula:**
-```python
-font_size = 12  # body font size
-leading = font_size * 1.2  # line spacing with 20% extra
-```
+Key files:
 
-**Boundary spacings (in leading units):**
-```python
-BOUNDARY_SPACINGS = {
-    ("LETTERHEAD", "SSIC_DATE"): 1,
-    ("SSIC_DATE", "HEADER"): 2,
-    ("HEADER", "BODY"): 0,
-    ("BODY", "SIGNATURE"): 4,
-    ("SIGNATURE", "COPY_TO"): 2,
-    ("COPY_TO", "PAGE_END"): 0,
-    ("CONTINUATION_HEADER", "BODY"): 1,
-}
-```
-
-**Paragraph spacing:**
-- Controlled by renderer logic
-- Refer to docs/PROJECT_STATUS.md for current behavior
+- `src/validator_runner.py` — consolidated CCI audit entry point.
+- `src/context_resolver.py` — canonical context resolver.
+- `src/intake_orchestrator.py` — intake, profile, audit, and active-draft correction orchestration.
+- `src/local_profile.py` — local command profile loading and default merge support.
+- `src/correction_apply.py` — active-draft correction application/undo primitives.
+- `src/correction_capture.py` — active-draft correction record capture.
+- `docs/checkpoints/cci_content_compliance_checkpoint.md` — detailed CCI checkpoint.
 
 ---
 
-## Build & Test
+## Current Intake Capabilities
+
+The intake layer can currently:
+
+- Identify required/recommended/optional missing fields.
+- Ask only for missing information.
+- Use active local profile defaults.
+- Suppress questions for fields filled by profile defaults.
+- Run the consolidated CCI audit.
+- Capture active-draft corrections.
+- Apply active-draft corrections.
+- Undo corrections.
+- Rerun audit after correction.
+- Track audit conflicts as advisory only.
+
+### Current Correction Memory Limits
+
+Correction memory is deliberately limited in the current baseline:
+
+- Active-draft/in-memory only.
+- No disk persistence.
+- No local profile promotion.
+- No global SECNAV rule promotion.
+- No automatic correction classification.
+- No renderer changes.
+- Conflicts are advisory only.
+
+---
+
+## Local Profile Safety
+
+`profiles/example_local_profile.json` contains fake/example data only.
+
+Real user or command profiles may contain contact information or local command data. Real profiles should **not** be committed to this public repository. Future real profiles should live outside the repo or be gitignored.
+
+---
+
+## Build & Regression Commands
+
+Run the full current regression set before committing changes:
 
 ```bash
-# Run PDF generator
-cd C:\Projects\SECNAV_ComplianceGPT
-python src/pdf_v6_render.py
-
-# Output: output\v6_test_letter.pdf
+python tools/run_intake_regression.py
+python tools/run_correction_regression.py
+python tools/run_profile_regression.py
+python tools/run_cci_audit_regression.py
+python tools/run_context_schema_regression.py
+python tools/run_cci_subject_regression.py
+python tools/run_cci_ref_encl_regression.py
+python tools/run_cci_acronym_regression.py
+python tools/run_cci_date_time_regression.py
+python tools/run_cci_personnel_regression.py
+python tools/run_cci_poc_regression.py
+python tools/run_cci_routing_regression.py
+python tools/run_c7_phase1_regression.py
+python tools/run_c8_regression.py
+python tools/run_c9_regression.py
+python tools/run_c10_regression.py
 ```
 
-**Expected output:**
-```
-=== PDF BUILD ===
-PASS
-output\v6_test_letter.pdf
-```
+GitHub Actions workflow:
 
----
-
-## Git Workflow
-
-```bash
-# Pull latest
-git pull origin main
-
-# Make changes, then:
-git add -A
-git commit -m "descriptive message"
-git push origin main
-```
-
-**Current branch:** `main`
-
-**GitHub:** https://github.com/sullydw/SECNAV_ComplianceGPT
-
----
-
-## Key Design Decisions
-
-1. **Font-size-aware spacing:** All spacing uses `leading = font_size * 1.2` for scalability
-
-2. **Centralized boundary system:** `BOUNDARY_SPACINGS` dict controls all major layout transitions
-
-3. **No hardcoded points:** Spacing calculated from font size, not magic numbers
-
-4. **Signature placement:** 4 lines below final body text per SECNAV M-5216.5 Ch 7
-
-5. **Continuation pages:** Repeat subject line, omit letterhead/SSIC/header blocks
-
----
-
-## Known Issues / Open Questions
-
-1. **Rule validation:** Some rules provisional pending SECNAV M-5216.5 verification
-
----
-
-## Compliance Reference
-
-**Primary Source:** SECNAV M-5216.5 (April 2023)
-
-**Key Chapters:**
-- Chapter 2: Format and Preparation
-- Chapter 7: Signature Blocks
-
-**Rule Provenance:** All rules in `rules_v6/` include `source` and `confidence` fields
+- Workflow: `Regression`
+- Job: `compliance-regression`
+- The workflow runs the CCI, context, audit, intake, profile, correction, and C7-C10 regression suite.
 
 ---
 
 ## Session Startup Checklist
 
-For new chat sessions:
+For a new chat/session:
 
-1. ✅ Read `docs/PROJECT_STATUS.md` for current state
-2. ✅ Read `docs/BOOTSTRAP.md` (this file) for architecture overview
-3. ✅ Pull latest from GitHub: `git pull origin main`
-4. ✅ Verify build: `python src/pdf_v6_render.py`
-5. ✅ Check `git status` for clean working tree
+1. Read `docs/BOOTSTRAP.md`.
+2. Read `docs/PROJECT_STATUS.md`.
+3. Read `docs/checkpoints/cci_content_compliance_checkpoint.md`.
+4. Pull latest from GitHub: `git pull origin main`.
+5. Check clean working tree: `git status`.
+6. Verify current HEAD against `docs/PROJECT_STATUS.md`.
+7. Continue from the **Recommended Next Work** section in `docs/PROJECT_STATUS.md`.
+
+Suggested prompt for a new OpenAI chat:
+
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/cci_content_compliance_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Run all regressions before committing.
 
 ---
 
 ## DO NOT
 
-- ❌ Redesign the architecture without explicit direction
-- ❌ Create parallel renderers
-- ❌ Hardcode spacing values (use font-size-aware math)
-- ❌ Work outside `C:\Projects\SECNAV_ComplianceGPT`
-- ❌ Modify rules without updating provenance
+- Do not redesign the architecture without explicit direction.
+- Do not create parallel renderers.
+- Do not edit renderer/layout casually.
+- Do not hardcode spacing values; preserve font-size-aware layout behavior.
+- Do not modify rules without updating provenance.
+- Do not persist corrections yet.
+- Do not promote corrections to local profiles or global SECNAV rules yet.
+- Do not commit real command profiles or contact data publicly.
+- Do not skip regressions.
+- Do not assume Navy and Marine Corps conventions are identical.
+- Do not ignore rules hidden inside manual figures, captions, or example text.
 
 ---
 
-**Last Updated:** 2026-05-04  
-**Commit:** See `git log` for latest
+## Compliance Reference
+
+**Primary Source:** SECNAV M-5216.5.  
+Always verify generated correspondence against the current manual and the user's local command administrative procedures.
+
+---
+
+**Last Updated:** 2026-05-31  
+**Current handoff baseline:** `8efdff6` documentation checkpoint / `2e643db` verified functional baseline
