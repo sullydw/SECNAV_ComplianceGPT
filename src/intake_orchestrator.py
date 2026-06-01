@@ -53,6 +53,10 @@ from correction_store import (
     load_session_corrections,
     set_session_correction_rejected,
 )
+from correction_pending_log import (
+    is_eligible_for_pending_log,
+    propose_pending_log,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -402,6 +406,30 @@ class IntakeOrchestrator:
         correction.setdefault("promotion_status", "none")
         save_session_correction(self._session_id, correction)
         return True
+
+    def propose_pending_log(self, correction: dict[str, Any]) -> dict[str, Any]:
+        """
+        Step 1 for Phase D pending global rule candidate logging.
+        Returns a proposal dict with `eligible` flag.
+
+        Does NOT write to disk. The caller must explicitly confirm before
+        calling any write operation.
+
+        Phase D gates:
+          - Only possible_secnav_manual_rule or bug_validator_gap are eligible.
+          - Requires current_session scope.
+          - Requires non-rejected, non-conflicted, non-placeholder value.
+          - body.* paths are excluded.
+        """
+        if not correction:
+            return {"eligible": False, "reasons": ["No correction provided"]}
+
+        eligible, reasons = is_eligible_for_pending_log(correction)
+        if not eligible:
+            return {"eligible": False, "reasons": reasons}
+
+        proposal = propose_pending_log(correction)
+        return proposal
 
     def reject_session_correction(self, correction: dict[str, Any]) -> dict[str, Any]:
         """Undo a session correction and mark it rejected.
