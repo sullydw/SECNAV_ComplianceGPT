@@ -84,6 +84,8 @@ Real user and command profiles **must not** be stored inside the repository.
 - `src/local_profile.py` `load_profile()` already accepts direct file paths, so external resolution is compatible with existing APIs.
 - If the user attempts promotion but no real profile exists, abort with: "Create a real profile first. See profiles/README.md."
 
+**Defense in depth:** Even though real profiles are intended to live externally, Phase C implementation should still consider adding `profiles/user/` to `.gitignore` to prevent accidental commits if a user ever places a real profile inside the repository.
+
 ---
 
 ## 5. Profile Write and Backup Behavior (Approved Decision)
@@ -140,6 +142,15 @@ Rules:
 
 Phase C must not change the existing merge priority in `apply_profile_defaults()`. Promoted corrections fold into the profile schema so existing logic handles them naturally.
 
+**Critical implementation note:** `src/local_profile.py` `apply_profile_defaults()` currently does **not** consume `override_rules`. Phase C implementation must extend `apply_profile_defaults()` to:
+
+- Scan `override_rules` entries.
+- Skip entries where `disabled: true`.
+- Respect `doc_type_filter` and `component_filter` (apply only when filters match the current draft context).
+- Apply promoted corrections at **Priority 3** in the merge stack.
+- Keep explicit payload values and `user_answers` higher priority than promoted profile corrections.
+- Keep promoted profile corrections higher priority than original profile `defaults`.
+
 ---
 
 ## 8. Disable, Edit, or Remove Promoted Corrections
@@ -150,7 +161,7 @@ Phase C must not change the existing merge priority in `apply_profile_defaults()
 | Edit | Re-promote a new correction for the same field; approval workflow shows diff and asks to replace |
 | Remove | `remove_profile_correction(profile_id, field_path)` deletes the matching `override_rules` entry with confirmation |
 
- Minimum API surface for future implementation:
+Minimum API surface for future implementation:
 - `list_promoted_corrections(profile_id)` — show all promoted entries
 - `remove_promoted_correction(profile_id, field_path)` — delete with confirmation
 - `disable_promoted_correction(profile_id, field_path)` — soft-disable
@@ -242,7 +253,7 @@ New runner: `tools/run_correction_profile_promotion_regression.py`
 - `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` — post-impl checkpoint
 
 ### Modified files
-- `src/local_profile.py` — validate new schema fields, handle `disabled` in rules
+- `src/local_profile.py` — validate new schema fields, handle `disabled` in rules, extend `apply_profile_defaults()` to consume `override_rules`
 - `src/intake_orchestrator.py` — hook promotion proposal after session pre-application
 - `profiles/README.md` — document external profile path and safety rules
 
@@ -271,12 +282,13 @@ New runner: `tools/run_correction_profile_promotion_regression.py`
 1. Create `profiles/README.md` with external profile path instructions.
 2. Add schema additions to `LOCAL_PROFILE_V1` (backward compatible).
 3. Update `validate_profile()` in `src/local_profile.py`.
-4. Create `src/correction_promote.py`.
-5. Hook promotion proposal into `src/intake_orchestrator.py`.
-6. Write regression runner (23+ checks).
-7. Run full regression suite (all 18 existing + new runner).
-8. Commit: `CCI: Add local command profile promotion (Phase C)`.
-9. Create checkpoint and update status docs.
+4. Extend `apply_profile_defaults()` in `src/local_profile.py` to consume `override_rules`.
+5. Create `src/correction_promote.py`.
+6. Hook promotion proposal into `src/intake_orchestrator.py`.
+7. Write regression runner (23+ checks).
+8. Run full regression suite (all 18 existing + new runner).
+9. Commit: `CCI: Add local command profile promotion (Phase C)`.
+10. Create checkpoint and update status docs.
 
 ---
 
