@@ -46,6 +46,8 @@ from local_profile import (
     load_profile,
     validate_profile,
 )
+from correction_apply import get_path_value, apply_correction as apply_correction_record, undo_correction as undo_correction_record
+from correction_capture import capture_correction as capture_correction_record
 
 
 # ---------------------------------------------------------------------------
@@ -185,6 +187,11 @@ class IntakeOrchestrator:
         self._profile_warnings: list[str] = []
         self._merge_report: dict[str, Any] | None = None
 
+        # Correction memory (active-draft only, in-memory)
+        self._corrections_applied: list[dict] = []
+        self._correction_conflicts: list[dict] = []
+        self._last_audit_result: dict | None = None
+
         if active_profile is not None:
             self.set_active_profile(active_profile)
 
@@ -207,6 +214,96 @@ class IntakeOrchestrator:
         self._active_profile = profile
         self._profile_warnings = warnings
         self._merge_report = None
+
+    # -- correction memory ----------------------------------------------------
+
+    def capture_correction(
+        self,
+        field_path: str,
+        corrected_value,
+        reason: str = "",
+        correction_type: str = "unknown",
+        source: str = "user",
+    ) -> dict[str, Any]:
+        """Capture a correction record for the current draft payload.  Does not apply it."""
+        payload = self.build_payload()
+        context, _ = resolve_context(payload, self._user_answers)
+        doc_type = (context.get("document") or {}).get("doc_type")
+        component = (context.get("component") or {}).get("service")
+        record, warnings = capture_correction_record(
+            payload,
+            field_path,
+            corrected_value,
+            reason=reason,
+            doc_type=doc_type,
+            component=component,
+            correction_type=correction_type,
+            scope="active_draft",
+            source=source,
+        )
+        if warnings:
+            record["capture_warnings"] = warnings
+        return record
+
+    def apply_correction(self, correction: dict[str, Any]) -> dict[str, Any]:
+        """Apply a correction to the current draft payload and update internal state."""
+        payload = self.build_payload()
+        new_payload, apply_warnings = apply_correction_record(payload, correction)
+        self._payload = new_payload
+        if apply_warnings:
+            correction["apply_warnings"] = apply_warnings
+        self._corrections_applied.append(correction)
+        # Remove any active conflict that matches this correction
+        cid = correction.get("correction_id")
+        self._correction_conflicts = [
+            c for c in self._correction_conflicts if c.get("correction_id") != cid
+        ]
+        return self.get_status()
+
+    def apply_user_correction(
+        self,
+        field_path: str,
+        corrected_value,
+        reason: str = "",
+        correction_type: str = "unknown",
+        source: str = "user",
+    ) -> dict[str, Any]:
+        """Convenience: capture then apply a correction in one call."""
+        correction = self.capture_correction(
+            field_path, corrected_value, reason=reason, correction_type=correction_type, source=source
+        )
+        return self.apply_correction(correction)
+
+    def undo_correction(self, correction: dict[str, Any]) -> dict[str, Any]:
+        """Undo a previously-applied correction and restore the original value."""
+        payload = self.build_payload()
+        new_payload, undo_warnings = undo_correction_record(payload, correction)
+        self._payload = new_payload
+        if undo_warnings:
+            correction["undo_warnings"] = undo_warnings
+        cid = correction.get("correction_id")
+        self._corrections_applied = [
+            c for c in self._corrections_applied if c.get("correction_id") != cid
+        ]
+        return self.get_status()
+
+    def rerun_audit_after_correction(self, previous_audit: dict | None = None) -> dict[str, Any]:
+        """Re-run the CCI audit after corrections and compare error counts."""
+        previous = previous_audit or self._last_audit_result or {}
+        audit = self.run_audit()
+        self._last_audit_result = audit
+        prev_errors = previous.get("summary", {}).get("total_errors", 0) if isinstance(previous, dict) else 0
+        new_errors = audit.get("summary", {}).get("total_errors", 0)
+        if new_errors > prev_errors:
+            self._correction_conflicts.append(
+                {
+                    "message": "Correction increased validator error count.",
+                    "before_errors": prev_errors,
+                    "after_errors": new_errors,
+                    "correction_count": len(self._corrections_applied),
+                }
+            )
+        return audit
 
     # -- public methods -------------------------------------------------------
 
@@ -276,6 +373,10 @@ class IntakeOrchestrator:
             "prefilled_from_profile": prefilled_from_profile,
             "profile_warnings": profile_warnings,
             "missing_after_profile": missing_after_profile,
+            # Correction memory additions
+            "corrections_applied": list(self._corrections_applied),
+            "correction_conflicts": list(self._correction_conflicts),
+            "correction_count": len(self._corrections_applied),
         }
 
     def next_questions(self, limit: int | None = None) -> list[dict[str, Any]]:
@@ -369,7 +470,9 @@ class IntakeOrchestrator:
 
     def run_audit(self) -> dict[str, Any]:
         """Run the consolidated CCI audit against the built payload."""
-        return run_cci_audit(self.build_payload(), self._user_answers)
+        result = run_cci_audit(self.build_payload(), self._user_answers)
+        self._last_audit_result = result
+        return result
 
     # -- internal --------------------------------------------------------------
 

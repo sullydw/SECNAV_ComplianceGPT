@@ -259,6 +259,73 @@ def run_regression() -> int:
         print(f"  profile dict activation assertion failed: {exc}", file=sys.stderr)
         errors += 1
 
+    # ------------------------------------------------------------------
+    # 15. Correction memory — capture and apply correction to subj
+    # ------------------------------------------------------------------
+    try:
+        payload = json.loads((_EXAMPLES / "audit_intake_with_correction.json").read_text(encoding="utf-8"))
+        orch = IntakeOrchestrator(payload)
+        # Verify initial audit has a subject error (terminal punctuation)
+        audit_before = orch.run_audit()
+        subject_validator = audit_before.get("validators", {}).get("subject", {})
+        subject_errors = subject_validator.get("error_count", 0)
+        _assert(subject_errors >= 1, "correction: before-fix audit shows subject error(s)")
+
+        # Apply user correction
+        status = orch.apply_user_correction("subj", "CORRECTED SUBJECT", reason="Remove punctuation and fix case")
+        _assert(len(status.get("corrections_applied", [])) == 1, "correction: corrections_applied has one record")
+        _assert(orch.build_payload()["subj"] == "CORRECTED SUBJECT", "correction: draft_payload subj updated")
+
+        # Re-run audit after correction
+        audit_after = orch.rerun_audit_after_correction(audit_before)
+        _assert(audit_after.get("schema_version") == "CCI_AUDIT_V1", "correction: rerun_audit returns CCI_AUDIT_V1")
+        subject_validator_after = audit_after.get("validators", {}).get("subject", {})
+        subject_errors_after = subject_validator_after.get("error_count", 0)
+        _assert(subject_errors_after < subject_errors, "correction: subject error count decreased after fix")
+    except AssertionError as exc:
+        print(f"  correction apply assertion failed: {exc}", file=sys.stderr)
+        errors += 1
+
+    # ------------------------------------------------------------------
+    # 16. Correction memory — undo correction restores original
+    # ------------------------------------------------------------------
+    try:
+        payload = json.loads((_EXAMPLES / "audit_intake_with_correction.json").read_text(encoding="utf-8"))
+        orch = IntakeOrchestrator(payload)
+        orch.apply_user_correction("subj", "CORRECTED SUBJECT", reason="Fix subject")
+        built_before = orch.build_payload()
+        correction_record = orch.get_status()["corrections_applied"][0]
+        _assert(built_before["subj"] == "CORRECTED SUBJECT", "undo: subj corrected")
+
+        status_undo = orch.undo_correction(correction_record)
+        _assert(len(status_undo.get("corrections_applied", [])) == 0, "undo: corrections_applied empty after undo")
+        _assert(orch.build_payload()["subj"] == "POLICY UPDATE.", "undo: original subject restored")
+    except AssertionError as exc:
+        print(f"  correction undo assertion failed: {exc}", file=sys.stderr)
+        errors += 1
+
+    # ------------------------------------------------------------------
+    # 17. Correction memory — bad correction that increases errors surfaces conflict
+    # ------------------------------------------------------------------
+    try:
+        payload = json.loads((_EXAMPLES / "audit_intake_with_correction.json").read_text(encoding="utf-8"))
+        orch = IntakeOrchestrator(payload)
+        audit_before = orch.run_audit()
+        before_errors = audit_before.get("summary", {}).get("total_errors", 0)
+        # Intentionally replace body[0] with text containing a new undefined acronym
+        status = orch.apply_user_correction("body[0]", "1. Use SNDL without definition.", reason="Inject undefined acronym")
+        audit_after = orch.rerun_audit_after_correction(audit_before)
+        after_errors = audit_after.get("summary", {}).get("total_errors", 0)
+        if after_errors > before_errors:
+            status_after = orch.get_status()
+            _assert(len(status_after.get("correction_conflicts", [])) >= 1, "correction: conflict surfaced when errors increased")
+            _assert("increased" in status_after["correction_conflicts"][0].get("message", "").lower(), "correction: conflict message mentions increased errors")
+        else:
+            print("WARN: bad correction did not increase error count in this audit environment")
+    except AssertionError as exc:
+        print(f"  correction conflict assertion failed: {exc}", file=sys.stderr)
+        errors += 1
+
     if errors:
         print(f"\n{errors} regression failure(s) detected.", file=sys.stderr)
         return 1

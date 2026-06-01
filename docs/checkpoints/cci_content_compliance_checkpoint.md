@@ -2,13 +2,13 @@
 
 ## Baseline Commit
 
-- **Commit hash:** `64dc2d5888538b8c992c42e1121ffabc7e55ef77`
+- **Commit hash:** `ea46715011f8f1cee510f5960bb3cf92d045478c`
 - **Tag:** none at HEAD
 - **Date:** 2026-05-31
 - **Branch:** `main`
 - **Status:** clean, up to date with `origin/main`
-- **Previous baseline:** `1ccf26b43399b2cfad89284418b2500f14dff2fb` (profile/intake integration verified)
-- **Stable baseline before correction memory intake integration:** `64dc2d5`
+- **Previous baseline:** `ea46715011f8f1cee510f5960bb3cf92d045478c` (correction memory CI baseline verified)
+- **Stable baseline before correction memory intake integration:** `ea46715`
 
 ## GitHub Actions Verification
 
@@ -21,15 +21,13 @@
   - context schema regression
   - consolidated CCI audit regression
   - intake regression
+  - **local command profile regression**
   - **active-draft correction memory regression**
   - C7 Phase 1 regression
   - C8 regression
   - C9 regression
   - C10 regression
-- **Profile-enabled intake orchestrator:** now GitHub Actions verified
-- **Profile regression runner:** `tools/run_profile_regression.py`
-- **Intake regression runner (now with profile integration):** `tools/run_intake_regression.py`
-- **Stable baseline before correction memory implementation:** `1ccf26b`
+- **Correction memory intake integration:** in progress after `ea46715`
 - **Note:** Real user/command profiles should not be committed to public repositories. Only the example template (`profiles/example_local_profile.json`) is committed.
 
 ## Purpose of the CCI Layer
