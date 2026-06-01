@@ -1,5 +1,12 @@
 # Correction Memory and Rule Promotion Layer Plan
 
+**Last Updated:** 2026-05-31
+**Current Verified Baseline:** `2e643db` — CCI: Integrate correction memory with intake
+**Docs Checkpoint:** `8efdff6` — Docs: Record correction intake integration baseline
+**GitHub Actions:** manually verified PASS by user for commit `2e643db`
+
+---
+
 ## 1. Purpose
 
 The system must allow a user to correct an error in the active draft, apply that correction immediately, rerun validators, regenerate output, and store the correction for scoped reuse.
@@ -7,6 +14,32 @@ The system must allow a user to correct an error in the active draft, apply that
 When a user identifies a problem in a generated draft (e.g., wrong wording in the subject line, incorrect From line title, missing Via addressee, improper personnel identification format), they should be able to specify the correction once, see it applied immediately, and have the system remember that correction so that future drafts in similar contexts do not repeat the same mistake — provided it is safe to do so.
 
 The Correction Memory and Rule Promotion Layer is not a replacement for deterministic SECNAV validators. It is a user-driven feedback loop that sits alongside the CCI layer, with strict guardrails preventing unreviewed local preferences from becoming global compliance rules.
+
+---
+
+## 1a. What Is Already Implemented (Baseline `2e643db`)
+
+The following items are complete and regression-protected as of the current verified baseline:
+
+- **Active-draft correction apply:** `src/correction_apply.py` — apply a single correction to a payload JSON object given a field path and corrected value; supports undo.
+- **Active-draft correction capture:** `src/correction_capture.py` — capture correction metadata from user input and build a structured correction record.
+- **Intake orchestrator integration:** `src/intake_orchestrator.py` — captures corrections via `capture_correction()`, applies them via `apply_correction()`, supports undo via `undo_correction()`, reruns audit via `rerun_audit_after_correction()`.
+- **Conflict detection:** If a correction increases the audit error count, the system surfaces a `correction_conflict` advisory without blocking the draft.
+- **In-memory tracking:** `corrections_applied` and `correction_conflicts` are tracked inside `IntakeOrchestrator` and exposed through `get_status()`.
+- **Regression coverage:**
+  - `tools/run_correction_regression.py` — tests capture, apply, undo, conflict detection.
+  - `tools/run_intake_regression.py` — tests before/after audit with correction, undo restoration, and conflict surfacing.
+
+### Current Limits (by design)
+
+- Corrections are **active-draft / in-memory only**.
+- No disk persistence across sessions.
+- No automatic classification into one of the four correction types.
+- No local command profile promotion.
+- No global SECNAV rule promotion.
+- No `src/correction_reuse.py` module (session reuse is currently handled inside `IntakeOrchestrator`).
+
+These limits are intentional in the current baseline and are planned for future phases (see Section 10).
 
 ---
 
@@ -102,22 +135,27 @@ When a user issues a correction command or selects a correction in a future UI:
 
 ---
 
-## 7. Suggested Future Files
+## 7. Files Status
 
-### Implementation modules
-- `src/correction_apply.py` — apply a single correction to a payload JSON object given a field path and corrected value.
+### Implemented modules (baseline `2e643db`)
+- `src/correction_apply.py` — apply a single correction to a payload JSON object given a field path and corrected value; supports undo via `undo_correction()`.
 - `src/correction_capture.py` — capture correction metadata from user input and build a structured correction record.
+- `src/intake_orchestrator.py` — orchestrates correction capture, apply, undo, and audit rerun within the intake lifecycle.
+
+### Future modules (require approval before implementation)
 - `src/correction_classify.py` — classify a correction into one of the four types using heuristics and optional AI assistance.
 - `src/correction_reuse.py` — query stored corrections by context and pre-apply matching ones to a new draft payload.
 
-### Storage files
+### Storage files (require approval before implementation)
 - `corrections/pending_corrections.jsonl` — append-only log of pending global rule candidates.
-- `corrections/local_command_overrides.json` — per-profile local override dictionary.
 - `corrections/approved_rule_promotions.json` — record of corrections promoted to global rules, with reviewer, date, and rationale.
 
-### Rule catalog and regression
-- `rules_v6/CCI/cci_correction_feedback_rules.json` — metadata for correction-related feedback rules (e.g., which fields are eligible for correction, which corrections require conflict detection).
-- `tools/run_correction_feedback_regression.py` — regression runner that exercises the correction apply/capture/classify/reuse pipeline against test payloads.
+### Rule catalog and regression (requires approval)
+- `rules_v6/CCI/cci_correction_feedback_rules.json` — metadata for correction-related feedback rules.
+- `tools/run_correction_session_regression.py` — regression for Phase A session persistence.
+- `tools/run_correction_classify_regression.py` — regression for Phase B classification.
+- `tools/run_correction_promote_regression.py` — regression for Phase C profile promotion.
+- `tools/run_correction_pending_regression.py` — regression for Phase D pending candidate log.
 
 ---
 
@@ -170,18 +208,33 @@ When a user issues a correction command or selects a correction in a future UI:
 
 ---
 
-## 10. Future Implementation Sequence
+## 10. Future Implementation Phases (Require Approval)
 
-| Phase | Task | Scope |
+| Phase | Task | Scope | Approval Required |
+|---|---|---|---|
+| A | **Session persistence** | Lightweight JSONL session store (`corrections/session/`). Corrections from a session are available to the next draft in the same session if document type, component, and field match. Deleted on session end unless user approves promotion. | Yes |
+| B | **Correction classification** | `src/correction_classify.py` — classify a correction into one of the four types using heuristics (field path + reason). Not required to be AI-powered at first. | Yes |
+| C | **Local command profile promotion** | User approval workflow. Writing approved corrections to `profiles/{profile_id}.json` as local overrides. Only for `local_command_preference` classifications. | Yes |
+| D | **Pending global rule candidate log** | `corrections/pending_corrections.jsonl` append-only log. For `possible_secnav_manual_rule` and `bug_validator_gap` classifications. Never auto-applied. | Yes |
+| E | **Review/promotion utility** | Human or AI-assisted review of pending candidates. Promotion to `approved_global_rule` or rejection as local preference. Integration with `rules_v6/CCI` rule catalog. | Yes |
+| F | **UI/command integration** | Natural user commands for issuing corrections (not raw JSON path editing). Future chat or web interface integration. | Yes |
+
+### What Has Already Been Completed
+
+| Phase | Task | Status |
 |---|---|---|
-| 1 | Correction record schema | Define JSON schema for correction records with all required fields. |
-| 2 | Active draft correction apply function | Implement `src/correction_apply.py` with JSON path resolution and payload mutation. |
-| 3 | Session memory reuse | Implement `src/correction_reuse.py` for `current_session` scoped lookups and pre-application. |
-| 4 | Local command override profile | Implement `local_command_overrides.json` structure and user approval workflow. |
-| 5 | Pending rule candidate log | Implement `pending_corrections.jsonl` append-only logging with grouping/deduplication. |
-| 6 | Review/promotion utility | Implement a human or AI-assisted review tool that inspects pending candidates and promotes or rejects them. |
-| 7 | Regression tests | Add `tools/run_correction_feedback_regression.py` and fixtures for apply, capture, classify, reuse, and conflict detection. |
-| 8 | Later UI integration | Wire correction commands into any future chat or web interface so users can issue corrections naturally. |
+| 1 | Correction record schema | Complete — `correction_capture.py` defines the record schema with all required fields. |
+| 2 | Active draft correction apply function | Complete — `correction_apply.py` resolves JSON paths and mutates the payload. |
+| 3 | Session memory reuse (in-memory) | Partially complete — `IntakeOrchestrator` handles in-memory tracking; separate `correction_reuse.py` module not yet created. |
+| 4 | Intake orchestrator integration | Complete — `intake_orchestrator.py` captures, applies, undoes, and reruns audit after correction. |
+| 5 | Conflict detection | Complete — `rerun_audit_after_correction()` compares error counts and surfaces conflicts. |
+| 6 | Regression tests | Complete — `tools/run_correction_regression.py` and `tools/run_intake_regression.py` cover apply, capture, undo, and conflict detection. |
+
+### Notes on What Changed from Original Plan
+
+- `corrections/local_command_overrides.json` was removed from the plan; instead, corrections will be written directly into existing profile JSON files (`profiles/` directory) using the standard profile structure.
+- `src/correction_reuse.py` is still planned (Phase A) but will query disk-stored session corrections rather than in-memory only.
+- Phases A-F are additive; none modify existing renderer/layout behavior or existing C7-C10/CCI validators.
 
 ---
 
@@ -198,4 +251,7 @@ When a user issues a correction command or selects a correction in a future UI:
 
 ---
 
-*Plan generated 2026-05-29. See commit `1597199f11c1be9b493a48bc28d46bcb390210eb`.*
+**Plan updated 2026-05-31.**  
+**Original plan:** commit `84a1b2e`.  
+**Current verified baseline:** `2e643db` — CCI: Integrate correction memory with intake.  
+**Docs checkpoint:** `8efdff6` — Docs: Record correction intake integration baseline.
