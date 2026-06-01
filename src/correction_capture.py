@@ -46,6 +46,11 @@ from typing import Any
 import uuid
 
 from correction_apply import get_path_value
+from correction_classify import classify_correction
+
+
+# ---------------------------------------------------------------------------
+# Constants
 
 
 # ---------------------------------------------------------------------------
@@ -129,6 +134,7 @@ def capture_correction(
     correction_type: str = "unknown",
     scope: str = "active_draft",
     source: str = "user",
+    validator_conflict: bool = False,
 ) -> tuple[dict[str, Any], list[str]]:
     """
     Capture a correction record from payload metadata and caller input.
@@ -162,6 +168,15 @@ def capture_correction(
     resolved_type, w3 = _validate_enum(correction_type, _ALLOWED_CORRECTION_TYPES, "correction_type")
     warnings.extend(w3)
 
+    # Phase B: classify if no explicit correction_type was provided
+    classification_confidence = "user_override"
+    classification_reasons: list[str] = []
+    if resolved_type == "unknown":
+        resolved_type, classification_confidence, classification_reasons = classify_correction(
+            field_path, reason=reason, scope=scope, correction_type="unknown",
+            validator_conflict=validator_conflict,
+        )
+
     resolved_scope, w4 = _validate_enum(scope, _ALLOWED_SCOPES, "scope")
     warnings.extend(w4)
 
@@ -178,9 +193,13 @@ def capture_correction(
         "component": resolved_component,
         "scope": resolved_scope,
         "correction_type": resolved_type,
+        "classification_confidence": classification_confidence,
         "timestamp": _now_utc_iso(),
         "source": resolved_source,
     }
+
+    if classification_reasons:
+        record["classification_reasons"] = classification_reasons
 
     return record, warnings
 

@@ -371,12 +371,33 @@ class IntakeOrchestrator:
         """Persist a correction to session store if session_id is set.
 
         Returns True if persisted. Does nothing if session_id is None.
+
+        Phase B gates:
+          - Block persistence if classification is unknown.
+          - Block persistence if classification is one_time_wording unless
+            user explicitly overrode (classification_confidence == user_override).
         """
         if self._session_id is None:
             return False
         correction = copy.deepcopy(correction)
         if correction.get("scope") != "current_session":
             correction["scope"] = "current_session"
+
+        ctype = correction.get("correction_type", "unknown")
+        cconf = correction.get("classification_confidence", "")
+
+        if ctype == "unknown":
+            self._session_notes.append(
+                f"Skipped persistence: correction_type is 'unknown' for field {correction.get('field_path', '?')}."
+            )
+            return False
+
+        if ctype == "one_time_wording" and cconf != "user_override":
+            self._session_notes.append(
+                f"Skipped persistence: one_time_wording requires explicit user override for field {correction.get('field_path', '?')}."
+            )
+            return False
+
         correction["session_id"] = self._session_id
         correction.setdefault("promotion_status", "none")
         save_session_correction(self._session_id, correction)
