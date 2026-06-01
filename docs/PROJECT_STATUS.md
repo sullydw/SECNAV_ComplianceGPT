@@ -12,25 +12,27 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest documentation checkpoint commit:** `8c863ff` — `Docs: Add Phase A session persistence checkpoint`  
-**Current verified functional baseline:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
-**Previous functional baseline:** `2e643db` — `CCI: Integrate correction memory with intake`  
-**GitHub Actions / regressions:** all 18 regression suites manually verified PASS after `71ddf64`  
+**Latest documentation checkpoint commit:** `a7f9aeb` — `CCI: Fix Phase B regression isolation`  
+**Phase B implementation commit:** `519fad6` — `CCI: Add correction classification (Phase B)`  
+**Current verified functional baseline:** `a7f9aeb` — Phase B correction classification implemented and regression-protected  
+**Previous functional baseline:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
+**GitHub Actions / regressions:** all 18 regression suites verified PASS at `a7f9aeb`  
 **Expected repository state:** clean and up to date with `origin/main`
 
 ### Start Here For New Chat
 
 1. Read `docs/BOOTSTRAP.md`.
 2. Read this file: `docs/PROJECT_STATUS.md`.
-3. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for the latest Phase A session persistence status.
-4. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
-5. Do not modify renderer/layout unless explicitly asked.
-6. Continue from the **Recommended Next Work** section below.
-7. Run all regressions before committing implementation changes.
+3. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for the latest Phase B correction classification status.
+4. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A session persistence details if needed.
+5. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
+6. Do not modify renderer/layout unless explicitly asked.
+7. Continue from the **Recommended Next Work** section below.
+8. Run all regressions before committing implementation changes.
 
 Suggested startup prompt:
 
-> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_a_session_persistence_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Run all regressions before committing.
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_b_correction_classification_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Run all regressions before committing.
 
 ---
 
@@ -67,11 +69,12 @@ Implemented support now includes:
 
 - `src/context_resolver.py` — canonical CCI context object.
 - `src/validator_runner.py` — consolidated CCI audit entry point.
-- `src/intake_orchestrator.py` — missing-field intake, active profile support, CCI audit, active-draft correction integration, and opt-in session correction persistence.
+- `src/intake_orchestrator.py` — missing-field intake, active profile support, CCI audit, active-draft correction integration, opt-in session correction persistence, and correction classification gating.
 - `src/local_profile.py` — local command profile loading and default merging.
 - `src/correction_apply.py` — active-draft correction application and undo primitives.
-- `src/correction_capture.py` — correction record capture with `active_draft` and `current_session` scopes.
+- `src/correction_capture.py` — correction record capture with `active_draft` and `current_session` scopes; now runs automatic classification inside `capture_correction()` when no explicit type is provided.
 - `src/correction_store.py` — JSONL session correction persistence store.
+- `src/correction_classify.py` — Phase B correction classifier. Classifies corrections into `one_time_wording`, `local_command_preference`, `possible_secnav_manual_rule`, and `bug_validator_gap` using deterministic heuristics based on field path and reason text.
 
 Current intake capabilities:
 
@@ -98,14 +101,15 @@ Correction memory remains intentionally bounded:
 - Session persistence is opt-in only; `session_id=None` preserves prior in-memory-only behavior.
 - Session JSONL files are local and gitignored.
 - 30-day session retention is advisory only; no automatic cleanup is implemented.
-- No automatic correction classification.
+- Automatic correction classification is now implemented in Phase B (see below).
 - No local command profile promotion.
 - No pending global rule candidate log.
 - No global SECNAV rule promotion.
+- No UI override implementation.
 - No renderer changes.
-- Conflicts are advisory only.
+- Conflicts remain advisory only.
 
-Do not implement classification, profile promotion, pending global rule logging, or global rule promotion without a separate planning step and user approval.
+Do not implement profile promotion, pending global rule logging, or global rule promotion without a separate planning step and user approval.
 
 ---
 
@@ -130,6 +134,7 @@ GitHub Actions workflow:
 Run the full current regression suite before committing implementation changes:
 
 ```bash
+python tools/run_correction_classify_regression.py
 python tools/run_intake_regression.py
 python tools/run_correction_regression.py
 python tools/run_correction_session_regression.py
@@ -158,6 +163,7 @@ The CI suite covers:
 - Local profile regression.
 - Active-draft correction memory regression.
 - Session correction persistence regression.
+- Correction classification regression (Phase B).
 - C7-C10 layout/render regressions.
 
 ---
@@ -166,16 +172,19 @@ The CI suite covers:
 
 - `docs/BOOTSTRAP.md` — first-read guide for new chats/sessions.
 - `docs/PROJECT_STATUS.md` — current status and handoff tracker.
-- `docs/checkpoints/phase_a_session_persistence_checkpoint.md` — latest Phase A session persistence checkpoint.
+- `docs/checkpoints/phase_b_correction_classification_checkpoint.md` — latest Phase B correction classification checkpoint.
+- `docs/checkpoints/phase_a_session_persistence_checkpoint.md` — Phase A session persistence checkpoint.
 - `docs/checkpoints/cci_content_compliance_checkpoint.md` — detailed CCI/intake/correction history checkpoint.
 - `.github/workflows/regression.yml` — GitHub Actions regression workflow.
 - `src/pdf_v6_render.py` — renderer; do not modify casually.
 - `src/validator_runner.py` — one-call CCI audit runner.
-- `src/intake_orchestrator.py` — intake, profiles, correction memory orchestration, and session persistence integration.
+- `src/intake_orchestrator.py` — intake, profiles, correction memory orchestration, session persistence integration, and correction classification gating.
 - `src/context_resolver.py` — CCI context resolver.
 - `src/local_profile.py` — local profile support.
 - `src/correction_apply.py` and `src/correction_capture.py` — active-draft correction support.
+- `src/correction_classify.py` — Phase B correction classifier.
 - `src/correction_store.py` — JSONL session correction storage.
+- `tools/run_correction_classify_regression.py` — Phase B classification regression runner.
 - `tools/run_correction_session_regression.py` — Phase A session persistence regression runner.
 - `profiles/example_local_profile.json` — fake/template profile only.
 
@@ -185,8 +194,7 @@ The CI suite covers:
 
 - Do not edit renderer/layout casually.
 - Do not create a parallel renderer.
-- Do not implement correction classification without approved planning.
-- Do not promote corrections to local profiles or global SECNAV rules yet.
+- Do not implement profile promotion or global rule promotion without approved planning.
 - Do not commit real command profiles, contact data, or session JSONL stores publicly.
 - Do not skip regressions.
 - Do not assume Navy and Marine Corps conventions are identical.
@@ -197,25 +205,39 @@ The CI suite covers:
 
 ## Recommended Next Work
 
-### Next Phase: Phase B Correction Classification Planning
+### Next Phase: Phase C Local Command Profile Promotion Planning
 
-The next recommended phase is planning only at first.
+The next recommended phase is **planning only**. Do not implement Phase C until its plan is reviewed and approved.
 
-Goals:
+Phase C should define:
 
-- Design a deterministic/heuristic classifier for captured corrections.
-- Map corrections into the approved correction types:
-  - `one_time_wording`
-  - `local_command_preference`
-  - `possible_secnav_manual_rule`
-  - `bug_validator_gap`
-- Define field/path and reason-text heuristics.
-- Define user override behavior.
-- Define conflict handling with existing validators.
-- Define regression coverage before implementation.
-- Keep profile promotion and global rule promotion manual and reviewed.
+- A user approval workflow for promoting corrections to local command profiles.
+- How `local_command_preference` classified corrections become profile fields.
+- Profile structure for override/default storage.
+- Safety rules preventing profile data from being committed to a public repository.
+- Regression requirements.
 
-Do **not** implement Phase B until the classification design, safety rules, and regression plan are reviewed and approved.
+Keep profile promotion, pending global rule logging, and global rule promotion out of Phase C if they are not explicitly scoped and approved.
+
+---
+
+## Historical Milestones
+
+### Phase B — Correction Classification (Completed)
+
+- Planning document created: `docs/planning/phase_b_correction_classification_plan.md`.
+- Implementation commit: `519fad6` — `CCI: Add correction classification (Phase B)`.
+- Added `src/correction_classify.py` with deterministic heuristics.
+- Integrated classification into `src/correction_capture.py` via `capture_correction()`.
+- Updated `src/intake_orchestrator.py` to gate session persistence based on classification.
+- Regression runner created: `tools/run_correction_classify_regression.py`.
+- Regression isolation fix: `a7f9aeb` — fixed temp-only fixture usage and removed accidental real artifact (`corrections/session/test_session_phase_b.jsonl`).
+- All 18 regression suites pass at `a7f9aeb`.
+- No profile promotion implemented.
+- No global rule promotion implemented.
+- No pending global rule candidate log implemented.
+- No UI override implementation.
+- No renderer/layout behavior changed.
 
 ---
 
@@ -247,6 +269,8 @@ Covered figures include:
 - `aa57b96` — correction memory plan updated against verified baseline.
 - `71ddf64` — Phase A session correction persistence implemented and all 18 regressions passed.
 - `8c863ff` — Phase A session persistence checkpoint added.
+- `519fad6` — Phase B correction classification implemented (`src/correction_classify.py` added, integrated into `capture_correction()` and `intake_orchestrator.py`).
+- `a7f9aeb` — Phase B regression isolation fix; all 18 regression suites pass.
 
 ### Manual-and-Figure Source Standard
 

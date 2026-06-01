@@ -1,9 +1,10 @@
 # Correction Memory and Rule Promotion Layer Plan
 
 **Last Updated:** 2026-06-01  
-**Current Verified Baseline:** `71ddf64` — CCI: Add session correction persistence (Phase A)  
-**Latest Checkpoint:** `8c863ff` — Docs: Add Phase A session persistence checkpoint  
-**Previous Verified Baseline:** `2e643db` — CCI: Integrate correction memory with intake
+**Current Verified Baseline:** `a7f9aeb` — CCI: Fix Phase B regression isolation  
+**Phase B Implementation:** `519fad6` — CCI: Add correction classification (Phase B)  
+**Previous Verified Baseline:** `71ddf64` — CCI: Add session correction persistence (Phase A)  
+**Latest Checkpoint:** `a7f9aeb` — Phase B correction classification checkpoint (immediately after this update)
 
 ---
 
@@ -48,14 +49,14 @@ The following items are complete and regression-protected.
 - Session persistence is opt-in only; `session_id=None` preserves active-draft/in-memory-only behavior.
 - Session JSONL files are local and gitignored.
 - 30-day session retention is advisory only; no automatic cleanup is implemented.
-- No automatic classification into one of the four correction types.
+- Automatic correction classification is implemented (Phase B) but does not promote; it gates persistence only.
 - No local command profile promotion.
 - No pending global rule candidate log.
 - No global SECNAV rule promotion.
 - No review/promotion utility.
 - No natural-language correction command UI.
 
-These limits are intentional and are planned for future phases only after separate review and approval.
+These remaining limits are intentional and are planned for future phases only after separate review and approval.
 
 ---
 
@@ -163,8 +164,9 @@ Automatic classification is not yet implemented. It is the next planning phase.
 
 - `src/correction_apply.py` — apply a single correction to a payload JSON object given a field path and corrected value; supports undo via `undo_correction()`.
 - `src/correction_capture.py` — capture correction metadata from user input and build a structured correction record; supports `active_draft` and `current_session` scopes.
+- `src/correction_classify.py` — classify a correction into one of `one_time_wording`, `local_command_preference`, `possible_secnav_manual_rule`, or `bug_validator_gap` using deterministic heuristics based on field path and reason text. Phase B complete.
 - `src/correction_store.py` — save, load, update, reject, and delete session correction JSONL records.
-- `src/intake_orchestrator.py` — orchestrates correction capture, apply, undo, audit rerun, opt-in session persistence, session pre-application, and rejection.
+- `src/intake_orchestrator.py` — orchestrates correction capture, apply, undo, audit rerun, opt-in session persistence, session pre-application, rejection, and correction classification gating.
 
 ### Implemented storage safety files
 
@@ -174,7 +176,6 @@ Automatic classification is not yet implemented. It is the next planning phase.
 
 ### Future modules (require approval before implementation)
 
-- `src/correction_classify.py` — classify a correction into one of the four types using deterministic/heuristic rules.
 - `src/correction_reuse.py` — optional future separation if reuse logic grows beyond `IntakeOrchestrator`.
 
 ### Future storage files (require approval before implementation)
@@ -187,12 +188,7 @@ Automatic classification is not yet implemented. It is the next planning phase.
 - `tools/run_correction_regression.py` — active-draft correction regression.
 - `tools/run_intake_regression.py` — intake and correction integration regression.
 - `tools/run_correction_session_regression.py` — Phase A session persistence regression.
-
-Future regression runners requiring approval:
-
-- `tools/run_correction_classify_regression.py` — Phase B classification.
-- `tools/run_correction_promote_regression.py` — Phase C profile promotion.
-- `tools/run_correction_pending_regression.py` — Phase D pending candidate log.
+- `tools/run_correction_classify_regression.py` — Phase B classification regression.
 
 ---
 
@@ -256,31 +252,27 @@ Future regression runners requiring approval:
 | Phase | Task | Scope | Status | Approval Required |
 |---|---|---|---|---|
 | A | **Session persistence** | Lightweight JSONL session store (`corrections/session/`). Corrections from a session are available to the next draft in the same session if document type, component, and field match. | Complete at `71ddf64` | Completed |
-| B | **Correction classification** | `src/correction_classify.py` — classify a correction into one of the four types using heuristics (field path + reason). Not required to be AI-powered at first. | Next planning phase | Yes |
-| C | **Local command profile promotion** | User approval workflow. Writing approved corrections to `profiles/{profile_id}.json` as local overrides. Only for `local_command_preference` classifications. | Future | Yes |
+| B | **Correction classification** | `src/correction_classify.py` — classify a correction into one of the four types using heuristics (field path + reason). Gates session persistence; does not promote. | Complete at `519fad6`; regression isolation fix at `a7f9aeb` | Completed |
+| C | **Local command profile promotion** | User approval workflow. Writing approved corrections to `profiles/{profile_id}.json` as local overrides. Only for `local_command_preference` classifications. | Future planning | Yes |
 | D | **Pending global rule candidate log** | `corrections/pending_corrections.jsonl` append-only log. For `possible_secnav_manual_rule` and `bug_validator_gap` classifications. Never auto-applied. | Future | Yes |
 | E | **Review/promotion utility** | Human or AI-assisted review of pending candidates. Promotion to `approved_global_rule` or rejection as local preference. Integration with `rules_v6/CCI` rule catalog. | Future | Yes |
 | F | **UI/command integration** | Natural user commands for issuing corrections (not raw JSON path editing). Future chat or web interface integration. | Future | Yes |
 
 ---
 
-## 11. Phase B Planning Target
+## 11. Next Phase Planning Target
 
-The next planning-only phase is **Phase B correction classification**.
+The next planning-only phase is **Phase C local command profile promotion**.
 
-Phase B should define:
+Phase C should define:
 
-- Required classifier inputs.
-- Deterministic rules for obvious `one_time_wording` cases.
-- Deterministic rules for likely `local_command_preference` cases.
-- Deterministic rules for likely `possible_secnav_manual_rule` cases.
-- Deterministic rules for likely `bug_validator_gap` cases.
-- User override behavior.
-- Interaction with session persistence.
-- Interaction with existing validator conflicts.
+- A user approval workflow for promoting corrections to local command profiles.
+- How `local_command_preference` classified corrections become profile fields.
+- Profile structure for override/default storage.
+- Safety rules preventing profile data from being committed to a public repository.
 - Regression requirements.
 
-Do not implement Phase B until the design is reviewed and approved.
+Do not implement Phase C until the design is reviewed and approved. Keep profile promotion, pending global rule logging, and global rule promotion out of Phase C unless explicitly scoped and approved.
 
 ---
 
