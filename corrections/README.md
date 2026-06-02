@@ -24,4 +24,6 @@ For lifecycle details, see `docs/planning/phase_d_pending_global_rule_candidate_
 
 ## Approved Rule Promotions
 
-Future: `corrections/approved_rule_promotions.json` (gitignored, not yet implemented).
+`corrections/approved_rule_promotions.json` (gitignored, implemented in Phase E).
+This file stores approved global rule records created by the review/promotion utility.
+It is local-only and never committed.
