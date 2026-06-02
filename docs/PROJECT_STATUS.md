@@ -1,6 +1,6 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-06-01  
+**Last Updated:** 2026-06-02  
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE  
 **Renderer:** v6 PDF (ReportLab)  
@@ -12,32 +12,34 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest implementation commit:** `2e31892` — `CCI: Add pending global rule candidate logging (Phase D)`  
-**Phase D implementation commit:** `2e31892` — `CCI: Add pending global rule candidate logging (Phase D)`  
-**Phase C implementation commit:** `8b8a95c` — `CCI: Add local command profile promotion (Phase C)`  
-**Phase B implementation commit:** `519fad6` — `CCI: Add correction classification (Phase B)`  
-**Current verified functional baseline:** `2e31892` — Phase D pending global rule candidate logging implemented and regression-protected  
-**Previous functional baseline:** `8b8a95c` — Phase C local command profile promotion  
-**Phase A functional baseline:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
-**GitHub Actions / regressions:** all 20 regression suites verified PASS at `2e31892`  
+**Latest implementation commit:** `058de87` — `CCI: Add review promotion utility (Phase E)`
+**Phase E implementation commit:** `058de87` — `CCI: Add review promotion utility (Phase E)`
+**Phase D implementation commit:** `2e31892` — `CCI: Add pending global rule candidate logging (Phase D)`
+**Phase C implementation commit:** `8b8a95c` — `CCI: Add local command profile promotion (Phase C)`
+**Phase B implementation commit:** `519fad6` — `CCI: Add correction classification (Phase B)`
+**Current verified functional baseline:** `058de87` — Phase E review/promotion utility implemented and regression-protected
+**Previous functional baseline:** `2e31892` — Phase D pending global rule candidate logging
+**Phase A functional baseline:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`
+**GitHub Actions / regressions:** all 21 regression suites verified PASS at `058de87`
 **Expected repository state:** clean and up to date with `origin/main`
 
 ### Start Here For New Chat
 
 1. Read `docs/BOOTSTRAP.md`.
 2. Read this file: `docs/PROJECT_STATUS.md`.
-3. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for the latest Phase D status.
-4. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
-5. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
-6. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
-7. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
-8. Do not modify renderer/layout unless explicitly asked.
-9. Continue from the **Recommended Next Work** section below.
-10. Run all regressions before committing implementation changes.
+3. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for the latest Phase E status.
+4. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
+5. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
+6. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
+7. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
+8. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
+9. Do not modify renderer/layout unless explicitly asked.
+10. Continue from the **Recommended Next Work** section below.
+11. Run all regressions before committing implementation changes.
 
 Suggested startup prompt:
 
-> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Run all regressions before committing.
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Run all regressions before committing.
 
 ---
 
@@ -110,8 +112,8 @@ Correction memory remains intentionally bounded:
 - Automatic correction classification is implemented in Phase B.
 - **Local command profile promotion is implemented in Phase C** with mandatory two-step user approval, external profile storage, backup, and atomic writes.
 - **Pending global rule candidate logging is implemented in Phase D** with mandatory sanitization, explicit approval required before write, current-session-only scope, and `corrections/pending_corrections.jsonl` is gitignored.
-- No global SECNAV rule promotion.
-- No review/promotion utility.
+- **Review/promotion utility is implemented in Phase E** with human reviewer claim, evidence validation, append-only review metadata, PII sanitization, and approved-rule record creation only (no validator/catalog/renderer changes).
+- No automatic global rule enforcement.
 - No UI override implementation.
 - No renderer changes.
 - Conflicts remain advisory only.
@@ -163,6 +165,7 @@ python tools/run_c10_regression.py
 python tools/run_correction_classify_regression.py
 python tools/run_correction_profile_promotion_regression.py
 python tools/run_correction_pending_regression.py
+python tools/run_correction_review_regression.py
 ```
 
 The CI suite covers:
@@ -178,6 +181,7 @@ The CI suite covers:
 - Profile promotion regression (Phase C).
 - C7-C10 layout/render regressions.
 - Pending candidate log regression (Phase D).
+- Review/promotion utility regression (Phase E).
 
 ---
 
@@ -199,10 +203,13 @@ The CI suite covers:
 - `src/correction_store.py` — JSONL session correction storage.
 - `src/correction_promote.py` — Phase C local command profile promotion.
 - `src/correction_pending_log.py` — Phase D pending global rule candidate logging (eligibility, sanitization, candidate records, status transitions, duplicate detection).
+- `src/correction_review.py` — Phase E review/promotion utility (list candidates, claim, record decision, approve/reject/defer/supersede, evidence validation, PII sanitization, Phase C redirect, approved record creation).
 - `profiles/README.md` — external profile safety documentation.
 - `corrections/README.md` — local-only correction storage safety documentation.
 - `tools/run_correction_profile_promotion_regression.py` — Phase C regression runner.
 - `tools/run_correction_session_regression.py` — Phase A session persistence regression runner.
+- `tools/run_correction_pending_regression.py` — Phase D pending candidate log regression runner.
+- `tools/run_correction_review_regression.py` — Phase E review/promotion utility regression runner.
 - `profiles/example_local_profile.json` — fake/template profile only.
 
 ---
@@ -212,7 +219,7 @@ The CI suite covers:
 - Do not edit renderer/layout casually.
 - Do not create a parallel renderer.
 - Do not implement review/promotion utility or global rule promotion without approved planning.
-- Do not commit real command profiles, contact data, session JSONL stores, or pending candidate logs publicly.
+- Do not commit real command profiles, contact data, session JSONL stores, pending candidate logs, or approved promotion logs publicly.
 - Do not skip regressions.
 - Do not assume Navy and Marine Corps conventions are identical.
 - Do not ignore rules hidden inside manual figures, captions, or example text.
