@@ -118,7 +118,7 @@ Correction memory remains intentionally bounded:
 - No renderer changes.
 - Conflicts remain advisory only.
 
-Do not implement global rule promotion or review/promotion utility without a separate planning step and user approval.
+Do not implement global rule enforcement, validator/rule catalog modification, or UI/command integration without a separate planning step and user approval.
 
 ---
 
@@ -140,7 +140,7 @@ GitHub Actions workflow:
 
 - Workflow: `Regression`
 - Job: `compliance-regression`
-- Verified PASS for current functional baseline commit `2e31892` using all 20 regression suites.
+- Verified PASS for current functional baseline commit `058de87` using all 21 regression suites.
 
 Run the full current regression suite before committing implementation changes:
 
@@ -218,7 +218,7 @@ The CI suite covers:
 
 - Do not edit renderer/layout casually.
 - Do not create a parallel renderer.
-- Do not implement review/promotion utility or global rule promotion without approved planning.
+- Do not implement global rule enforcement, validator/rule catalog modification, or UI/command integration without approved planning.
 - Do not commit real command profiles, contact data, session JSONL stores, pending candidate logs, or approved promotion logs publicly.
 - Do not skip regressions.
 - Do not assume Navy and Marine Corps conventions are identical.
@@ -229,20 +229,18 @@ The CI suite covers:
 
 ## Recommended Next Work
 
-### Next Phase: Phase E Review/Promotion Utility Planning
+### Next Phase: Phase F UI/Command Integration Planning
 
-The next recommended phase is **planning only**. Do not implement Phase E until its plan is reviewed and approved.
+The next recommended phase is **planning only**. Do not implement Phase F until its plan is reviewed and approved.
 
-Phase E should define:
+Phase F should define:
 
-- A human or AI-assisted review workflow for pending global rule candidates.
-- How candidates transition from `pending` to `under_review`, `rejected`, `promoted`, or `deferred`.
-- Criteria for promoting a candidate to an `approved_global_rule` (validator update, rule catalog change, or prompt contract addition).
-- Safety: never auto-apply; no global rule promotion without explicit approval.
-- UI/command integration considerations (optional; may remain CLI-only).
+- Natural-language user commands for issuing corrections (not raw JSON path editing).
+- CLI or web interface integration for the review utility (optional; may remain CLI-only).
+- Whether offline/autonomous review features are needed (default: none without explicit approval).
 - Regression requirements before implementation.
 
-Keep automatic promotion out of Phase E planning unless explicitly scoped and approved. Phase E is review/promotion utility planning only, not automatic global rule activation.
+Keep automatic promotion and global rule enforcement out of Phase F planning unless explicitly scoped and approved. Phase F is UI/command integration planning only.
 
 ---
 
@@ -294,6 +292,23 @@ Keep automatic promotion out of Phase E planning unless explicitly scoped and ap
 - No renderer/layout behavior changed.
 - No real command/user data or pending candidate logs committed.
 - No UI/review utility implementation.
+
+### Phase E — Review/Promotion Utility (Completed)
+
+- Planning document created: `docs/planning/phase_e_review_promotion_utility_plan.md`.
+- Implementation commit: `058de87` — `CCI: Add review promotion utility (Phase E)`.
+- Added `src/correction_review.py` with public API: `list_candidates_for_review`, `claim_candidate`, `record_review_decision`, `propose_phase_c_redirect`, `load_approved_promotions`, `get_approved_promotion`, `export_approved_promotions`.
+- Evidence validation enforces `secnav_citation` for `manual_rule` and `validator_evidence` for `validator_gap`.
+- Promotion creates approved-rule records with `implementation_status="pending_implementation"` only; no validator/rule catalog changes.
+- No automatic global rule enforcement.
+- No renderer/layout changes.
+- PII sanitizer covers names, emails, phone numbers, EDIPI, SSN, DoD ID, UIC, hull/tail, building/room numbers.
+- Review metadata is append-only (reopening appends new entries).
+- `corrections/approved_rule_promotions.json` is gitignored and local-only.
+- Regression runner created: `tools/run_correction_review_regression.py` (30 checks).
+- All 21 regression suites pass at `058de87`.
+- No UI implementation.
+- No real command/user data or approved promotion logs committed.
 
 ---
 
