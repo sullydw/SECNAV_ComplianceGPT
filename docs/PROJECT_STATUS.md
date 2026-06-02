@@ -12,26 +12,28 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest implementation commit:** `058de87` — `CCI: Add review promotion utility (Phase E)`
+**Latest implementation commit:** `4ba5cd3` — `CCI: Add command integration layer (Phase F)`
+**Phase F implementation commit:** `4ba5cd3` — `CCI: Add command integration layer (Phase F)`
 **Phase E implementation commit:** `058de87` — `CCI: Add review promotion utility (Phase E)`
 **Phase D implementation commit:** `2e31892` — `CCI: Add pending global rule candidate logging (Phase D)`
 **Phase C implementation commit:** `8b8a95c` — `CCI: Add local command profile promotion (Phase C)`
 **Phase B implementation commit:** `519fad6` — `CCI: Add correction classification (Phase B)`
-**Current verified functional baseline:** `058de87` — Phase E review/promotion utility implemented and regression-protected
-**Previous functional baseline:** `2e31892` — Phase D pending global rule candidate logging
+**Current verified functional baseline:** `4ba5cd3` — Phase F command integration implemented and regression-protected
+**Previous functional baseline:** `058de87` — Phase E review/promotion utility
 **Phase A functional baseline:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`
-**GitHub Actions / regressions:** all 21 regression suites verified PASS at `058de87`
+**GitHub Actions / regressions:** all 22 regression suites verified PASS at `4ba5cd3`
 **Expected repository state:** clean and up to date with `origin/main`
 
 ### Start Here For New Chat
 
 1. Read `docs/BOOTSTRAP.md`.
 2. Read this file: `docs/PROJECT_STATUS.md`.
-3. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for the latest Phase E status.
-4. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
-5. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
-6. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
-7. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
+3. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for the latest Phase F status.
+4. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
+5. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
+6. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
+7. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
+8. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
 8. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
 9. Do not modify renderer/layout unless explicitly asked.
 10. Continue from the **Recommended Next Work** section below.
@@ -39,7 +41,7 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 
 Suggested startup prompt:
 
-> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Run all regressions before committing.
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Run all regressions before committing.
 
 ---
 
@@ -113,12 +115,13 @@ Correction memory remains intentionally bounded:
 - **Local command profile promotion is implemented in Phase C** with mandatory two-step user approval, external profile storage, backup, and atomic writes.
 - **Pending global rule candidate logging is implemented in Phase D** with mandatory sanitization, explicit approval required before write, current-session-only scope, and `corrections/pending_corrections.jsonl` is gitignored.
 - **Review/promotion utility is implemented in Phase E** with human reviewer claim, evidence validation, append-only review metadata, PII sanitization, and approved-rule record creation only (no validator/catalog/renderer changes).
+- **Command integration layer is implemented in Phase F** with slash-command dispatcher (`src/correction_commands.py`), confirmation-required persistent actions, delegation to Phase A-E APIs only, and no direct persistence writes.
 - No automatic global rule enforcement.
-- No UI override implementation.
+- No natural-language parsing (deferred to Phase G planning).
 - No renderer changes.
 - Conflicts remain advisory only.
 
-Do not implement global rule enforcement, validator/rule catalog modification, or UI/command integration without a separate planning step and user approval.
+Do not implement global rule enforcement, validator/rule catalog modification, natural-language parsing, or UI/command integration without a separate planning step and user approval.
 
 ---
 
@@ -140,7 +143,7 @@ GitHub Actions workflow:
 
 - Workflow: `Regression`
 - Job: `compliance-regression`
-- Verified PASS for current functional baseline commit `058de87` using all 21 regression suites.
+- Verified PASS for current functional baseline commit `4ba5cd3` using all 22 regression suites.
 
 Run the full current regression suite before committing implementation changes:
 
@@ -166,6 +169,7 @@ python tools/run_correction_classify_regression.py
 python tools/run_correction_profile_promotion_regression.py
 python tools/run_correction_pending_regression.py
 python tools/run_correction_review_regression.py
+python tools/run_correction_command_regression.py
 ```
 
 The CI suite covers:
@@ -182,6 +186,7 @@ The CI suite covers:
 - C7-C10 layout/render regressions.
 - Pending candidate log regression (Phase D).
 - Review/promotion utility regression (Phase E).
+- Command integration regression (Phase F).
 
 ---
 
@@ -204,12 +209,14 @@ The CI suite covers:
 - `src/correction_promote.py` — Phase C local command profile promotion.
 - `src/correction_pending_log.py` — Phase D pending global rule candidate logging (eligibility, sanitization, candidate records, status transitions, duplicate detection).
 - `src/correction_review.py` — Phase E review/promotion utility (list candidates, claim, record decision, approve/reject/defer/supersede, evidence validation, PII sanitization, Phase C redirect, approved record creation).
+- `src/correction_commands.py` — Phase F slash-command dispatcher. Parses `/correct`, `/undo`, `/remember`, `/accept`, `/reject`, `/promote profile`, `/log candidate`, `/review pending`, `/claim`, `/decide`, `/approved rules`, `/status`. Delegates to Phase A-E APIs only; no direct persistence writes.
 - `profiles/README.md` — external profile safety documentation.
 - `corrections/README.md` — local-only correction storage safety documentation.
 - `tools/run_correction_profile_promotion_regression.py` — Phase C regression runner.
 - `tools/run_correction_session_regression.py` — Phase A session persistence regression runner.
 - `tools/run_correction_pending_regression.py` — Phase D pending candidate log regression runner.
 - `tools/run_correction_review_regression.py` — Phase E review/promotion utility regression runner.
+- `tools/run_correction_command_regression.py` — Phase F command integration regression runner (45 checks).
 - `profiles/example_local_profile.json` — fake/template profile only.
 
 ---
@@ -229,18 +236,19 @@ The CI suite covers:
 
 ## Recommended Next Work
 
-### Next Phase: Phase F UI/Command Integration Planning
+### Next Phase: Phase G Natural-Language Command Mediation Planning
 
-The next recommended phase is **planning only**. Do not implement Phase F until its plan is reviewed and approved.
+The next recommended phase is **planning only**. Do not implement Phase G until its plan is reviewed and approved.
 
-Phase F should define:
+Phase G should define:
 
-- Natural-language user commands for issuing corrections (not raw JSON path editing).
-- CLI or web interface integration for the review utility (optional; may remain CLI-only).
-- Whether offline/autonomous review features are needed (default: none without explicit approval).
+- How natural-language user input is parsed into the slash-command structures already defined in Phase F.
+- Whether a lightweight intent classifier or keyword matcher is sufficient, or whether a more structured approach is needed.
+- How ambiguous natural-language input is handled (confirmation prompts, fallback to slash commands, or refusal).
+- Safety: no automatic promotion, no validator/catalog changes, no renderer changes.
 - Regression requirements before implementation.
 
-Keep automatic promotion and global rule enforcement out of Phase F planning unless explicitly scoped and approved. Phase F is UI/command integration planning only.
+Keep automatic promotion and global rule enforcement out of Phase G planning unless explicitly scoped and approved. Phase G is natural-language command mediation planning only.
 
 ---
 
@@ -297,7 +305,7 @@ Keep automatic promotion and global rule enforcement out of Phase F planning unl
 
 - Planning document created: `docs/planning/phase_e_review_promotion_utility_plan.md`.
 - Implementation commit: `058de87` — `CCI: Add review promotion utility (Phase E)`.
-- Added `src/correction_review.py` with public API: `list_candidates_for_review`, `claim_candidate`, `record_review_decision`, `propose_phase_c_redirect`, `load_approved_promotions`, `get_approved_promotion`, `export_approved_promotions`.
+- Added `src/correction_review.py` with public API: `list_candidates_for_review`, `claim_candidate`, `review_candidate`, `propose_phase_c_redirect`, `load_approved_promotions`, `get_approved_promotion`, `export_approved_promotions`.
 - Evidence validation enforces `secnav_citation` for `manual_rule` and `validator_evidence` for `validator_gap`.
 - Promotion creates approved-rule records with `implementation_status="pending_implementation"` only; no validator/rule catalog changes.
 - No automatic global rule enforcement.
@@ -309,6 +317,27 @@ Keep automatic promotion and global rule enforcement out of Phase F planning unl
 - All 21 regression suites pass at `058de87`.
 - No UI implementation.
 - No real command/user data or approved promotion logs committed.
+
+### Phase F — Command Integration Layer (Completed)
+
+- Planning document created: `docs/planning/phase_f_ui_command_integration_plan.md`.
+- Implementation commit: `4ba5cd3` — `CCI: Add command integration layer (Phase F)`.
+- Added `src/correction_commands.py` with `CorrectionCommandDispatcher` — slash-command parser, confirmation prompt builder, user-facing message formatter, and dispatcher to Phase A-E APIs.
+- Supported commands: `/correct`, `/undo`, `/remember session`, `/session corrections`, `/accept`, `/reject`, `/promote profile`, `/log candidate`, `/review pending`, `/claim`, `/decide`, `/approved rules`, `/status`.
+- No natural-language parsing (deferred to Phase G).
+- `/promote profile` and `/log candidate` constrained to most recent active-draft correction or current-session correction only.
+- `/decide approve` calls `correction_review.review_candidate()`.
+- Approved global rule records remain `implementation_status="pending_implementation"`.
+- No direct persistence writes from command layer.
+- No validator/rule catalog changes.
+- No renderer/layout changes.
+- No automatic global rule enforcement.
+- No AI-only promotion decisions.
+- No silent profile/global promotion.
+- No background automation.
+- No real command/user data committed.
+- Regression runner created: `tools/run_correction_command_regression.py` (45 checks).
+- All 22 regression suites pass at `4ba5cd3`.
 
 ---
 

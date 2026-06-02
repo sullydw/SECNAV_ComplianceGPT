@@ -1,14 +1,15 @@
 # Correction Memory and Rule Promotion Layer Plan
 
-**Current Verified Baseline:** `058de87` — CCI: Add review promotion utility (Phase E)
+**Current Verified Baseline:** `4ba5cd3` — CCI: Add command integration layer (Phase F)
+**Phase F Implementation:** `4ba5cd3` — CCI: Add command integration layer (Phase F)
 **Phase E Implementation:** `058de87` — CCI: Add review promotion utility (Phase E)
 **Phase D Implementation:** `2e31892` — CCI: Add pending global rule candidate logging (Phase D)
 **Phase C Implementation:** `8b8a95c` — CCI: Add local command profile promotion (Phase C)
 **Phase B Implementation:** `519fad6` — CCI: Add correction classification (Phase B)
-**Previous Verified Baseline:** `2e31892` — CCI: Add pending global rule candidate logging (Phase D)
+**Previous Verified Baseline:** `058de87` — CCI: Add review promotion utility (Phase E)
 **Phase A Implementation:** `71ddf64` — CCI: Add session correction persistence (Phase A)
-**Latest Checkpoint:** `058de87` — Phase E review/promotion utility checkpoint (immediately after this update)
-**Next Phase:** Phase F UI/command integration planning (planning-only until approved)
+**Latest Checkpoint:** `4ba5cd3` — Phase F command integration checkpoint (immediately after this update)
+**Next Phase:** Phase G natural-language command mediation planning (planning-only until approved)
 ---
 
 ## 1. Purpose
@@ -56,8 +57,12 @@ The following items are complete and regression-protected.
 - Local command profile promotion is implemented (Phase C) with mandatory two-step approval, external profile storage, backup, and atomic writes.
 - **Pending global rule candidate logging is implemented (Phase D)** with mandatory sanitization, explicit approval required before write, current-session-only scope, and `corrections/pending_corrections.jsonl` is gitignored.
 - **Review/promotion utility is implemented in Phase E** with human reviewer claim, evidence validation, append-only review metadata, PII sanitization, and approved-rule record creation only (no validator/catalog/renderer changes).
+- **Command integration layer is implemented in Phase F** with slash-command dispatcher (`src/correction_commands.py`), confirmation-required persistent actions, delegation to Phase A-E APIs only, and no direct persistence writes.
 - No automatic global rule enforcement.
-- No natural-language correction command UI.
+- No natural-language parsing (deferred to Phase G planning).
+- No UI override implementation.
+- No renderer changes.
+- Conflicts remain advisory only.
 
 These remaining limits are intentional and are planned for future phases only after separate review and approval.
 
@@ -96,7 +101,7 @@ The layer operates on three principles:
 | `current_session` | Yes — when context matches | Implemented in Phase A | Correction persists to a local, gitignored JSONL session store when `session_id` is provided and scope is explicitly `current_session`. Reused when document type, component, and affected field match. |
 | `local_command_profile` | Yes — after explicit user approval | Completed in Phase C | Correction becomes part of a named local command profile. Must be approved by the user before activation. |
 | `pending_global_rule_candidate` | No — manual review only | Completed in Phase D | Correction is logged as a candidate for a global SECNAV compliance rule or validator update. It is never auto-applied. |
-| `approved_global_rule` | Yes — enforced | Future Phase F+ | Correction has been reviewed, validated against SECNAV M-5216.5 text, and promoted into the rule catalog, validator code, or AI prompt contract. Phase E creates `approved_global_rule` records with `implementation_status="pending_implementation"` only; actual enforcement requires future validator/catalog changes. |
+| `approved_global_rule` | Yes — enforced | Future Phase G+ | Correction has been reviewed, validated against SECNAV M-5216.5 text, and promoted into the rule catalog, validator code, or AI prompt contract. Phase E creates `approved_global_rule` records with `implementation_status="pending_implementation"` only; actual enforcement requires future validator/catalog changes. Phase F command layer delegates to Phase E review APIs and does not bypass any safety gate. |
 
 ---
 
@@ -182,6 +187,8 @@ Automatic classification is not yet implemented. It is the next planning phase.
 - `src/correction_classify.py` — classify a correction into one of `one_time_wording`, `local_command_preference`, `possible_secnav_manual_rule`, or `bug_validator_gap` using deterministic heuristics based on field path and reason text. Phase B complete.
 - `src/correction_promote.py` — Phase C local command profile promotion. Two-step approval, eligibility gating, backup, atomic write, disable/remove/edit support.
 - `src/correction_pending_log.py` — Phase D pending global rule candidate logging. Eligibility gating, full PII sanitization, candidate record schema, JSONL append/read/update helpers, duplicate fingerprinting, and status transition helpers.
+- `src/correction_review.py` — Phase E review/promotion utility. Human reviewer claim, evidence validation, append-only review metadata, PII sanitization, approved-rule record creation (`implementation_status="pending_implementation"`).
+- `src/correction_commands.py` — Phase F slash-command dispatcher. Parses `/correct`, `/undo`, `/remember`, `/accept`, `/reject`, `/promote profile`, `/log candidate`, `/review pending`, `/claim`, `/decide`, `/approved rules`, `/status`. Delegates to Phase A-E APIs only; no direct persistence writes. Confirmation required for all persistent actions.
 - `src/correction_store.py` — save, load, update, reject, and delete session correction JSONL records.
 - `src/intake_orchestrator.py` — orchestrates correction capture, apply, undo, audit rerun, opt-in session persistence, session pre-application, rejection, and correction classification gating.
 
@@ -208,6 +215,7 @@ Automatic classification is not yet implemented. It is the next planning phase.
 - `tools/run_correction_classify_regression.py` — Phase B classification regression.
 - `tools/run_correction_profile_promotion_regression.py` — Phase C local command profile promotion regression.
 - `tools/run_correction_pending_regression.py` — Phase D pending global rule candidate logging regression.
+- `tools/run_correction_command_regression.py` — Phase F command integration regression runner (45 checks).
 
 ---
 
@@ -275,24 +283,24 @@ Automatic classification is not yet implemented. It is the next planning phase.
 | C | **Local command profile promotion** | User approval workflow. Writing approved corrections to external profile `override_rules` as local overrides. Only for `local_command_preference` classifications. | **Complete at `8b8a95c`** | Completed |
 | D | **Pending global rule candidate log** | `corrections/pending_corrections.jsonl` append-only log. For `possible_secnav_manual_rule` and `bug_validator_gap` classifications. Never auto-applied. | **Complete at `2e31892`** | Completed |
 | E | **Review/promotion utility** | `src/correction_review.py` — human reviewer claim, evidence validation, append-only review metadata, PII sanitization, approved-rule record creation (`implementation_status="pending_implementation"`). No validator/catalog/renderer changes. | **Complete at `058de87`** | Completed |
-| F | **UI/command integration** | Natural user commands for issuing corrections (not raw JSON path editing). Future chat or web interface integration. | Future | Yes |
+| F | **UI/command integration** | `src/correction_commands.py` — slash-command dispatcher with confirmation-required actions. Delegates to Phase A-E APIs only; no direct persistence writes. No natural-language parsing. | **Complete at `4ba5cd3`** | Completed |
+| G | **Natural-language command mediation** | Parse natural-language user input into Phase F slash-command structures. Planning-only until approved. | Future | Yes |
 
 ---
 
 ## 11. Next Phase Planning Target
 
-The next planning-only phase is **Phase E review/promotion utility**.
+The next planning-only phase is **Phase G natural-language command mediation**.
 
-Phase E should define:
+Phase G should define:
 
-- A human or AI-assisted review workflow for pending global rule candidates.
-- How candidates transition from `pending` to `under_review`, `rejected`, `promoted`, or `deferred`.
-- Criteria for promoting a candidate to an `approved_global_rule` (validator update, rule catalog change, or prompt contract addition).
-- Safety: never auto-apply; no global rule promotion without explicit approval.
-- UI/command integration considerations (optional; may remain CLI-only).
+- How natural-language user input is parsed into the slash-command structures already defined in Phase F.
+- Whether a lightweight intent classifier or keyword matcher is sufficient, or whether a more structured approach is needed.
+- How ambiguous natural-language input is handled (confirmation prompts, fallback to slash commands, or refusal).
+- Safety: no automatic promotion, no validator/catalog changes, no renderer changes.
 - Regression requirements before implementation.
 
-Keep automatic promotion out of Phase E planning unless explicitly scoped and approved. Phase E is review/promotion utility planning only, not automatic global rule activation.
+Keep automatic promotion and global rule enforcement out of Phase G planning unless explicitly scoped and approved. Phase G is natural-language command mediation planning only, not automatic global rule activation.
 
 ---
 
