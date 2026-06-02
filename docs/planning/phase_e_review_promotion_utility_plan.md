@@ -99,6 +99,10 @@ Filtering options:
 - By `classification_confidence` (high first, or low first for triage)
 - By date range (e.g., last 30 days)
 
+#### Claim Semantics
+
+Phase E is local-only. A pending candidate may be claimed by **one reviewer at a time**. When a reviewer claims a candidate, its status changes to `under_review` and `reviewed_by` is recorded. No concurrent multi-user locking is required in Phase E. If a future multi-user review system is added, locking or versioning must be planned and approved separately.
+
 ### 4.2 Step 2 — Review Detail View
 
 When a reviewer selects a candidate, the system shows a detail view with **all sanitized data only**:
@@ -182,7 +186,7 @@ Confirm? (yes/no)
 | Direct manual quote | `possible_secnav_manual_rule` (optional but encouraged) | Free text, truncated to 2000 chars |
 | Validator name | `bug_validator_gap` | Must match an existing `src/cci_*.py` module name or "unknown" |
 | Expected vs actual validator behavior | `bug_validator_gap` | Free text, truncated to 2000 chars |
-| Reproduction payload | `bug_validator_gap` (strongly recommended) | Minimal JSON payload or field_path + value pair |
+| Reproduction payload or fixture | `bug_validator_gap` (strongly recommended) | Minimal JSON payload or field_path + value pair |
 | Reviewer ID | All promotions | Free text or system user ID |
 | Review date | All promotions | ISO8601 timestamp (auto-populated) |
 | Rationale | All promotions | Free text, truncated to 2000 chars, non-empty |
@@ -290,7 +294,8 @@ When a candidate is promoted, a new record is written to `corrections/approved_r
 | `component_filter` | list | No | Components where rule applies |
 | `sanitized_value` | string | Yes | Abstracted corrected value (rule pattern) |
 | `original_value_sanitized` | string | Yes | Abstracted original value (for comparison) |
-| `segnav_citation` | object | Yes | `{chapter, paragraph, figure, quote}` |
+| `secnav_citation` | object | Conditional | Required when `rule_category == "manual_rule"`. Optional when `rule_category == "validator_gap"`. Contains `{chapter, paragraph, figure, quote}`. |
+| `validator_evidence` | object | Conditional | Required when `rule_category == "validator_gap"`. Optional when `rule_category == "manual_rule"`. Contains `{validator_name, expected_behavior, actual_behavior, reproduction_payload}`. |
 | `rationale` | string | Yes | Reviewer rationale |
 | `evidence_quality` | enum | Yes | `"strong"`, `"moderate"`, `"weak"` |
 | `implementation_status` | enum | Yes | `"pending_implementation"` (Phase E sets this only) |
@@ -375,11 +380,12 @@ Actions:
 ### 10.2 Superseded Rules
 
 A candidate becomes `superseded` when:
-- A later candidate covering the same `(field_path, doc_type, component)` is promoted.
-- An existing `approved_global_rule` is implemented that makes the candidate obsolete.
-- The SECNAV manual is updated, changing the rule.
 
-The superseded record remains in the log for audit but is excluded from review queues.
+- A later candidate covering the same `(field_path, doc_type, component)` is promoted.
+- An explicit reviewer action marks it superseded.
+- A future phase (post-Phase E) manually marks it superseded after an `approved_global_rule` is actually implemented in validators or the rule catalog. Phase E does **not** auto-supersede based on external implementation because Phase E does not modify validators, rule catalogs, or the renderer.
+
+In Phase E, `superseded` status may only be set by **explicit reviewer action** or when a later promoted candidate covers the same fingerprint.
 
 ### 10.3 Superseded Record Schema
 
