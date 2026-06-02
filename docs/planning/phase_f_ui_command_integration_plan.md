@@ -127,7 +127,7 @@ The review utility remains programmatic, but the command layer exposes human-rea
   - `secnav_citation` required for `manual_rule` candidates
   - `validator_evidence` required for `bug_validator_gap` candidates
   - Empty rationale blocked
-- On valid input, `correction_review.record_review_decision()` appends review metadata and creates an approved-rule record with `implementation_status="pending_implementation"`.
+- On valid input, `correction_review.review_candidate()` appends review metadata and creates an approved-rule record with `implementation_status="pending_implementation"`.
 - `/approved rules` → `correction_review.load_approved_promotions()` (anonymized by default).
 
 The command layer does **not** implement review logic; it only formats inputs/outputs for the Phase E API. All evidence validation, append-only metadata, and PII sanitization remain inside `correction_review.py`.
