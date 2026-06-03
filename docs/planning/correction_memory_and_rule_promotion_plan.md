@@ -307,7 +307,7 @@ Phase H.1 / Phase I should define:
 - Select **one pilot approved record** for actual implementation into validator code, rule catalog files, or prompt contracts.
 - Determine whether the selected rule is safe to implement deterministically or requires human-in-the-loop testing.
 - Define the exact validator, rule catalog, or prompt-contract change required.
-- Impact on existing C7–C10 layout regressions and CCI validator regressions.
+- Impact on existing C7--C10 layout regressions and CCI validator regressions.
 - Rollback strategy if the implemented rule causes false positives.
 - Regression requirements before any validator or rule catalog changes are committed.
 - `prompt_contract` implementation that changes runtime prompt behavior must be a separate approved task.
@@ -315,6 +315,8 @@ Phase H.1 / Phase I should define:
 Keep automatic enforcement and silent global rule activation out of Phase H.1 / Phase I planning unless explicitly scoped and approved. Phase H.1 / Phase I is pilot approved-rule implementation planning only, not automatic global rule activation.
 
 No validator, rule catalog, prompt-contract, or renderer changes may occur until Phase H.1 / Phase I is explicitly planned, approved, implemented, reviewed, and regression-tested.
+
+**Planning document:** `docs/planning/phase_h1_pilot_approved_rule_implementation_plan.md`
 
 ---
 
