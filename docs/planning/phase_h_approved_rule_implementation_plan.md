@@ -136,8 +136,8 @@ pending_implementation
 | Status | Meaning | Who sets it |
 |---|---|---|
 | `pending_implementation` | Approved by reviewer; awaiting implementer claim. | Phase E review utility |
-| `implementation_planned` | Implementer claimed, verified source, assigned targets, recorded plan. | Phase H implementation planner |
-| `implemented` | Code/docs merged; regression verified. | Phase H implementer |
+| `implementation_planned` | Implementer claimed, verified source, assigned targets, recorded plan. Required fields: `source_verification_summary`, `implementation_target`, `implementer`, `planned_at`. | Phase H implementation planner |
+| `implemented` | Code/docs merged; regression verified. | Phase H implementer (Stage 2 / Phase H.1 or Phase I only) |
 | `rejected_for_implementation` | Record deemed infeasible or invalid after source verification. | Phase H implementer |
 | `deferred` | Postponed; may be revisited later. | Phase H implementer |
 | `superseded` | Replaced by a newer record; archived. | Phase H implementer or reviewer |
@@ -277,6 +277,7 @@ If a pilot rule is later approved for implementation, the following files may be
 
 - `corrections/approved_rule_promotions.json` is gitignored and local-only. The Phase H planner must read it from its local path but must not assume it exists in the repository.
 - Tests and regressions must use synthetic or temporary fixtures only. Real approved promotion logs must not be committed.
+- The Phase H regression runner (`tools/run_correction_implementation_regression.py`) must **only** use temporary or synthetic approved-promotion fixtures. It must not read, write, or modify the real local `corrections/approved_rule_promotions.json` file under any circumstances.
 - Any direct file modification of `corrections/approved_rule_promotions.json` in implementation code must be clearly isolated and not trigger git-tracked changes.
 
 ### Files that must NOT be modified
@@ -311,8 +312,12 @@ Phase H implementation is split into two distinct, separately approved stages:
 
 This stage implements only the planning and status workflow. It does **not** implement any actual validator, rule catalog, prompt contract, or renderer change.
 
+- Stage 1 may define the `implemented` status and test status-transition rules using **synthetic fixtures only**.
+- Stage 1 must **not** set any real approved record to `implemented`. Real `implemented` status is reserved for a later separately approved Phase H.1 / Phase I pilot implementation.
+- Stage 1 may create well-formed `implementation_planned` records with the required fields (`source_verification_summary`, `implementation_target`, `implementer`, `planned_at`).
+
 1. **Create `src/correction_implementation_planner.py`** with status-transition enforcement, claim/verify/assign-target flow, and audit logging. No AI imports; no renderer/validator imports.
-2. **Add Phase H regression runner** (`tools/run_correction_implementation_regression.py`) with at least 30 checks: eligibility gating, status transition correctness, target assignment, reclassification and local-preference rejection, and source verification requirements.
+2. **Add Phase H regression runner** (`tools/run_correction_implementation_regression.py`) with at least 30 checks: eligibility gating, status transition correctness, target assignment, reclassification and local-preference rejection, and source verification requirements. Uses **synthetic fixtures only**; never touches real promotion logs.
 3. **Update `docs/PROJECT_STATUS.md`** and `docs/planning/correction_memory_and_rule_promotion_plan.md` to reflect Phase H completion.
 4. **Run all 23 regression suites** and verify no failures.
 5. **Commit:** `CCI: Add approved rule implementation planner (Phase H)`.
@@ -331,17 +336,15 @@ Pilot rule implementation must be planned, approved, and scoped independently fr
 
 ---
 
-## Open Questions Needing Approval
+## Open Questions Before Future Phase H Implementation Approval
 
-This planning document cannot be finalized until the following are decided:
-
-1. **Pilot rule selection:** Which approved record should be the first pilot implementation to prove the process? (This is a Phase H.1 / Phase I decision, not a Phase H decision.)
-2. **Implementer role separation:** Should the Phase H implementer be the same role as the Phase E reviewer, or strictly separate?
-3. **Rule catalog versioning:** Should `rules_v6/CCI/` adopt a formal `_catalog_version` integer, or is git history sufficient?
-4. **Deprecation policy:** If an implemented rule is later found invalid, should it be fully removed or kept with `status=deprecated` and `superseded_by`?
-5. **CI enforcement:** Should GitHub Actions require the new Phase H regression runner before merge, or is 23 existing suites sufficient until the first pilot is implemented?
-6. **Prompt contract scope:** Are prompt-contract updates in scope for Phase H, or should they be deferred to a separate drafting-prompts phase?
-7. **Multi-target rules:** Can a single approved record spawn both a rule catalog entry and a validator update in the same Phase H iteration, or must they be sequential?
+1. **Implementer role separation:** Should the Phase H implementer be the same role as the Phase E reviewer, or strictly separate?
+2. **Rule catalog versioning:** Should `rules_v6/CCI/` adopt a formal `_catalog_version` integer, or is git history sufficient?
+3. **Deprecation policy:** If an implemented rule is later found invalid, should it be fully removed or kept with `status=deprecated` and `superseded_by`?
+4. **CI enforcement:** Should GitHub Actions require the new Phase H regression runner before merge, or is 23 existing suites sufficient until the first pilot is implemented?
+5. **Prompt contract scope:** Are prompt-contract updates in scope for Phase H, or should they be deferred to a separate drafting-prompts phase? `prompt_contract` implementation that changes runtime prompt behavior must be a separate approved task.
+6. **Multi-target rules:** Can a single approved record spawn both a rule catalog entry and a validator update in the same Phase H iteration, or must they be sequential?
+7. **Pilot rule selection:** Which approved record should be the first pilot implementation to prove the process? This is explicitly **deferred to Phase H.1 / Phase I**, not a Phase H decision.
 
 ---
 
