@@ -55,10 +55,14 @@ The pilot must be **one** approved record that satisfies all of the following:
 
 ### 2.3 Preferred Pilot Categories (in order of preference)
 
-1. **Validator gap fix** — a `bug_validator_gap` record where the validator simply misses a clear SECNAV rule. Example: subject line ends with a terminal period; SECNAV figure explicitly shows no period.
-2. **Missing rule catalog entry** — a `possible_secnav_manual_rule` where the rule is real but not yet tracked in `rules_v6/CCI/`. Example: a newly-discovered ref/encl duplicate prohibition.
-3. **Documentation-only improvement** — a record that only requires adding a developer note or manual reference to project docs. No runtime change.
+For the first pilot, prefer the lowest-risk implementation target that still proves the Phase H.1 process:
+
+1. **Documentation-only improvement** — a record that only requires adding a developer note or manual reference to project docs. No runtime change.
+2. **Missing rule catalog entry** — a `possible_secnav_manual_rule` where the rule is real but not yet tracked in `rules_v6/CCI/`.
+3. **Very narrow validator gap fix** — a `bug_validator_gap` record where the validator simply misses a clear SECNAV rule, the change is low-blast-radius, and a related validator already exists.
 4. **Prompt-contract update** — deferred to a separate approved task; see Sec. 12.
+
+A validator pilot is acceptable only if a very narrow candidate is already available, the SECNAV source is explicit, and the implementation can be regression-protected without broad validator rewrites.
 
 **Avoid as first pilot:**
 - Rules that affect body paragraph structure or multi-line formatting.
@@ -156,14 +160,18 @@ If a rule requires both a validator update and a rule catalog entry, implement t
 
 ### 6.2 Feature flag or conditional
 
-If feasible, wrap the new validator check in an `if pilot_rule_enabled:` guard or add a `_pilot_rules` list that the validator runner can optionally skip. This is optional for the first pilot but recommended if the rule has any risk of false positives.
+Feature flagging depends on target type:
+
+- **Documentation-only pilot:** no feature flag is needed.
+- **Rule-catalog-only pilot:** no runtime feature flag is needed unless runtime loading is also changed, which should not happen in the first pilot.
+- **Validator pilot:** readiness review must explicitly decide whether feature flagging is required. If there is any false-positive risk, wrap the new validator check in an `if pilot_rule_enabled:` guard or equivalent opt-in mechanism.
 
 ### 6.3 Rollback plan
 
 Before implementation, document:
 - The exact git command to revert the change (`git revert <commit>` or manual file restore).
-- The expected regression result after rollback (all 24 suites pass).
-- The expected behavior change after rollback (the new check no longer fires).
+- The expected regression result after rollback (all existing suites pass).
+- The expected behavior change after rollback (the new check no longer fires, or the new catalog/docs entry is removed).
 
 ### 6.4 No cascading refactors
 
@@ -178,7 +186,7 @@ Do not refactor existing validators, restructure `rules_v6/CCI/`, or rename file
 3. **Status gate:** A record cannot move from `implementation_planned` to `implemented` until:
    - Code/docs are written.
    - Targeted regression for the pilot passes.
-   - All 24 existing regression suites pass.
+   - The full existing regression suite passes.
    - A human implementer explicitly calls `update_implementation_status(..., new_status="implemented")`.
 4. **No CI auto-implementation:** GitHub Actions does not read approved promotion logs and does not generate or merge code.
 5. **No background polling:** No daemon or watcher monitors `corrections/approved_rule_promotions.json`.
@@ -224,8 +232,9 @@ Create a new runner for the pilot when the target is `validator_update` or `rule
 
 - Name: `tools/run_pilot_<rule_name>_regression.py`
 - Checks: minimum 10 (positive + negative + edge cases).
-- Fixtures: synthetic/temp JSON fixtures only. No real command/user data.
+- Fixtures: synthetic/temp JSON fixtures only.
 - Must not read/write/modify real local files.
+- Must not include real command/user data, contact information, real names, real session data, or real approved-promotion records.
 
 ### 11.2 Required test categories
 
@@ -240,7 +249,7 @@ Create a new runner for the pilot when the target is `validator_update` or `rule
 
 ```python
 # tools/run_pilot_subject_terminal_period_regression.py
-# Synthetic fixtures only
+# Synthetic fixtures only; do not use real command/user data.
 
 def test_subj_with_terminal_period_fails():
     payload = {"subj": "POLICY UPDATE."}
@@ -253,7 +262,7 @@ def test_subj_without_terminal_period_passes():
     assert result["errors"] == []
 
 def test_existing_fixture_not_broken():
-    # Load a known-good compliance fixture from examples/
+    # Load an obviously synthetic known-good compliance fixture from examples/.
     payload = load_fixture("examples/audit_cci_subject.json")
     result = run_cci_subject_validator(payload)
     assert result["errors"] == []
@@ -261,9 +270,9 @@ def test_existing_fixture_not_broken():
 
 ---
 
-## 12. How to Run the Full 24-Suite Regression Set Before Commit
+## 12. How to Run the Full Regression Set Before Commit
 
-Before any pilot implementation is committed, run the complete suite in order:
+Before any pilot implementation is committed, run the complete existing 24-suite set in order:
 
 1. `python tools/run_correction_implementation_regression.py`
 2. `python tools/run_correction_nl_command_regression.py`
@@ -290,9 +299,11 @@ Before any pilot implementation is committed, run the complete suite in order:
 23. `python tools/run_c9_regression.py`
 24. `python tools/run_c10_regression.py`
 
-**All 24 must PASS.** Any failure blocks the pilot commit.
+If a new targeted pilot regression runner is added, it becomes the 25th suite for the pilot implementation. Run it in addition to the existing 24 suites and report the final regression set as **25 suites total**:
 
-If the pilot adds a new runner (Sec. 11), run it **after** the 24 existing suites and report it separately.
+25. `python tools/run_pilot_<rule_name>_regression.py`
+
+**All 25 must PASS** when a targeted pilot runner is added. Any failure blocks the implementation commit.
 
 ---
 
@@ -329,7 +340,9 @@ If the pilot adds a new runner (Sec. 11), run it **after** the 24 existing suite
 - One `src/cci_*.py` validator file.
 - One new or existing `tools/run_cci_*_regression.py` runner.
 - `examples/audit_cci_*.json` synthetic fixtures (if needed).
-- `docs/planning/` or `docs/checkpoints/` for documentation.
+- `docs/planning/` for planning updates only, not checkpoint handoff.
+
+Any fixture added under `examples/` must be obviously synthetic and must not contain real command/user data, contact information, real names, real session data, or real approved-promotion records.
 
 **Must NOT be modified:**
 - `src/pdf_v6_render.py`
@@ -354,8 +367,9 @@ If the pilot adds a new runner (Sec. 11), run it **after** the 24 existing suite
 
 **May be modified:**
 - `docs/planning/`
-- `docs/checkpoints/`
 - `README.md`
+
+Checkpoint docs should be reserved for the separate documentation handoff commit after the implementation commit.
 
 **Must NOT be modified:**
 - Any runtime file (`src/`, `rules_v6/`).
@@ -376,12 +390,13 @@ Phase H.1 / Phase I pilot implementation must never:
 | 2 | **No renderer/layout changes unless separately planned** | Layout changes require separate profile review and regression. They cannot be bundled with a validator pilot. |
 | 3 | **No automatic global rule enforcement from approved logs** | Approved records do not become active without human implementation, merge, and explicit status transition. |
 | 4 | **No AI-only implementation** | AI may assist drafting but cannot claim, verify, approve, or sign off. |
-| 5 | **No real command/user data committed** | All test fixtures must be synthetic. No real profiles, contact data, or session stores in commits. |
+| 5 | **No real command/user data committed** | All test fixtures must be synthetic. No real profiles, contact data, session stores, real names, or real approved-promotion records in commits. |
 | 6 | **No silent implementation of approved records** | Every implementation step is logged with human attribution and recorded in the planner. |
 | 7 | **No background automation** | No cron jobs, watchers, or CI triggers may implement rules automatically. |
 | 8 | **No multi-record batch implementation** | The pilot is one record only. Additional records require separate planning and approval. |
 | 9 | **No combined planner and pilot commit** | The planner (Phase H Stage 1) and the pilot (Phase H.1 / Phase I) must be separate commits. |
 | 10 | **No changes to Phase F/G command layer without separate design** | New commands or intents require their own planning phase. |
+| 11 | **No combined implementation and docs-handoff commit** | Implementation and checkpoint documentation must be separate commits. |
 
 ---
 
@@ -395,29 +410,34 @@ Phase H.1 / Phase I pilot implementation must never:
 - Verify eligibility through the Phase H planner per Sec. 4.
 - Assign target per Sec. 5.
 - Confirm no renderer/layout implication per Sec. 9.
+- Decide whether feature flagging is required if the pilot is a validator update.
 - Approve this plan before writing code.
 
 ### Step 1: Implement the Pilot
 
 - Write the validator, catalog entry, or docs change.
-- Add synthetic fixtures.
-- Add targeted regression runner (Sec. 11).
+- Add synthetic fixtures, if needed.
+- Add targeted regression runner when the target is `validator_update` or `rule_catalog` (Sec. 11).
 - Run the new runner and confirm PASS.
 - Run all 24 existing suites and confirm PASS (Sec. 12).
+- If a new targeted runner was added, report the final regression set as 25 total suites and confirm all 25 PASS.
 - Document rollback plan.
+- Commit implementation only with: `CCI: Implement pilot approved rule (Phase H.1)`.
 
 ### Step 2: Update Implementation Status
 
-- Use `correction_implementation_planner.update_implementation_status(..., new_status="implemented")`.
-- Record the commit hash in the approved record's notes.
-- Keep `corrections/approved_rule_promotions.json` local-only.
+- Use `correction_implementation_planner.update_implementation_status(..., new_status="implemented")` after the implementation commit and regression pass.
+- Record the implementation commit hash in the approved record's local notes.
+- Keep `corrections/approved_rule_promotions.json` local-only and uncommitted.
 
 ### Step 3: Documentation Handoff
+
+After the implementation commit is pushed and the approved-record local status is updated, perform a separate docs-only handoff:
 
 - Update `docs/PROJECT_STATUS.md`.
 - Update `docs/planning/correction_memory_and_rule_promotion_plan.md`.
 - Add checkpoint: `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md`.
-- Commit with: `CCI: Implement pilot approved rule (Phase H.1 / Phase I)`.
+- Commit docs separately with: `Docs: Record Phase H.1 pilot approved rule checkpoint`.
 
 ---
 
@@ -426,7 +446,7 @@ Phase H.1 / Phase I pilot implementation must never:
 1. **Pilot rule selection:** Which approved record should be the first pilot? The implementer must select one from the existing `corrections/approved_rule_promotions.json` (local-only) and justify it against Sec. 2 criteria.
 2. **Implementer role separation:** Should the Phase H.1 / Phase I implementer be required to be different from the Phase E reviewer and Phase H Stage 1 planner?
 3. **Prompt contract scope:** Should prompt-contract updates be allowed in Phase H.1, or deferred to a separate "Phase I" task?
-4. **Feature flagging:** Should the first pilot use an explicit enable/disable flag, or is unconditional addition acceptable for a single narrow rule?
+4. **Feature flagging:** If the pilot is a validator update, should it use an explicit enable/disable flag, or is unconditional addition acceptable for a single narrow rule?
 5. **Catalog versioning:** Should `rules_v6/CCI/` adopt a formal `_catalog_version` integer for the pilot, or is git history sufficient?
 6. **Deprecation policy:** If the pilot rule causes false positives, should it be reverted, deprecated-in-place, or moved to `rejected_for_implementation`?
 7. **Multi-target sequencing:** If a single approved record requires both a catalog entry and a validator update, should they be in one commit or two sequential commits?
