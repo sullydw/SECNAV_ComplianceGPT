@@ -69,7 +69,7 @@ Phase G must map natural language only to approved Phase F command families.
 | Undo | "Undo that change." | `/undo` | Reverts current draft state |
 | Remember/session | "Remember that for this session." | `/remember session` | Session JSONL write through Phase A gates |
 | Session review | "Show me what was reused from this session." | `/session corrections` | Read-only |
-| Session accept/reject | "Reject that reused correction." | `/reject <id>` | Soft-mark only through Phase A gates |
+| Session accept/reject | "Accept that session correction." / "Reject that reused correction." | `/accept <id>` or `/reject <id>` | Soft-mark or confirm only through Phase A gates |
 | Profile promotion | "Make this a command preference." | `/promote profile` | Phase C two-step profile promotion |
 | Pending candidate logging | "This might be a SECNAV rule; log it." | `/log candidate` | Phase D pending candidate logging |
 | Review queue | "Show pending rule candidates." | `/review pending` | Read-only |
@@ -78,38 +78,45 @@ Phase G must map natural language only to approved Phase F command families.
 | Approved record listing | "Show approved rule records." | `/approved rules` | Read-only |
 | Status | "What corrections are active?" | `/status` | Read-only |
 
+The structured schema splits the combined Session accept/reject category into `session_accept` and `session_reject` sub-intents so each action can be validated and tested independently.
+
 Any request outside these categories must return an unsupported-intent response and suggest the closest slash command only if safe.
 
 ---
 
-## 5. Mapping Natural-Language Requests to Slash Commands
+## 5. Canonical Structured Command Output
 
-The mediator output must be a structured object that mirrors a Phase F slash command.
+Every mediated request must produce the same canonical structured command object before dispatch. This schema is authoritative for Phase G. Examples throughout the plan must use this shape.
 
 Example output:
 
 ```json
 {
+  "raw_input": "Change the subject to POLICY UPDATE",
   "intent": "correction",
-  "command": "/correct subj \"POLICY UPDATE\"",
   "command_name": "correct",
+  "slash_command": "/correct subj \"POLICY UPDATE\"",
   "arguments": {
     "field_path": "subj",
     "corrected_value": "POLICY UPDATE"
   },
   "target": {
-    "source": "active_draft",
     "correction_id": null,
-    "candidate_id": null
+    "candidate_id": null,
+    "source": "active_draft"
   },
   "confidence": "high",
   "requires_confirmation": false,
   "requires_clarification": false,
+  "clarification_prompt": null,
+  "safety_class": "active_draft",
+  "persistent_action": false,
+  "blocked_reason": null,
   "safety_notes": []
 }
 ```
 
-The command string is user-facing. The `arguments` object is what Phase F dispatch should receive after confirmation.
+The `slash_command` string is user-facing. The `arguments` object is what Phase F dispatch should receive after confirmation. If `requires_clarification` is true, `slash_command` may be null or may contain a proposed command that must not be dispatched until clarified.
 
 ---
 
@@ -188,6 +195,8 @@ Phase G must mirror Phase F safety expectations and require confirmation before 
 
 Persistent action confirmation must show the structured slash command before dispatch.
 
+Confirmation vocabulary should align with Phase F behavior: `yes`, `y`, or `confirm` may satisfy an active confirmation prompt. Casual agreement such as "sounds good" must not count unless a future UI layer explicitly normalizes it through the same confirmation validator.
+
 Example:
 
 ```text
@@ -237,6 +246,8 @@ A natural-language request such as "Approve this candidate" may map to `/decide 
 - validator-gap approval includes `validator_evidence`;
 - Phase E creates approved records only with `implementation_status="pending_implementation"`.
 
+Phase G should detect review-decision intent from natural language, but it should collect evidence through structured follow-up prompts. It should not attempt to parse `secnav_citation`, `validator_evidence`, or reviewer rationale from free-form natural language as the final evidence record.
+
 ---
 
 ## 10. Parser Approach Options
@@ -281,37 +292,9 @@ Recommendation: **Option C with Phase G implementation starting in deterministic
 
 ---
 
-## 11. Structured Command Output Schema
+## 11. Schema Details
 
-Every mediated request must produce a structured command object before dispatch.
-
-Required fields:
-
-```json
-{
-  "raw_input": "Change the subject to POLICY UPDATE",
-  "intent": "correction",
-  "command_name": "correct",
-  "slash_command": "/correct subj \"POLICY UPDATE\"",
-  "arguments": {
-    "field_path": "subj",
-    "corrected_value": "POLICY UPDATE"
-  },
-  "target": {
-    "correction_id": null,
-    "candidate_id": null,
-    "source": "active_draft"
-  },
-  "confidence": "high",
-  "requires_confirmation": false,
-  "requires_clarification": false,
-  "clarification_prompt": null,
-  "safety_class": "active_draft",
-  "persistent_action": false,
-  "blocked_reason": null,
-  "safety_notes": []
-}
-```
+This section expands the canonical schema from Section 5.
 
 ### 11.1 Allowed intents
 
@@ -330,6 +313,8 @@ Required fields:
 - `status`
 - `unsupported`
 
+`session_accept` and `session_reject` are separate structured sub-intents derived from the combined Session accept/reject command family in Section 4.
+
 ### 11.2 Allowed confidence values
 
 - `high`
@@ -347,6 +332,14 @@ Required fields:
 - `review_status_change`
 - `approved_record_creation`
 - `unsupported`
+
+### 11.4 Module decision
+
+Phase G implementation should use a separate module:
+
+`src/correction_nl_commands.py`
+
+Do not extend `src/correction_commands.py` for natural-language mediation. Keeping the natural-language mediator separate preserves Phase F's slash-command dispatcher as the stable dispatch authority and keeps parser ambiguity isolated from command execution.
 
 ---
 
@@ -378,7 +371,7 @@ The Phase G module must not import or write to persistence modules directly exce
 | Missing corrected value | Ask for the replacement value. |
 | Persistent action without target | Ask whether the user means the most recent correction or a current-session correction. |
 | Profile/candidate request for arbitrary ID | Block and explain only most recent/current-session corrections are eligible. |
-| Review decision without evidence | Ask for required evidence; do not dispatch. |
+| Review decision without evidence | Ask for required structured evidence; do not dispatch. |
 | Low confidence parse | Return proposed interpretation and ask user to confirm or use slash command. |
 | Conflict with validator | Do not hide conflict; display validator advisory from Phase F/Phase A. |
 
@@ -407,7 +400,7 @@ Phase G must explicitly prevent:
 - AI-only promotion decisions;
 - direct writes to profile, session, pending, or approved-log files;
 - background jobs, auto-cleanup, or notifications;
-- implied approval from casual language like "sounds good" unless the prompt is currently awaiting confirmation and the expected response is yes/no.
+- implied approval from casual language like "sounds good" unless the prompt is currently awaiting confirmation and the expected response is yes/y/confirm.
 
 For persistent actions, confirmation prompts must identify the command that will be run and the safety boundary.
 
@@ -453,21 +446,23 @@ Required coverage:
 13. NL approve maps to `/decide <id> approve` only with evidence or clarification.
 14. Manual-rule approval requires `secnav_citation`.
 15. Validator-gap approval requires `validator_evidence`.
-16. NL approved-list maps to `/approved rules`.
-17. NL status maps to `/status`.
-18. Ambiguous reference field asks clarification.
-19. Ambiguous body paragraph asks clarification.
-20. Missing corrected value asks clarification.
-21. Unsupported intent returns unsupported response.
-22. Low-confidence parse requires confirmation.
-23. Persistent action requires confirmation.
-24. Confirmation dispatches through Phase F dispatcher only.
-25. No direct JSONL/profile/catalog writes from mediator.
-26. No renderer imports.
-27. No validator/rule catalog imports.
-28. Prompt injection attempt cannot force forbidden command.
-29. "Make this a global rule" does not enforce a rule; it can only propose `/log candidate` or review flow.
-30. Full regression suite remains green.
+16. Review evidence is collected through structured follow-up prompts, not accepted directly from free-form NL as final evidence.
+17. NL approved-list maps to `/approved rules`.
+18. NL status maps to `/status`.
+19. Ambiguous reference field asks clarification.
+20. Ambiguous body paragraph asks clarification.
+21. Missing corrected value asks clarification.
+22. Unsupported intent returns unsupported response.
+23. Low-confidence parse requires confirmation.
+24. Persistent action requires confirmation.
+25. Confirmation dispatches through Phase F dispatcher only.
+26. Confirmation accepts yes/y/confirm when an active confirmation prompt exists.
+27. No direct JSONL/profile/catalog writes from mediator.
+28. No renderer imports.
+29. No validator/rule catalog imports.
+30. Prompt injection attempt cannot force forbidden command.
+31. "Make this a global rule" does not enforce a rule; it can only propose `/log candidate` or review flow.
+32. Full regression suite remains green.
 
 All existing 22 regression suites must continue to pass before any Phase G implementation commit.
 
@@ -523,13 +518,13 @@ Phase G must not:
 
 If approved later, implement in this order:
 
-1. Confirm parser approach: deterministic-only first or hybrid with AI proposals behind deterministic validation.
+1. Confirm parser approach: deterministic-only first. AI-assisted proposals require a separate later subphase or plan update.
 2. Add `src/correction_nl_commands.py` with schema constants and non-executing mediation functions.
 3. Implement deterministic mapping for read-only and active-draft commands first: correction, undo, status, session list.
 4. Add clarification handling for ambiguous field paths and missing values.
 5. Add persistent-action mediation for session remember, accept, reject with confirmation requirements.
 6. Add profile-promotion and pending-candidate mediation, constrained to recent/current-session correction only.
-7. Add review-decision mediation, requiring evidence fields before dispatch.
+7. Add review-decision mediation, requiring structured evidence follow-up before dispatch.
 8. Add prompt-injection and unsafe-automation negative tests.
 9. Add `tools/run_correction_nl_command_regression.py` with 30+ checks.
 10. Run new regression runner.
@@ -541,13 +536,13 @@ If approved later, implement in this order:
 
 ## 20. Open Questions Needing Approval
 
-1. Should Phase G implementation begin with deterministic parsing only, or allow AI-assisted proposals behind deterministic schema validation?
-2. Should Phase G use a separate module name `correction_nl_commands.py`, or extend `correction_commands.py` with a separate mediator class?
-3. Should natural-language input be allowed to dispatch low-risk read-only commands without confirmation?
-4. Should `/correct` natural-language requests require confirmation, or only show the resulting validator/audit summary after applying?
+1. Should the first Phase G implementation be deterministic-only? Recommendation: yes.
+2. Should AI-assisted proposals be planned as a future Phase G subphase or Phase H? Recommendation: future planning after deterministic mediation is regression-protected.
+3. Should natural-language input be allowed to dispatch low-risk read-only commands without confirmation? Recommendation: yes, if confidence is high.
+4. Should `/correct` natural-language requests require confirmation, or only show the resulting validator/audit summary after applying? Recommendation: no confirmation for high-confidence active-draft corrections; show audit/conflict summary and allow undo.
 5. How should the mediator determine the "current selected candidate" for review commands in non-UI contexts?
-6. Should evidence fields for review decisions be parsed from natural language, or should the mediator always ask for structured evidence after detecting review intent?
-7. Should persistent-action confirmation require exact words like `confirm`, or accept yes/no confirmation?
+6. Should evidence fields for review decisions always be collected through structured prompts? Recommendation: yes.
+7. Should confirmation accept yes/y/confirm? Recommendation: yes, matching Phase F behavior.
 8. Should prompt-injection tests be part of Phase G from the start? Recommendation: yes.
 
 ---
@@ -557,10 +552,13 @@ If approved later, implement in this order:
 Recommended safe default for implementation approval:
 
 - Start deterministic-only.
-- Output structured Phase F commands.
+- Use `src/correction_nl_commands.py` as a separate module.
+- Output the canonical structured Phase F command schema from Section 5.
 - Dispatch only through `CorrectionCommandDispatcher`.
 - Require confirmation for all persistent/review actions.
 - Ask clarification on ambiguity.
+- Collect review evidence through structured follow-up prompts.
+- Confirm using yes/y/confirm when an active confirmation prompt exists.
 - Reject unsupported intents.
 - Add 30+ regression checks.
 - Run all 22 existing regressions before committing.
