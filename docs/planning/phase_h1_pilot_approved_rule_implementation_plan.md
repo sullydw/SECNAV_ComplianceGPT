@@ -39,7 +39,7 @@ The pilot must be **one** approved record that satisfies all of the following:
 6. The record is not duplicate or contradictory with an already-implemented rule.
 7. The record's `field_path` does **not** target renderer output placement, font sizing, or paragraph spacing.
 8. The record is **not** command-specific (e.g., local routing custom, command-specific originator code).
-9. The record has been claimed and scoped through the Phase H planner (`claim_for_implementation` + `record_implementation_plan`).
+9. The record has been claimed and scoped through the Phase H planner (`claim_record_for_implementation` + `plan_implementation`).
 
 ### 2.2 Recommended Pilot Selection Criteria
 
@@ -91,8 +91,9 @@ Evidence must be recorded in the approved record's `implementation_plan_summary`
 
 ### 4.1 Claim the record
 
-Use `correction_implementation_planner.claim_for_implementation(rule_id=my_rule_id, implementer_id="my_name")`.
+Use `correction_implementation_planner.claim_record_for_implementation(rule_id=my_rule_id, implementer_id="my_name", approved_path=None)`.
 
+- `approved_path` is optional; when omitted, the planner uses the default local path.
 - If the record is already claimed by another implementer, the planner returns a warning.
 - If the record is `deferred`, it may be reclaimed.
 
@@ -105,11 +106,14 @@ Call `correction_implementation_planner.validate_eligibility(record)`.
 
 ### 4.3 Assign implementation target
 
-Call `correction_implementation_planner.record_implementation_plan(...)` with:
+Call `correction_implementation_planner.plan_implementation(...)` with:
 
+- `rule_id` — the approved record ID.
+- `implementer_id` — human identifier.
 - `implementation_target` — one of `validator_update`, `rule_catalog`, `prompt_contract`, `documentation_only`, `none_needed`.
 - `source_verification_summary` — the six evidence items from Sec. 3.
-- `implementer_id` — human identifier.
+- `implementation_plan_summary` — optional; scope documentation from Sec. 4.4.
+- `approved_path` — optional; when omitted, the planner uses the default local path.
 
 This transitions the record to `implementation_planned`.
 
@@ -187,7 +191,7 @@ Do not refactor existing validators, restructure `rules_v6/CCI/`, or rename file
    - Code/docs are written.
    - Targeted regression for the pilot passes.
    - The full existing regression suite passes.
-   - A human implementer explicitly calls `update_implementation_status(..., new_status="implemented")`.
+   - A human implementer explicitly updates the record status to `implemented` through the Phase H planner.
 4. **No CI auto-implementation:** GitHub Actions does not read approved promotion logs and does not generate or merge code.
 5. **No background polling:** No daemon or watcher monitors `corrections/approved_rule_promotions.json`.
 
@@ -195,7 +199,7 @@ Do not refactor existing validators, restructure `rules_v6/CCI/`, or rename file
 
 ## 8. How to Prevent AI-Only Rule Implementation
 
-1. **Human implementer claim required:** `claim_for_implementation()` requires a human `implementer_id`.
+1. **Human implementer claim required:** `claim_record_for_implementation()` requires a human `implementer_id`.
 2. **Human source verification required:** `source_verification_summary` must be human-authored evidence, not AI-generated citations.
 3. **Human target assignment required:** `implementation_target` is chosen by the human implementer.
 4. **AI may assist drafting but not approve:** AI-generated validator code or catalog entries must be reviewed by the human implementer before merge.
@@ -309,22 +313,16 @@ If a new targeted pilot regression runner is added, it becomes the 25th suite fo
 
 ## 13. How to Update Approved-Record Status After Implementation and Regression Pass
 
-1. After code/docs are written and all suites pass, the human implementer calls:
-   ```python
-   correction_implementation_planner.update_implementation_status(
-       approved_path=Path("corrections/approved_rule_promotions.json"),
-       rule_id=my_rule_id,
-       new_status="implemented",
-       updater_id="my_name",
-   )
-   ```
+1. After code/docs are written and all suites pass, the human implementer updates the record status to `implemented`.
 
-2. The planner validates:
-   - The record is currently `implementation_planned`.
-   - The `updater_id` matches the `implementer_id` who claimed it.
-   - The transition is allowed (`implementation_planned` -> `implemented` is valid).
+2. **Required before Phase H.1 can complete Step 2:** Add a public wrapper (e.g., `mark_implemented()`) in `src/correction_implementation_planner.py` that:
+   - Accepts `rule_id`, `implementer_id`, and optional `approved_path`.
+   - Validates the record is currently `implementation_planned`.
+   - Validates the caller is the same `implementer_id` who claimed it.
+   - Validates the transition `implementation_planned` -> `implemented` is allowed.
+   - Updates the record, appends metadata, writes back locally, and returns the updated record.
 
-3. The planner updates the record in-memory and writes back to the local file.
+3. The internal `_mark_implemented_internal()` exists for synthetic fixture testing only and must not be called directly by implementers. The public wrapper must be added and reviewed before any real record is moved to `implemented`.
 
 4. The implementer records the commit hash where the rule was merged in a `notes` field.
 
@@ -426,7 +424,8 @@ Phase H.1 / Phase I pilot implementation must never:
 
 ### Step 2: Update Implementation Status
 
-- Use `correction_implementation_planner.update_implementation_status(..., new_status="implemented")` after the implementation commit and regression pass.
+- Add the public `mark_implemented()` wrapper in `src/correction_implementation_planner.py` (Sec. 13).
+- Use the new public wrapper after the implementation commit and regression pass.
 - Record the implementation commit hash in the approved record's local notes.
 - Keep `corrections/approved_rule_promotions.json` local-only and uncommitted.
 
@@ -443,10 +442,10 @@ After the implementation commit is pushed and the approved-record local status i
 
 ## 17. Open Questions Needing Approval
 
-1. **Pilot rule selection:** Which approved record should be the first pilot? The implementer must select one from the existing `corrections/approved_rule_promotions.json` (local-only) and justify it against Sec. 2 criteria.
+1. **Pilot rule selection:** Which approved record should be the first pilot? The implementer must select one from the existing `corrections/approved_rule_promotions.json` (local-only) and justify it against Sec. 2 criteria. **This must be resolved before any pilot implementation begins.**
 2. **Implementer role separation:** Should the Phase H.1 / Phase I implementer be required to be different from the Phase E reviewer and Phase H Stage 1 planner?
 3. **Prompt contract scope:** Should prompt-contract updates be allowed in Phase H.1, or deferred to a separate "Phase I" task?
-4. **Feature flagging:** If the pilot is a validator update, should it use an explicit enable/disable flag, or is unconditional addition acceptable for a single narrow rule?
+4. **Feature flagging:** If the pilot is a validator update, should it use an explicit enable/disable flag, or is unconditional addition acceptable for a single narrow rule? **This must be resolved before any validator-target pilot implementation begins.**
 5. **Catalog versioning:** Should `rules_v6/CCI/` adopt a formal `_catalog_version` integer for the pilot, or is git history sufficient?
 6. **Deprecation policy:** If the pilot rule causes false positives, should it be reverted, deprecated-in-place, or moved to `rejected_for_implementation`?
 7. **Multi-target sequencing:** If a single approved record requires both a catalog entry and a validator update, should they be in one commit or two sequential commits?
