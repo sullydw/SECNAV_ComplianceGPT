@@ -1,16 +1,17 @@
 # Correction Memory and Rule Promotion Layer Plan
 
-**Current Verified Baseline:** `cb988bc` — CCI: Add natural language command mediation (Phase G)
+**Current Verified Baseline:** `2588e67` — CCI: Add approved rule implementation planner (Phase H)
+**Phase H Implementation:** `2588e67` — CCI: Add approved rule implementation planner (Phase H)
 **Phase G Implementation:** `cb988bc` — CCI: Add natural language command mediation (Phase G)
 **Phase F Implementation:** `4ba5cd3` — CCI: Add command integration layer (Phase F)
 **Phase E Implementation:** `058de87` — CCI: Add review promotion utility (Phase E)
 **Phase D Implementation:** `2e31892` — CCI: Add pending global rule candidate logging (Phase D)
 **Phase C Implementation:** `8b8a95c` — CCI: Add local command profile promotion (Phase C)
 **Phase B Implementation:** `519fad6` — CCI: Add correction classification (Phase B)
-**Previous Verified Baseline:** `4ba5cd3` — CCI: Add command integration layer (Phase F)
+**Previous Verified Baseline:** `cb988bc` — CCI: Add natural language command mediation (Phase G)
 **Phase A Implementation:** `71ddf64` — CCI: Add session correction persistence (Phase A)
-**Latest Checkpoint:** `cb988bc` — Phase G natural-language command mediation checkpoint (immediately after this update)
-**Next Phase:** Phase H approved-rule implementation planning (planning-only until approved)
+**Latest Checkpoint:** `2588e67` — Phase H approved-rule implementation planner checkpoint (immediately after this update)
+**Next Phase:** Phase H.1 / Phase I pilot approved-rule implementation planning (planning-only until approved)
 ---
 
 ## 1. Purpose
@@ -60,6 +61,7 @@ The following items are complete and regression-protected.
 - **Review/promotion utility is implemented in Phase E** with human reviewer claim, evidence validation, append-only review metadata, PII sanitization, and approved-rule record creation only (no validator/catalog/renderer changes).
 - **Command integration layer is implemented in Phase F** with slash-command dispatcher (`src/correction_commands.py`), confirmation-required persistent actions, delegation to Phase A-E APIs only, and no direct persistence writes.
 - **Natural-language command mediation is implemented in Phase G** with deterministic keyword/phrase intent classifier (`src/correction_nl_commands.py`), no AI/LLM imports, canonical structured command objects dispatched through Phase F `CorrectionCommandDispatcher`, confirmation-required persistent actions, and clarification on ambiguity.
+- **Approved-rule implementation planner is implemented in Phase H Stage 1** with `src/correction_implementation_planner.py` (eligibility validation, implementer claim, implementation target assignment, source verification summary, `implementation_planned` records, status transitions). Stage 1 is planner/status-workflow only; no validator, rule catalog, prompt-contract, or renderer changes. No real approved record set to `implemented`.
 - No automatic global rule enforcement.
 - No renderer changes.
 - Conflicts remain advisory only.
@@ -101,7 +103,7 @@ The layer operates on three principles:
 | `current_session` | Yes — when context matches | Implemented in Phase A | Correction persists to a local, gitignored JSONL session store when `session_id` is provided and scope is explicitly `current_session`. Reused when document type, component, and affected field match. |
 | `local_command_profile` | Yes — after explicit user approval | Completed in Phase C | Correction becomes part of a named local command profile. Must be approved by the user before activation. |
 | `pending_global_rule_candidate` | No — manual review only | Completed in Phase D | Correction is logged as a candidate for a global SECNAV compliance rule or validator update. It is never auto-applied. |
-| `approved_global_rule` | Yes — enforced | Future Phase G+ | Correction has been reviewed, validated against SECNAV M-5216.5 text, and promoted into the rule catalog, validator code, or AI prompt contract. Phase E creates `approved_global_rule` records with `implementation_status="pending_implementation"` only; actual enforcement requires future validator/catalog changes. Phase F command layer delegates to Phase E review APIs and does not bypass any safety gate. |
+| `approved_global_rule` | Yes — enforced | Future Phase H.1 / Phase I | Correction has been reviewed, validated against SECNAV M-5216.5 text, and promoted into the rule catalog, validator code, or AI prompt contract. Phase E creates `approved_global_rule` records with `implementation_status="pending_implementation"` only; actual enforcement requires future validator/catalog changes. Phase F command layer delegates to Phase E review APIs and does not bypass any safety gate. Phase H Stage 1 provides implementation planning utilities (eligibility, claim, target, source verification, status transitions) but does not implement any pilot rule or change validators/catalog/renderer. |
 
 ---
 
@@ -158,10 +160,12 @@ Automatic classification is not yet implemented. It is the next planning phase.
 
 ### `approved_global_rule`
 
-- Future Phase F or later.
+- Future Phase H.1 / Phase I.
 - Phase E creates approved-rule records with `implementation_status="pending_implementation"` only; actual enforcement requires future validator/catalog changes.
+- Phase H Stage 1 provides implementation planning utilities (`src/correction_implementation_planner.py`) but does not implement any pilot rule, modify validators, rule catalogs, prompt contracts, or renderer behavior.
 - Once reviewed and approved, a correction may become a deterministic rule in `rules_v6/CCI/`, a validator update in `src/cci_*.py`, or a prompt-contract addition.
 - Never auto-applied.
+- `implemented` status is reserved for separately approved Phase H.1 / Phase I pilot implementation.
 
 ---
 
@@ -202,11 +206,12 @@ Automatic classification is not yet implemented. It is the next planning phase.
 ### Future modules (require approval before implementation)
 
 - `src/correction_reuse.py` — optional future separation if reuse logic grows beyond `IntakeOrchestrator`.
+- Pilot approved-rule implementation (Phase H.1 / Phase I) — actual validator, rule catalog, or prompt-contract change for one selected approved record.
 
 ### Future storage files (require approval before implementation)
 
 - `corrections/pending_corrections.jsonl` — append-only log of pending global rule candidates. Phase D implemented.
-- `corrections/approved_rule_promotions.json` — record of corrections promoted to global rules, with reviewer, date, and rationale. (Future Phase E)
+- `corrections/approved_rule_promotions.json` — record of corrections promoted to global rules, with reviewer, date, and rationale. Local-only; Phase E creates records, Phase H Stage 1 plans implementation, Phase H.1 / Phase I may implement.
 
 ### Regression files
 
@@ -216,9 +221,10 @@ Automatic classification is not yet implemented. It is the next planning phase.
 - `tools/run_correction_classify_regression.py` — Phase B classification regression.
 - `tools/run_correction_profile_promotion_regression.py` — Phase C local command profile promotion regression.
 - `tools/run_correction_pending_regression.py` — Phase D pending global rule candidate logging regression.
-- `tools/run_correction_nl_command_regression.py` — Phase G natural-language command mediation regression runner (151 checks).
-- `tools/run_correction_command_regression.py` — Phase F command integration regression runner (45 checks).
-
+- `tools/run_correction_review_regression.py` — Phase E review/promotion utility regression.
+- `tools/run_correction_command_regression.py` — Phase F command integration regression.
+- `tools/run_correction_nl_command_regression.py` — Phase G natural-language command mediation regression.
+- `tools/run_correction_implementation_regression.py` — Phase H approved-rule implementation planner regression (30+ checks, synthetic fixtures only).
 ---
 
 ## 8. Example Scenarios
@@ -287,23 +293,28 @@ Automatic classification is not yet implemented. It is the next planning phase.
 | E | **Review/promotion utility** | `src/correction_review.py` — human reviewer claim, evidence validation, append-only review metadata, PII sanitization, approved-rule record creation (`implementation_status="pending_implementation"`). No validator/catalog/renderer changes. | **Complete at `058de87`** | Completed |
 | F | **UI/command integration** | `src/correction_commands.py` — slash-command dispatcher with confirmation-required actions. Delegates to Phase A-E APIs only; no direct persistence writes. No natural-language parsing. | **Complete at `4ba5cd3`** | Completed |
 | G | **Natural-language command mediation** | `src/correction_nl_commands.py` — deterministic keyword/phrase intent classifier, canonical structured command objects, dispatched through Phase F. No AI/LLM imports. | **Complete at `cb988bc`** | Completed |
-| H | **Approved-rule implementation** | Promote approved global rule records (`implementation_status="pending_implementation"`) into actual validator code, rule catalog files, or prompt contracts. Planning-only until approved. | Future | Yes |
+| H | **Approved-rule implementation planner** | `src/correction_implementation_planner.py` — eligibility validation, implementer claim, implementation target assignment, source verification summary, `implementation_planned` record creation, status transitions. Stage 1 is planner/status-workflow only; no validator/catalog/renderer changes. | **Complete at `2588e67`** | Completed |
+| H.1 / I | **Pilot approved-rule implementation** | Select one approved record, implement into validator code, rule catalog, or prompt contracts. Planning-only until approved. | Future | Yes |
 
 ---
 
 ## 11. Next Phase Planning Target
 
-The next planning-only phase is **Phase H approved-rule implementation planning**.
+The next planning-only phase is **Phase H.1 / Phase I pilot approved-rule implementation planning**.
 
-Phase H should define:
+Phase H.1 / Phase I should define:
 
-- How approved global rule records (`implementation_status="pending_implementation"`) are promoted into actual validator code, rule catalog files, or prompt contracts.
-- Which approved rules are safe to implement deterministically vs. which require human-in-the-loop testing.
+- Select **one pilot approved record** for actual implementation into validator code, rule catalog files, or prompt contracts.
+- Determine whether the selected rule is safe to implement deterministically or requires human-in-the-loop testing.
+- Define the exact validator, rule catalog, or prompt-contract change required.
 - Impact on existing C7–C10 layout regressions and CCI validator regressions.
-- Rollback strategy if an implemented rule causes false positives.
+- Rollback strategy if the implemented rule causes false positives.
 - Regression requirements before any validator or rule catalog changes are committed.
+- `prompt_contract` implementation that changes runtime prompt behavior must be a separate approved task.
 
-Keep automatic enforcement and silent global rule activation out of Phase H planning unless explicitly scoped and approved. Phase H is approved-rule implementation planning only, not automatic global rule activation.
+Keep automatic enforcement and silent global rule activation out of Phase H.1 / Phase I planning unless explicitly scoped and approved. Phase H.1 / Phase I is pilot approved-rule implementation planning only, not automatic global rule activation.
+
+No validator, rule catalog, prompt-contract, or renderer changes may occur until Phase H.1 / Phase I is explicitly planned, approved, implemented, reviewed, and regression-tested.
 
 ---
 
