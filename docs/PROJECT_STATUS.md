@@ -1,6 +1,6 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-06-02  
+**Last Updated:** 2026-06-03  
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE  
 **Renderer:** v6 PDF (ReportLab)  
@@ -12,36 +12,38 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest implementation commit:** `4ba5cd3` — `CCI: Add command integration layer (Phase F)`
+**Latest implementation commit:** `cb988bc` — `CCI: Add natural language command mediation (Phase G)`
+**Phase G implementation commit:** `cb988bc` — `CCI: Add natural language command mediation (Phase G)`
 **Phase F implementation commit:** `4ba5cd3` — `CCI: Add command integration layer (Phase F)`
 **Phase E implementation commit:** `058de87` — `CCI: Add review promotion utility (Phase E)`
 **Phase D implementation commit:** `2e31892` — `CCI: Add pending global rule candidate logging (Phase D)`
 **Phase C implementation commit:** `8b8a95c` — `CCI: Add local command profile promotion (Phase C)`
 **Phase B implementation commit:** `519fad6` — `CCI: Add correction classification (Phase B)`
-**Current verified functional baseline:** `4ba5cd3` — Phase F command integration implemented and regression-protected
-**Previous functional baseline:** `058de87` — Phase E review/promotion utility
+**Current verified functional baseline:** `cb988bc` — Phase G natural-language command mediation implemented and regression-protected
+**Previous functional baseline:** `4ba5cd3` — Phase F command integration implemented and regression-protected
 **Phase A functional baseline:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`
-**GitHub Actions / regressions:** all 22 regression suites verified PASS at `4ba5cd3`
+**GitHub Actions / regressions:** all 23 regression suites verified PASS at `cb988bc`
 **Expected repository state:** clean and up to date with `origin/main`
 
 ### Start Here For New Chat
 
 1. Read `docs/BOOTSTRAP.md`.
 2. Read this file: `docs/PROJECT_STATUS.md`.
-3. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for the latest Phase F status.
-4. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
-5. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
-6. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
-7. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
-8. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
-8. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
-9. Do not modify renderer/layout unless explicitly asked.
-10. Continue from the **Recommended Next Work** section below.
-11. Run all regressions before committing implementation changes.
+3. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for the latest Phase G status.
+4. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
+5. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
+6. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
+7. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
+8. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
+9. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
+10. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
+11. Do not modify renderer/layout unless explicitly asked.
+12. Continue from the **Recommended Next Work** section below.
+13. Run all regressions before committing implementation changes.
 
 Suggested startup prompt:
 
-> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Run all regressions before committing.
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Run all regressions before committing.
 
 ---
 
@@ -116,12 +118,14 @@ Correction memory remains intentionally bounded:
 - **Pending global rule candidate logging is implemented in Phase D** with mandatory sanitization, explicit approval required before write, current-session-only scope, and `corrections/pending_corrections.jsonl` is gitignored.
 - **Review/promotion utility is implemented in Phase E** with human reviewer claim, evidence validation, append-only review metadata, PII sanitization, and approved-rule record creation only (no validator/catalog/renderer changes).
 - **Command integration layer is implemented in Phase F** with slash-command dispatcher (`src/correction_commands.py`), confirmation-required persistent actions, delegation to Phase A-E APIs only, and no direct persistence writes.
+- **Natural-language command mediation is implemented in Phase G** with deterministic keyword/phrase intent classifier (`src/correction_nl_commands.py`), no AI/LLM imports, canonical structured command objects dispatched through Phase F `CorrectionCommandDispatcher`, confirmation-required persistent actions, and clarification on ambiguity.
 - No automatic global rule enforcement.
-- No natural-language parsing (deferred to Phase G planning).
 - No renderer changes.
 - Conflicts remain advisory only.
 
 Do not implement global rule enforcement, validator/rule catalog modification, natural-language parsing, or UI/command integration without a separate planning step and user approval.
+
+Do not implement approved-rule implementation or validator/catalog changes without explicit Phase H planning and approval.
 
 ---
 
@@ -148,6 +152,12 @@ GitHub Actions workflow:
 Run the full current regression suite before committing implementation changes:
 
 ```bash
+python tools/run_correction_nl_command_regression.py
+python tools/run_correction_command_regression.py
+python tools/run_correction_review_regression.py
+python tools/run_correction_pending_regression.py
+python tools/run_correction_profile_promotion_regression.py
+python tools/run_correction_classify_regression.py
 python tools/run_intake_regression.py
 python tools/run_correction_regression.py
 python tools/run_correction_session_regression.py
@@ -165,11 +175,6 @@ python tools/run_c7_phase1_regression.py
 python tools/run_c8_regression.py
 python tools/run_c9_regression.py
 python tools/run_c10_regression.py
-python tools/run_correction_classify_regression.py
-python tools/run_correction_profile_promotion_regression.py
-python tools/run_correction_pending_regression.py
-python tools/run_correction_review_regression.py
-python tools/run_correction_command_regression.py
 ```
 
 The CI suite covers:
@@ -187,6 +192,7 @@ The CI suite covers:
 - Pending candidate log regression (Phase D).
 - Review/promotion utility regression (Phase E).
 - Command integration regression (Phase F).
+- Natural-language command mediation regression (Phase G).
 
 ---
 
@@ -209,6 +215,7 @@ The CI suite covers:
 - `src/correction_promote.py` — Phase C local command profile promotion.
 - `src/correction_pending_log.py` — Phase D pending global rule candidate logging (eligibility, sanitization, candidate records, status transitions, duplicate detection).
 - `src/correction_review.py` — Phase E review/promotion utility (list candidates, claim, record decision, approve/reject/defer/supersede, evidence validation, PII sanitization, Phase C redirect, approved record creation).
+- `src/correction_nl_commands.py` — Phase G natural-language command mediator. Deterministic keyword/phrase intent classification, canonical structured command object generation, and dispatcher delegation to Phase F.
 - `src/correction_commands.py` — Phase F slash-command dispatcher. Parses `/correct`, `/undo`, `/remember`, `/accept`, `/reject`, `/promote profile`, `/log candidate`, `/review pending`, `/claim`, `/decide`, `/approved rules`, `/status`. Delegates to Phase A-E APIs only; no direct persistence writes.
 - `profiles/README.md` — external profile safety documentation.
 - `corrections/README.md` — local-only correction storage safety documentation.
@@ -216,6 +223,7 @@ The CI suite covers:
 - `tools/run_correction_session_regression.py` — Phase A session persistence regression runner.
 - `tools/run_correction_pending_regression.py` — Phase D pending candidate log regression runner.
 - `tools/run_correction_review_regression.py` — Phase E review/promotion utility regression runner.
+- `tools/run_correction_nl_command_regression.py` — Phase G natural-language command mediation regression runner (151 checks).
 - `tools/run_correction_command_regression.py` — Phase F command integration regression runner (45 checks).
 - `profiles/example_local_profile.json` — fake/template profile only.
 
@@ -236,19 +244,19 @@ The CI suite covers:
 
 ## Recommended Next Work
 
-### Next Phase: Phase G Natural-Language Command Mediation Planning
+### Next Phase: Phase H Approved-Rule Implementation Planning
 
-The next recommended phase is **planning only**. Do not implement Phase G until its plan is reviewed and approved.
+Phase H is **planning-only until reviewed and approved**. It must not automatically enforce approved global records without explicit planning and review.
 
-Phase G should define:
+Phase H planning should address:
 
-- How natural-language user input is parsed into the slash-command structures already defined in Phase F.
-- Whether a lightweight intent classifier or keyword matcher is sufficient, or whether a more structured approach is needed.
-- How ambiguous natural-language input is handled (confirmation prompts, fallback to slash commands, or refusal).
-- Safety: no automatic promotion, no validator/catalog changes, no renderer changes.
-- Regression requirements before implementation.
+- How approved global rule records (`implementation_status="pending_implementation"`) are promoted into actual validator code, rule catalog files, or prompt contracts.
+- Which approved rules are safe to implement deterministically vs. which require human-in-the-loop testing.
+- Impact on existing C7–C10 layout regressions and CCI validator regressions.
+- Rollback strategy if an implemented rule causes false positives.
+- Regression requirements before any validator or rule catalog changes are committed.
 
-Keep automatic promotion and global rule enforcement out of Phase G planning unless explicitly scoped and approved. Phase G is natural-language command mediation planning only.
+Keep automatic enforcement and silent global rule activation out of Phase H planning unless explicitly scoped and approved. Phase H is approved-rule implementation planning only, not automatic global rule activation.
 
 ---
 
@@ -317,6 +325,25 @@ Keep automatic promotion and global rule enforcement out of Phase G planning unl
 - All 21 regression suites pass at `058de87`.
 - No UI implementation.
 - No real command/user data or approved promotion logs committed.
+
+### Phase G — Natural-Language Command Mediation (Completed)
+
+- Planning document created: `docs/planning/phase_g_natural_language_command_mediation_plan.md`.
+- Implementation commit: `cb988bc` — `CCI: Add natural language command mediation (Phase G)`.
+- Added `src/correction_nl_commands.py` with deterministic keyword/phrase intent classification and canonical structured command object generation.
+- No AI/LLM imports; no renderer imports; no validator imports; no direct file writes.
+- Dispatches through Phase F `CorrectionCommandDispatcher`; Phase F remains the dispatch authority.
+- Supports 15 canonical intents: correction, undo, remember/session, session_list, session_accept, session_reject, profile_promotion, pending_candidate_log, review_list, review_claim, review_decision, approved_list, status, unsupported.
+- Persistent actions require confirmation (`yes`/`y`/`confirm` vs `no`/`n`/`cancel`).
+- Clarifies on ambiguous field paths, body/reference targets, and low-confidence parses.
+- `/promote profile` and `/log candidate` constrained to most recent active-draft or current-session correction.
+- Manual-rule approvals require `secnav_citation`; validator-gap approvals require `validator_evidence`.
+- Approved global rule records remain `implementation_status="pending_implementation"`.
+- Regression runner created: `tools/run_correction_nl_command_regression.py` (151 checks).
+- All 23 regression suites pass at `cb988bc`.
+- No validator/rule catalog changes.
+- No renderer/layout changes.
+- No real command/user data committed.
 
 ### Phase F — Command Integration Layer (Completed)
 

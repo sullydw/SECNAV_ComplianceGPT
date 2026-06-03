@@ -1,15 +1,16 @@
 # Correction Memory and Rule Promotion Layer Plan
 
-**Current Verified Baseline:** `4ba5cd3` — CCI: Add command integration layer (Phase F)
+**Current Verified Baseline:** `cb988bc` — CCI: Add natural language command mediation (Phase G)
+**Phase G Implementation:** `cb988bc` — CCI: Add natural language command mediation (Phase G)
 **Phase F Implementation:** `4ba5cd3` — CCI: Add command integration layer (Phase F)
 **Phase E Implementation:** `058de87` — CCI: Add review promotion utility (Phase E)
 **Phase D Implementation:** `2e31892` — CCI: Add pending global rule candidate logging (Phase D)
 **Phase C Implementation:** `8b8a95c` — CCI: Add local command profile promotion (Phase C)
 **Phase B Implementation:** `519fad6` — CCI: Add correction classification (Phase B)
-**Previous Verified Baseline:** `058de87` — CCI: Add review promotion utility (Phase E)
+**Previous Verified Baseline:** `4ba5cd3` — CCI: Add command integration layer (Phase F)
 **Phase A Implementation:** `71ddf64` — CCI: Add session correction persistence (Phase A)
-**Latest Checkpoint:** `4ba5cd3` — Phase F command integration checkpoint (immediately after this update)
-**Next Phase:** Phase G natural-language command mediation planning (planning-only until approved)
+**Latest Checkpoint:** `cb988bc` — Phase G natural-language command mediation checkpoint (immediately after this update)
+**Next Phase:** Phase H approved-rule implementation planning (planning-only until approved)
 ---
 
 ## 1. Purpose
@@ -58,9 +59,8 @@ The following items are complete and regression-protected.
 - **Pending global rule candidate logging is implemented (Phase D)** with mandatory sanitization, explicit approval required before write, current-session-only scope, and `corrections/pending_corrections.jsonl` is gitignored.
 - **Review/promotion utility is implemented in Phase E** with human reviewer claim, evidence validation, append-only review metadata, PII sanitization, and approved-rule record creation only (no validator/catalog/renderer changes).
 - **Command integration layer is implemented in Phase F** with slash-command dispatcher (`src/correction_commands.py`), confirmation-required persistent actions, delegation to Phase A-E APIs only, and no direct persistence writes.
+- **Natural-language command mediation is implemented in Phase G** with deterministic keyword/phrase intent classifier (`src/correction_nl_commands.py`), no AI/LLM imports, canonical structured command objects dispatched through Phase F `CorrectionCommandDispatcher`, confirmation-required persistent actions, and clarification on ambiguity.
 - No automatic global rule enforcement.
-- No natural-language parsing (deferred to Phase G planning).
-- No UI override implementation.
 - No renderer changes.
 - Conflicts remain advisory only.
 
@@ -188,6 +188,7 @@ Automatic classification is not yet implemented. It is the next planning phase.
 - `src/correction_promote.py` — Phase C local command profile promotion. Two-step approval, eligibility gating, backup, atomic write, disable/remove/edit support.
 - `src/correction_pending_log.py` — Phase D pending global rule candidate logging. Eligibility gating, full PII sanitization, candidate record schema, JSONL append/read/update helpers, duplicate fingerprinting, and status transition helpers.
 - `src/correction_review.py` — Phase E review/promotion utility. Human reviewer claim, evidence validation, append-only review metadata, PII sanitization, approved-rule record creation (`implementation_status="pending_implementation"`).
+- `src/correction_nl_commands.py` — Phase G natural-language command mediator. Deterministic keyword/phrase intent classification, canonical structured command object generation, and dispatcher delegation to Phase F.
 - `src/correction_commands.py` — Phase F slash-command dispatcher. Parses `/correct`, `/undo`, `/remember`, `/accept`, `/reject`, `/promote profile`, `/log candidate`, `/review pending`, `/claim`, `/decide`, `/approved rules`, `/status`. Delegates to Phase A-E APIs only; no direct persistence writes. Confirmation required for all persistent actions.
 - `src/correction_store.py` — save, load, update, reject, and delete session correction JSONL records.
 - `src/intake_orchestrator.py` — orchestrates correction capture, apply, undo, audit rerun, opt-in session persistence, session pre-application, rejection, and correction classification gating.
@@ -215,6 +216,7 @@ Automatic classification is not yet implemented. It is the next planning phase.
 - `tools/run_correction_classify_regression.py` — Phase B classification regression.
 - `tools/run_correction_profile_promotion_regression.py` — Phase C local command profile promotion regression.
 - `tools/run_correction_pending_regression.py` — Phase D pending global rule candidate logging regression.
+- `tools/run_correction_nl_command_regression.py` — Phase G natural-language command mediation regression runner (151 checks).
 - `tools/run_correction_command_regression.py` — Phase F command integration regression runner (45 checks).
 
 ---
@@ -284,23 +286,24 @@ Automatic classification is not yet implemented. It is the next planning phase.
 | D | **Pending global rule candidate log** | `corrections/pending_corrections.jsonl` append-only log. For `possible_secnav_manual_rule` and `bug_validator_gap` classifications. Never auto-applied. | **Complete at `2e31892`** | Completed |
 | E | **Review/promotion utility** | `src/correction_review.py` — human reviewer claim, evidence validation, append-only review metadata, PII sanitization, approved-rule record creation (`implementation_status="pending_implementation"`). No validator/catalog/renderer changes. | **Complete at `058de87`** | Completed |
 | F | **UI/command integration** | `src/correction_commands.py` — slash-command dispatcher with confirmation-required actions. Delegates to Phase A-E APIs only; no direct persistence writes. No natural-language parsing. | **Complete at `4ba5cd3`** | Completed |
-| G | **Natural-language command mediation** | Parse natural-language user input into Phase F slash-command structures. Planning-only until approved. | Future | Yes |
+| G | **Natural-language command mediation** | `src/correction_nl_commands.py` — deterministic keyword/phrase intent classifier, canonical structured command objects, dispatched through Phase F. No AI/LLM imports. | **Complete at `cb988bc`** | Completed |
+| H | **Approved-rule implementation** | Promote approved global rule records (`implementation_status="pending_implementation"`) into actual validator code, rule catalog files, or prompt contracts. Planning-only until approved. | Future | Yes |
 
 ---
 
 ## 11. Next Phase Planning Target
 
-The next planning-only phase is **Phase G natural-language command mediation**.
+The next planning-only phase is **Phase H approved-rule implementation planning**.
 
-Phase G should define:
+Phase H should define:
 
-- How natural-language user input is parsed into the slash-command structures already defined in Phase F.
-- Whether a lightweight intent classifier or keyword matcher is sufficient, or whether a more structured approach is needed.
-- How ambiguous natural-language input is handled (confirmation prompts, fallback to slash commands, or refusal).
-- Safety: no automatic promotion, no validator/catalog changes, no renderer changes.
-- Regression requirements before implementation.
+- How approved global rule records (`implementation_status="pending_implementation"`) are promoted into actual validator code, rule catalog files, or prompt contracts.
+- Which approved rules are safe to implement deterministically vs. which require human-in-the-loop testing.
+- Impact on existing C7–C10 layout regressions and CCI validator regressions.
+- Rollback strategy if an implemented rule causes false positives.
+- Regression requirements before any validator or rule catalog changes are committed.
 
-Keep automatic promotion and global rule enforcement out of Phase G planning unless explicitly scoped and approved. Phase G is natural-language command mediation planning only, not automatic global rule activation.
+Keep automatic enforcement and silent global rule activation out of Phase H planning unless explicitly scoped and approved. Phase H is approved-rule implementation planning only, not automatic global rule activation.
 
 ---
 
