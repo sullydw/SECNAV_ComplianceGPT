@@ -58,19 +58,48 @@ Public API:
     validate_eligibility(record: dict) -> tuple[bool, list[str]]
         Check whether a single approved record is eligible for planning.
 
+    mark_implemented(
+        rule_id: str,
+        implementer_id: str,
+        implementation_commit: str = "",
+        approved_path: Path | None = None,
+    ) -> dict
+        Public wrapper: mark an implementation_planned record as implemented.
+        Validates existence, status, and implementer match.
+        Records implementation_commit hash in metadata when provided.
+
+    reject_for_implementation(
+        rule_id: str,
+        implementer_id: str,
+        rationale: str,
+        approved_path: Path | None = None,
+    ) -> dict
+        Mark an approved record as rejected_for_implementation.
+
+    defer_implementation(
+        rule_id: str,
+        implementer_id: str,
+        rationale: str,
+        deferred_until: str | None = None,
+        approved_path: Path | None = None,
+    ) -> dict
+        Mark an approved record as deferred.
+
+    mark_superseded(
+        rule_id: str,
+        implementer_id: str,
+        superseded_by_rule_id: str | None = None,
+        rationale: str = "",
+        approved_path: Path | None = None,
+    ) -> dict
+        Mark an approved record as superseded.
+
+    validate_eligibility(record: dict) -> tuple[bool, list[str]]
+        Check whether a single approved record is eligible for planning.
+
     validate_status_transition(current: str, new: str) -> tuple[bool, str]
         Validate a status transition. Includes implementation_planned -> implemented
-        for completeness, but Stage 1 does not expose a public mark_implemented().
-
-Design choices:
-    - Planner/status-workflow only. No validator, rule catalog, prompt-contract,
-      or renderer/layout changes in Stage 1.
-    - No AI/LLM imports.
-    - Reads approved records from local gitignored JSON only.
-    - Does not provide a public mark_implemented() in Stage 1.
-    - Stage 1 may define/test implemented status using synthetic fixtures only.
-    - Real approved promotion logs remain local/gitignored and must not be committed.
-    - All persistent actions require human implementer_id attribution.
+        and the public mark_implemented() wrapper.
 """
 
 from __future__ import annotations
@@ -686,11 +715,77 @@ def mark_superseded(
     return result
 
 
-# ---------------------------------------------------------------------------
-# Internal — Stage 1 does not expose mark_implemented publicly.
-# The transition implementation_planned -> implemented is defined above
-# for completeness and can be tested with synthetic fixtures.
-# ---------------------------------------------------------------------------
+def mark_implemented(
+    rule_id: str,
+    implementer_id: str,
+    implementation_commit: str = "",
+    approved_path: Path | None = None,
+) -> dict[str, Any]:
+    """
+    Public wrapper: mark an implementation_planned record as implemented.
+
+    Validates:
+      - record exists
+      - status is implementation_planned
+      - caller matches the claiming implementer
+    Records implementation_commit in metadata when provided.
+    """
+    warnings: list[str] = []
+    result: dict[str, Any] = {
+        "success": False,
+        "rule_id": rule_id,
+        "warnings": warnings,
+        "record": None,
+    }
+
+    if not implementer_id:
+        warnings.append("implementer_id is required")
+        return result
+
+    path = approved_path or _DEFAULT_APPROVED_PATH
+    records, read_warnings = _read_approved_records(path)
+    warnings.extend(read_warnings)
+
+    record = _find_record(records, rule_id)
+    if record is None:
+        warnings.append(f"Rule {rule_id} not found")
+        return result
+
+    current_status = record.get("implementation_status", "")
+    if current_status != "implementation_planned":
+        warnings.append(f"Record status is {current_status}; must be implementation_planned")
+        return result
+
+    record_implementer = record.get("implementer", "")
+    if record_implementer and record_implementer != implementer_id:
+        warnings.append(
+            f"Record claimed by {record_implementer}; cannot mark implemented by {implementer_id}"
+        )
+        return result
+
+    # Transition status
+    record["implementation_status"] = "implemented"
+
+    extra: dict[str, Any] = {}
+    if implementation_commit:
+        extra["implementation_commit"] = str(implementation_commit)[:200]
+        record["implementation_commit"] = str(implementation_commit)[:200]
+
+    _append_implementation_metadata(
+        record,
+        action="mark_implemented",
+        implementer_id=implementer_id,
+        previous_status=current_status,
+        new_status="implemented",
+        extra=extra,
+    )
+
+    write_warnings = _write_approved_records(path, records)
+    warnings.extend(write_warnings)
+
+    result["success"] = True
+    result["record"] = copy.deepcopy(record)
+    return result
 
 
 def _mark_implemented_internal(

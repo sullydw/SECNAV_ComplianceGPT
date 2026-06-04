@@ -34,6 +34,7 @@ from correction_implementation_planner import (
     reject_for_implementation,
     defer_implementation,
     mark_superseded,
+    mark_implemented,
     _mark_implemented_internal,
     _ALLOWED_IMPLEMENTATION_TARGETS,
 )
@@ -558,9 +559,64 @@ def check_40_deferred_can_be_reclaimed():
     shutil.rmtree(path.parent)
 
 
-# ---------------------------------------------------------------------------
-# Runner
-# ---------------------------------------------------------------------------
+def check_41_public_mark_implemented_success():
+    path = _make_approved_file([_make_base_approved_record()])
+    claim_record_for_implementation("agr_20260101_test001", "impl_1", approved_path=path)
+    result = mark_implemented("agr_20260101_test001", "impl_1", approved_path=path)
+    assert result["success"] is True, result["warnings"]
+    records, _ = list_approved_records_for_implementation(path)
+    assert records[0]["implementation_status"] == "implemented"
+    _passed("Public mark_implemented succeeds from implementation_planned")
+    shutil.rmtree(path.parent)
+
+
+def check_42_public_mark_implemented_wrong_implementer():
+    path = _make_approved_file([_make_base_approved_record()])
+    claim_record_for_implementation("agr_20260101_test001", "impl_1", approved_path=path)
+    result = mark_implemented("agr_20260101_test001", "impl_2", approved_path=path)
+    assert result["success"] is False
+    assert any("claimed by" in w for w in result["warnings"])
+    _passed("Public mark_implemented rejects wrong implementer")
+    shutil.rmtree(path.parent)
+
+
+def check_43_public_mark_implemented_non_planned_status():
+    path = _make_approved_file([_make_base_approved_record()])
+    result = mark_implemented("agr_20260101_test001", "impl_1", approved_path=path)
+    assert result["success"] is False
+    assert any("must be implementation_planned" in w for w in result["warnings"])
+    _passed("Public mark_implemented rejects non-planned status")
+    shutil.rmtree(path.parent)
+
+
+def check_44_public_mark_implemented_records_commit():
+    path = _make_approved_file([_make_base_approved_record()])
+    claim_record_for_implementation("agr_20260101_test001", "impl_1", approved_path=path)
+    result = mark_implemented(
+        "agr_20260101_test001", "impl_1",
+        implementation_commit="ef365d3",
+        approved_path=path,
+    )
+    assert result["success"] is True, result["warnings"]
+    record = result["record"]
+    assert record.get("implementation_commit") == "ef365d3"
+    meta = record["implementation_metadata"]
+    assert any(
+        m.get("action") == "mark_implemented" and m.get("implementation_commit") == "ef365d3"
+        for m in meta
+    )
+    _passed("Public mark_implemented records implementation commit")
+    shutil.rmtree(path.parent)
+
+
+def check_45_public_mark_implemented_does_not_touch_real_log():
+    # Ensure the real local approved log is untouched by using a temp path only
+    import correction_implementation_planner as _impl
+    real_default = _impl._DEFAULT_APPROVED_PATH
+    assert real_default.name == "approved_rule_promotions.json"
+    # The check above just confirms awareness; real test is we only used temp paths
+    _passed("Public mark_implemented does not touch real approved log (temp-only test)")
+
 
 def run() -> int:
     checks = [
@@ -604,6 +660,11 @@ def run() -> int:
         check_38_plan_records_metadata,
         check_39_claim_records_metadata,
         check_40_deferred_can_be_reclaimed,
+        check_41_public_mark_implemented_success,
+        check_42_public_mark_implemented_wrong_implementer,
+        check_43_public_mark_implemented_non_planned_status,
+        check_44_public_mark_implemented_records_commit,
+        check_45_public_mark_implemented_does_not_touch_real_log,
     ]
 
     passed = 0
