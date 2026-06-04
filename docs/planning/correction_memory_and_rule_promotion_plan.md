@@ -1,97 +1,36 @@
 # Correction Memory and Rule Promotion Layer Plan
 
-**Current Verified Baseline:** `2588e67` — CCI: Add approved rule implementation planner (Phase H)
-**Phase H Implementation:** `2588e67` — CCI: Add approved rule implementation planner (Phase H)
-**Phase G Implementation:** `cb988bc` — CCI: Add natural language command mediation (Phase G)
-**Phase F Implementation:** `4ba5cd3` — CCI: Add command integration layer (Phase F)
-**Phase E Implementation:** `058de87` — CCI: Add review promotion utility (Phase E)
-**Phase D Implementation:** `2e31892` — CCI: Add pending global rule candidate logging (Phase D)
-**Phase C Implementation:** `8b8a95c` — CCI: Add local command profile promotion (Phase C)
-**Phase B Implementation:** `519fad6` — CCI: Add correction classification (Phase B)
-**Previous Verified Baseline:** `cb988bc` — CCI: Add natural language command mediation (Phase G)
-**Phase A Implementation:** `71ddf64` — CCI: Add session correction persistence (Phase A)
-**Latest Checkpoint:** `2588e67` — Phase H approved-rule implementation planner checkpoint (immediately after this update)
-**Next Phase:** Phase H.1 / Phase I pilot approved-rule implementation planning (planning-only until approved)
+**Current Verified Baseline:** `6298dab` — CCI: Add public mark implemented wrapper  
+**Phase H.1 Pilot Implementation:** `ef365d3` — CCI: Implement pilot approved rule (Phase H.1)  
+**Phase H.1 Mark-Implemented Wrapper:** `6298dab` — CCI: Add public mark implemented wrapper  
+**Phase H Implementation:** `2588e67` — CCI: Add approved rule implementation planner (Phase H)  
+**Phase G Implementation:** `cb988bc` — CCI: Add natural language command mediation (Phase G)  
+**Phase F Implementation:** `4ba5cd3` — CCI: Add command integration layer (Phase F)  
+**Phase E Implementation:** `058de87` — CCI: Add review promotion utility (Phase E)  
+**Phase D Implementation:** `2e31892` — CCI: Add pending global rule candidate logging (Phase D)  
+**Phase C Implementation:** `8b8a95c` — CCI: Add local command profile promotion (Phase C)  
+**Phase B Implementation:** `519fad6` — CCI: Add correction classification (Phase B)  
+**Phase A Implementation:** `71ddf64` — CCI: Add session correction persistence (Phase A)  
+**Latest Checkpoint:** `6298dab` / Phase H.1 pilot implementation handoff  
+**Next Phase:** Phase H.2 / Phase I.1 second pilot planning or validator-enforcement planning — planning-only until approved
+
 ---
 
 ## 1. Purpose
 
-The system must allow a user to correct an error in the active draft, apply that correction immediately, rerun validators, regenerate output, and store the correction for scoped reuse.
+The Correction Memory and Rule Promotion Layer lets a user correct draft output, apply that correction safely, classify the correction, optionally remember it in scoped storage, and promote possible global rules only through human review and implementation planning.
 
-When a user identifies a problem in a generated draft (e.g., wrong wording in the subject line, incorrect From line title, missing Via addressee, improper personnel identification format), they should be able to specify the correction once, see it applied immediately, and have the system remember that correction so that future drafts in similar contexts do not repeat the same mistake — provided it is safe to do so.
-
-The Correction Memory and Rule Promotion Layer is not a replacement for deterministic SECNAV validators. It is a user-driven feedback loop that sits alongside the CCI layer, with strict guardrails preventing unreviewed local preferences from becoming global compliance rules.
-
----
-
-## 1a. What Is Already Implemented
-
-The following items are complete and regression-protected.
-
-### Baseline `2e643db` — Active-Draft Correction + Intake Integration
-
-- **Active-draft correction apply:** `src/correction_apply.py` — apply a single correction to a payload JSON object given a field path and corrected value; supports undo.
-- **Active-draft correction capture:** `src/correction_capture.py` — capture correction metadata from user input and build a structured correction record.
-- **Intake orchestrator integration:** `src/intake_orchestrator.py` — captures corrections via `capture_correction()`, applies them via `apply_correction()`, supports undo via `undo_correction()`, reruns audit via `rerun_audit_after_correction()`.
-- **Conflict detection:** If a correction increases the audit error count, the system surfaces a `correction_conflict` advisory without blocking the draft.
-- **In-memory tracking:** `corrections_applied` and `correction_conflicts` are tracked inside `IntakeOrchestrator` and exposed through `get_status()`.
-- **Regression coverage:**
-  - `tools/run_correction_regression.py` — tests capture, apply, undo, conflict detection.
-  - `tools/run_intake_regression.py` — tests before/after audit with correction, undo restoration, and conflict surfacing.
-
-### Baseline `71ddf64` — Phase A Session Correction Persistence
-
-- **Session JSONL store:** `src/correction_store.py` stores opt-in session corrections under `corrections/session/`.
-- **Gitignore safety:** `.gitignore` excludes `corrections/session/*.jsonl`, `corrections/pending_corrections.jsonl`, and `corrections/approved_rule_promotions.json`.
-- **Session directory:** `corrections/session/.gitkeep` and `corrections/session/README.md` document local-only session storage.
-- **Current-session scope:** `src/correction_capture.py` allows `current_session` scope.
-- **Intake support:** `src/intake_orchestrator.py` supports optional `session_id`, `set_session_id()`, `_preapply_session_corrections()`, `persist_correction()`, `reject_session_correction()`, and `session_notes` in `get_status()`.
-- **Session rejection:** rejected corrections are soft-marked with `user_rejected=True` and excluded from future matching.
-- **One-time wording safety:** `one_time_wording` corrections are not persisted unless explicitly scoped to `current_session`.
-- **Regression coverage:** `tools/run_correction_session_regression.py` passed 30/30 checks.
-
-### Current Limits (by design)
-
-- Session persistence is opt-in only; `session_id=None` preserves in-memory-only behavior.
-- Session JSONL files are local and gitignored.
-- 30-day session retention is advisory only; no automatic cleanup is implemented.
-- Automatic correction classification is implemented (Phase B) but does not promote; it gates persistence only.
-- Local command profile promotion is implemented (Phase C) with mandatory two-step approval, external profile storage, backup, and atomic writes.
-- **Pending global rule candidate logging is implemented (Phase D)** with mandatory sanitization, explicit approval required before write, current-session-only scope, and `corrections/pending_corrections.jsonl` is gitignored.
-- **Review/promotion utility is implemented in Phase E** with human reviewer claim, evidence validation, append-only review metadata, PII sanitization, and approved-rule record creation only (no validator/catalog/renderer changes).
-- **Command integration layer is implemented in Phase F** with slash-command dispatcher (`src/correction_commands.py`), confirmation-required persistent actions, delegation to Phase A-E APIs only, and no direct persistence writes.
-- **Natural-language command mediation is implemented in Phase G** with deterministic keyword/phrase intent classifier (`src/correction_nl_commands.py`), no AI/LLM imports, canonical structured command objects dispatched through Phase F `CorrectionCommandDispatcher`, confirmation-required persistent actions, and clarification on ambiguity.
-- **Approved-rule implementation planner is implemented in Phase H Stage 1** with `src/correction_implementation_planner.py` (eligibility validation, implementer claim, implementation target assignment, source verification summary, `implementation_planned` records, status transitions). Stage 1 is planner/status-workflow only; no validator, rule catalog, prompt-contract, or renderer changes. No real approved record set to `implemented`.
-- No automatic global rule enforcement.
-- No renderer changes.
-- Conflicts remain advisory only.
-
-These remaining limits are intentional and are planned for future phases only after separate review and approval.
-
-### Implemented storage safety files
-
-- `.gitignore` — excludes session JSONL, pending candidate log, and future approved rule promotion files.
-- `corrections/session/.gitkeep` — keeps the local session directory structure.
-- `corrections/session/README.md` — explains local-only session correction storage.
-- `corrections/README.md` — explains local-only pending candidate log and session storage.
-
-### Future modules (require approval before implementation)
-
-- `src/correction_reuse.py` — optional future separation if reuse logic grows beyond `IntakeOrchestrator`.
+The layer is not a replacement for deterministic SECNAV validators. It is a controlled feedback loop with strict guardrails so that local preferences, one-time wording edits, and AI/user suggestions do not silently become global compliance rules.
 
 ---
 
 ## 2. Core Principle
 
-Apply corrections immediately to the active draft.
-Reuse corrections within safe scope.
-Do not allow unreviewed user corrections to become global SECNAV compliance rules automatically.
-
-The layer operates on three principles:
-
-1. **Immediate application**: every correction is applied to the current draft payload before rerunning validators or regenerating output.
-2. **Scoped reuse**: corrections are tagged with scope and context so the system knows when it is safe to reuse them automatically.
-3. **Manual promotion**: only corrections that pass review can be promoted to local command profiles or global rule candidates. No correction is ever promoted silently.
+1. Apply corrections immediately to the active draft when requested.
+2. Reuse corrections only within the approved scope.
+3. Promote possible global rules only through review, planning, implementation, and regression.
+4. Never enforce approved records automatically from local logs.
+5. Never commit real session stores, pending logs, approved promotion logs, command profiles, or contact/user data.
 
 ---
 
@@ -99,242 +38,185 @@ The layer operates on three principles:
 
 | Scope | Auto-reuse | Status | Description |
 |---|---|---|---|
-| `active_draft` | Yes — immediate | Implemented | Correction applies only to the draft currently being edited. It is used once, immediately, and tracked in memory. |
-| `current_session` | Yes — when context matches | Implemented in Phase A | Correction persists to a local, gitignored JSONL session store when `session_id` is provided and scope is explicitly `current_session`. Reused when document type, component, and affected field match. |
-| `local_command_profile` | Yes — after explicit user approval | Completed in Phase C | Correction becomes part of a named local command profile. Must be approved by the user before activation. |
-| `pending_global_rule_candidate` | No — manual review only | Completed in Phase D | Correction is logged as a candidate for a global SECNAV compliance rule or validator update. It is never auto-applied. |
-| `approved_global_rule` | Yes — enforced | Future Phase H.1 / Phase I | Correction has been reviewed, validated against SECNAV M-5216.5 text, and promoted into the rule catalog, validator code, or AI prompt contract. Phase E creates `approved_global_rule` records with `implementation_status="pending_implementation"` only; actual enforcement requires future validator/catalog changes. Phase F command layer delegates to Phase E review APIs and does not bypass any safety gate. Phase H Stage 1 provides implementation planning utilities (eligibility, claim, target, source verification, status transitions) but does not implement any pilot rule or change validators/catalog/renderer. |
+| `active_draft` | Yes — immediate | Implemented | Correction applies only to the current draft and is tracked in memory. |
+| `current_session` | Yes — when context matches | Implemented in Phase A | Correction persists to local gitignored session JSONL when explicitly scoped and `session_id` is provided. |
+| `local_command_profile` | Yes — after explicit approval | Implemented in Phase C | Correction becomes part of a local command profile after two-step approval. |
+| `pending_global_rule_candidate` | No — review only | Implemented in Phase D | Possible global/manual/validator issue logged locally for human review. |
+| `approved_global_rule` | Only after implementation | Implemented workflow through Phase H.1 pilot | Phase E approves records with `pending_implementation`; Phase H plans implementation; Phase H.1 can implement one selected approved record into catalog/validator/prompt/docs after approval and regression. |
 
 ---
 
-## 4. Correction Workflow
+## 4. Implemented Modules
 
-When a user issues a correction command or selects a correction in a future UI:
-
-1. **Capture original generated value** — snapshot the field value before modification.
-2. **Capture corrected value** — record the user's intended replacement.
-3. **Capture field/path affected** — JSON path or canonical field name (e.g., `subj`, `from`, `body[2]`, `via[0]`).
-4. **Capture document type** — standard_letter, endorsement, memorandum_for_record, etc.
-5. **Capture component context** — navy, marine_corps, joint, don_secretariat, unknown.
-6. **Capture user explanation** — free-text reason for the correction, used later for classification and audit.
-7. **Apply correction to current draft** — mutate the active payload in memory.
-8. **Rerun applicable CCI validators** — run validators that inspect the affected field.
-9. **Track conflict status** — surface advisory conflict if audit error count increases.
-10. **Persist only when safe and explicit** — store as `current_session` only when a caller provides `session_id` and the correction is explicitly session-scoped.
-11. **Defer promotion** — do not promote to profile or global rules without future approved workflow.
-
-Automatic classification is not yet implemented. It is the next planning phase.
+- `src/correction_apply.py` — active-draft correction apply/undo primitives.
+- `src/correction_capture.py` — correction capture and automatic classification handoff.
+- `src/correction_store.py` — local session JSONL persistence.
+- `src/correction_classify.py` — Phase B correction classifier.
+- `src/correction_promote.py` — Phase C local command profile promotion.
+- `src/correction_pending_log.py` — Phase D pending global rule candidate logging.
+- `src/correction_review.py` — Phase E review/promotion utility and approved-record creation.
+- `src/correction_commands.py` — Phase F slash-command dispatcher.
+- `src/correction_nl_commands.py` — Phase G deterministic natural-language mediation.
+- `src/correction_implementation_planner.py` — Phase H/H.1 implementation planner and public `mark_implemented()` wrapper.
+- `rules_v6/CCI/cci_ch7_subject_rules.json` — includes Phase H.1 pilot rule catalog entry `CCI-CH7-SUBJ-006`.
 
 ---
 
-## 5. Correction Reuse Behavior
+## 5. Implemented Storage Safety
 
-### `active_draft`
-
-- The correction is applied once to the current payload.
-- The correction is tracked inside `IntakeOrchestrator` memory and exposed through `get_status()`.
-- Undo is supported.
-
-### `current_session`
-
-- The correction is stored in a local JSONL session store only when `session_id` is provided and scope is explicitly `current_session`.
-- `session_id=None` preserves prior in-memory-only behavior.
-- On a new draft in the same session, the system checks whether document type, component, and field path match a stored correction.
-- If all context keys match, the correction may be pre-applied before validators run.
-- If the user rejects the pre-applied correction, it is soft-marked with `user_rejected=True` and excluded from future matching.
-- Session retention is advisory only; there is no automatic cleanup in Phase A.
-
-### `local_command_profile`
-
-- Completed in Phase C.
-- The user must explicitly approve adding the correction to a named local profile.
-- Corrections in this scope must not leak into default global behavior.
-- Real profile data must not be committed to the public repository.
-
-### `pending_global_rule_candidate`
-
-- Completed in Phase D.
-- Corrections classified as `possible_secnav_manual_rule` or `bug_validator_gap` are written to `corrections/pending_corrections.jsonl` only after explicit user approval.
-- They must never be auto-applied to other users or other sessions.
-- Candidate logs must remain gitignored and subject to review.
-
-### `approved_global_rule`
-
-- Future Phase H.1 / Phase I.
-- Phase E creates approved-rule records with `implementation_status="pending_implementation"` only; actual enforcement requires future validator/catalog changes.
-- Phase H Stage 1 provides implementation planning utilities (`src/correction_implementation_planner.py`) but does not implement any pilot rule, modify validators, rule catalogs, prompt contracts, or renderer behavior.
-- Once reviewed and approved, a correction may become a deterministic rule in `rules_v6/CCI/`, a validator update in `src/cci_*.py`, or a prompt-contract addition.
-- Never auto-applied.
-- `implemented` status is reserved for separately approved Phase H.1 / Phase I pilot implementation.
+- `.gitignore` excludes session JSONL, pending candidate logs, and approved promotion logs.
+- `corrections/session/.gitkeep` keeps the local session directory structure.
+- `corrections/session/README.md` explains local-only session correction storage.
+- `corrections/README.md` explains local-only correction storage safety.
+- `corrections/pending_corrections.jsonl` is local/gitignored.
+- `corrections/approved_rule_promotions.json` is local/gitignored.
 
 ---
 
-## 6. Safety Guardrails
+## 6. Completed Phases
 
-- **User correction shall never silently override a deterministic SECNAV validator.** If a correction conflicts with a validator finding, the system must surface the conflict and require review.
-- **If a correction conflicts with a validator, show conflict and require review.** The user may choose to override the validator for this draft only, escalate the correction as a bug/validator gap, or abandon the correction.
-- **User correction shall not become a global rule without review.** The `pending_global_rule_candidate` scope ensures every proposed global change is inspected.
-- **Local overrides must be scoped to command/profile.** A local command preference cannot leak into the default global behavior.
-- **All correction records should be auditable and reversible.** Every record stores original value, corrected value, timestamp, classification or classification candidate, and user explanation where available.
-- **Session JSONL stores may contain sensitive draft values.** They are local-only and gitignored.
-- **Do not log raw original/corrected values at INFO level.** Future logging should prefer field paths and correction IDs.
-- **Do not commit real session stores, command profiles, contact data, or correction logs.**
+### Phase A — Session Correction Persistence
 
----
+- Commit: `71ddf64` — `CCI: Add session correction persistence (Phase A)`.
+- Added opt-in local session persistence under `corrections/session/`.
+- Session corrections are reused only when context matches.
+- Rejected session corrections are soft-marked and excluded from future matching.
 
-## 7. Files Status
+### Phase B — Correction Classification
 
-### Implemented modules
+- Commit: `519fad6` — `CCI: Add correction classification (Phase B)`.
+- Added deterministic classification into one-time wording, local command preference, possible SECNAV manual rule, or validator gap.
 
-- `src/correction_apply.py` — apply a single correction to a payload JSON object given a field path and corrected value; supports undo via `undo_correction()`.
-- `src/correction_capture.py` — capture correction metadata from user input and build a structured correction record; supports `active_draft` and `current_session` scopes.
-- `src/correction_classify.py` — classify a correction into one of `one_time_wording`, `local_command_preference`, `possible_secnav_manual_rule`, or `bug_validator_gap` using deterministic heuristics based on field path and reason text. Phase B complete.
-- `src/correction_promote.py` — Phase C local command profile promotion. Two-step approval, eligibility gating, backup, atomic write, disable/remove/edit support.
-- `src/correction_pending_log.py` — Phase D pending global rule candidate logging. Eligibility gating, full PII sanitization, candidate record schema, JSONL append/read/update helpers, duplicate fingerprinting, and status transition helpers.
-- `src/correction_review.py` — Phase E review/promotion utility. Human reviewer claim, evidence validation, append-only review metadata, PII sanitization, approved-rule record creation (`implementation_status="pending_implementation"`).
-- `src/correction_nl_commands.py` — Phase G natural-language command mediator. Deterministic keyword/phrase intent classification, canonical structured command object generation, and dispatcher delegation to Phase F.
-- `src/correction_commands.py` — Phase F slash-command dispatcher. Parses `/correct`, `/undo`, `/remember`, `/accept`, `/reject`, `/promote profile`, `/log candidate`, `/review pending`, `/claim`, `/decide`, `/approved rules`, `/status`. Delegates to Phase A-E APIs only; no direct persistence writes. Confirmation required for all persistent actions.
-- `src/correction_store.py` — save, load, update, reject, and delete session correction JSONL records.
-- `src/intake_orchestrator.py` — orchestrates correction capture, apply, undo, audit rerun, opt-in session persistence, session pre-application, rejection, and correction classification gating.
+### Phase C — Local Command Profile Promotion
 
-### Implemented storage safety files
+- Commit: `8b8a95c` — `CCI: Add local command profile promotion (Phase C)`.
+- Added two-step profile promotion, backup, atomic write, disable/remove/edit.
+- Local command preferences remain scoped to local profiles.
 
-- `.gitignore` — excludes session JSONL and future correction log files.
-- `corrections/session/.gitkeep` — keeps the local session directory structure.
-- `corrections/session/README.md` — explains local-only session correction storage.
+### Phase D — Pending Global Rule Candidate Logging
 
-### Future modules (require approval before implementation)
+- Commit: `2e31892` — `CCI: Add pending global rule candidate logging (Phase D)`.
+- Added explicit-approval pending-candidate logging for possible global rules or validator gaps.
+- Pending logs remain local/gitignored.
 
-- `src/correction_reuse.py` — optional future separation if reuse logic grows beyond `IntakeOrchestrator`.
-- Pilot approved-rule implementation (Phase H.1 / Phase I) — actual validator, rule catalog, or prompt-contract change for one selected approved record.
+### Phase E — Review/Promotion Utility
 
-### Future storage files (require approval before implementation)
+- Commit: `058de87` — `CCI: Add review promotion utility (Phase E)`.
+- Added human claim/review, evidence validation, and approved-record creation.
+- Approved records are created with `implementation_status="pending_implementation"` only.
 
-- `corrections/pending_corrections.jsonl` — append-only log of pending global rule candidates. Phase D implemented.
-- `corrections/approved_rule_promotions.json` — record of corrections promoted to global rules, with reviewer, date, and rationale. Local-only; Phase E creates records, Phase H Stage 1 plans implementation, Phase H.1 / Phase I may implement.
+### Phase F — Command Integration Layer
 
-### Regression files
+- Commit: `4ba5cd3` — `CCI: Add command integration layer (Phase F)`.
+- Added slash-command dispatcher and confirmation-required persistent actions.
+- Delegates to Phase A-E APIs only; no direct persistence writes.
 
-- `tools/run_correction_regression.py` — active-draft correction regression.
-- `tools/run_intake_regression.py` — intake and correction integration regression.
-- `tools/run_correction_session_regression.py` — Phase A session persistence regression.
-- `tools/run_correction_classify_regression.py` — Phase B classification regression.
-- `tools/run_correction_profile_promotion_regression.py` — Phase C local command profile promotion regression.
-- `tools/run_correction_pending_regression.py` — Phase D pending global rule candidate logging regression.
-- `tools/run_correction_review_regression.py` — Phase E review/promotion utility regression.
-- `tools/run_correction_command_regression.py` — Phase F command integration regression.
-- `tools/run_correction_nl_command_regression.py` — Phase G natural-language command mediation regression.
-- `tools/run_correction_implementation_regression.py` — Phase H approved-rule implementation planner regression (30+ checks, synthetic fixtures only).
----
+### Phase G — Natural-Language Command Mediation
 
-## 8. Example Scenarios
+- Commit: `cb988bc` — `CCI: Add natural language command mediation (Phase G)`.
+- Added deterministic natural-language mediator.
+- No AI/LLM imports, no renderer imports, no validator imports, no direct file writes.
 
-### 8.1 Subject punctuation correction
+### Phase H — Approved-Rule Implementation Planner
 
-- **Original**: `Subj: POLICY UPDATE.`
-- **Correction**: remove terminal period.
-- **Classification candidate**: `possible_secnav_manual_rule` or `bug_validator_gap` if the validator missed it.
-- **Current safe scope**: `active_draft` unless explicitly persisted to `current_session`.
+- Commit: `2588e67` — `CCI: Add approved rule implementation planner (Phase H)`.
+- Added eligibility validation, implementer claim/assignment, target assignment, source verification summary, status transitions, deferral/rejection/superseded handling.
+- Planner/status-workflow only; no validator, rule catalog, prompt-contract, or renderer changes in Stage 1.
 
-### 8.2 From line corrected from individual name to Commanding Officer
+### Phase H.1 / Phase I — Pilot Approved-Rule Implementation
 
-- **Original**: `From: John A. Smith`
-- **Correction**: `From: Commanding Officer, USS NEVERSAIL`
-- **Classification candidate**: `possible_secnav_manual_rule` or `local_command_preference` depending on context.
-- **Current safe scope**: `active_draft` or explicit `current_session` only.
-
-### 8.3 Local originator code preference
-
-- **Original**: sender symbol lacks originator code.
-- **Correction**: add local originator code `N7`.
-- **Classification candidate**: `local_command_preference`.
-- **Future scope**: `local_command_profile` only after explicit approval.
-
-### 8.4 Navy vs Marine Corps personnel wording correction
-
-- **Original**: body text uses "Marine" lowercase.
-- **Correction**: capitalize "Marine".
-- **Classification candidate**: `possible_secnav_manual_rule` or `bug_validator_gap` if a validator missed it.
-- **Current safe scope**: `active_draft` or explicit `current_session` only.
-
-### 8.5 Missing Via routing rule discovered
-
-- **Original**: draft omits an intermediate Via addressee that chain of command requires.
-- **Correction**: add the Via addressee.
-- **Classification candidate**: `local_command_preference`, `possible_secnav_manual_rule`, or `bug_validator_gap` depending on whether the requirement is command-specific or manual-based.
-- **Future scope**: profile or pending global candidate only after review.
-
-### 8.6 One-time wording change that should not become rule
-
-- **Original**: body paragraph uses a specific example sentence.
-- **Correction**: user rewords the example for this particular letter.
-- **Classification candidate**: `one_time_wording`.
-- **Current safe scope**: `active_draft` only by default. It must not persist unless explicitly scoped to `current_session`.
+- Pilot implementation commit: `ef365d3` — `CCI: Implement pilot approved rule (Phase H.1)`.
+- Public wrapper commit: `6298dab` — `CCI: Add public mark implemented wrapper`.
+- First pilot was rule-catalog-only.
+- Added catalog entry `CCI-CH7-SUBJ-006` to `rules_v6/CCI/cci_ch7_subject_rules.json`.
+- Rule text: `In correspondence, do not use acronyms in the subject line.`
+- Source: SECNAV M-5216.5, Chapter 7, paragraph 9, Subject Line, subparagraph a. General.
+- Approved record: `agr_20260604_b69c92d9`.
+- Target: `rule_catalog`.
+- Added `tools/run_pilot_subject_acronym_rule_catalog_regression.py` with 11 checks.
+- Added public `mark_implemented()` wrapper to `src/correction_implementation_planner.py`.
+- Added 5 planner regression checks; `tools/run_correction_implementation_regression.py` now passes 45/45.
+- Local approved record `agr_20260604_b69c92d9` was marked `implementation_status="implemented"` with implementation commit `ef365d3`.
+- Approved/pending logs remained local/gitignored and were not committed.
+- No validator changes.
+- No renderer/layout changes.
+- No runtime prompt-contract changes.
+- No automatic enforcement from approved logs.
+- No background automation.
 
 ---
 
-## 9. Relationship to AI Drafting
+## 7. Current Regression Coverage
 
-- **AI may propose corrections and ask whether to remember them.** When the AI detects a likely error during drafting, it can suggest a correction and ask the user: "Apply this correction to the current draft? Remember for this session? Add to local profile?"
-- **AI may classify likely correction scope only after Phase B is designed and approved.** Until then, classification is not automatic.
-- **Deterministic validators remain final authority for implemented hard rules.** A user or AI correction that conflicts with a deterministic validator must be surfaced as a conflict, not silently accepted.
-- **Unresolved conflicts become human-review items.** If the user insists on a correction that violates a validator, the draft is flagged for human review before release.
+Use the explicit Pinokio/Miniconda Python for full local regression runs:
 
----
+`C:\Users\drryl\pinokio\bin\miniconda\python.exe`
 
-## 10. Future Implementation Phases (Require Approval)
+The current local regression set is **25 suites**:
 
-| # | Phase | Task | Scope | Status | Approval Required |
-|---|---|---|---|---|---|
-| A | **Session persistence** | Lightweight JSONL session store (`corrections/session/`). Corrections from a session are available to the next draft in the same session if document type, component, and field match. | Complete at `71ddf64` | Completed |
-| B | **Correction classification** | `src/correction_classify.py` — classify a correction into one of the four types using heuristics (field path + reason). Gates session persistence; does not promote. | Complete at `519fad6`; regression isolation fix at `a7f9aeb` | Completed |
-| C | **Local command profile promotion** | User approval workflow. Writing approved corrections to external profile `override_rules` as local overrides. Only for `local_command_preference` classifications. | **Complete at `8b8a95c`** | Completed |
-| D | **Pending global rule candidate log** | `corrections/pending_corrections.jsonl` append-only log. For `possible_secnav_manual_rule` and `bug_validator_gap` classifications. Never auto-applied. | **Complete at `2e31892`** | Completed |
-| E | **Review/promotion utility** | `src/correction_review.py` — human reviewer claim, evidence validation, append-only review metadata, PII sanitization, approved-rule record creation (`implementation_status="pending_implementation"`). No validator/catalog/renderer changes. | **Complete at `058de87`** | Completed |
-| F | **UI/command integration** | `src/correction_commands.py` — slash-command dispatcher with confirmation-required actions. Delegates to Phase A-E APIs only; no direct persistence writes. No natural-language parsing. | **Complete at `4ba5cd3`** | Completed |
-| G | **Natural-language command mediation** | `src/correction_nl_commands.py` — deterministic keyword/phrase intent classifier, canonical structured command objects, dispatched through Phase F. No AI/LLM imports. | **Complete at `cb988bc`** | Completed |
-| H | **Approved-rule implementation planner** | `src/correction_implementation_planner.py` — eligibility validation, implementer claim, implementation target assignment, source verification summary, `implementation_planned` record creation, status transitions. Stage 1 is planner/status-workflow only; no validator/catalog/renderer changes. | **Complete at `2588e67`** | Completed |
-| H.1 / I | **Pilot approved-rule implementation** | Select one approved record, implement into validator code, rule catalog, or prompt contracts. Planning-only until approved. | Future | Yes |
+- `tools/run_pilot_subject_acronym_rule_catalog_regression.py` — Phase H.1 pilot regression, 11 checks.
+- `tools/run_correction_implementation_regression.py` — Phase H/H.1 planner regression, 45 checks.
+- `tools/run_correction_nl_command_regression.py` — Phase G, 151 checks.
+- `tools/run_correction_command_regression.py` — Phase F, 45 checks.
+- `tools/run_correction_review_regression.py` — Phase E, 30 checks.
+- `tools/run_correction_pending_regression.py` — Phase D, 33 checks.
+- `tools/run_correction_profile_promotion_regression.py` — Phase C, 33 checks.
+- `tools/run_correction_classify_regression.py` — Phase B.
+- Intake, correction, session, profile, audit, context-schema, CCI subject/ref-encl/acronym/date-time/personnel/POC/routing, and C7-C10 layout regressions.
+
+The 25-suite set passed locally after Phase H.1 when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF.
 
 ---
 
-## 11. Next Phase Planning Target
+## 8. Safety Guardrails
 
-The next planning-only phase is **Phase H.1 / Phase I pilot approved-rule implementation planning**.
-
-Phase H.1 / Phase I should define:
-
-- Select **one pilot approved record** for actual implementation into validator code, rule catalog files, or prompt contracts.
-- Determine whether the selected rule is safe to implement deterministically or requires human-in-the-loop testing.
-- Define the exact validator, rule catalog, or prompt-contract change required.
-- Impact on existing C7--C10 layout regressions and CCI validator regressions.
-- Rollback strategy if the implemented rule causes false positives.
-- Regression requirements before any validator or rule catalog changes are committed.
-- `prompt_contract` implementation that changes runtime prompt behavior must be a separate approved task.
-
-Keep automatic enforcement and silent global rule activation out of Phase H.1 / Phase I planning unless explicitly scoped and approved. Phase H.1 / Phase I is pilot approved-rule implementation planning only, not automatic global rule activation.
-
-No validator, rule catalog, prompt-contract, or renderer changes may occur until Phase H.1 / Phase I is explicitly planned, approved, implemented, reviewed, and regression-tested.
-
-**Planning document:** `docs/planning/phase_h1_pilot_approved_rule_implementation_plan.md`
+- Do not edit renderer/layout casually.
+- Do not create a parallel renderer.
+- Do not implement additional global rule enforcement, validator enforcement, prompt-contract changes, or additional rule-catalog changes without approved planning.
+- Do not commit real command profiles, contact data, session JSONL stores, pending candidate logs, or approved promotion logs publicly.
+- Do not skip regressions.
+- Do not assume Navy and Marine Corps conventions are identical.
+- Do not ignore rules hidden inside manual figures, captions, or example text.
+- Do not modify rules without preserving/updating provenance.
 
 ---
 
-## Guardrails for Implementation
+## 9. Next Phase Planning Target
 
-- Start from a clean `origin/main` after verifying repo state.
-- Do not edit renderer layout or existing C7-C10 validators.
-- Add one correction module at a time.
-- Add regression tests before expanding scope.
-- Run existing C7, C8, C9, C10, CCI, intake, correction, and session correction regressions after every new module.
-- Verify GitHub Actions remains green before moving to the next phase.
-- Keep all correction storage auditable and reversible.
-- Never store raw PII in global or review logs.
-- Never commit session JSONL stores.
+The next planning-only phase is **Phase H.2 / Phase I.1 second pilot planning or validator-enforcement planning**.
+
+The next phase must decide whether to:
+
+1. Add a second low-risk documentation-only or rule-catalog-only pilot; or
+2. Plan a tightly scoped validator-enforcement pilot for the subject-line acronym rule already cataloged as `CCI-CH7-SUBJ-006`.
+
+If validator enforcement is considered, the plan must explicitly address:
+
+- Whether feature flagging is required.
+- How to avoid false positives in acronym detection.
+- Whether the existing acronym validator can be reused safely.
+- Required targeted regression coverage.
+- Full 25-suite regression requirements.
+- No renderer/layout changes.
+- No automatic enforcement from approved logs.
+- No AI-only implementation decisions.
+
+No validator, prompt-contract, or renderer changes may occur until Phase H.2 / Phase I.1 is explicitly planned, approved, implemented, reviewed, and regression-tested.
 
 ---
 
-**Original plan:** commit `84a1b2e`.  
-**Phase A completed:** commit `71ddf64`.  
-**Latest checkpoint:** `8c863ff` — Docs: Add Phase A session persistence checkpoint.  
-**Next phase:** Phase B correction classification planning.
+## 10. Manual-and-Figure Source Standard
+
+Every new layout profile and rule interpretation must be grounded in all available manual guidance, including:
+
+1. Chapter/section text surrounding the figure.
+2. Figure title/caption.
+3. Instructional text inside the figure example itself.
+4. Actual visual/layout geometry.
+5. Existing project rule files and renderer behavior.
+
+Figures are rule-bearing and must be reviewed when referenced.
+
+---
+
+End of Correction Memory and Rule Promotion Layer Plan.
