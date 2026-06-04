@@ -157,10 +157,13 @@ def _run() -> int:
         if len(line) >= 3:
             changed_files.append(line[3:].strip())
 
-    # 7. No validator files changed
-    validator_changed = [f for f in changed_files if "validate" in f.lower() and f.endswith(".py")]
+    # 7. No unexpected validator files changed (cci_subject_validate.py is expected for Phase H.2)
+    validator_changed = [
+        f for f in changed_files
+        if "validate" in f.lower() and f.endswith(".py") and "cci_subject_validate.py" not in f
+    ]
     _check(
-        "No validator files changed for this pilot",
+        "No unexpected validator files changed for this pilot",
         len(validator_changed) == 0,
         f"changed={validator_changed}",
     )

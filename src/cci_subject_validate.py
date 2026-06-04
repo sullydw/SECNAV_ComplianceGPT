@@ -61,6 +61,18 @@ APPROVED_ACRONYMS = frozenset([
     "FOUO",
 ])
 
+# Phase H.2 / Phase I.1 — Subject-line prohibited acronyms.
+# Rule catalog: CCI-CH7-SUBJ-006
+# Source: SECNAV M-5216.5, Chapter 7, paragraph 9, Subject Line, subparagraph a. General
+# Source quote: "In correspondence, do not use acronyms in the subject line."
+# Approved record: agr_20260604_b69c92d9
+# Implementation target: validator_update
+PROHIBITED_SUBJECT_ACRONYMS = frozenset([
+    "POC",  # Phase H.1 pilot correction; common Point of Contact abbreviation
+    "UIC",  # Unit Identification Code; prohibited in subject lines per Ch7 para 9
+    "OIC",  # Officer in Charge; prohibited in subject lines per Ch7 para 9
+])
+
 # Match probable acronyms: all-caps tokens of 2+ letters
 _ACRONYM_RE = re.compile(r"\b[A-Z]{2,}\b")
 
@@ -155,6 +167,37 @@ def _check_acronyms(text: str) -> list[str]:
         found.append(token)
     return found
 
+
+def _check_prohibited_subject_acronyms(text: str) -> list[str]:
+    """Return list of prohibited subject-line acronyms.
+
+    Scans all-caps subjects token-by-token against PROHIBITED_SUBJECT_ACRONYMS.
+    Normal all-caps words that are not on the prohibited list are not flagged.
+    Approved acronyms (APPROVED_ACRONYMS) always take precedence and are never
+    treated as prohibited, even if they appear on both lists by mistake.
+
+    Rule catalog: CCI-CH7-SUBJ-006
+    Source: SECNAV M-5216.5, Chapter 7, paragraph 9, Subject Line, subparagraph a. General
+    Source quote: "In correspondence, do not use acronyms in the subject line."
+    Approved record: agr_20260604_b69c92d9
+    Implementation target: validator_update
+    """
+    found: list[str] = []
+    for token in text.split():
+        # Skip non-all-caps tokens (they are caught by the existing _check_acronyms)
+        if not token.isupper():
+            continue
+        # Skip tokens too short to be meaningful (minimum 3 chars)
+        if len(token) < 3:
+            continue
+        # Approved acronyms are never prohibited
+        if token in APPROVED_ACRONYMS:
+            continue
+        # Only flag exact prohibited tokens
+        if token in PROHIBITED_SUBJECT_ACRONYMS:
+            found.append(token)
+    return found
+
 # ---------------------------------------------------------------------------
 # Public function
 # ---------------------------------------------------------------------------
@@ -247,6 +290,16 @@ def validate_cci_subject(payload: dict[str, Any]) -> tuple[list[str], list[str]]
         warnings.append(
             "CCI-CH7-SUBJ-004: likely acronyms detected in subject: "
             f"{', '.join(bad_acronyms)}"
+        )
+
+    # --- Prohibited subject-line acronym advisory (Phase H.2) ----------------
+
+    prohibited_acronyms = _check_prohibited_subject_acronyms(content)
+    if prohibited_acronyms:
+        warnings.append(
+            "CCI-CH7-SUBJ-007: prohibited subject-line acronym detected: "
+            f"{', '.join(prohibited_acronyms)} — "
+            "SECNAV M-5216.5 Ch7 para 9"
         )
 
     # --- Vague / short heuristic -------------------------------------------

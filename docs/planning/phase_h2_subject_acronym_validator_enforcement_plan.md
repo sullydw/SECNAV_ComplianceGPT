@@ -357,9 +357,9 @@ If Phase H.2 / Phase I.1 is approved for implementation, the following files may
 
 1. **`src/cci_subject_validate.py`**
    - Enhanced `_check_acronyms()` function.
-   - Updated `APPROVED_ACRONYMS` or addition of `SUBJECT_APPROVED_ACRONYMS`.
+   - Updated `APPROVED_ACRONYMS` or addition of `PROHIBITED_SUBJECT_ACRONYMS`.
    - Updated docstrings with SECNAV provenance.
-   - Potential new error code `CCI-CH7-SUBJ-007`.
+   - Potential new advisory code `CCI-CH7-SUBJ-007` (advisory, non-blocking).
 
 2. **`tools/run_pilot_subject_acronym_validator_regression.py`** (new file)
    - Minimum 12 checks per above.
@@ -447,7 +447,7 @@ The following files must remain untouched in any Phase H.2 / Phase I.1 implement
    Recommended: update catalog metadata in the same commit as the validator change, but only after the targeted regression passes.
 
 6. **Should the existing `CCI-CH7-SUBJ-004` warning be renumbered to `CCI-CH7-SUBJ-007` if the behavior changes significantly?**
-   Renumbering breaks downstream consumers who parse `SUBJ-004`. Recommended: keep `SUBJ-004` for the advisory and reserve `SUBJ-007` for a future error level.
+   Recommended: keep `SUBJ-004` unchanged for the heuristic warning on mixed-case subjects. `SUBJ-007` is assigned to the Phase H.2 advisory level for prohibited subject-line acronyms. If later promoted to error, the same code may be upgraded from advisory to error without renumbering.
 
 7. **Should the targeted regression runner test the interaction with the body acronym validator explicitly?**
    Recommended yes, but this requires an integration-style fixture that exercises both validators on the same payload. This is optional for Phase H.2.

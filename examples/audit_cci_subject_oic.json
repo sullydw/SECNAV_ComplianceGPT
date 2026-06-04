@@ -1,0 +1,17 @@
+{
+  "_comment": "CCI subject-line prohibited acronym fixture. Standard letter with OIC acronym in subject — should trigger SUBJ-007.",
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "date": "15 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "REQUEST FROM OIC",
+  "body": [
+    "1. This paragraph provides sample content for the subject-line prohibited acronym fixture.",
+    "2. The subject above contains the prohibited acronym OIC."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}

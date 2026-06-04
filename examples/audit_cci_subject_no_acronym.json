@@ -1,0 +1,17 @@
+{
+  "_comment": "CCI subject-line clean fixture. Standard letter with spelled-out POINT OF CONTACT, no acronyms — should not trigger SUBJ-007.",
+  "doc_type": "DT_STD_LTR",
+  "ssic": 5216,
+  "date": "15 May 2026",
+  "from": "Commanding Officer, Example Activity",
+  "to": "Commanding Officer, Example Receiving Activity",
+  "subj": "REQUEST FOR POINT OF CONTACT UPDATE",
+  "body": [
+    "1. This paragraph provides sample content for the clean subject-line fixture.",
+    "2. The subject above contains no acronyms."
+  ],
+  "signature": [
+    "J. DOE",
+    "By direction"
+  ]
+}
