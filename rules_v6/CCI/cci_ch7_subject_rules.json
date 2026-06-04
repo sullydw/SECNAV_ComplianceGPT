@@ -120,5 +120,39 @@
     "enforcement": "heuristic_warning",
     "validator": "cci_subject_validate.py",
     "severity": "warning"
+  },
+  {
+    "rule_id": "CCI-CH7-SUBJ-006",
+    "source": "SECNAV M-5216.5",
+    "source_type": "narrative_text",
+    "source_location": "Chapter 7, paragraph 9, Subject Line, subparagraph a. General",
+    "applies_to": [
+      "standard_letter",
+      "multiple_address_letter",
+      "endorsement",
+      "joint_letter",
+      "memorandum_for_record",
+      "from_to_memo",
+      "plain_paper_memo",
+      "letterhead_memo"
+    ],
+    "component_scope": [
+      "navy",
+      "marine_corps",
+      "joint",
+      "don_secretariat"
+    ],
+    "rule_text_summary": "In correspondence, do not use acronyms in the subject line.",
+    "enforcement": "deterministic",
+    "validator": "cci_subject_validate.py",
+    "severity": "error",
+    "manual_chapter": "7",
+    "manual_section": "9",
+    "page_or_figure": null,
+    "source_quote": "In correspondence, do not use acronyms in the subject line.",
+    "effective_date": "2026-06-03",
+    "added_by_implementation_id": "agr_20260604_b69c92d9",
+    "implementation_target": "rule_catalog",
+    "implementation_status": "active"
   }
 ]
