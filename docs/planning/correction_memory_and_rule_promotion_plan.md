@@ -1,6 +1,7 @@
 # Correction Memory and Rule Promotion Layer Plan
 
-**Current Verified Baseline:** `6298dab` — CCI: Add public mark implemented wrapper  
+**Current Verified Baseline:** `609821e` — CCI: Add subject acronym advisory validator (Phase H.2)  
+**Phase H.2 Implementation:** `609821e` — CCI: Add subject acronym advisory validator (Phase H.2)  
 **Phase H.1 Pilot Implementation:** `ef365d3` — CCI: Implement pilot approved rule (Phase H.1)  
 **Phase H.1 Mark-Implemented Wrapper:** `6298dab` — CCI: Add public mark implemented wrapper  
 **Phase H Implementation:** `2588e67` — CCI: Add approved rule implementation planner (Phase H)  
@@ -11,8 +12,8 @@
 **Phase C Implementation:** `8b8a95c` — CCI: Add local command profile promotion (Phase C)  
 **Phase B Implementation:** `519fad6` — CCI: Add correction classification (Phase B)  
 **Phase A Implementation:** `71ddf64` — CCI: Add session correction persistence (Phase A)  
-**Latest Checkpoint:** `6298dab` / Phase H.1 pilot implementation handoff  
-**Next Phase:** Phase H.2 / Phase I.1 second pilot planning or validator-enforcement planning — planning-only until approved
+**Latest Checkpoint:** `609821e` / Phase H.2 subject-line acronym validator enforcement handoff  
+**Next Phase:** Phase H.3 / Phase I.2 validator refinement or second-rule planning — planning-only until approved
 
 ---
 
@@ -183,25 +184,23 @@ The 25-suite set passed locally after Phase H.1 when run with `C:\Users\drryl\pi
 
 ## 9. Next Phase Planning Target
 
-The next planning-only phase is **Phase H.2 / Phase I.1 second pilot planning or validator-enforcement planning**.
+The next planning-only phase is **Phase H.3 / Phase I.2 validator refinement or second-rule planning**.
 
-The next phase must decide whether to:
+Phase H.2 / Phase I.1 subject-line acronym validator advisory enforcement is complete:
+- Advisory code `CCI-CH7-SUBJ-007` implemented in `src/cci_subject_validate.py`.
+- Curated prohibited list: `POC`, `UIC`, `OIC`.
+- 26-suite regression set verified PASS.
+- `src/cci_acronym_validate.py` untouched.
+- No renderer/layout changes. No prompt-contract changes. No command-layer changes.
 
-1. Add a second low-risk documentation-only or rule-catalog-only pilot; or
-2. Plan a tightly scoped validator-enforcement pilot for the subject-line acronym rule already cataloged as `CCI-CH7-SUBJ-006`.
+The next phase must decide **one** of the following directions:
 
-If validator enforcement is considered, the plan must explicitly address:
+1. **Expand the prohibited subject-acronym list** with additional acronym tokens, each requiring provenance, evidence, false-positive risk assessment, and regression fixture coverage.
+2. **Promote `CCI-CH7-SUBJ-007` from advisory to warning/error** after more testing, with feature-flag mechanism and broader fixture coverage.
+3. **Add a second low-risk approved-rule pilot** (rule-catalog-only first, then validator if approved), requiring separate planning document.
+4. **Plan a separate validator refinement** for a different CCI component (date/time, personnel, routing), requiring planning document and 26-suite regression preservation.
 
-- Whether feature flagging is required.
-- How to avoid false positives in acronym detection.
-- Whether the existing acronym validator can be reused safely.
-- Required targeted regression coverage.
-- Full 25-suite regression requirements.
-- No renderer/layout changes.
-- No automatic enforcement from approved logs.
-- No AI-only implementation decisions.
-
-No validator, prompt-contract, or renderer changes may occur until Phase H.2 / Phase I.1 is explicitly planned, approved, implemented, reviewed, and regression-tested.
+No validator, prompt-contract, or renderer changes may occur until Phase H.3 / Phase I.2 is explicitly planned, approved, implemented, reviewed, and regression-tested.
 
 ---
 

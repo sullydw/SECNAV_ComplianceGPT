@@ -12,7 +12,8 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest implementation commit:** `6298dab` — `CCI: Add public mark implemented wrapper`  
+**Latest implementation commit:** `609821e` — `CCI: Add subject acronym advisory validator (Phase H.2)`  
+**Phase H.2 implementation commit:** `609821e` — `CCI: Add subject acronym advisory validator (Phase H.2)`  
 **Phase H.1 pilot implementation commit:** `ef365d3` — `CCI: Implement pilot approved rule (Phase H.1)`  
 **Phase H.1 mark-implemented wrapper commit:** `6298dab` — `CCI: Add public mark implemented wrapper`  
 **Phase H implementation commit:** `2588e67` — `CCI: Add approved rule implementation planner (Phase H)`  
@@ -23,28 +24,29 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 **Phase C implementation commit:** `8b8a95c` — `CCI: Add local command profile promotion (Phase C)`  
 **Phase B implementation commit:** `519fad6` — `CCI: Add correction classification (Phase B)`  
 **Phase A functional baseline:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
-**Current verified functional baseline:** `6298dab` — Phase H.1 rule-catalog pilot implemented, public `mark_implemented()` wrapper added, and local approved record marked implemented  
-**Previous functional baseline:** `2588e67` — Phase H approved-rule implementation planner implemented and regression-protected  
-**GitHub Actions / regressions:** local 25-suite regression set verified PASS after Phase H.1 using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`; GitHub Actions must be verified manually if needed  
+**Current verified functional baseline:** `609821e` — Phase H.2 subject-line acronym advisory validator implemented; new CCI-CH7-SUBJ-007 advisory code fires on prohibited acronyms in all-caps subject lines; 26-suite regression set verified PASS  
+**Previous functional baseline:** `6298dab` — Phase H.1 rule-catalog pilot implemented, public `mark_implemented()` wrapper added, and local approved record marked implemented  
+**GitHub Actions / regressions:** local 26-suite regression set verified PASS after Phase H.2 using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`; GitHub Actions must be verified manually if needed  
 **Expected repository state:** clean and up to date with `origin/main`
 
 ### Start Here For New Chat
 
 1. Read `docs/BOOTSTRAP.md`.
 2. Read this file: `docs/PROJECT_STATUS.md`.
-3. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for the latest Phase H.1 status.
-4. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
-5. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
-6. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
-7. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
-8. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
-9. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
-10. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
-11. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
-12. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
-13. Do not modify renderer/layout unless explicitly asked.
-14. Continue from the **Recommended Next Work** section below.
-15. Run all regressions before committing implementation changes.
+3. Read `docs/checkpoints/phase_h2_subject_acronym_validator_enforcement_checkpoint.md` for the latest Phase H.2 status.
+4. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for Phase H.1 status.
+5. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
+6. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
+7. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
+8. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
+9. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
+10. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
+11. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
+12. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
+13. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
+14. Do not modify renderer/layout unless explicitly asked.
+15. Continue from the **Recommended Next Work** section below.
+16. Run all regressions before committing implementation changes.
 
 Suggested startup prompt:
 
@@ -287,6 +289,25 @@ No validator, prompt-contract, or renderer changes may occur until Phase H.2 / P
 - No background automation.
 - Full 25-suite local regression set passed using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`.
 
+### Phase H.2 / Phase I.1 — Subject-Line Acronym Validator Advisory Enforcement (Completed)
+
+- Planning document: `docs/planning/phase_h2_subject_acronym_validator_enforcement_plan.md`.
+- Implementation commit: `609821e` — `CCI: Add subject acronym advisory validator (Phase H.2)`.
+- Added advisory/non-blocking validator behavior for rule `CCI-CH7-SUBJ-006`.
+- New advisory validator code: `CCI-CH7-SUBJ-007`.
+- Curated prohibited subject acronym list: `POC`, `UIC`, `OIC`.
+- Added `_check_prohibited_subject_acronyms()` in `src/cci_subject_validate.py` with token-by-token scan for all-caps subjects; generic acronym regex suppressed on all-caps subjects to prevent false positives.
+- Normal all-caps words (`UPDATE`, `POLICY`, `MEETING`, `SECNAV`, etc.) are not flagged.
+- Existing `CCI-CH7-SUBJ-004` behavior unchanged.
+- `src/cci_acronym_validate.py` untouched.
+- No renderer/layout changes.
+- No runtime prompt-contract changes.
+- No Phase F/G command-layer changes.
+- No automatic enforcement from approved logs.
+- New targeted regression runner: `tools/run_phase_h2_subject_acronym_validator_regression.py` — 12 checks, PASS.
+- 7 synthetic example fixtures added under `examples/audit_cci_subject_*.json`.
+- Full 26-suite local regression set passed using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`.
+
 ### Phase H — Approved-Rule Implementation Planner (Completed — Stage 1)
 
 - Planning document created: `docs/planning/phase_h_approved_rule_implementation_plan.md`.
@@ -353,6 +374,48 @@ Every new layout profile and rule interpretation must be grounded in all availab
 5. Existing project rule files and renderer behavior.
 
 Figures are rule-bearing and must be reviewed when referenced.
+
+---
+
+## Recommended Next Work
+
+**Next recommended phase: Phase H.3 / Phase I.2 validator refinement or second-rule planning — planning-only until approved.**
+
+Phase H.2 / Phase I.1 subject-line acronym validator advisory enforcement is complete. No further implementation should occur until a new phase is explicitly planned, approved, and regression-tested.
+
+The next planning phase should decide **one** of the following directions:
+
+1. **Expand the prohibited subject-acronym list** with additional acronym tokens, each requiring:
+   - Provenance citation from SECNAV M-5216.5 or manual figure text.
+   - Evidence that the acronym is commonly misused in subject lines.
+   - False-positive risk assessment.
+   - Regression fixture coverage before any code change.
+
+2. **Promote `CCI-CH7-SUBJ-007` from advisory to warning/error** after more testing:
+   - Requires feature-flag or config mechanism.
+   - Requires broader fixture testing across real-world subject patterns.
+   - Must not break existing `SUBJ-004` behavior.
+   - Must not flag normal all-caps words or approved acronyms.
+
+3. **Add a second low-risk approved-rule pilot** (rule-catalog-only first, then validator if approved):
+   - A separate approved record in `rules_v6/CCI/`.
+   - Planning document required before implementation.
+   - No automatic enforcement from approved logs.
+
+4. **Plan a separate validator refinement** for a different CCI component (e.g., date/time, personnel, routing):
+   - Requires planning document.
+   - Must preserve all 26 existing regression suites.
+   - No renderer/layout changes.
+   - No prompt-contract changes.
+
+**Constraints for any next phase:**
+- Planning documents must be created and approved before any code changes.
+- All 26 regression suites must pass before any commit.
+- Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
+- No renderer/layout changes unless explicitly scoped and regression-protected.
+- No automatic enforcement from approved/pending logs.
+- No AI-only implementation decisions.
+- No real command/user data committed.
 
 ---
 
