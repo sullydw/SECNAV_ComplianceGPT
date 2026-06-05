@@ -1,6 +1,7 @@
 # Correction Memory and Rule Promotion Layer Plan
 
-**Current Verified Baseline:** `609821e` — CCI: Add subject acronym advisory validator (Phase H.2)  
+**Current Verified Baseline:** `46edcbd` — CCI: Add routing office code catalog rule (Phase H.3)  
+**Phase H.3 Implementation:** `46edcbd` — CCI: Add routing office code catalog rule (Phase H.3)  
 **Phase H.2 Implementation:** `609821e` — CCI: Add subject acronym advisory validator (Phase H.2)  
 **Phase H.1 Pilot Implementation:** `ef365d3` — CCI: Implement pilot approved rule (Phase H.1)  
 **Phase H.1 Mark-Implemented Wrapper:** `6298dab` — CCI: Add public mark implemented wrapper  
@@ -12,8 +13,8 @@
 **Phase C Implementation:** `8b8a95c` — CCI: Add local command profile promotion (Phase C)  
 **Phase B Implementation:** `519fad6` — CCI: Add correction classification (Phase B)  
 **Phase A Implementation:** `71ddf64` — CCI: Add session correction persistence (Phase A)  
-**Latest Checkpoint:** `609821e` / Phase H.2 subject-line acronym validator enforcement handoff  
-**Next Phase:** Phase H.3 / Phase I.2 validator refinement or second-rule planning — planning-only until approved
+**Latest Checkpoint:** `46edcbd` / Phase H.3 second rule-catalog-only pilot handoff  
+**Next Phase:** Phase H.4 / Phase I.3 validator enforcement planning or third catalog-pilot planning — planning-only until approved
 
 ---
 
@@ -145,6 +146,48 @@ The layer is not a replacement for deterministic SECNAV validators. It is a cont
 - No automatic enforcement from approved logs.
 - No background automation.
 
+### Phase H.2 / Phase I.1 — Subject-Line Acronym Validator Advisory Enforcement (Completed)
+
+- Planning document: `docs/planning/phase_h2_subject_acronym_validator_enforcement_plan.md`.
+- Implementation commit: `609821e` — `CCI: Add subject acronym advisory validator (Phase H.2)`.
+- Added advisory/non-blocking validator behavior for rule `CCI-CH7-SUBJ-006`.
+- New advisory validator code: `CCI-CH7-SUBJ-007`.
+- Curated prohibited subject acronym list: `POC`, `UIC`, `OIC`.
+- Added `_check_prohibited_subject_acronyms()` in `src/cci_subject_validate.py` with token-by-token scan for all-caps subjects; generic acronym regex suppressed on all-caps subjects to prevent false positives.
+- Normal all-caps words (`UPDATE`, `POLICY`, `MEETING`, `SECNAV`, etc.) are not flagged.
+- Existing `CCI-CH7-SUBJ-004` behavior unchanged.
+- `src/cci_acronym_validate.py` untouched.
+- No renderer/layout changes.
+- No runtime prompt-contract changes.
+- No Phase F/G command-layer changes.
+- No automatic enforcement from approved logs.
+- New targeted regression runner: `tools/run_phase_h2_subject_acronym_validator_regression.py` — 12 checks, PASS.
+- 7 synthetic example fixtures added under `examples/audit_cci_subject_*.json`.
+- Full 26-suite local regression set passed using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`.
+
+### Phase H.3 / Phase I.2 — Second Rule-Catalog-Only Pilot (Completed)
+
+- Planning document: `docs/planning/phase_h3_second_rule_catalog_pilot_plan.md`.
+- Implementation commit: `46edcbd` — `CCI: Add routing office code catalog rule (Phase H.3)`.
+- Second pilot was rule-catalog-only.
+- Added catalog entry `CCI-ROUTE-010` to `rules_v6/CCI/cci_ch2_routing_rules.json`.
+- Rule text: `If the office code is composed of only numbers, add the word "Code" before the numbers. Do not add the word "Code" before an office code that starts with a letter (e.g., "N" or "SUP").`
+- Source: SECNAV M-5216.5, Chapter 7, paragraph 7-2.7a, To Line, General.
+- Approved record: `agr_20260604_7b5d44a2`.
+- Source candidate: `cand_20260604_a0f49e2e`.
+- Target: `rule_catalog`.
+- Added `tools/run_phase_h3_second_rule_catalog_regression.py` with 15 checks.
+- Catalog now has 10 routing rules; object schema with `rules` array preserved.
+- Local approved record `agr_20260604_7b5d44a2` was marked `implementation_status="implemented"` with implementation commit `46edcbd`.
+- Approved/pending logs remained local/gitignored and were not committed.
+- No validator changes.
+- No renderer/layout changes.
+- No runtime prompt-contract changes.
+- No Phase F/G command-layer changes.
+- No automatic enforcement from approved logs.
+- No background automation.
+- Full 27-suite local regression set passed using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`.
+
 ---
 
 ## 7. Current Regression Coverage
@@ -153,8 +196,10 @@ Use the explicit Pinokio/Miniconda Python for full local regression runs:
 
 `C:\Users\drryl\pinokio\bin\miniconda\python.exe`
 
-The current local regression set is **25 suites**:
+The current local regression set is **27 suites**:
 
+- `tools/run_phase_h3_second_rule_catalog_regression.py` — Phase H.3 second rule-catalog pilot regression, 15 checks.
+- `tools/run_phase_h2_subject_acronym_validator_regression.py` — Phase H.2 advisory subject-line acronym regression, 12 checks.
 - `tools/run_pilot_subject_acronym_rule_catalog_regression.py` — Phase H.1 pilot regression, 11 checks.
 - `tools/run_correction_implementation_regression.py` — Phase H/H.1 planner regression, 45 checks.
 - `tools/run_correction_nl_command_regression.py` — Phase G, 151 checks.
@@ -165,7 +210,7 @@ The current local regression set is **25 suites**:
 - `tools/run_correction_classify_regression.py` — Phase B.
 - Intake, correction, session, profile, audit, context-schema, CCI subject/ref-encl/acronym/date-time/personnel/POC/routing, and C7-C10 layout regressions.
 
-The 25-suite set passed locally after Phase H.1 when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF.
+The 27-suite set passed locally after Phase H.3 when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF.
 
 ---
 
@@ -184,9 +229,15 @@ The 25-suite set passed locally after Phase H.1 when run with `C:\Users\drryl\pi
 
 ## 9. Next Phase Planning Target
 
-The next planning-only phase is **Phase H.3 / Phase I.2 validator refinement or second-rule planning**.
+The next planning-only phase is **Phase H.4 / Phase I.3 validator enforcement planning or third catalog-pilot planning**.
 
-Phase H.2 / Phase I.1 subject-line acronym validator advisory enforcement is complete:
+Phase H.3 / Phase I.2 second rule-catalog-only pilot is complete:
+- Catalog entry `CCI-ROUTE-010` added to `rules_v6/CCI/cci_ch2_routing_rules.json`.
+- Rule: numeric-only office codes require `Code`; office codes starting with letters must not use `Code`.
+- 27-suite regression set verified PASS.
+- No validator changes. No renderer/layout changes. No prompt-contract changes. No command-layer changes.
+
+Phase H.2 / Phase I.1 subject-line acronym validator advisory enforcement is also complete:
 - Advisory code `CCI-CH7-SUBJ-007` implemented in `src/cci_subject_validate.py`.
 - Curated prohibited list: `POC`, `UIC`, `OIC`.
 - 26-suite regression set verified PASS.
@@ -195,12 +246,21 @@ Phase H.2 / Phase I.1 subject-line acronym validator advisory enforcement is com
 
 The next phase must decide **one** of the following directions:
 
-1. **Expand the prohibited subject-acronym list** with additional acronym tokens, each requiring provenance, evidence, false-positive risk assessment, and regression fixture coverage.
-2. **Promote `CCI-CH7-SUBJ-007` from advisory to warning/error** after more testing, with feature-flag mechanism and broader fixture coverage.
-3. **Add a second low-risk approved-rule pilot** (rule-catalog-only first, then validator if approved), requiring separate planning document.
-4. **Plan a separate validator refinement** for a different CCI component (date/time, personnel, routing), requiring planning document and 26-suite regression preservation.
+1. **Plan validator enforcement for `CCI-ROUTE-010`** so the office-code rule is checked by the routing validator.
+2. **Further refine `CCI-CH7-SUBJ-007`** (expand prohibited list or promote severity).
+3. **Add a third low-risk approved-rule pilot** (rule-catalog-only first, then validator if approved), requiring separate planning document.
+4. **Update rule-catalog governance/provenance tooling** (schema validation, rule-dependency tracking, catalog linting).
 
-No validator, prompt-contract, or renderer changes may occur until Phase H.3 / Phase I.2 is explicitly planned, approved, implemented, reviewed, and regression-tested.
+**Constraints for any next phase:**
+- Planning documents must be created and approved before any code changes.
+- All 27 regression suites must pass before any commit.
+- Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
+- No renderer/layout changes unless explicitly scoped and regression-protected.
+- No automatic enforcement from approved/pending logs.
+- No AI-only implementation decisions.
+- No real command/user data committed.
+
+No validator, prompt-contract, or renderer changes may occur until Phase H.4 / Phase I.3 is explicitly planned, approved, implemented, reviewed, and regression-tested.
 
 ---
 

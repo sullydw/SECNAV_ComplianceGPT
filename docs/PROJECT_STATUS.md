@@ -12,7 +12,8 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest implementation commit:** `609821e` — `CCI: Add subject acronym advisory validator (Phase H.2)`  
+**Latest implementation commit:** `46edcbd` — `CCI: Add routing office code catalog rule (Phase H.3)`  
+**Phase H.3 implementation commit:** `46edcbd` — `CCI: Add routing office code catalog rule (Phase H.3)`  
 **Phase H.2 implementation commit:** `609821e` — `CCI: Add subject acronym advisory validator (Phase H.2)`  
 **Phase H.1 pilot implementation commit:** `ef365d3` — `CCI: Implement pilot approved rule (Phase H.1)`  
 **Phase H.1 mark-implemented wrapper commit:** `6298dab` — `CCI: Add public mark implemented wrapper`  
@@ -24,33 +25,34 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 **Phase C implementation commit:** `8b8a95c` — `CCI: Add local command profile promotion (Phase C)`  
 **Phase B implementation commit:** `519fad6` — `CCI: Add correction classification (Phase B)`  
 **Phase A functional baseline:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
-**Current verified functional baseline:** `609821e` — Phase H.2 subject-line acronym advisory validator implemented; new CCI-CH7-SUBJ-007 advisory code fires on prohibited acronyms in all-caps subject lines; 26-suite regression set verified PASS  
-**Previous functional baseline:** `6298dab` — Phase H.1 rule-catalog pilot implemented, public `mark_implemented()` wrapper added, and local approved record marked implemented  
-**GitHub Actions / regressions:** local 26-suite regression set verified PASS after Phase H.2 using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`; GitHub Actions must be verified manually if needed  
+**Current verified functional baseline:** `46edcbd` — Phase H.3 second rule-catalog-only pilot implemented; CCI-ROUTE-010 office code prefix rule added; 27-suite regression set verified PASS  
+**Previous functional baseline:** `609821e` — Phase H.2 subject-line acronym advisory validator implemented; 26-suite regression set verified PASS  
+**GitHub Actions / regressions:** local 27-suite regression set verified PASS after Phase H.3 using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`; GitHub Actions must be verified manually if needed  
 **Expected repository state:** clean and up to date with `origin/main`
 
 ### Start Here For New Chat
 
 1. Read `docs/BOOTSTRAP.md`.
 2. Read this file: `docs/PROJECT_STATUS.md`.
-3. Read `docs/checkpoints/phase_h2_subject_acronym_validator_enforcement_checkpoint.md` for the latest Phase H.2 status.
-4. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for Phase H.1 status.
-5. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
-6. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
-7. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
-8. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
-9. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
-10. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
-11. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
-12. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
-13. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
-14. Do not modify renderer/layout unless explicitly asked.
-15. Continue from the **Recommended Next Work** section below.
-16. Run all regressions before committing implementation changes.
+3. Read `docs/checkpoints/phase_h3_second_rule_catalog_pilot_checkpoint.md` for the latest Phase H.3 status.
+4. Read `docs/checkpoints/phase_h2_subject_acronym_validator_enforcement_checkpoint.md` for Phase H.2 status.
+5. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for Phase H.1 status.
+6. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
+7. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
+8. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
+9. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
+10. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
+11. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
+12. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
+13. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
+14. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
+15. Do not modify renderer/layout unless explicitly asked.
+16. Continue from the **Recommended Next Work** section below.
+17. Run all regressions before committing implementation changes.
 
 Suggested startup prompt:
 
-> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_h3_second_rule_catalog_pilot_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
 
 ---
 
@@ -180,8 +182,10 @@ C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c9_regression.py
 C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c10_regression.py
 ```
 
-The current local regression set is **25 suites**:
+The current local regression set is **27 suites**:
 
+- Phase H.3 second rule-catalog-only pilot regression (15 checks).
+- Phase H.2 subject-line acronym advisory regression (12 checks).
 - Phase H.1 pilot subject-acronym rule-catalog regression (11 checks).
 - Phase H implementation planner regression (45 checks).
 - Phase G natural-language command mediation regression (151 checks).
@@ -192,7 +196,7 @@ The current local regression set is **25 suites**:
 - Phase B classification regression.
 - Intake, correction, session, profile, audit, context-schema, CCI subject/ref-encl/acronym/date-time/personnel/POC/routing, and C7-C10 layout regressions.
 
-The 25-suite set passed locally after Phase H.1 when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF, not code defects.
+The 27-suite set passed locally after Phase H.3 when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF, not code defects.
 
 ---
 
@@ -218,7 +222,10 @@ The 25-suite set passed locally after Phase H.1 when run with `C:\Users\drryl\pi
 - `src/correction_commands.py` — Phase F slash-command dispatcher.
 - `src/correction_nl_commands.py` — Phase G natural-language command mediator.
 - `rules_v6/CCI/cci_ch7_subject_rules.json` — includes Phase H.1 pilot rule `CCI-CH7-SUBJ-006`.
+- `rules_v6/CCI/cci_ch2_routing_rules.json` — includes Phase H.3 pilot rule `CCI-ROUTE-010`.
 - `tools/run_pilot_subject_acronym_rule_catalog_regression.py` — Phase H.1 pilot regression runner (11 checks).
+- `tools/run_phase_h2_subject_acronym_validator_regression.py` — Phase H.2 targeted regression runner (12 checks).
+- `tools/run_phase_h3_second_rule_catalog_regression.py` — Phase H.3 targeted regression runner (15 checks).
 - `tools/run_correction_implementation_regression.py` — Phase H/H.1 implementation planner regression runner (45 checks).
 - `profiles/README.md` — external profile safety documentation.
 - `corrections/README.md` — local-only correction storage safety documentation.
@@ -240,27 +247,33 @@ The 25-suite set passed locally after Phase H.1 when run with `C:\Users\drryl\pi
 
 ## Recommended Next Work
 
-### Next Phase: Phase H.2 / Phase I.1 Second Pilot Planning or Validator-Enforcement Planning
+### Next Phase: Phase H.4 / Phase I.3 Validator Enforcement Planning or Third Catalog-Pilot Planning
 
-Phase H.2 / Phase I.1 is **planning-only until reviewed and approved**.
+Phase H.3 / Phase I.2 second rule-catalog-only pilot is **complete**. No further implementation should occur until a new phase is explicitly planned, approved, and regression-tested.
 
-The next phase must decide whether to:
+Phase H.3 summary:
+- Catalog entry `CCI-ROUTE-010` added to `rules_v6/CCI/cci_ch2_routing_rules.json`.
+- Rule: numeric-only office codes require `Code`; office codes starting with letters must not use `Code`.
+- 27-suite regression set verified PASS.
+- No validator changes. No renderer/layout changes. No prompt-contract changes. No command-layer changes.
 
-1. Add a second low-risk documentation-only or rule-catalog-only pilot; or
-2. Plan a tightly scoped validator-enforcement pilot for the subject-line acronym rule already cataloged as `CCI-CH7-SUBJ-006`.
+The next planning phase should decide **one** of the following directions:
 
-If validator enforcement is considered, the plan must explicitly address:
+1. **Plan validator enforcement for `CCI-ROUTE-010`** so the office-code rule is checked by the routing validator, with feature-flag mechanism and targeted regression coverage.
+2. **Further refine `CCI-CH7-SUBJ-007`** (expand prohibited list or promote severity), with provenance and fixture coverage.
+3. **Add a third low-risk approved-rule pilot** (rule-catalog-only first, then validator if approved), requiring separate planning document and approved record.
+4. **Update rule-catalog governance/provenance tooling** (schema validation, rule-dependency tracking, catalog linting).
 
-- Whether feature flagging is required.
-- How to avoid false positives in acronym detection.
-- Whether the existing acronym validator can be reused safely.
-- Required targeted regression coverage.
-- Full 25-suite regression requirements.
-- No renderer/layout changes.
-- No automatic enforcement from approved logs.
+**Constraints for any next phase:**
+- Planning documents must be created and approved before any code changes.
+- All 27 regression suites must pass before any commit.
+- Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
+- No renderer/layout changes unless explicitly scoped and regression-protected.
+- No automatic enforcement from approved/pending logs.
 - No AI-only implementation decisions.
+- No real command/user data committed.
 
-No validator, prompt-contract, or renderer changes may occur until Phase H.2 / Phase I.1 is explicitly planned, approved, implemented, reviewed, and regression-tested.
+No validator, prompt-contract, or renderer changes may occur until Phase H.4 / Phase I.3 is explicitly planned, approved, implemented, reviewed, and regression-tested.
 
 ---
 
@@ -307,6 +320,29 @@ No validator, prompt-contract, or renderer changes may occur until Phase H.2 / P
 - New targeted regression runner: `tools/run_phase_h2_subject_acronym_validator_regression.py` — 12 checks, PASS.
 - 7 synthetic example fixtures added under `examples/audit_cci_subject_*.json`.
 - Full 26-suite local regression set passed using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`.
+
+### Phase H.3 / Phase I.2 — Second Rule-Catalog-Only Pilot (Completed)
+
+- Planning document: `docs/planning/phase_h3_second_rule_catalog_pilot_plan.md`.
+- Implementation commit: `46edcbd` — `CCI: Add routing office code catalog rule (Phase H.3)`.
+- Second pilot was rule-catalog-only.
+- Added catalog entry `CCI-ROUTE-010` to `rules_v6/CCI/cci_ch2_routing_rules.json`.
+- Rule text: `If the office code is composed of only numbers, add the word "Code" before the numbers. Do not add the word "Code" before an office code that starts with a letter (e.g., "N" or "SUP").`
+- Source: SECNAV M-5216.5, Chapter 7, paragraph 7-2.7a, To Line, General.
+- Approved record: `agr_20260604_7b5d44a2`.
+- Source candidate: `cand_20260604_a0f49e2e`.
+- Target: `rule_catalog`.
+- Added `tools/run_phase_h3_second_rule_catalog_regression.py` with 15 checks.
+- Catalog now has 10 routing rules; object schema with `rules` array preserved.
+- Local approved record `agr_20260604_7b5d44a2` was marked `implementation_status="implemented"` with implementation commit `46edcbd`.
+- Approved/pending logs remained local/gitignored and were not committed.
+- No validator changes.
+- No renderer/layout changes.
+- No runtime prompt-contract changes.
+- No Phase F/G command-layer changes.
+- No automatic enforcement from approved logs.
+- No background automation.
+- Full 27-suite local regression set passed using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`.
 
 ### Phase H — Approved-Rule Implementation Planner (Completed — Stage 1)
 
