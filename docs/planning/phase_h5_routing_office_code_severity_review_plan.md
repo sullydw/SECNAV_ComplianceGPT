@@ -82,8 +82,8 @@
 
 Before `CCI-ROUTE-010` can be promoted from advisory to warning or error, the following evidence must be collected:
 
-1. **Synthetic false-positive matrix:** at least 20 negative-control fixtures showing patterns that must NOT trigger (see Section 4).
-2. **Synthetic true-positive matrix:** at least 10 positive-control fixtures showing patterns that MUST trigger (see Section 5).
+1. **Synthetic negative-control fixture set:** at least 20 negative-control fixtures showing patterns that must NOT trigger (see Section 4). These help detect false positives.
+2. **Synthetic positive-control fixture set:** at least 10 positive-control fixtures showing patterns that MUST trigger (see Section 5). These help detect false negatives.
 3. **Real-world or realistic To/Via corpus:** at least 50 diverse addressee strings from actual or representative Navy/Marine Corps correspondence, with expected vs actual validator output documented.
 4. **Copy-to audit:** evidence that `copy_to` either does or does not need the same rule, with separate citation.
 5. **Zero regression failures:** all 28 existing suites plus the new H.5 runner must pass.
@@ -91,9 +91,9 @@ Before `CCI-ROUTE-010` can be promoted from advisory to warning or error, the fo
 
 ---
 
-## 4. False-Positive Evidence to Collect
+## 4. Negative-Control Fixtures to Collect
 
-These patterns must NOT produce warnings at any severity level:
+These patterns must NOT produce warnings at any severity level. They are **negative-control fixtures** — if the validator flags any of them, it is a false positive.
 
 | # | Pattern | Why It Is NOT a Violation |
 |---|---|---|
@@ -120,9 +120,9 @@ These patterns must NOT produce warnings at any severity level:
 
 ---
 
-## 5. False-Negative Evidence to Collect
+## 5. Positive-Control Fixtures to Collect
 
-These patterns MUST produce warnings at the appropriate severity level:
+These patterns MUST produce warnings at the appropriate severity level. They are **positive-control fixtures** — if the validator misses any of them, it is a false negative.
 
 | # | Pattern | Expected Finding |
 |---|---|---|
@@ -193,8 +193,8 @@ advisory (current) → warning → error (catalog-declared)
 
 All of the following must be met:
 
-1. [ ] At least 20 false-negative controls documented and passing (Section 5).
-2. [ ] At least 10 false-positive controls documented and passing (Section 4).
+1. [ ] At least 20 negative-control fixtures documented and passing (Section 4). These help detect false positives.
+2. [ ] At least 10 positive-control fixtures documented and passing (Section 5). These help detect false negatives.
 3. [ ] At least 50 real-world or realistic To/Via patterns tested with zero unexpected findings.
 4. [ ] Zero regression failures across all 28 existing suites.
 5. [ ] No open issues or user reports of false positives from advisory phase.
@@ -391,7 +391,7 @@ Rollback risk: **low** — severity promotion is a routing of existing findings 
    - Default: no — each rule requires its own evidence review and approval.
 
 5. **Should the H.4 runner be updated to verify advisory-only behavior (i.e., verify `errors` list remains empty)?**
-   - Default: yes — add an explicit check that `errors` is empty for `CCI-ROUTE-010` findings.
+   - Default: yes — but **deferred to a future evidence-collection / regression-hardening phase** (e.g., Phase H.5 implementation or a subsequent H.6 phase), not during this planning-only document. This is a future regression-hardening task that must be completed before any warning/error promotion. Do not imply it is already implemented.
 
 6. **Should Phase H.5 be approved to implement anything, or remain strictly planning-only?**
    - Default: strictly planning-only; no code changes.
