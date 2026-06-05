@@ -1,6 +1,6 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-06-04  
+**Last Updated:** 2026-06-05
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE  
 **Renderer:** v6 PDF (ReportLab)  
@@ -12,7 +12,8 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest implementation commit:** `46edcbd` — `CCI: Add routing office code catalog rule (Phase H.3)`  
+**Latest implementation commit:** `1e990a6` — `CCI: Add routing office code advisory validator (Phase H.4)`  
+**Phase H.4 implementation commit:** `1e990a6` — `CCI: Add routing office code advisory validator (Phase H.4)`  
 **Phase H.3 implementation commit:** `46edcbd` — `CCI: Add routing office code catalog rule (Phase H.3)`  
 **Phase H.2 implementation commit:** `609821e` — `CCI: Add subject acronym advisory validator (Phase H.2)`  
 **Phase H.1 pilot implementation commit:** `ef365d3` — `CCI: Implement pilot approved rule (Phase H.1)`  
@@ -25,34 +26,35 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 **Phase C implementation commit:** `8b8a95c` — `CCI: Add local command profile promotion (Phase C)`  
 **Phase B implementation commit:** `519fad6` — `CCI: Add correction classification (Phase B)`  
 **Phase A functional baseline:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
-**Current verified functional baseline:** `46edcbd` — Phase H.3 second rule-catalog-only pilot implemented; CCI-ROUTE-010 office code prefix rule added; 27-suite regression set verified PASS  
-**Previous functional baseline:** `609821e` — Phase H.2 subject-line acronym advisory validator implemented; 26-suite regression set verified PASS  
-**GitHub Actions / regressions:** local 27-suite regression set verified PASS after Phase H.3 using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`; GitHub Actions must be verified manually if needed  
+**Current verified functional baseline:** `1e990a6` — Phase H.4 routing office-code advisory validator implemented; CCI-ROUTE-010 advisories emitted from validator; 28-suite regression set verified PASS  
+**Previous functional baseline:** `46edcbd` — Phase H.3 second rule-catalog-only pilot implemented; CCI-ROUTE-010 catalog entry added; 27-suite regression set verified PASS  
+**GitHub Actions / regressions:** local 28-suite regression set verified PASS after Phase H.4 using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`; GitHub Actions must be verified manually if needed  
 **Expected repository state:** clean and up to date with `origin/main`
 
 ### Start Here For New Chat
 
 1. Read `docs/BOOTSTRAP.md`.
 2. Read this file: `docs/PROJECT_STATUS.md`.
-3. Read `docs/checkpoints/phase_h3_second_rule_catalog_pilot_checkpoint.md` for the latest Phase H.3 status.
-4. Read `docs/checkpoints/phase_h2_subject_acronym_validator_enforcement_checkpoint.md` for Phase H.2 status.
-5. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for Phase H.1 status.
-6. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
-7. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
-8. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
-9. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
-10. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
-11. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
-12. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
-13. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
-14. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
-15. Do not modify renderer/layout unless explicitly asked.
-16. Continue from the **Recommended Next Work** section below.
-17. Run all regressions before committing implementation changes.
+3. Read `docs/checkpoints/phase_h4_routing_office_code_validator_checkpoint.md` for the latest Phase H.4 status.
+4. Read `docs/checkpoints/phase_h3_second_rule_catalog_pilot_checkpoint.md` for Phase H.3 status.
+5. Read `docs/checkpoints/phase_h2_subject_acronym_validator_enforcement_checkpoint.md` for Phase H.2 status.
+6. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for Phase H.1 status.
+7. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
+8. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
+9. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
+10. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
+11. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
+12. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
+13. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
+14. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
+15. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
+16. Do not modify renderer/layout unless explicitly asked.
+17. Continue from the **Recommended Next Work** section below.
+18. Run all regressions before committing implementation changes.
 
 Suggested startup prompt:
 
-> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_h3_second_rule_catalog_pilot_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_h4_routing_office_code_validator_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
 
 ---
 
@@ -415,38 +417,46 @@ Figures are rule-bearing and must be reviewed when referenced.
 
 ## Recommended Next Work
 
-**Next recommended phase: Phase H.3 / Phase I.2 validator refinement or second-rule planning — planning-only until approved.**
+**Next recommended phase: Phase H.5 / Phase I.4 validator severity review or third catalog-pilot planning — planning-only until approved.**
 
-Phase H.2 / Phase I.1 subject-line acronym validator advisory enforcement is complete. No further implementation should occur until a new phase is explicitly planned, approved, and regression-tested.
+Phase H.4 routing office-code advisory validator enforcement is complete. No further implementation should occur until a new phase is explicitly planned, approved, and regression-tested.
 
 The next planning phase should decide **one** of the following directions:
 
-1. **Expand the prohibited subject-acronym list** with additional acronym tokens, each requiring:
-   - Provenance citation from SECNAV M-5216.5 or manual figure text.
-   - Evidence that the acronym is commonly misused in subject lines.
-   - False-positive risk assessment.
-   - Regression fixture coverage before any code change.
+1. **Collect more real/synthetic evidence before increasing `CCI-ROUTE-010` severity**:
+   - Current validator is advisory only; catalog severity is `error`.
+   - Requires feature-flag or config mechanism for severity override.
+   - Must not break existing routing behavior.
+   - Requires broader fixture testing across real-world To/Via patterns.
 
-2. **Promote `CCI-CH7-SUBJ-007` from advisory to warning/error** after more testing:
-   - Requires feature-flag or config mechanism.
-   - Requires broader fixture testing across real-world subject patterns.
-   - Must not break existing `SUBJ-004` behavior.
-   - Must not flag normal all-caps words or approved acronyms.
+2. **Keep `CCI-ROUTE-010` advisory only**:
+   - Do not promote to error/warning.
+   - May add more heuristic detection refinements.
+   - Must preserve 28-suite regression.
 
-3. **Add a second low-risk approved-rule pilot** (rule-catalog-only first, then validator if approved):
-   - A separate approved record in `rules_v6/CCI/`.
+3. **Plan validator severity promotion with feature flag/config**:
+   - Add config-driven severity so advisory rules can be promoted without code changes.
+   - Requires design document and regression coverage.
+   - Must not introduce automatic enforcement from approved logs.
+
+4. **Further refine office-code detection**:
+   - Expand to additional delimiters or edge cases.
+   - Add more synthetic fixtures and targeted regression checks.
+   - Must preserve existing false-positive controls.
+
+5. **Add a third low-risk catalog pilot**:
+   - Separate approved record in `rules_v6/CCI/`.
    - Planning document required before implementation.
    - No automatic enforcement from approved logs.
 
-4. **Plan a separate validator refinement** for a different CCI component (e.g., date/time, personnel, routing):
-   - Requires planning document.
-   - Must preserve all 26 existing regression suites.
-   - No renderer/layout changes.
-   - No prompt-contract changes.
+6. **Improve rule-catalog governance/provenance tooling**:
+   - Add audit trails for catalog changes.
+   - Add catalog schema validation.
+   - Add catalog change review workflow.
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
-- All 26 regression suites must pass before any commit.
+- All 28 regression suites must pass before any commit.
 - Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
 - No renderer/layout changes unless explicitly scoped and regression-protected.
 - No automatic enforcement from approved/pending logs.
