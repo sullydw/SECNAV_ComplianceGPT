@@ -57,6 +57,14 @@ Rationale:
 
 **Promotion path:** After 2+ sessions of real-world testing with no false positives, plan Phase H.5 to promote `CCI-ROUTE-010` from advisory to `error` (blocking). This requires a separate planning document.
 
+### Catalog Severity vs Validator Severity
+
+- The catalog entry `CCI-ROUTE-010` has severity `"error"`, reflecting the long-term/manual rule severity.
+- Phase H.4 validator behavior is intentionally lower as **advisory** (non-blocking).
+- The catalog severity represents the intended final enforcement level; the advisory validator rollout is interim.
+- No error-level enforcement is allowed in Phase H.4. Promotion to `warning` or `error` may only occur in a future approved phase with explicit planning.
+- The validator message text should label the finding as advisory for human readers, but the function return schema remains unchanged.
+
 ---
 
 ## 5. Detection Design
@@ -81,6 +89,7 @@ Two complementary checks:
 
 - Extract the office-code portion from each addressee string.
 - An office code is the **last token or parenthetical group** in an addressee line, typically appearing after a comma or inside parentheses.
+- **Delimiter requirement:** the candidate token must be preceded by a comma `,` or enclosed in parentheses `()` to qualify as an office-code candidate. Tokens without a comma or parenthetical boundary are likely command names or titles (e.g., `Commander, U.S. Pacific Fleet`) and must NOT be flagged.
 - If the office code is inside parentheses, strip the parentheses before checking.
 - If the office code appears after a comma, split on comma and take the last segment, then strip whitespace.
 - **Numeric check:** `re.fullmatch(r"\d+", token)` — true if and only if the token is all digits.
@@ -191,9 +200,11 @@ Call sites in the main routing validate function:
 - After existing checks on each `via_addressee` in `routing.via`.
 
 Do NOT modify:
-- The signature of the main `validate()` function.
-- The return schema (list of dicts with `rule_id`, `severity`, `message`).
+- The signature of the main `validate_cci_routing()` function.
+- The return value structure: `tuple[list[str], list[str]]` as `(errors, warnings)`.
 - Any existing routing check logic.
+
+**Advisory placement:** Findings from `_check_office_code_prefix` must be appended as strings to the existing `warnings` list returned by `validate_cci_routing()`. The `errors` list remains empty in Phase H.4.
 
 ---
 
@@ -217,26 +228,28 @@ Create:
 
 `tools/run_phase_h4_routing_office_code_validator_regression.py`
 
-**Minimum 12 checks:**
+**Minimum 12, recommended 18 checks:**
 
 1. Validator module loads successfully.
 2. `_check_office_code_prefix` function exists.
-3. Numeric-only office code `12345` missing `Code` triggers advisory.
-4. Numeric-only office code `00932` missing `Code` triggers advisory.
+3. Numeric-only office code `12345` missing `Code` after a comma triggers advisory.
+4. Numeric-only office code `00932` missing `Code` after a comma triggers advisory.
 5. Numeric-only office code with `Code 12345` does NOT trigger advisory.
-6. Letter-starting office code `N1` with `Code N1` triggers advisory.
-7. Letter-starting office code `SUP` with `Code SUP` triggers advisory.
+6. Letter-starting office code `N1` with `Code N1` after a comma triggers advisory.
+7. Letter-starting office code `SUP` with `Code SUP` after a comma triggers advisory.
 8. Letter-starting office code `N1` without `Code` does NOT trigger advisory.
-9. Normal command name without office code does NOT trigger advisory (negative control).
-10. Parenthetical office code `(12345)` missing `Code` triggers advisory.
+9. Normal command name without comma delimiter (e.g., `Commander U.S. Pacific Fleet`) does NOT trigger advisory (negative control — no delimiter).
+10. Parenthetical office code `(12345)` missing `Code` triggers advisory (parenthetical delimiter).
 11. Parenthetical office code `(Code 12345)` does NOT trigger advisory.
-12. No renderer/layout files changed for H.4.
-13. No prompt-contract files changed for H.4.
-14. No Phase F/G command-layer files changed for H.4.
-15. Approved/pending logs are not tracked/staged.
-16. Existing H.3 targeted runner still passes (H.3 artifacts remain present).
+12. Trailing command number without comma/parentheses (e.g., `Battalion 3`) does NOT trigger advisory (negative control — no delimiter).
+13. No renderer/layout files changed for H.4.
+14. No prompt-contract files changed for H.4.
+15. No Phase F/G command-layer files changed for H.4.
+16. Approved/pending logs are not tracked/staged.
+17. Existing H.3 targeted runner still passes (H.3 artifacts remain present).
+18. Existing routing validator behavior unchanged (errors list empty, existing warnings preserved).
 
-**Expected result:** 16/16 checks PASS.
+**Expected result:** 18/18 checks PASS.
 
 ---
 
@@ -244,7 +257,7 @@ Create:
 
 If Phase H.4 is implemented with the new targeted runner, the full regression set becomes **28 suites**:
 
-1. `tools/run_phase_h4_routing_office_code_validator_regression.py` — NEW, 16 checks.
+1. `tools/run_phase_h4_routing_office_code_validator_regression.py` — NEW, 18 checks.
 2. `tools/run_phase_h3_second_rule_catalog_regression.py` — 15 checks.
 3. `tools/run_phase_h2_subject_acronym_validator_regression.py` — 12 checks.
 4. `tools/run_pilot_subject_acronym_rule_catalog_regression.py` — 11 checks.
