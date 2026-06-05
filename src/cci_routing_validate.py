@@ -271,6 +271,91 @@ def _check_distribution(payload: dict[str, Any], warnings: list[str]) -> None:
 
 
 # -------------------------------------------------------------------------
+# Phase H.4: Office-Code Prefix Advisory Check
+# -------------------------------------------------------------------------
+
+def _check_office_code_prefix(addressee: str) -> list[str]:
+    """
+    CCI-ROUTE-010: Office Code Prefix Rule (advisory/non-blocking).
+    Source: SECNAV M-5216.5, Chapter 7, paragraph 7-2.7a, To Line, General.
+    Quote: "If the office code is composed of only numbers, add the word
+    'Code' before the numbers. Do not add the word 'Code' before an office
+    code that starts with a letter (e.g., 'N' or 'SUP')."
+
+    Returns a list of advisory warning strings.  Empty list means no finding.
+    """
+    findings: list[str] = []
+    text = addressee.strip()
+    if not text:
+        return findings
+
+    candidate: str | None = None
+    is_parenthetical: bool = False
+
+    # Parenthetical form: "Commanding Officer (123)" or "Commanding Officer (Code N1)"
+    m = re.search(r"\(([^)]*)\)\s*$", text)
+    if m:
+        candidate = m.group(1).strip()
+        is_parenthetical = True
+    else:
+        # Comma-delimited form: "Commanding Officer, 123" or "Commanding Officer, Code N1"
+        if "," in text:
+            parts = text.rsplit(",", 1)
+            candidate = parts[-1].strip()
+        # No comma and no parentheses -> not an office-code candidate
+
+    if not candidate:
+        return findings
+
+    # Tokenize candidate on whitespace to isolate the last token as potential office code
+    tokens = candidate.split()
+    if not tokens:
+        return findings
+
+    code_token: str = tokens[-1]
+
+    # Length guard
+    if not (1 <= len(code_token) <= 10):
+        return findings
+
+    # Determine whether the candidate starts with "Code " (case-insensitive)
+    prefix_lower = candidate.lower()
+    has_code_prefix: bool = prefix_lower.startswith("code ")
+
+    if has_code_prefix:
+        # The code is the second token after "Code"
+        code_parts = candidate.split()
+        if len(code_parts) >= 2:
+            code_token = code_parts[1]
+        else:
+            return findings
+
+    # Check A: numeric-only office code missing "Code" prefix
+    if re.fullmatch(r"\d+", code_token):
+        if not has_code_prefix:
+            mode = "parenthetical" if is_parenthetical else "comma-delimited"
+            findings.append(
+                f"CCI-ROUTE-010 (advisory): numeric office code missing 'Code' prefix: "
+                f"{code_token!r} in addressee {addressee!r} — SECNAV M-5216.5 Ch7 para 7-2.7a "
+                f"[{mode}]"
+            )
+        return findings
+
+    # Check B: letter-starting office code improperly prefixed with "Code"
+    if code_token and code_token[0].isalpha():
+        if has_code_prefix:
+            mode = "parenthetical" if is_parenthetical else "comma-delimited"
+            findings.append(
+                f"CCI-ROUTE-010 (advisory): letter-starting office code should not use "
+                f"'Code' prefix: {code_token!r} in addressee {addressee!r} — "
+                f"SECNAV M-5216.5 Ch7 para 7-2.7a [{mode}]"
+            )
+        return findings
+
+    return findings
+
+
+# -------------------------------------------------------------------------
 # Public function
 # -------------------------------------------------------------------------
 
@@ -285,6 +370,17 @@ def validate_cci_routing(payload: dict[str, Any]) -> tuple[list[str], list[str]]
     _check_via(payload, warnings)
     _check_copy_to(payload, warnings)
     _check_distribution(payload, warnings)
+
+    # Phase H.4: Advisory office-code prefix checks for To and Via lines
+    to_raw = _get_field(payload, _TO_FIELD_NAMES)
+    for addressee in _normalize_list(to_raw):
+        for finding in _check_office_code_prefix(addressee):
+            warnings.append(finding)
+
+    via_raw = _get_field(payload, _VIA_FIELD_NAMES)
+    for addressee in _normalize_list(via_raw):
+        for finding in _check_office_code_prefix(addressee):
+            warnings.append(finding)
 
     return errors, warnings
 

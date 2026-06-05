@@ -351,7 +351,7 @@ Rollback risk: **low** — one helper function in one validator file.
 | **Implementation target** | `src/cci_routing_validate.py` |
 | **Enforcement level** | `advisory` (non-blocking) |
 | **Feature flag** | Not required for advisory |
-| **Regression coverage** | 16-check targeted runner + 28-suite full gate |
+| **Regression coverage** | 18-check targeted runner + 28-suite full gate |
 | **Promotion path** | Phase H.5 to `error` after real-world testing |
 | **Rollback risk** | Low — one helper function, one runner file |
 

@@ -114,17 +114,16 @@ def main() -> int:
     results.append(("Check 09: Rule implementation_target is rule_catalog", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 09")
 
-    # 10. No validator files changed
+    # 10. No unexpected validator files modified beyond cci_routing_validate.py (Phase H.4)
     result10 = run_git(
         ["git", "diff", "--stat", "HEAD", "--"] + [f"src/{m}" for m in [
             "cci_subject_validate.py", "cci_acronym_validate.py", "cci_ref_encl_validate.py",
             "cci_date_time_validate.py", "cci_personnel_validate.py", "cci_poc_validate.py",
-            "cci_routing_validate.py"
         ]],
         root,
     )
     ok = result10 == ""
-    results.append(("Check 10: No validator files modified", ok))
+    results.append(("Check 10: No unexpected validator files modified (cci_routing_validate.py allowed for H.4)", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 10")
 
     # 11. No renderer/layout files changed
