@@ -210,6 +210,18 @@ The layer is not a replacement for deterministic SECNAV validators. It is a cont
 - No automatic enforcement from approved logs.
 - Approved/pending logs remained local/gitignored and were not committed.
 
+### Phase H.5 / Phase I.4 — Routing Office-Code Severity Review Planning (Approved)
+
+- Planning document: `docs/planning/phase_h5_routing_office_code_severity_review_plan.md`.
+- Planning checkpoint commits: `8bf5efa` — `Docs: Add Phase H.5 routing office code severity plan`; `ece374b` — `Docs: Refine Phase H.5 routing office code severity plan`.
+- **Approved verdict: keep `CCI-ROUTE-010` advisory-only; do not promote to warning/error in Phase H.5.**
+- Feature flag/config design is deferred to a future implementation phase.
+- Copy-to remains out of scope.
+- Evidence collection required before any future severity promotion: 20 negative-control fixtures + 10 positive-control fixtures + 50 real-world To/Via patterns.
+- Terminology standardized to `negative-control fixtures` (must not trigger) and `positive-control fixtures` (must trigger).
+- No code changes. No validator changes. No renderer/layout changes. No prompt-contract changes. No command-layer changes. No approved/pending logs committed. No real data committed.
+- Current functional baseline remains `1e990a6` (Phase H.4). Regression set remains 28 suites.
+
 ---
 
 ## 7. Current Regression Coverage
@@ -252,7 +264,43 @@ The 28-suite set passed locally after Phase H.4 when run with `C:\Users\drryl\pi
 
 ## 9. Next Phase Planning Target
 
-The next planning-only phase is **Phase H.5 / Phase I.4 validator severity review or third catalog-pilot planning**.
+The next planning-only phase is **Phase H.6 / Phase I.5 evidence collection and regression hardening, or third catalog-pilot planning**.
+
+Phase H.5 / Phase I.4 routing office-code severity review planning is complete and approved. The approved plan is at `docs/planning/phase_h5_routing_office_code_severity_review_plan.md` (commit `ece374b`). No implementation occurred in Phase H.5.
+
+Phase H.5 summary:
+- Severity review plan for `CCI-ROUTE-010` created, refined, reviewed, and approved.
+- Verdict: keep advisory-only; do not promote to warning/error in Phase H.5.
+- Feature flag/config design is deferred to a future implementation phase.
+- Copy-to remains out of scope.
+- Evidence collection required before any future severity promotion: 20 negative-control fixtures + 10 positive-control fixtures + 50 real-world To/Via patterns.
+- Terminology standardized to `negative-control fixtures` (must not trigger) and `positive-control fixtures` (must trigger).
+- No code changes. No validator changes. No renderer/layout changes. No prompt-contract changes. No command-layer changes. No approved/pending logs committed. No real data committed.
+- Current functional baseline remains `1e990a6` (Phase H.4). Regression set remains 28 suites.
+
+The next planning phase must decide **one** of the following directions:
+
+1. **Collect the 20 negative-control and 10 positive-control fixtures for `CCI-ROUTE-010`:**
+   - Add synthetic fixtures to `examples/`.
+   - Verify the H.4 runner passes against them.
+   - Does not change validator severity; advisory-only remains.
+
+2. **Harden the H.4 runner with an explicit `errors`-empty check:**
+   - Update `tools/run_phase_h4_routing_office_code_validator_regression.py` to verify `errors` list is empty when `CCI-ROUTE-010` advisories are emitted.
+   - Regression count stays 28 suites.
+
+3. **Design feature flag/config support for future severity promotion:**
+   - Create a planning document for a config-driven severity override mechanism.
+   - Design only; no implementation unless explicitly approved.
+
+4. **Keep `CCI-ROUTE-010` advisory indefinitely:**
+   - Do not promote. Do not collect evidence. Do not add severity config.
+   - Maintain existing 28-suite regression.
+
+5. **Start a third low-risk catalog pilot:**
+   - Separate approved record in `rules_v6/CCI/`.
+   - Planning document required before implementation.
+   - No automatic enforcement from approved logs.
 
 Phase H.4 routing office-code advisory validator enforcement is complete:
 - Advisory code `CCI-ROUTE-010` implemented in `src/cci_routing_validate.py`.

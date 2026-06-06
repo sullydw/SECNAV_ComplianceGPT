@@ -1,6 +1,6 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-06-05
+**Last Updated:** 2026-06-06
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE  
 **Renderer:** v6 PDF (ReportLab)  
@@ -12,7 +12,7 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest implementation commit:** `1e990a6` — `CCI: Add routing office code advisory validator (Phase H.4)`  
+**Latest planning checkpoint commit:** `ece374b` — `Docs: Refine Phase H.5 routing office code severity plan`  
 **Phase H.4 implementation commit:** `1e990a6` — `CCI: Add routing office code advisory validator (Phase H.4)`  
 **Phase H.3 implementation commit:** `46edcbd` — `CCI: Add routing office code catalog rule (Phase H.3)`  
 **Phase H.2 implementation commit:** `609821e` — `CCI: Add subject acronym advisory validator (Phase H.2)`  
@@ -35,26 +35,27 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 
 1. Read `docs/BOOTSTRAP.md`.
 2. Read this file: `docs/PROJECT_STATUS.md`.
-3. Read `docs/checkpoints/phase_h4_routing_office_code_validator_checkpoint.md` for the latest Phase H.4 status.
-4. Read `docs/checkpoints/phase_h3_second_rule_catalog_pilot_checkpoint.md` for Phase H.3 status.
-5. Read `docs/checkpoints/phase_h2_subject_acronym_validator_enforcement_checkpoint.md` for Phase H.2 status.
-6. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for Phase H.1 status.
-7. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
-8. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
-9. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
-10. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
-11. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
-12. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
-13. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
-14. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
-15. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
-16. Do not modify renderer/layout unless explicitly asked.
-17. Continue from the **Recommended Next Work** section below.
-18. Run all regressions before committing implementation changes.
+3. Read `docs/checkpoints/phase_h5_routing_office_code_severity_review_checkpoint.md` for the latest Phase H.5 planning status.
+4. Read `docs/checkpoints/phase_h4_routing_office_code_validator_checkpoint.md` for Phase H.4 status.
+5. Read `docs/checkpoints/phase_h3_second_rule_catalog_pilot_checkpoint.md` for Phase H.3 status.
+6. Read `docs/checkpoints/phase_h2_subject_acronym_validator_enforcement_checkpoint.md` for Phase H.2 status.
+7. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for Phase H.1 status.
+8. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
+9. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
+10. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
+11. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
+12. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
+13. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
+14. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
+15. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
+16. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
+17. Do not modify renderer/layout unless explicitly asked.
+18. Continue from the **Recommended Next Work** section below.
+19. Run all regressions before committing implementation changes.
 
 Suggested startup prompt:
 
-> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_h4_routing_office_code_validator_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_h5_routing_office_code_severity_review_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
 
 ---
 
@@ -184,8 +185,9 @@ C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c9_regression.py
 C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c10_regression.py
 ```
 
-The current local regression set is **27 suites**:
+The current local regression set is **28 suites**:
 
+- Phase H.4 routing office-code advisory validator regression (18 checks).
 - Phase H.3 second rule-catalog-only pilot regression (15 checks).
 - Phase H.2 subject-line acronym advisory regression (12 checks).
 - Phase H.1 pilot subject-acronym rule-catalog regression (11 checks).
@@ -198,7 +200,7 @@ The current local regression set is **27 suites**:
 - Phase B classification regression.
 - Intake, correction, session, profile, audit, context-schema, CCI subject/ref-encl/acronym/date-time/personnel/POC/routing, and C7-C10 layout regressions.
 
-The 27-suite set passed locally after Phase H.3 when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF, not code defects.
+The 28-suite set passed locally after Phase H.4 when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF, not code defects.
 
 ---
 
@@ -249,33 +251,52 @@ The 27-suite set passed locally after Phase H.3 when run with `C:\Users\drryl\pi
 
 ## Recommended Next Work
 
-### Next Phase: Phase H.4 / Phase I.3 Validator Enforcement Planning or Third Catalog-Pilot Planning
+### Next Phase: Phase H.6 / Phase I.5 Evidence Collection and Regression Hardening, or Third Catalog-Pilot Planning
 
-Phase H.3 / Phase I.2 second rule-catalog-only pilot is **complete**. No further implementation should occur until a new phase is explicitly planned, approved, and regression-tested.
+Phase H.5 / Phase I.4 routing office-code severity review planning is **complete and approved**. The approved plan is at `docs/planning/phase_h5_routing_office_code_severity_review_plan.md` (commit `ece374b`). No implementation occurred in Phase H.5.
 
-Phase H.3 summary:
-- Catalog entry `CCI-ROUTE-010` added to `rules_v6/CCI/cci_ch2_routing_rules.json`.
-- Rule: numeric-only office codes require `Code`; office codes starting with letters must not use `Code`.
-- 27-suite regression set verified PASS.
-- No validator changes. No renderer/layout changes. No prompt-contract changes. No command-layer changes.
+Phase H.5 summary:
+- Severity review plan for `CCI-ROUTE-010` created, refined, reviewed, and approved.
+- Verdict: **keep advisory-only**; do not promote to warning/error in Phase H.5.
+- Feature flag/config design is deferred to a future implementation phase.
+- Copy-to remains out of scope.
+- Evidence collection (20 negative-control fixtures + 10 positive-control fixtures + 50 real-world To/Via patterns) is required before any future severity promotion.
+- Terminology standardized to `negative-control fixtures` (must not trigger) and `positive-control fixtures` (must trigger).
+- No code changes. No validator changes. No renderer/layout changes. No prompt-contract changes. No command-layer changes. No approved/pending logs committed. No real data committed.
+- Current functional baseline remains `1e990a6` (Phase H.4). Regression set remains 28 suites.
 
 The next planning phase should decide **one** of the following directions:
 
-1. **Plan validator enforcement for `CCI-ROUTE-010`** so the office-code rule is checked by the routing validator, with feature-flag mechanism and targeted regression coverage.
-2. **Further refine `CCI-CH7-SUBJ-007`** (expand prohibited list or promote severity), with provenance and fixture coverage.
-3. **Add a third low-risk approved-rule pilot** (rule-catalog-only first, then validator if approved), requiring separate planning document and approved record.
-4. **Update rule-catalog governance/provenance tooling** (schema validation, rule-dependency tracking, catalog linting).
+1. **Collect the 20 negative-control and 10 positive-control fixtures for `CCI-ROUTE-010`:**
+   - Add synthetic fixtures to `examples/`.
+   - Verify the H.4 runner passes against them.
+   - Does not change validator severity; advisory-only remains.
+
+2. **Harden the H.4 runner with an explicit `errors`-empty check:**
+   - Update `tools/run_phase_h4_routing_office_code_validator_regression.py` to verify `errors` list is empty when `CCI-ROUTE-010` advisories are emitted.
+   - Regression count stays 28 suites (no new runner, just updated checks).
+
+3. **Design feature flag/config support for future severity promotion:**
+   - Create a planning document for a config-driven severity override mechanism.
+   - Design only; no implementation unless explicitly approved.
+
+4. **Keep `CCI-ROUTE-010` advisory indefinitely:**
+   - Do not promote. Do not collect evidence. Do not add severity config.
+   - Maintain existing 28-suite regression.
+
+5. **Start a third low-risk catalog pilot:**
+   - Separate approved record in `rules_v6/CCI/`.
+   - Planning document required before implementation.
+   - No automatic enforcement from approved logs.
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
-- All 27 regression suites must pass before any commit.
+- All 28 regression suites must pass before any commit.
 - Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
 - No renderer/layout changes unless explicitly scoped and regression-protected.
 - No automatic enforcement from approved/pending logs.
 - No AI-only implementation decisions.
 - No real command/user data committed.
-
-No validator, prompt-contract, or renderer changes may occur until Phase H.4 / Phase I.3 is explicitly planned, approved, implemented, reviewed, and regression-tested.
 
 ---
 
@@ -417,42 +438,43 @@ Figures are rule-bearing and must be reviewed when referenced.
 
 ## Recommended Next Work
 
-**Next recommended phase: Phase H.5 / Phase I.4 validator severity review or third catalog-pilot planning — planning-only until approved.**
+**Next recommended phase: Phase H.6 / Phase I.5 evidence collection and regression hardening, or third catalog-pilot planning — planning-only until approved.**
 
-Phase H.4 routing office-code advisory validator enforcement is complete. No further implementation should occur until a new phase is explicitly planned, approved, and regression-tested.
+Phase H.5 / Phase I.4 routing office-code severity review planning is complete and approved. The approved plan is at `docs/planning/phase_h5_routing_office_code_severity_review_plan.md` (commit `ece374b`). No implementation occurred in Phase H.5.
+
+Phase H.5 summary:
+- Severity review plan for `CCI-ROUTE-010` created, refined, reviewed, and approved.
+- Verdict: keep advisory-only; do not promote to warning/error in Phase H.5.
+- Feature flag/config design is deferred to a future implementation phase.
+- Copy-to remains out of scope.
+- Evidence collection (20 negative-control fixtures + 10 positive-control fixtures + 50 real-world To/Via patterns) is required before any future severity promotion.
+- Terminology standardized to `negative-control fixtures` (must not trigger) and `positive-control fixtures` (must trigger).
+- No code changes. No validator changes. No renderer/layout changes. No prompt-contract changes. No command-layer changes. No approved/pending logs committed. No real data committed.
+- Current functional baseline remains `1e990a6` (Phase H.4). Regression set remains 28 suites.
 
 The next planning phase should decide **one** of the following directions:
 
-1. **Collect more real/synthetic evidence before increasing `CCI-ROUTE-010` severity**:
-   - Current validator is advisory only; catalog severity is `error`.
-   - Requires feature-flag or config mechanism for severity override.
-   - Must not break existing routing behavior.
-   - Requires broader fixture testing across real-world To/Via patterns.
+1. **Collect the 20 negative-control and 10 positive-control fixtures for `CCI-ROUTE-010`:**
+   - Add synthetic fixtures to `examples/`.
+   - Verify the H.4 runner passes against them.
+   - Does not change validator severity; advisory-only remains.
 
-2. **Keep `CCI-ROUTE-010` advisory only**:
-   - Do not promote to error/warning.
-   - May add more heuristic detection refinements.
-   - Must preserve 28-suite regression.
+2. **Harden the H.4 runner with an explicit `errors`-empty check:**
+   - Update `tools/run_phase_h4_routing_office_code_validator_regression.py` to verify `errors` list is empty when `CCI-ROUTE-010` advisories are emitted.
+   - Regression count stays 28 suites (no new runner, just updated checks).
 
-3. **Plan validator severity promotion with feature flag/config**:
-   - Add config-driven severity so advisory rules can be promoted without code changes.
-   - Requires design document and regression coverage.
-   - Must not introduce automatic enforcement from approved logs.
+3. **Design feature flag/config support for future severity promotion:**
+   - Create a planning document for a config-driven severity override mechanism.
+   - Design only; no implementation unless explicitly approved.
 
-4. **Further refine office-code detection**:
-   - Expand to additional delimiters or edge cases.
-   - Add more synthetic fixtures and targeted regression checks.
-   - Must preserve existing false-positive controls.
+4. **Keep `CCI-ROUTE-010` advisory indefinitely:**
+   - Do not promote. Do not collect evidence. Do not add severity config.
+   - Maintain existing 28-suite regression.
 
-5. **Add a third low-risk catalog pilot**:
+5. **Start a third low-risk catalog pilot:**
    - Separate approved record in `rules_v6/CCI/`.
    - Planning document required before implementation.
    - No automatic enforcement from approved logs.
-
-6. **Improve rule-catalog governance/provenance tooling**:
-   - Add audit trails for catalog changes.
-   - Add catalog schema validation.
-   - Add catalog change review workflow.
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
