@@ -98,8 +98,8 @@ These patterns must NOT produce warnings. If the validator flags any, it is a fa
 | 8 | `multiple_address_letter`, no `from` | Multiple-address letter skip |
 | 9 | `DT_STD_LTR` with `from: "C O, USS EXAMPLE"` | Normal From with comma |
 | 10 | `DT_STD_LTR` with `from: "Commanding Officer (Acting)"` | From with parenthesis |
-| 11 | `DT_STD_LTR` with `window_envelope: "yes"` (string), no `from` | Non-boolean window_envelope — not true |
-| 12 | `DT_STD_LTR` with `window_envelope: 1` (int), no `from` | Non-boolean window_envelope — not true |
+| 11 | `DT_STD_LTR` with `window_envelope: "yes"` (string), no `from` | Python-truthy string — currently suppresses (no advisory). **Note:** Current code uses `payload.get("window_envelope", False)`, which treats any truthy value as `true`. This is documented behavior; strict type checking is reserved for a future separately approved validator-hardening phase. |
+| 12 | `DT_STD_LTR` with `window_envelope: 1` (int), no `from` | Python-truthy int — currently suppresses (no advisory). Same note as #11. |
 | 13 | `DT_STD_LTR` with `from: null` and `window_envelope: true` | Suppressed despite null |
 | 14 | `DT_STD_LTR` with `from: ""` and `window_envelope: true` | Suppressed despite empty |
 | 15 | `DT_STD_LTR` with `from: "   "` and `window_envelope: true` | Suppressed despite whitespace |
@@ -149,11 +149,13 @@ The corpus is **gitignored** and is not committed to the repository. It is used 
 
 ---
 
-## 5. H.9 Runner Hardening
+## 5. H.10 Hardening Targets
 
-Phase H.9 introduced `tools/run_phase_h9_from_line_validator_regression.py` with 18 checks. Phase H.10 should extend or supplement this runner with the following hardening checks:
+Phase H.9 introduced `tools/run_phase_h9_from_line_validator_regression.py` with 18 checks. The checks listed below are **hardening targets for the chosen H.10 implementation path** (new H.10 runner or extended H.9 runner, per Section 6). They do not already exist in the H.9 runner; they define what H.10 must verify after implementation.
 
 ### 5.1 Required Explicit Checks
+
+These checks must pass regardless of whether H.10 uses Option A (extend H.9) or Option B (new runner).
 
 | # | Check | Expected Result |
 |---|---|---|
@@ -184,14 +186,15 @@ Phase H.9 introduced `tools/run_phase_h9_from_line_validator_regression.py` with
 |---|---|---|
 | 21 | Null `from` on `DT_STD_LTR` triggers advisory | PASS |
 | 22 | Tab/newline `from` on `DT_STD_LTR` triggers advisory | PASS |
-| 23 | `window_envelope: "yes"` (string) does NOT suppress | PASS |
-| 24 | `window_envelope: 1` (int) does NOT suppress | PASS |
+| 23 | `window_envelope: "yes"` (string) suppresses advisory | PASS — *Current code uses Python truthiness. This documents actual behavior, not a failure. Strict type checking is reserved for a future separately approved validator-hardening phase.* |
+| 24 | `window_envelope: 1` (int) suppresses advisory | PASS — *Same note as check 23.* |
 | 25 | `standard_letter` doc_type triggers same as `DT_STD_LTR` | PASS |
 | 26 | H.4 targeted runner still passes | PASS |
 | 27 | H.6 targeted runner still passes | PASS |
-| 28 | Full 31/31 (or 32/32) regression gate passes | PASS |
-| 29 | New negative-control fixtures all pass (no false positives) | PASS |
-| 30 | New positive-control fixtures all trigger (no false negatives) | PASS |
+| 28 | H.8 targeted runner still passes (16/16 checks) | PASS |
+| 29 | Full 31/31 (or 32/32) regression gate passes | PASS |
+| 30 | New negative-control fixtures all pass (no false positives) | PASS |
+| 31 | New positive-control fixtures all trigger (no false negatives) | PASS |
 
 ---
 
@@ -231,14 +234,18 @@ Tradeoff: one additional runner file to maintain; one additional suite in the fu
 ### 7.1 If Extending H.9 Runner Only
 
 - Gate: **31 suites** (no new runner)
-- All 31 existing runners must pass.
+- All 31 existing runners must pass, including:
+  - `tools/run_phase_h8_third_rule_catalog_regression.py` — 16/16 checks
+  - `tools/run_phase_h9_from_line_validator_regression.py` — 18/18 checks (extended)
 - H.9 runner must pass with extended checks.
 
 ### 7.2 If Adding New H.10 Runner (Recommended)
 
 - Gate: **32 suites** (31 existing + 1 new H.10 runner)
-- All 32 runners must pass.
-- H.9 runner must still pass unchanged (or with minor extensions).
+- All 32 runners must pass, including:
+  - `tools/run_phase_h8_third_rule_catalog_regression.py` — 16/16 checks (must still pass unchanged)
+  - `tools/run_phase_h9_from_line_validator_regression.py` — 18/18 checks (must still pass unchanged or with minor extensions)
+  - `tools/run_phase_h10_from_line_evidence_regression.py` — new evidence checks must pass
 - H.10 runner must pass with evidence checks.
 
 ---
