@@ -12,7 +12,8 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest planning checkpoint commit:** `532993d` — `Docs: Add Phase H.7 routing office code evidence review plan`
+**Latest planning checkpoint commit:** `532993d` — `Docs: Add Phase H.7 routing office code evidence review plan`  
+**Latest planning document:** `docs/planning/phase_h8_third_catalog_pilot_plan.md` — Phase H.8 / Phase I.7 third catalog pilot plan (pending approval)
 **Latest implementation commit:** `662afbb` — `CCI: Add routing office code evidence regression (Phase H.6)`  
 **Phase H.6 implementation commit:** `662afbb` — `CCI: Add routing office code evidence regression (Phase H.6)`  
 **Phase H.4 implementation commit:** `1e990a6` — `CCI: Add routing office code advisory validator (Phase H.4)`  
@@ -38,28 +39,29 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 1. Read `docs/BOOTSTRAP.md`.
 2. Read this file: `docs/PROJECT_STATUS.md`.
 3. Read `docs/checkpoints/phase_h7_routing_office_code_evidence_review_checkpoint.md` for the latest Phase H.7 planning checkpoint status.
-4. Read `docs/checkpoints/phase_h6_routing_office_code_evidence_checkpoint.md` for Phase H.6 implementation status.
-5. Read `docs/checkpoints/phase_h5_routing_office_code_severity_review_checkpoint.md` for Phase H.5 planning status.
-6. Read `docs/checkpoints/phase_h4_routing_office_code_validator_checkpoint.md` for Phase H.4 status.
-7. Read `docs/checkpoints/phase_h3_second_rule_catalog_pilot_checkpoint.md` for Phase H.3 status.
-8. Read `docs/checkpoints/phase_h2_subject_acronym_validator_enforcement_checkpoint.md` for Phase H.2 status.
-9. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for Phase H.1 status.
-10. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
-11. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
-12. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
-13. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
-14. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
-15. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
-16. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
-17. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
-18. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
-19. Do not modify renderer/layout unless explicitly asked.
-20. Continue from the **Recommended Next Work** section below.
-21. Run all regressions before committing implementation changes.
+4. Read `docs/planning/phase_h8_third_catalog_pilot_plan.md` for the Phase H.8 / Phase I.7 third catalog pilot plan (pending approval).
+5. Read `docs/checkpoints/phase_h6_routing_office_code_evidence_checkpoint.md` for Phase H.6 implementation status.
+6. Read `docs/checkpoints/phase_h5_routing_office_code_severity_review_checkpoint.md` for Phase H.5 planning status.
+7. Read `docs/checkpoints/phase_h4_routing_office_code_validator_checkpoint.md` for Phase H.4 status.
+8. Read `docs/checkpoints/phase_h3_second_rule_catalog_pilot_checkpoint.md` for Phase H.3 status.
+9. Read `docs/checkpoints/phase_h2_subject_acronym_validator_enforcement_checkpoint.md` for Phase H.2 status.
+10. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for Phase H.1 status.
+11. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
+12. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
+13. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
+14. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
+15. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
+16. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
+17. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
+18. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
+19. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
+20. Do not modify renderer/layout unless explicitly asked.
+21. Continue from the **Recommended Next Work** section below.
+22. Run all regressions before committing implementation changes.
 
 Suggested startup prompt:
 
-> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, and `docs/checkpoints/phase_h7_routing_office_code_evidence_review_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, `docs/checkpoints/phase_h7_routing_office_code_evidence_review_checkpoint.md`, and `docs/planning/phase_h8_third_catalog_pilot_plan.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
 
 ---
 
@@ -258,63 +260,36 @@ The 29-suite set passed locally after Phase H.6 when run with `C:\Users\drryl\pi
 
 ## Recommended Next Work
 
-### Next Phase: Phase H.7 / Phase I.6 Evidence Review, Severity-Promotion Planning, or Third Catalog-Pilot Planning
+### Next Phase: Phase H.8 / Phase I.7 — Third Low-Risk Catalog-Pilot Planning
 
-Phase H.6 / Phase I.5 evidence collection and regression hardening is **complete**. Implementation commit: `662afbb` — `CCI: Add routing office code evidence regression (Phase H.6)`.
+Phase H.7 / Phase I.6 evidence review and planning decision is **complete and approved**. Planning commit: `532993d` — `Docs: Add Phase H.7 routing office code evidence review plan`. Checkpoint commit: `1e16493` — `Docs: Record Phase H.7 evidence review checkpoint`.
 
-Phase H.6 summary:
-- Added 20 negative-control fixtures (`examples/routing_h6_negative_01.json` through `routing_h6_negative_20.json`) and 10 positive-control fixtures (`examples/routing_h6_positive_01.json` through `routing_h6_positive_10.json`).
-- Added `tools/run_phase_h6_routing_office_code_evidence_regression.py` with 15 checks covering fixture existence, false-positive/negative controls, `(advisory):` format verification, `errors`-list emptiness, copy-to exclusion, and forbidden-file guards.
-- Added local corpus `corrections/evidence/routing_office_code_patterns.jsonl` with 50 synthetic-realistic To/Via patterns; corpus remains gitignored and was not committed.
-- **No severity promotion.** `CCI-ROUTE-010` remains advisory-only.
-- **No validator logic changes.** `src/cci_routing_validate.py` untouched.
-- **No renderer/layout changes.** `src/pdf_v6_render.py` untouched.
-- **No prompt-contract changes.** `src/context_resolver.py` untouched.
-- **No Phase F/G command-layer changes.** `src/correction_commands.py`, `src/correction_nl_commands.py` untouched.
-- **No rule catalog changes.** `rules_v6/CCI/cci_ch2_routing_rules.json` untouched.
-- **No approved/pending/session logs committed.** All correction storage remains local/gitignored.
-- Full 29-suite local regression set passed using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`.
-- Current functional baseline: `662afbb`. Regression set: 29 suites.
+Phase H.7 summary:
+- **Keep `CCI-ROUTE-010` advisory-only by default.** Severity promotion remains deferred.
+- **No implementation authorized.** No validator changes. No renderer/layout changes. No prompt-contract changes. No command-layer changes. No rule catalog changes.
+- H.7 reviewed the 30 synthetic fixtures (20 negative + 10 positive) and 50 local corpus patterns.
+- H.7 confirmed existing H.6 evidence is sufficient to maintain advisory status.
+- Missing evidence documented: real-world Navy/Marine Corps To/Via patterns, joint-letter stress testing, implemented feature flag/config support.
+- Feature flag/config support remains conceptual only; must be planned separately before any severity promotion.
+- Copy-to remains out of scope for office-code validation.
+- Full 29-suite local regression set passed after H.7 checkpoint commit using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`.
+- Current functional baseline remains `662afbb`. Regression set remains 29 suites.
 
-Phase H.5 / Phase I.4 routing office-code severity review planning is **complete and approved**. The approved plan is at `docs/planning/phase_h5_routing_office_code_severity_review_plan.md` (commit `ece374b`). No implementation occurred in Phase H.5.
+**Phase H.8 planning document created:** `docs/planning/phase_h8_third_catalog_pilot_plan.md`.
+- Candidate under review: `CCI-ROUTE-011` — standard letters must have a From line (window-envelope exception).
+- Source: SECNAV M-5216.5, Chapter 7, paragraph 7-2.5a.
+- Domain: `routing.from`.
+- Target catalog file: `rules_v6/CCI/cci_ch2_routing_rules.json`.
+- Implementation target: `rule_catalog` only.
+- Status: **planning-only; pending user approval.**
 
-Phase H.5 summary:
-- Severity review plan for `CCI-ROUTE-010` created, refined, reviewed, and approved.
-- Verdict: **keep advisory-only**; do not promote to warning/error in Phase H.5.
-- Feature flag/config design is deferred to a future implementation phase.
-- Copy-to remains out of scope.
-- Evidence collection completed in Phase H.6.
+The next step is **user approval of the H.8 plan**. Once approved:
+1. Proceed through Phase D → Phase E → Phase H workflow for `CCI-ROUTE-011`.
+2. Implement catalog entry only (no validator, no renderer, no prompt-contract changes).
+3. Add `tools/run_phase_h8_third_rule_catalog_regression.py` with 11–15 checks.
+4. Regression gate becomes 30 suites (29 existing + 1 new H.8 runner).
 
-The next planning phase should decide **one** of the following directions:
-
-1. **Review H.6 fixture results and local corpus patterns for `CCI-ROUTE-010`:**
-   - Analyze the 30 synthetic fixtures and 50 corpus patterns for coverage gaps.
-   - Decide whether additional edge cases need fixtures before any severity promotion.
-   - Does not change validator severity; advisory-only remains.
-
-2. **Continue collecting evidence:**
-   - Add more negative/positive fixtures or expand corpus.
-   - Does not change validator severity; advisory-only remains.
-
-3. **Design feature flag/config support for future severity promotion:**
-   - Create a planning document for a config-driven severity override mechanism.
-   - Design only; no implementation unless explicitly approved.
-
-4. **Keep `CCI-ROUTE-010` advisory indefinitely:**
-   - Do not promote. Do not collect additional evidence. Do not add severity config.
-   - Maintain existing 29-suite regression.
-
-5. **Plan warning/error promotion only after evidence review:**
-   - Use H.6 evidence to decide whether CCI-ROUTE-010 should be promoted from advisory to warning/error.
-   - Requires planning document and new regression checks.
-   - Must preserve existing false-positive controls.
-
-6. **Start a third low-risk catalog pilot:**
-   - Separate approved record in `rules_v6/CCI/`.
-   - Planning document required before implementation.
-   - No automatic enforcement from approved logs.
-
-**Constraints for any next phase:**
+**Constraints:**
 - Planning documents must be created and approved before any code changes.
 - All 29 regression suites must pass before any commit.
 - Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.

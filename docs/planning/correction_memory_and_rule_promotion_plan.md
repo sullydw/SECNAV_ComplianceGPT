@@ -17,8 +17,8 @@
 **Phase C Implementation:** `8b8a95c` — `CCI: Add local command profile promotion (Phase C)`  
 **Phase B Implementation:** `519fad6` — `CCI: Add correction classification (Phase B)`  
 **Phase A Implementation:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
-**Latest Checkpoint:** `532993d` / Phase H.7 routing office-code evidence review and planning decision handoff
-**Next Phase:** Phase H.8 / Phase I.7 third catalog-pilot planning or feature-flag/config planning — planning-only until approved
+**Latest Checkpoint:** `532993d` / Phase H.7 routing office-code evidence review and planning decision handoff  
+**Next Phase:** Phase H.8 / Phase I.7 third catalog-pilot planning — `docs/planning/phase_h8_third_catalog_pilot_plan.md` created, pending user approval
 
 ---
 
@@ -302,7 +302,7 @@ The 29-suite set passed locally after Phase H.6 when run with `C:\Users\drryl\pi
 
 ## 9. Next Phase Planning Target
 
-The next planning-only phase is **Phase H.8 / Phase I.7 third catalog-pilot planning or feature-flag/config planning**.
+The next planning-only phase is **Phase H.8 / Phase I.7 third catalog-pilot planning**.
 
 Phase H.7 / Phase I.6 routing office-code evidence review and planning decision is complete and approved. The approved plan is at `docs/planning/phase_h7_routing_office_code_evidence_review_plan.md` (commit `532993d`). No implementation occurred in Phase H.7.
 
@@ -324,6 +324,14 @@ Phase H.7 summary:
 - Current functional baseline: `662afbb`. Regression set: 29 suites.
 - Latest planning checkpoint commit: `532993d`.
 
+**Phase H.8 planning document created:** `docs/planning/phase_h8_third_catalog_pilot_plan.md`.
+- Candidate under review: `CCI-ROUTE-011` — standard letters must have a From line (window-envelope exception).
+- Source: SECNAV M-5216.5, Chapter 7, paragraph 7-2.5a.
+- Domain: `routing.from`.
+- Target catalog file: `rules_v6/CCI/cci_ch2_routing_rules.json`.
+- Implementation target: `rule_catalog` only.
+- Status: **planning-only; pending user approval.**
+
 Any future promotion of `CCI-ROUTE-010` from advisory to warning/error requires:
 1. Real-world evidence review.
 2. Feature flag/config design and implementation.
@@ -331,29 +339,29 @@ Any future promotion of `CCI-ROUTE-010` from advisory to warning/error requires:
 4. Targeted regression update.
 5. Full regression gate (29 suites).
 
-The next planning phase should decide **one** of the following directions:
+The next planning phase should proceed with **one** of the following directions only if the H.8 plan is not approved:
 
-1. **Start a third low-risk catalog pilot:**
-   - Separate approved record in `rules_v6/CCI/`.
-   - Planning document required before implementation.
-   - No automatic enforcement from approved logs.
+1. **Keep `CCI-ROUTE-010` advisory indefinitely:**
+   - Do not promote. Do not collect additional evidence. Do not add severity config.
+   - Maintain existing 29-suite regression.
 
 2. **Design feature flag/config support for future severity promotion:**
    - Create a planning document for a config-driven severity override mechanism.
    - Design only; no implementation unless explicitly approved.
 
-3. **Continue collecting real-world evidence:**
-   - Add more negative/positive fixtures or expand corpus with real Navy/Marine Corps patterns.
-   - Does not change validator severity; advisory-only remains.
-
-4. **Keep `CCI-ROUTE-010` advisory indefinitely:**
-   - Do not promote. Do not collect additional evidence. Do not add severity config.
-   - Maintain existing 29-suite regression.
-
-5. **Plan warning-level rollout only after evidence and config support:**
+3. **Plan warning-level rollout only after evidence and config support:**
    - Requires real-world evidence review and implemented feature flag/config support first.
    - Requires planning document and new regression checks.
    - Must preserve existing false-positive controls.
+
+4. **Continue collecting real-world evidence:**
+   - Add more negative/positive fixtures or expand corpus with real Navy/Marine Corps patterns.
+   - Does not change validator severity; advisory-only remains.
+
+5. **Search for an alternative third catalog pilot candidate:**
+   - If `CCI-ROUTE-011` is rejected, search date/time, ref/encl, personnel, POC, or acronym domains.
+   - Planning document required before implementation.
+   - No automatic enforcement from approved logs.
 
 Phase H.5 / Phase I.4 routing office-code severity review planning is also complete and approved. The approved plan is at `docs/planning/phase_h5_routing_office_code_severity_review_plan.md` (commit `ece374b`). No implementation occurred in Phase H.5.
 
