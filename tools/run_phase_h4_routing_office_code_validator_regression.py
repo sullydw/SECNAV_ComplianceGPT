@@ -247,6 +247,9 @@ def main() -> int:
         "tools/run_pilot_subject_acronym_rule_catalog_regression.py",
         "docs/planning/phase_h4_routing_office_code_validator_enforcement_plan.md",
         ".gitignore",
+        "docs/PROJECT_STATUS.md",
+        "docs/planning/correction_memory_and_rule_promotion_plan.md",
+        "docs/checkpoints/phase_h6_routing_office_code_evidence_checkpoint.md",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0

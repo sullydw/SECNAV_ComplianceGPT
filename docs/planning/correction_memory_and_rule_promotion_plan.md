@@ -1,21 +1,22 @@
 # Correction Memory and Rule Promotion Layer Plan
 
-**Current Verified Baseline:** `1e990a6` — CCI: Add routing office code advisory validator (Phase H.4)  
-**Phase H.4 Implementation:** `1e990a6` — CCI: Add routing office code advisory validator (Phase H.4)
-**Phase H.3 Implementation:** `46edcbd` — CCI: Add routing office code catalog rule (Phase H.3)  
-**Phase H.2 Implementation:** `609821e` — CCI: Add subject acronym advisory validator (Phase H.2)  
-**Phase H.1 Pilot Implementation:** `ef365d3` — CCI: Implement pilot approved rule (Phase H.1)  
-**Phase H.1 Mark-Implemented Wrapper:** `6298dab` — CCI: Add public mark implemented wrapper  
-**Phase H Implementation:** `2588e67` — CCI: Add approved rule implementation planner (Phase H)  
-**Phase G Implementation:** `cb988bc` — CCI: Add natural language command mediation (Phase G)  
-**Phase F Implementation:** `4ba5cd3` — CCI: Add command integration layer (Phase F)  
-**Phase E Implementation:** `058de87` — CCI: Add review promotion utility (Phase E)  
-**Phase D Implementation:** `2e31892` — CCI: Add pending global rule candidate logging (Phase D)  
-**Phase C Implementation:** `8b8a95c` — CCI: Add local command profile promotion (Phase C)  
-**Phase B Implementation:** `519fad6` — CCI: Add correction classification (Phase B)  
-**Phase A Implementation:** `71ddf64` — CCI: Add session correction persistence (Phase A)  
-**Latest Checkpoint:** `1e990a6` / Phase H.4 routing office-code advisory validator handoff  
-**Next Phase:** Phase H.5 / Phase I.4 validator severity review or third catalog-pilot planning — planning-only until approved
+**Current Verified Baseline:** `662afbb` — `CCI: Add routing office code evidence regression (Phase H.6)`  
+**Phase H.6 Implementation:** `662afbb` — `CCI: Add routing office code evidence regression (Phase H.6)`
+**Phase H.4 Implementation:** `1e990a6` — `CCI: Add routing office code advisory validator (Phase H.4)`  
+**Phase H.3 Implementation:** `46edcbd` — `CCI: Add routing office code catalog rule (Phase H.3)`  
+**Phase H.2 Implementation:** `609821e` — `CCI: Add subject acronym advisory validator (Phase H.2)`  
+**Phase H.1 Pilot Implementation:** `ef365d3` — `CCI: Implement pilot approved rule (Phase H.1)`  
+**Phase H.1 Mark-Implemented Wrapper:** `6298dab` — `CCI: Add public mark implemented wrapper`  
+**Phase H Implementation:** `2588e67` — `CCI: Add approved rule implementation planner (Phase H)`  
+**Phase G Implementation:** `cb988bc` — `CCI: Add natural language command mediation (Phase G)`  
+**Phase F Implementation:** `4ba5cd3` — `CCI: Add command integration layer (Phase F)`  
+**Phase E Implementation:** `058de87` — `CCI: Add review promotion utility (Phase E)`  
+**Phase D Implementation:** `2e31892` — `CCI: Add pending global rule candidate logging (Phase D)`  
+**Phase C Implementation:** `8b8a95c` — `CCI: Add local command profile promotion (Phase C)`  
+**Phase B Implementation:** `519fad6` — `CCI: Add correction classification (Phase B)`  
+**Phase A Implementation:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
+**Latest Checkpoint:** `662afbb` / Phase H.6 routing office-code evidence collection and regression hardening handoff  
+**Next Phase:** Phase H.7 / Phase I.6 evidence review, severity-promotion planning, or third catalog-pilot planning — planning-only until approved
 
 ---
 
@@ -222,6 +223,24 @@ The layer is not a replacement for deterministic SECNAV validators. It is a cont
 - No code changes. No validator changes. No renderer/layout changes. No prompt-contract changes. No command-layer changes. No approved/pending logs committed. No real data committed.
 - Current functional baseline remains `1e990a6` (Phase H.4). Regression set remains 28 suites.
 
+### Phase H.6 / Phase I.5 — Routing Office-Code Evidence Collection and Regression Hardening (Completed)
+
+- Planning document: `docs/planning/phase_h6_routing_office_code_evidence_hardening_plan.md`.
+- Planning commits: `84c349e` — `Docs: Add Phase H.6 routing office code evidence plan`; `04148ba` — `Docs: Fix Phase H.6 advisory format expectation`.
+- Implementation commit: `662afbb` — `CCI: Add routing office code evidence regression (Phase H.6)`.
+- Added 20 negative-control fixtures (`examples/routing_h6_negative_01.json` through `routing_h6_negative_20.json`) and 10 positive-control fixtures (`examples/routing_h6_positive_01.json` through `routing_h6_positive_10.json`).
+- Added `tools/run_phase_h6_routing_office_code_evidence_regression.py` with 15 checks covering fixture existence, false-positive/negative controls, `(advisory):` format verification, `errors`-list emptiness, copy-to exclusion, H.4 runner still passes, local corpus gitignored, no validator changes, no forbidden files changed.
+- Added local corpus `corrections/evidence/routing_office_code_patterns.jsonl` with 50 synthetic-realistic To/Via patterns; corpus remains gitignored and was not committed.
+- **No severity promotion.** `CCI-ROUTE-010` remains advisory-only.
+- **No validator logic changes.** `src/cci_routing_validate.py` untouched.
+- **No renderer/layout changes.** `src/pdf_v6_render.py` untouched.
+- **No prompt-contract changes.** `src/context_resolver.py` untouched.
+- **No Phase F/G command-layer changes.** `src/correction_commands.py`, `src/correction_nl_commands.py` untouched.
+- **No rule catalog changes.** `rules_v6/CCI/cci_ch2_routing_rules.json` untouched.
+- **No approved/pending/session logs committed.** All correction storage remains local/gitignored.
+- Full 29-suite local regression set passed using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`.
+- Current functional baseline: `662afbb`. Regression set: 29 suites.
+
 ---
 
 ## 7. Current Regression Coverage
@@ -230,8 +249,9 @@ Use the explicit Pinokio/Miniconda Python for full local regression runs:
 
 `C:\Users\drryl\pinokio\bin\miniconda\python.exe`
 
-The current local regression set is **28 suites**:
+The current local regression set is **29 suites**:
 
+- `tools/run_phase_h6_routing_office_code_evidence_regression.py` — Phase H.6 evidence regression, 15 checks.
 - `tools/run_phase_h4_routing_office_code_validator_regression.py` — Phase H.4 routing validator regression, 18 checks.
 - `tools/run_phase_h3_second_rule_catalog_regression.py` — Phase H.3 second rule-catalog pilot regression, 15 checks.
 - `tools/run_phase_h2_subject_acronym_validator_regression.py` — Phase H.2 advisory subject-line acronym regression, 12 checks.
@@ -245,7 +265,7 @@ The current local regression set is **28 suites**:
 - `tools/run_correction_classify_regression.py` — Phase B.
 - Intake, correction, session, profile, audit, context-schema, CCI subject/ref-encl/acronym/date-time/personnel/POC/routing, and C7-C10 layout regressions.
 
-The 28-suite set passed locally after Phase H.4 when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF.
+The 29-suite set passed locally after Phase H.6 when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF.
 
 ---
 
