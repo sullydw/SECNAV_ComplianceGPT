@@ -251,6 +251,7 @@ def main() -> int:
         "docs/planning/correction_memory_and_rule_promotion_plan.md",
         "docs/checkpoints/phase_h6_routing_office_code_evidence_checkpoint.md",
         "docs/planning/phase_h7_routing_office_code_evidence_review_plan.md",
+        "docs/checkpoints/phase_h7_routing_office_code_evidence_review_checkpoint.md",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
