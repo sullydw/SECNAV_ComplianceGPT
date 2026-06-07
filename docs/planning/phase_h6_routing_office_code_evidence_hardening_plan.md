@@ -171,7 +171,8 @@ The existing H.4 runner must be updated to verify advisory-only behavior more ex
    - Add or strengthen the check that `copy_to` with a numeric-only office code produces no advisory.
 
 4. **Warning message format preserved:**
-   - Verify the warning string contains `[ADVISORY]`, `CCI-ROUTE-010`, and the SECNAV citation.
+   - Verify the warning string contains `(advisory):`, `CCI-ROUTE-010`, and the SECNAV citation.
+   - This matches the current Phase H.4 validator output format; no validator logic change is required.
 
 ### Runner Strategy Tradeoff
 
@@ -206,7 +207,7 @@ If approved, create:
 | 4 | `warnings` list does NOT contain `CCI-ROUTE-010` for any negative-control fixture | Proves false-positive control |
 | 5 | Copy-to numeric-only office code does NOT trigger | Scope boundary preserved |
 | 6 | Copy-to letter-starting office code with `Code` does NOT trigger | Scope boundary preserved |
-| 7 | Warning message format includes `[ADVISORY]` | Format contract preserved |
+| 7 | Warning message format includes `(advisory):` | Format contract preserved |
 | 8 | Warning message format includes `CCI-ROUTE-010` | Rule ID contract preserved |
 | 9 | Warning message format includes `SECNAV M-5216.5` | Citation contract preserved |
 | 10 | All 20 negative-control fixtures pass without warnings | Batch negative-control verification |
