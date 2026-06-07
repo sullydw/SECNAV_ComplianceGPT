@@ -118,9 +118,10 @@ def main() -> int:
     results.append(("Check 10: Rule implementation_target is rule_catalog", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 10")
 
-    # 11. No validator files modified
+    # 11. No validator files modified (compare against H.8 baseline, not current HEAD,
+    #     so later phases like H.9 do not cause false positives)
     result11 = run_git(
-        ["git", "diff", "--stat", "HEAD", "--"] + [f"src/{m}" for m in [
+        ["git", "diff", "--stat", "769437d", "HEAD", "--"] + [f"src/{m}" for m in [
             "cci_routing_validate.py", "cci_subject_validate.py", "cci_acronym_validate.py",
             "cci_ref_encl_validate.py", "cci_date_time_validate.py", "cci_personnel_validate.py",
             "cci_poc_validate.py",
@@ -128,7 +129,7 @@ def main() -> int:
         root,
     )
     ok = result11 == ""
-    results.append(("Check 11: No validator files modified", ok))
+    results.append(("Check 11: No validator files modified at H.8 baseline", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 11")
 
     # 12. No renderer/layout files changed

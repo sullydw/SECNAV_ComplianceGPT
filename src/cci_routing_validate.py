@@ -356,6 +356,54 @@ def _check_office_code_prefix(addressee: str) -> list[str]:
 
 
 # -------------------------------------------------------------------------
+# Phase H.9: From-Line Required Advisory Check
+# -------------------------------------------------------------------------
+
+def _check_from_line_required(payload: dict[str, Any]) -> list[str]:
+    """
+    CCI-ROUTE-011: From-Line Required Rule (advisory/non-blocking).
+    Source: SECNAV M-5216.5, Chapter 7, Section 6, "From:" Line, subparagraph a. General.
+    Quote: "Every standard letter must have a 'From:' line, except a letter
+    that will be used with a window envelope."
+
+    Approved record: agr_20260607_49947aca.
+    Implementation target: validator_update (Phase H.9).
+
+    Checks that a standard letter has a non-empty "from" field, unless
+    the letter uses a window envelope (window_envelope=true).
+
+    Advisory (non-blocking) until separately promoted.
+
+    H.9 reads window_envelope only if present; does not create, populate,
+    or prompt for the key. Full lifecycle support deferred to a later
+    separately approved phase.
+    """
+    findings: list[str] = []
+
+    # Scope: standard letter only
+    doc_type = payload.get("doc_type", "")
+    if doc_type not in ("DT_STD_LTR", "standard_letter"):
+        return findings
+
+    # Window-envelope exception — read-only, key must already exist
+    if payload.get("window_envelope", False):
+        return findings
+
+    # Check for From line
+    from_value = payload.get("from")
+    if from_value is None or not str(from_value).strip():
+        findings.append(
+            'CCI-ROUTE-011 (advisory): standard letter missing "From:" line '
+            "— SECNAV M-5216.5 Ch7 Section 6 \"From:\" Line, subparagraph a. General. "
+            "If this letter uses a window envelope, set window_envelope=true "
+            "or mark the payload appropriately in a future approved workflow "
+            "to suppress this advisory."
+        )
+
+    return findings
+
+
+# -------------------------------------------------------------------------
 # Public function
 # -------------------------------------------------------------------------
 
@@ -381,6 +429,10 @@ def validate_cci_routing(payload: dict[str, Any]) -> tuple[list[str], list[str]]
     for addressee in _normalize_list(via_raw):
         for finding in _check_office_code_prefix(addressee):
             warnings.append(finding)
+
+    # Phase H.9: Advisory From-line required check
+    for finding in _check_from_line_required(payload):
+        warnings.append(finding)
 
     return errors, warnings
 

@@ -1,0 +1,10 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": ["Commanding Officer, 123"],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "Test fixture — triggers both ROUTE-010 and ROUTE-011",
+  "date": "2026-06-08",
+  "body": "This is a synthetic test fixture. Missing From line triggers ROUTE-011; numeric office code missing Code prefix triggers ROUTE-010."
+}

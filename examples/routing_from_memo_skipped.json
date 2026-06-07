@@ -1,0 +1,10 @@
+{
+  "doc_type": "DT_MEMO_FROM_TO_PLAIN",
+  "to": ["Commanding Officer, Example Activity"],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "Test fixture — memorandum, no From line, should skip",
+  "date": "2026-06-08",
+  "body": "This is a synthetic test fixture for CCI-ROUTE-011."
+}

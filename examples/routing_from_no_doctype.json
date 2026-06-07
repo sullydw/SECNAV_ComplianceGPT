@@ -1,0 +1,9 @@
+{
+  "to": ["Commanding Officer, Example Activity"],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "Test fixture — no doc_type, no From line, should skip",
+  "date": "2026-06-08",
+  "body": "This is a synthetic test fixture for CCI-ROUTE-011."
+}
