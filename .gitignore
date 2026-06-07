@@ -57,3 +57,6 @@ corrections/approved_rule_promotions.json
 
 # Defense-in-depth: prevent accidental real profile commits if a user places them in-repo
 profiles/user/
+
+# Phase H.6 evidence corpus (local only; do not commit)
+corrections/evidence/
