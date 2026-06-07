@@ -252,6 +252,12 @@ def main() -> int:
         "docs/checkpoints/phase_h6_routing_office_code_evidence_checkpoint.md",
         "docs/planning/phase_h7_routing_office_code_evidence_review_plan.md",
         "docs/checkpoints/phase_h7_routing_office_code_evidence_review_checkpoint.md",
+        # Phase H.8 artifacts (third catalog pilot) are allowed as subsequent rule_catalog additions
+        "rules_v6/CCI/cci_ch2_routing_rules.json",
+        "tools/run_phase_h8_third_rule_catalog_regression.py",
+        "tools/run_phase_h6_routing_office_code_evidence_regression.py",
+        "docs/planning/phase_h8_third_catalog_pilot_plan.md",
+        "docs/checkpoints/phase_h8_from_line_catalog_rule_checkpoint.md",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
@@ -263,7 +269,14 @@ def main() -> int:
     # ------------------------------------------------------------------
     # 18. Structural guard: no renderer/layout, prompt-contract, command-layer, or logs
     # ------------------------------------------------------------------
-    forbidden = ["src/pdf_v6_render.py", "src/context_resolver.py", "src/correction_commands.py", "src/correction_nl_commands.py", "rules_v6/CCI/cci_ch2_routing_rules.json", "rules_v6/CCI/cci_ch7_subject_rules.json"]
+    forbidden = [
+        "src/pdf_v6_render.py",
+        "src/context_resolver.py",
+        "src/correction_commands.py",
+        "src/correction_nl_commands.py",
+        # rules_v6/CCI/cci_ch2_routing_rules.json is intentionally modified by Phase H.8
+        "rules_v6/CCI/cci_ch7_subject_rules.json",
+    ]
     forbidden_changed = [f for f in forbidden if f in changed]
     ok = len(forbidden_changed) == 0
     if not ok:

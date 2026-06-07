@@ -145,6 +145,26 @@
       "added_by_implementation_id": "agr_20260604_7b5d44a2",
       "implementation_target": "rule_catalog",
       "implementation_status": "active"
+    },
+    {
+      "rule_id": "CCI-ROUTE-011",
+      "source": "SECNAV M-5216.5",
+      "source_type": "manual_text",
+      "source_location": "Chapter 7, Section 6, \"From:\" Line, subparagraph a. General",
+      "applies_to": ["standard_letter"],
+      "component_scope": ["navy"],
+      "rule_text_summary": "Every standard letter must have a \"From:\" line, except a letter that will be used with a window envelope.",
+      "enforcement": "deterministic",
+      "validator": "cci_routing",
+      "severity": "error",
+      "manual_chapter": "7",
+      "manual_section": "6",
+      "page_or_figure": "50",
+      "source_quote": "Every standard letter must have a \"From:\" line, except a letter that will be used with a window envelope.",
+      "effective_date": "2026-06-07",
+      "added_by_implementation_id": "agr_20260607_49947aca",
+      "implementation_target": "rule_catalog",
+      "implementation_status": "active"
     }
   ]
 }

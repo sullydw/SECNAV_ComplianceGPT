@@ -284,7 +284,7 @@ def main() -> int:
         "src/context_resolver.py",
         "src/correction_commands.py",
         "src/correction_nl_commands.py",
-        "rules_v6/CCI/cci_ch2_routing_rules.json",
+        # rules_v6/CCI/cci_ch2_routing_rules.json is intentionally modified by Phase H.8
         "rules_v6/CCI/cci_ch7_subject_rules.json",
     ]
     forbidden_changed = [f for f in changed_files if f in forbidden]
