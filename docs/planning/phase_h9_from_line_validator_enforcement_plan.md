@@ -136,6 +136,20 @@ The flag must be:
 - Default to `False` if absent.
 - Not required in the payload (backward compatible).
 
+### 4.3 H.9 Boundary — Read-Only Flag Consumption
+
+H.9 is strictly **read-only** with respect to the `window_envelope` key:
+
+- H.9 may read `payload.get("window_envelope")` **only if the key is already present** in the payload.
+- H.9 **must not** modify payload generation logic.
+- H.9 **must not** modify `src/context_resolver.py`.
+- H.9 **must not** modify intake behavior.
+- H.9 **must not** modify prompt contracts.
+- H.9 **must not** modify UI or command flows to create, populate, or prompt for the key.
+- Full support for setting, populating, or prompting for `window_envelope` is **deferred to a later separately approved phase**.
+
+If the key is absent, the validator conservatively defaults to `False` and proceeds with the From-line check. This may produce a false-positive advisory on a window-envelope letter that lacks the flag. Because H.9 is advisory/non-blocking, this is acceptable. See Section 7.3.
+
 ---
 
 ## 5. Whether the Validator Needs a `window_envelope` / `envelope_type` / Equivalent Flag
@@ -143,6 +157,8 @@ The flag must be:
 **Yes — a `window_envelope` boolean flag is required.**
 
 Without this flag, the validator cannot distinguish a legitimate window-envelope letter (which omits the From line by rule) from a standard letter that simply forgot the From line. The flag is the only way to avoid false positives on window-envelope correspondence.
+
+However, per Section 4.3, H.9 is read-only with respect to this flag. H.9 does not create, populate, or prompt for the key. It only reads it if already present. Full flag lifecycle support is deferred.
 
 ### 5.1 Flag Options Considered
 
@@ -205,12 +221,29 @@ if payload.get("window_envelope", False):
 If a standard letter has no From line and no `window_envelope` flag, the advisory message should:
 - Flag the missing From line.
 - Mention the window-envelope exception.
-- Guide the user to set `window_envelope: true` if applicable.
+- Guide the user to set `window_envelope: true` if applicable, or mark the payload appropriately in a future approved workflow.
 
 Example advisory message:
 ```
 CCI-ROUTE-011 (advisory): standard letter missing "From:" line — SECNAV M-5216.5 Ch7 Section 6 "From:" Line, subparagraph a. General. If this letter uses a window envelope, set window_envelope=true to suppress this advisory.
 ```
+
+### 7.3 Advisory False-Positive Tradeoff
+
+H.9 may emit a false-positive advisory in the following scenario:
+
+- A real window-envelope letter is submitted without `window_envelope: true` in the payload.
+- The validator sees a `DT_STD_LTR` with no `from` field and no `window_envelope` flag.
+- It emits `CCI-ROUTE-011 (advisory)` because it cannot distinguish a legitimate window-envelope omission from an accidental missing From line.
+
+This false positive is **acceptable only because H.9 is advisory/non-blocking**:
+
+- The finding does not block rendering, submission, or any downstream action.
+- The message explicitly tells the user how to suppress it (set `window_envelope=true` or mark the payload appropriately in a future approved workflow).
+- No error-level or warning-level enforcement is involved.
+- The user can safely ignore the advisory if they know the letter is a window-envelope format.
+
+**H.9 must not introduce any blocking or error-level behavior** to address this tradeoff. A future separately approved phase may implement payload-generation support, UI prompts, or intake workflow changes that populate `window_envelope` automatically, eliminating this false-positive class at the source.
 
 ---
 
@@ -426,7 +459,7 @@ Every advisory message must include:
 ### 14.1 Runner File
 
 - **File:** `tools/run_phase_h9_from_line_validator_regression.py`
-- **Checks:** Minimum 12, recommended 14–16.
+- **Checks:** Minimum 14, recommended 16–18.
 - **Scope:** Validator behavior, false-positive controls, fixture coverage, file-mutation guards.
 
 ### 14.2 Recommended Check List
@@ -445,21 +478,25 @@ Every advisory message must include:
 | 10 | Endorsement skipped | Negative | `endorsement` payload with no `from` produces no ROUTE-011 finding. |
 | 11 | Joint letter skipped | Negative | `joint_letter` payload with no `from` produces no ROUTE-011 finding. |
 | 12 | Multiple-address letter skipped | Negative | `multiple_address_letter` payload with no `from` produces no ROUTE-011 finding. |
-| 13 | Existing CCI-ROUTE-010 behavior preserved | Regression | Office-code prefix findings still appear on appropriate payloads; no ROUTE-010 regression. |
-| 14 | Existing routing warnings preserved | Regression | Via, Copy-to, Distribution warnings still appear unchanged. |
-| 15 | No renderer/layout files changed | Safety | `src/pdf_v6_render.py` and layout profiles untouched. |
-| 16 | No prompt-contract files changed | Safety | `src/context_resolver.py` untouched. |
+| 13 | **Both ROUTE-010 and ROUTE-011 trigger independently** | **Positive / Integration** | **`DT_STD_LTR` payload with a numeric office code missing "Code" prefix (triggers ROUTE-010 advisory) AND no `from` field (triggers ROUTE-011 advisory) produces both findings independently in warnings.** |
+| 14 | **Doc_type absent skips From-line check** | **Negative / Edge** | **Payload with no `doc_type` key and no `from` field produces no ROUTE-011 finding; the check skips rather than guessing.** |
+| 15 | Existing CCI-ROUTE-010 behavior preserved | Regression | Office-code prefix findings still appear on appropriate payloads; no ROUTE-010 regression. |
+| 16 | Existing routing warnings preserved | Regression | Via, Copy-to, Distribution warnings still appear unchanged. |
+| 17 | No renderer/layout files changed | Safety | `src/pdf_v6_render.py` and layout profiles untouched. |
+| 18 | No prompt-contract files changed | Safety | `src/context_resolver.py` untouched. |
 
 ### 14.3 Fixture Requirements
 
 - All fixtures must be synthetic.
-- Minimum 6 new `examples/routing_from_*.json` fixtures:
+- Minimum 8 new `examples/routing_from_*.json` fixtures:
   - `routing_from_missing.json` — `DT_STD_LTR`, no `from`
   - `routing_from_empty.json` — `DT_STD_LTR`, `"from": ""`
   - `routing_from_present.json` — `DT_STD_LTR`, `from` present
   - `routing_from_window_envelope.json` — `DT_STD_LTR`, `window_envelope: true`, no `from`
   - `routing_from_memo_skipped.json` — `DT_MEMO_FROM_TO_PLAIN`, no `from`
   - `routing_from_endorsement_skipped.json` — `endorsement`, no `from`
+  - `routing_from_both_rules.json` — `DT_STD_LTR`, no `from`, To addressee with numeric office code missing "Code" (triggers both ROUTE-010 and ROUTE-011)
+  - `routing_from_no_doctype.json` — no `doc_type` key, no `from` (From-line check skips)
 - No real command/user data, contact information, or real names.
 
 ### 14.4 Runner Safety
@@ -486,7 +523,7 @@ Every advisory message must include:
 
 The 31-suite set would be:
 
-1. `tools/run_phase_h9_from_line_validator_regression.py` — NEW, ~16 checks.
+1. `tools/run_phase_h9_from_line_validator_regression.py` — NEW, ~18 checks.
 2. `tools/run_phase_h8_third_rule_catalog_regression.py` — 16 checks.
 3. `tools/run_phase_h6_routing_office_code_evidence_regression.py` — 15 checks.
 4. `tools/run_phase_h4_routing_office_code_validator_regression.py` — 18 checks.
@@ -628,8 +665,8 @@ Rollback should require **no more than 3 file deletions/reverts and one regressi
 | **Implementation target** | `src/cci_routing_validate.py` — add `_check_from_line_required()` helper. |
 | **Window-envelope flag** | `window_envelope: bool` in payload; default `False`; suppresses advisory when `True`. |
 | **Document-type scope** | `DT_STD_LTR` and `"standard_letter"` only. All other types skipped. |
-| **Regression coverage if implemented** | 31-suite gate (30 existing + 1 new H.9 runner with ~16 checks). |
-| **Rollback risk** | Very low — one helper function (~15 lines), one runner file, 6 synthetic fixtures. |
+| **Regression coverage if implemented** | 31-suite gate (30 existing + 1 new H.9 runner with ~18 checks). |
+| **Rollback risk** | Very low — one helper function (~15 lines), one runner file, 8 synthetic fixtures. |
 
 ---
 
