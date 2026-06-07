@@ -67,15 +67,27 @@
 
 ### 2.2 Candidate Status
 
-**PENDING PROVENANCE VERIFICATION**
+**PROVENANCE VERIFIED — READY FOR USER APPROVAL BEFORE PHASE D**
 
-This candidate is **not approved** and **not accepted**. It is proposed for evaluation only and is currently **blocked** from any Phase D candidate creation or workflow until all SECNAV source text is independently verified.
+| Attribute | Verified |
+|---|---|
+| Source file confirmed | `references/SECNAV_M-5216.5_CH-1.pdf` |
+| PDF page | 50 |
+| Visible section | Chapter 7, Section 6, `"From:" Line`, subparagraph `a. General.` |
+| Exact quote confirmed | `General. Every standard letter must have a "From:" line, except a letter that will be used with a window envelope.` |
+| Window-envelope exception | **Confirmed** — present in the same sentence |
+| Paragraph label visible? | **No** — the PDF shows `"From:" Line` → `a. General.`; the label `7-2.5a` is not printed on the page |
 
-- The exact quoted sentence must be confirmed in the **full SECNAV M-5216.5, Chapter 7, paragraph 7-2.5a**.
-- All four items in the **Provenance Verification Checklist** (Section 3.2) must be checked before any further workflow step.
-- The current local reference file `references/SECNAV_M-5216.5_CH-1.txt` is a **Change Transmittal** (May 2018) that removes Chapter 12 and revises the Table of Contents and Appendix E. It does **not** contain Chapter 7 content.
-- Searches for `7-2.5`, `From line`, `window envelope`, and `standard letter` in this file returned **zero matches**.
-- The user must provide or locate the **full SECNAV M-5216.5 manual or a Chapter 7 excerpt** before this candidate can proceed to Phase D.
+**Action required:**
+
+1. The user must explicitly approve proceeding to **Phase D candidate creation** before any workflow steps.
+2. The user must confirm whether the catalog should use:
+   - (a) **Rendered source location only**: `Chapter 7, Section 6, "From:" Line, subparagraph a. General.`
+   - (b) **Both locations**: rendered source location + inferred manual paragraph numbering `7-2.5a`
+3. The user must confirm whether `multiple_address_letter` belongs in `applies_to`.
+4. The user must confirm whether `endorsement` or `joint_letter` belong in `applies_to`.
+
+**Phase D is NOT authorized until user replies.** No candidate record, pending record, or approved record may be created without separate explicit instruction.
 
 ---
 
@@ -87,32 +99,46 @@ This candidate is **not approved** and **not accepted**. It is proposed for eval
 |---|---|
 | `source` | `SECNAV M-5216.5` |
 | `source_type` | `narrative_text` |
-| `source_location` | `Chapter 7, paragraph 7-2.5a` |
+| `source_location` | `Chapter 7, Section 6, "From:" Line, subparagraph a. General.` — *or both rendered location and inferred* `Chapter 7, paragraph 7-2.5a` |
 | `manual_chapter` | `7` |
-| `manual_section` | `7-2.5a` |
+| `manual_section` | `7-2.5a` (inferred/manual convention) |
 | `page_or_figure` | `null` (narrative text rule) |
 | `source_quote` | `"Every standard letter must have a 'From:' line, except a letter that will be used with a window envelope."` |
 
-### 3.2 Provenance Verification Checklist (Before Approval)
+### 3.2 Provenance Verification Checklist
 
-- [ ] Open SECNAV M-5216.5 Chapter 7, paragraph 7-2.5a and confirm the exact quoted sentence exists.
-- [ ] Confirm no conflicting text in nearby paragraphs (7-2.5b, 7-2.5c, 7-2.6) that would contradict the rule or the exception.
-- [ ] Confirm the figure examples in Chapter 7 show a From line on standard letters.
-- [ ] Verify whether "standard letter" in this context explicitly excludes memorandums, endorsements, or joint letters — the rule may need `applies_to` scoping.
+| # | Item | Status |
+|---|---|---|
+| 1 | Open SECNAV M-5216.5 Chapter 7 and confirm the exact quoted sentence exists. | **PASS** — Confirmed on PDF page 50 |
+| 2 | Confirm no conflicting text in nearby paragraphs that would contradict the rule or the exception. | **PASS** — Immediately following text (paragraphs b, c) describe format rules and do not contradict |
+| 3 | Confirm the figure examples in Chapter 7 show a From line on standard letters. | **PASS** — Figure 7-1 and Figure 7-2 show From lines; Figure 7-3 (window envelope) intentionally omits it |
+| 4 | Verify whether "standard letter" in this context explicitly excludes memorandums, endorsements, or joint letters. | **PENDING** — Text says "standard letter"; joint letters (Figure 7-4) show a From line but may be a joint-letter convention rather than coverage by this rule; requires user approval |
 
-### 3.2.1 Reference File Limitation
+### 3.2.1 Reference Files
 
-The local repository contains `references/SECNAV_M-5216.5_CH-1.txt`, which is a **Change Transmittal 1** (May 2018). This file removes Chapter 12 and revises the Table of Contents and Appendix E. It **does not contain Chapter 7** or the standard-letter formatting rules referenced in this plan.
+| File | Contents | Coverage |
+|---|---|---|
+| `references/SECNAV_M-5216.5_CH-1.pdf` | Complete Change Transmittal 1 (May 2018) including Chapter 7, Chapter 10, Chapter 11, Chapter 12 | **Full Chapter 7 present** — contains page 50 with confirmed rule text |
+| `references/SECNAV_M-5216.5_CH-1.txt` | OCR/plain-text version of same PDF | **Does not contain searchable Chapter 7 text** — text extraction limited |
 
-Verification confirmed:
-- Searches for `7-2.5`, `From line`, `window envelope`, and `standard letter` returned **zero matches** in this file.
-- **This candidate cannot proceed past planning until the user provides the full SECNAV M-5216.5 manual or a verified Chapter 7 excerpt containing paragraph 7-2.5a.**
+**Note:** The `.txt` file was originally thought to be a partial Change Transmittal without Chapter 7. The `.pdf` file contains the full manual text with visible page numbers and section headings. Source verification should use the PDF as the authoritative reference.
 
-### 3.3 Provenance Risk Assessment
+### 3.3 Paragraph Numbering Caveat
 
-- **Low risk** — Chapter 7 paragraph 7-2.5a is a well-known standard-letter formatting paragraph.
-- **Medium risk** — the window-envelope exception is explicit, which means the rule is not unconditional. This is manageable but must be documented.
-- **Open question:** Does the same From-line requirement exist in Chapter 2 (preparation rules) with different wording? Cross-checking both chapters is required.
+The visible PDF page footer shows the publication date (JUNE 2015) but does **not** display the paragraph number `7-2.5a`. The text is rendered as:
+
+```
+6. "From:" Line
+    a.
+    General.  Every standard letter must have a "From:" line, except a letter that will be
+    used with a window envelope.  To prepare a letter for a window envelope, follow figure 7-3.
+```
+
+If the NAVY manual convention uses chapter-section-paragraph-subparagraph numbering (`7-2.5a`), this text may logically map to that label, but the label is **not visible on the page**. The catalog entry should either:
+- (a) Use the rendered source location (`Chapter 7, Section 6, "From:" Line, subparagraph a. General.`), or
+- (b) Use **both** the rendered location and the inferred paragraph number (`7-2.5a`).
+
+This is an open question requiring user approval.
 
 ---
 
@@ -272,8 +298,7 @@ The new entry must follow the same schema as `CCI-ROUTE-010`:
   "source_type": "narrative_text",
   "source_location": "Chapter 7, paragraph 7-2.5a",
   "applies_to": [
-    "standard_letter",
-    "multiple_address_letter"
+    "standard_letter"
   ],
   "component_scope": [
     "navy",
@@ -304,7 +329,7 @@ The new entry must follow the same schema as `CCI-ROUTE-010`:
 | `source` | Yes | `SECNAV M-5216.5` |
 | `source_type` | Yes | `narrative_text` |
 | `source_location` | Yes | `Chapter 7, paragraph 7-2.5a` |
-| `applies_to` | Yes | Must include `standard_letter` and `multiple_address_letter`. Memorandum types may be excluded if the manual text is specific to standard letters. Endorsements and joint letters should be included if they use standard-letter format. |
+| `applies_to` | Yes | **Default: `standard_letter` only.** `multiple_address_letter` requires separate confirmation unless clearly supported by Chapter 7 context. Do not include memorandums, endorsements, or joint letters unless manual review explicitly confirms coverage. |
 | `component_scope` | Yes | `navy`, `marine_corps`, `joint`, `don_secretariat` |
 | `rule_text_summary` | Yes | Must include the full rule including the window-envelope exception. |
 | `enforcement` | Yes | `deterministic` for catalog-only pilot. |
@@ -323,7 +348,7 @@ The new entry must follow the same schema as `CCI-ROUTE-010`:
 
 Should `applies_to` include `memorandum_for_record`, `from_to_memo`, `plain_paper_memo`, and `letterhead_memo`? The manual text says "standard letter," which technically excludes memorandums (they have a different format, often with no From line or a different originator block). This must be verified by opening the manual to 7-2.5a and checking whether the surrounding paragraphs scope this rule to standard letters only.
 
-**Default:** include only `standard_letter` and `multiple_address_letter`. Do not include `endorsement` or `joint_letter` unless manual review explicitly confirms those document types use standard-letter format and are covered by Chapter 7, paragraph 7-2.5a.
+**Default:** include only `standard_letter`. `multiple_address_letter` requires separate confirmation unless clearly supported by Chapter 7 context. Do not include `endorsement` or `joint_letter` unless manual review explicitly confirms those document types use standard-letter format and are covered by Chapter 7, paragraph 7-2.5a.
 
 ---
 
@@ -508,7 +533,7 @@ Rollback should require **no more than 4 file deletions/reverts and one regressi
 
 | # | Question | Default if Unanswered |
 |---|---|---|
-| 1 | **Should `CCI-ROUTE-011` (From-line required) be accepted as the third catalog pilot, or rejected in favor of a different candidate?** | Default: **defer candidate creation until provenance is verified** — the candidate is low-risk, deterministic, and does not overlap existing rules, but cannot proceed without confirmed SECNAV source text. |
+| 1 | **Should `CCI-ROUTE-011` (From-line required) be accepted as the third catalog pilot, or rejected in favor of a different candidate?** | Default: **proceed to Phase D if user approves** — provenance is verified; candidate is low-risk, deterministic, and non-overlapping. Proceed only after explicit user approval of the rendered source location and conservative `applies_to`. |
 | 2 | **If accepted, should the `applies_to` list include memorandum types, or is it standard-letter only?** | Default: standard-letter only unless manual review at 7-2.5a explicitly includes memorandums. |
 | 3 | **Should the targeted runner verify that `CCI-ROUTE-011` does NOT trigger any existing validator (to prove catalog-only isolation)?** | Default: yes — add a check that runs `cci_routing_validate` against a synthetic fixture and confirms no new errors/warnings appear. |
 | 4 | **Should the window-envelope exception be documented in a separate catalog field (e.g., `exceptions`), or is inclusion in `rule_text_summary` sufficient?** | Default: `rule_text_summary` inclusion is sufficient. No new schema field. |
@@ -525,7 +550,7 @@ Rollback should require **no more than 4 file deletions/reverts and one regressi
 
 | Decision | Recommended Default |
 |---|---|
-| **Accept `CCI-ROUTE-011` as third pilot?** | **Defer candidate creation until provenance is verified** — accept only after confirmed SECNAV source text at Chapter 7, paragraph 7-2.5a |
+| **Accept `CCI-ROUTE-011` as third pilot?** | **Proceed to Phase D if user approves** — provenance verified; accept only after confirmed rendered source location and conservative `applies_to` |
 | **Keep `CCI-ROUTE-010` advisory?** | Yes — unchanged; H.8 does not revisit H.7 decision |
 | **Severity promotion?** | No — deferred indefinitely |
 | **Feature flag/config design?** | Deferred until severity promotion is requested |
@@ -563,10 +588,11 @@ Rollback should require **no more than 4 file deletions/reverts and one regressi
 ## Open Questions Needing Approval
 
 1. Should `CCI-ROUTE-011` be accepted as the third catalog pilot, or should a different candidate be selected?
-2. Should the `applies_to` list for `CCI-ROUTE-011` include memorandum types or be standard-letter only?
-3. Should H.8 remain planning-only, or is implementation authorized upon approval of this plan?
-4. If `CCI-ROUTE-011` is rejected, which alternative domain (date/time, ref/encl, personnel, POC, acronym) should be searched?
-5. Should the 30-suite regression gate become the new permanent standard?
+2. Should the `applies_to` list for `CCI-ROUTE-011` include `standard_letter` only, or also `multiple_address_letter` / `endorsement` / `joint_letter`?
+3. Should the catalog `source_location` use the rendered location (`Chapter 7, Section 6, "From:" Line, subparagraph a. General.`), the inferred number (`7-2.5a`), or both?
+4. Should H.8 remain planning-only, or is implementation authorized upon approval of this plan?
+5. If `CCI-ROUTE-011` is rejected, which alternative domain (date/time, ref/encl, personnel, POC, acronym) should be searched?
+6. Should the 30-suite regression gate become the new permanent standard?
 
 ---
 
