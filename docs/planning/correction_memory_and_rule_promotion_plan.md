@@ -25,8 +25,8 @@
 **Phase A Implementation:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
 **Phase H.11 Evidence Review Checkpoint:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
 **Phase H.11 Approved Verdict:** `CCI-ROUTE-011` remains advisory-only; severity promotion deferred; productive next path: fourth low-risk catalog-only pilot planning  
-**Latest Checkpoint:** `52076a1` / Phase H.11 From-line evidence review complete (approved)  
-**Next Phase:** Phase H.12 / Phase I.11 fourth catalog-only pilot planning — planning-only until approved
+**Latest Checkpoint:** `[TBD]` / Phase H.12 no-candidate search complete (approved plan; no candidate found)  
+**Next Phase:** Phase H.13 / Phase I.12 feature-flag/config planning — planning-only until approved
 
 ---
 
@@ -417,38 +417,40 @@ Phase H.10 summary:
 
 **Phase H.11 is now approved.** The next phase is **Phase H.12 / Phase I.11** (planning-only until approved).
 
-Phase H.12 / Phase I.11 must decide **one** of the following directions (planning-only until approved):
+Phase H.12 search results:
 
-1. **Candidate domain to search first:**
-   - **Priority 1:** Subject (`cci_ch7_subject_rules.json`) — next ID `CCI-CH7-SUBJ-007`.
-   - **Priority 2:** Reference/Enclosure (`cci_ch7_ref_encl_rules.json`) — next ID `CCI-REF-011`.
-   - **Priority 3:** Date/Time (`cci_ch2_date_time_rules.json`) — next ID `CCI-DTM-008`.
-   - **Avoid routing** unless clearly non-overlapping with `CCI-ROUTE-010` and `CCI-ROUTE-011`.
+- **Priority-domain search:** No candidate found in subject (Ch 7, Para 9), ref/encl (Ch 7, Para 10-11), date/time (Ch 2, Para 2-4.2), or routing.
+- **Expanded-domain search:** No candidate found in paragraphing, proofreading, signature line, writing style, abbreviations, personnel, memo salutation/close, enclosure numbering, addressing, or page numbering.
+- **Catalog maturity assessment:** Current catalog is reasonably mature for obvious deterministic catalog-only rules in current scope.
+- **H.12 plan approved:** `c608ef6`.
+- **H.12 design review approved:** `a450208`.
 
-2. **Candidate selection criteria:**
-   - Deterministic, short source quote, clear `applies_to` scope.
-   - Low false-positive risk; catalog-only target.
-   - No validator/renderer/prompt/command changes.
+Phase H.12 rejected candidates:
+| # | Candidate | Rejection Reason |
+|---|---|---|
+| 1 | Title case for subject in body | Body-text heuristic |
+| 2 | Repeat subject in reply | Procedural, not deterministic |
+| 3 | Never subparagraph beyond Figure 7-8 | Body-parser requirement |
+| 4 | Never split ship name | Renderer/layout implication |
+| 5 | Do not capitalize last name in body | Duplicate of PER-001 |
+| 6 | Acronyms used after first use | Heuristic; semantic interpretation |
+| 7 | No salutation in memorandum | v6 model has no salutation field |
+| 8 | No complimentary close in memorandum | v6 model has no close field |
+| 9 | Parenthesized number for every enclosure | Renderer ambiguity / REF-007 overlap |
+| 10 | No abbreviations in address | Layout implication |
+| 11 | No page number on first page | Layout implication |
+| 12 | Avoid slang or jargon | Heuristic, not deterministic |
 
-3. **Source/provenance verification:**
-   - Exact SECNAV quote, chapter/paragraph/page.
-   - Nearby-context conflict check.
-   - Manual scope confirmation.
+Phase H.12 safety boundaries preserved:
+- No validator changes.
+- No rule catalog changes.
+- No renderer/layout changes.
+- No prompt-contract changes.
+- No command-layer changes.
+- No approved/pending/session logs committed.
+- No real data committed.
 
-4. **Duplicate/overlap checks:**
-   - Verify against all existing `rules_v6/CCI/*.json` entries.
-   - Verify against existing validator behaviors.
-
-5. **Rule-catalog-only target:**
-   - Target: `rule_catalog`.
-   - No validator, renderer, prompt-contract, or command-layer changes.
-   - Phase D/E workflow required.
-
-6. **Future regression gate:**
-   - Current 32 suites; 33 suites if new H.12 runner added.
-   - Proposed runner: `tools/run_phase_h12_fourth_rule_catalog_regression.py`.
-
-H.12 planning document: `docs/planning/phase_h12_fourth_catalog_pilot_plan.md`.
+**Phase D candidate creation remains blocked.** No suitable candidate found.
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.

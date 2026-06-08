@@ -12,7 +12,7 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest planning checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
+**Latest planning checkpoint commit:** `[TBD]` — `Docs: Record Phase H.12 no-candidate search checkpoint`  
 **Latest implementation commit:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`  
 **Phase H.11 approved planning checkpoint commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`
 **Phase H.11 evidence review checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
@@ -71,7 +71,7 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 
 Suggested startup prompt:
 
-> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, `docs/planning/phase_h12_fourth_catalog_pilot_plan.md`, and `docs/checkpoints/phase_h11_from_line_evidence_review_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, `docs/checkpoints/phase_h12_fourth_catalog_pilot_search_checkpoint.md`, and `docs/planning/phase_h12_fourth_catalog_pilot_plan.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
 
 ---
 
@@ -282,25 +282,22 @@ The 32-suite set passed locally after Phase H.10 when run with `C:\Users\drryl\p
 
 ## Recommended Next Work
 
-### Next Phase: Phase H.12 / Phase I.11 Fourth Catalog-Only Pilot Planning
+### Next Phase: Phase H.13 / Phase I.12 Feature-Flag/Config Planning
 
-Phase H.11 / Phase I.10 From-line evidence review is **complete and approved**.
+Phase H.12 / Phase I.11 fourth catalog-only pilot search is **complete — no safe candidate found**.
 
-**Planning commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`.
-**Evidence review checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`.
+**H.12 plan commit:** `c608ef6` — `Docs: Add Phase H.12 fourth catalog pilot plan`.
+**H.12 search checkpoint commit:** `[TBD]` — `Docs: Record Phase H.12 no-candidate search checkpoint`.
+**H.12 design review commit:** `a450208` — `Docs: Fix H.12 catalog path references`.
 **Full regression gate:** 32/32 PASS (unchanged).
 
-Phase H.11 approved verdict:
-- **H.11 plan is approved as planning documentation source of truth.**
-- **`CCI-ROUTE-011` remains advisory-only for now.**
-- **H.10 evidence is sufficient for advisory maintenance.**
-- **H.10 evidence is not sufficient for warning/error promotion.**
-- **Severity promotion remains deferred.**
-- **Feature flag/config planning is required before any future promotion.**
-- **`window_envelope` remains read-only unless separately approved.**
-- **Productive next path: fourth low-risk catalog-only pilot planning.**
+Phase H.12 search results:
+- **Priority-domain search:** No candidate found in subject, ref/encl, date/time, or routing.
+- **Expanded-domain search:** No candidate found in paragraphing, proofreading, signature line, writing style, abbreviations, personnel, memo salutation/close, enclosure numbering, addressing, or page numbering.
+- **Catalog maturity assessment:** Current catalog is reasonably mature for obvious deterministic catalog-only rules in current scope.
+- **Future expansion requires:** feature-flag/config planning, body-scanning validator expansion, or model extension.
 
-Phase H.11 safety boundaries preserved:
+Phase H.12 safety boundaries preserved:
 - No validator changes.
 - No rule catalog changes.
 - No renderer/layout changes.
@@ -312,44 +309,34 @@ Phase H.11 safety boundaries preserved:
 - `CCI-ROUTE-010` remains advisory-only.
 
 Any future promotion to warning/error requires:
-1. Real-world evidence review.
-2. Feature flag/config design and implementation.
+1. Feature flag/config design and implementation.
+2. Real-world evidence review (already collected in H.6/H.10).
 3. Explicit user approval.
 4. Targeted regression update.
 5. Full regression gate (32 suites).
 
 Current functional baseline: `d808cb8`. Regression set: 32 suites.
 
-Phase H.12 / Phase I.11 must decide (planning-only until approved):
+**Phase H.13 / Phase I.12 must plan (planning-only until approved):**
 
-1. **Candidate domain to search first:**
-   - Subject, ref/encl, date/time, personnel, acronym, or other CCI domain.
-   - Must be deterministic and verifiable.
+1. **Feature-flag/config schema:**
+   - Global config file vs per-profile severity overrides.
+   - Default severity preservation (no breaking changes).
+   - Runtime-switchable vs startup-config only.
 
-2. **Candidate selection criteria:**
-   - Clear SECNAV M-5216.5 source with chapter/paragraph citation.
-   - Low risk (no layout implications, no renderer dependency).
-   - Deterministic yes/no compliance.
-   - No overlap with existing routing rules.
+2. **Integration target:**
+   - Integration with existing validator runner.
+   - No renderer/layout changes.
+   - No prompt-contract changes.
+   - No command-layer changes.
 
-3. **Source/provenance verification requirements:**
-   - Manual chapter/paragraph text.
-   - Figure title/caption if applicable.
-   - Instructional text inside examples.
-   - Actual visual/layout geometry if applicable.
+3. **Eligible rules for severity override:**
+   - Which rules should be configurable (all `heuristic_warning` rules? all rules?)
+   - Minimum viable feature-flag implementation for next promotion pilot.
 
-4. **Duplicate/overlap checks:**
-   - Verify candidate does not duplicate `CCI-CH7-SUBJ-006`, `CCI-ROUTE-010`, or `CCI-ROUTE-011`.
-   - Check `rules_v6/CCI/*.json` for existing coverage.
-
-5. **Rule-catalog-only target:**
-   - Target: `rule_catalog`.
-   - No validator, renderer, prompt-contract, or command-layer changes.
-   - Expected Phase D/E workflow required.
-
-6. **Future regression gate:**
+4. **Future regression gate:**
    - Current 32 suites.
-   - 33 suites if a new H.12 runner is added.
+   - 33 suites if a new H.13 runner is added.
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
@@ -359,6 +346,7 @@ Phase H.12 / Phase I.11 must decide (planning-only until approved):
 - No automatic enforcement from approved/pending logs.
 - No AI-only implementation decisions.
 - No real command/user data committed.
+- No validator, prompt-contract, or renderer changes may occur until Phase H.13 / Phase I.12 is explicitly planned, approved, implemented, reviewed, and regression-tested.
 
 ---
 
