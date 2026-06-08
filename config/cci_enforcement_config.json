@@ -1,0 +1,25 @@
+{
+  "_schema_version": "CCI_ENFORCEMENT_CONFIG_V1",
+  "_description": "Per-rule severity override configuration. Default is advisory for all rules unless overridden below.",
+  "_created": "2026-06-08",
+  "_updated": "2026-06-08",
+  "_allowlist": [
+    "CCI-ROUTE-010",
+    "CCI-ROUTE-011"
+  ],
+  "global_default": "advisory",
+  "overrides": {
+    "CCI-ROUTE-010": {
+      "effective_severity": "advisory",
+      "allow_override_up_to": "error",
+      "reason": "Office code prefix rule; evidence collected in Phase H.6; advisory by default",
+      "snapshot_id": "cfg_20260608_default"
+    },
+    "CCI-ROUTE-011": {
+      "effective_severity": "advisory",
+      "allow_override_up_to": "error",
+      "reason": "From line required rule; evidence collected in Phase H.10; advisory by default",
+      "snapshot_id": "cfg_20260608_default"
+    }
+  }
+}

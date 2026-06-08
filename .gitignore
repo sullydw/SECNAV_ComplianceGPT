@@ -60,3 +60,6 @@ profiles/user/
 
 # Phase H.6 evidence corpus (local only; do not commit)
 corrections/evidence/
+
+# H.13 local config override (must be gitignored; tracked default is in config/)
+config/cci_enforcement_config.local.json

@@ -41,6 +41,14 @@ import sys
 from pathlib import Path
 from typing import Any
 
+# Ensure src/ is on sys.path so intra-repo imports work when imported as
+# src.cci_routing_validate from outside the repo (regression runners).
+_src_dir = Path(__file__).resolve().parent
+if str(_src_dir) not in sys.path:
+    sys.path.insert(0, str(_src_dir))
+
+from cci_severity_mapper import effective_severity
+
 # -------------------------------------------------------------------------
 # Constants
 # -------------------------------------------------------------------------
@@ -410,7 +418,8 @@ def _check_from_line_required(payload: dict[str, Any]) -> list[str]:
 def validate_cci_routing(payload: dict[str, Any]) -> tuple[list[str], list[str]]:
     """Return (errors, warnings) for CCI routing/Via/Copy-to checks.
 
-    v1 is warnings-only; errors list is always empty.
+    v1 base behavior is warnings-only, but advisory rules may be promoted
+    to errors via config-driven severity mapping. See cci_severity_mapper.
     """
     errors: list[str] = []
     warnings: list[str] = []
@@ -421,18 +430,29 @@ def validate_cci_routing(payload: dict[str, Any]) -> tuple[list[str], list[str]]
 
     # Phase H.4: Advisory office-code prefix checks for To and Via lines
     to_raw = _get_field(payload, _TO_FIELD_NAMES)
+    route_010_sev = effective_severity("CCI-ROUTE-010", catalog_severity="error")
     for addressee in _normalize_list(to_raw):
         for finding in _check_office_code_prefix(addressee):
-            warnings.append(finding)
+            if route_010_sev in ("warning", "error"):
+                errors.append(finding)
+            else:
+                warnings.append(finding)
 
     via_raw = _get_field(payload, _VIA_FIELD_NAMES)
     for addressee in _normalize_list(via_raw):
         for finding in _check_office_code_prefix(addressee):
-            warnings.append(finding)
+            if route_010_sev in ("warning", "error"):
+                errors.append(finding)
+            else:
+                warnings.append(finding)
 
     # Phase H.9: Advisory From-line required check
+    route_011_sev = effective_severity("CCI-ROUTE-011", catalog_severity="error")
     for finding in _check_from_line_required(payload):
-        warnings.append(finding)
+        if route_011_sev in ("warning", "error"):
+            errors.append(finding)
+        else:
+            warnings.append(finding)
 
     return errors, warnings
 
