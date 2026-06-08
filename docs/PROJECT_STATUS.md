@@ -71,7 +71,7 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 
 Suggested startup prompt:
 
-> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, `docs/checkpoints/phase_h11_from_line_evidence_review_checkpoint.md`, and `docs/planning/phase_h11_from_line_evidence_review_plan.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, `docs/planning/phase_h12_fourth_catalog_pilot_plan.md`, and `docs/checkpoints/phase_h11_from_line_evidence_review_checkpoint.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
 
 ---
 

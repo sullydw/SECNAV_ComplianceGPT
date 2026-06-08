@@ -420,29 +420,35 @@ Phase H.10 summary:
 Phase H.12 / Phase I.11 must decide **one** of the following directions (planning-only until approved):
 
 1. **Candidate domain to search first:**
-   - Review the 30 synthetic fixtures and 50 corpus patterns.
-   - Decide whether to keep `CCI-ROUTE-011` advisory-only, collect more real-world evidence, or plan for future severity promotion.
-   - No validator changes; no severity promotion without separate approval and config support.
+   - **Priority 1:** Subject (`cci_ch7_subject_rules.json`) — next ID `CCI-CH7-SUBJ-007`.
+   - **Priority 2:** Reference/Enclosure (`cci_ch7_ref_encl_rules.json`) — next ID `CCI-REF-011`.
+   - **Priority 3:** Date/Time (`cci_ch2_date_time_rules.json`) — next ID `CCI-DTM-008`.
+   - **Avoid routing** unless clearly non-overlapping with `CCI-ROUTE-010` and `CCI-ROUTE-011`.
 
-2. **Start a fourth low-risk catalog pilot:**
-   - Search for a new deterministic rule in subject, ref/encl, date/time, personnel, or acronym domains.
-   - Requires planning document, provenance verification, Phase D/E workflow, and regression runner.
-   - No validator/renderer/prompt/command-layer changes.
+2. **Candidate selection criteria:**
+   - Deterministic, short source quote, clear `applies_to` scope.
+   - Low false-positive risk; catalog-only target.
+   - No validator/renderer/prompt/command changes.
 
-3. **Design feature flag / config support for severity promotion:**
-   - Design a config-driven severity override mechanism for advisory rules.
-   - Requires planning document, schema design, and regression coverage.
-   - No implementation until explicitly approved.
+3. **Source/provenance verification:**
+   - Exact SECNAV quote, chapter/paragraph/page.
+   - Nearby-context conflict check.
+   - Manual scope confirmation.
 
-4. **Keep all advisory rules advisory indefinitely:**
-   - Do not promote `CCI-ROUTE-010` or `CCI-ROUTE-011`.
-   - Maintain existing 32-suite regression.
-   - No additional evidence collection or config support.
+4. **Duplicate/overlap checks:**
+   - Verify against all existing `rules_v6/CCI/*.json` entries.
+   - Verify against existing validator behaviors.
 
-5. **Improve rule-catalog governance / provenance tooling:**
-   - Add catalog schema validation, change audit trails, or catalog change review workflow.
-   - Requires planning document.
-   - No validator/renderer/prompt/command-layer changes.
+5. **Rule-catalog-only target:**
+   - Target: `rule_catalog`.
+   - No validator, renderer, prompt-contract, or command-layer changes.
+   - Phase D/E workflow required.
+
+6. **Future regression gate:**
+   - Current 32 suites; 33 suites if new H.12 runner added.
+   - Proposed runner: `tools/run_phase_h12_fourth_rule_catalog_regression.py`.
+
+H.12 planning document: `docs/planning/phase_h12_fourth_catalog_pilot_plan.md`.
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
@@ -452,8 +458,7 @@ Phase H.12 / Phase I.11 must decide **one** of the following directions (plannin
 - No automatic enforcement from approved/pending logs.
 - No AI-only implementation decisions.
 - No real command/user data committed.
-
-No validator, prompt-contract, or renderer changes may occur until Phase H.11 / Phase I.10 is explicitly reviewed, approved, and implemented.
+- No validator, prompt-contract, or renderer changes may occur until Phase H.12 / Phase I.11 is explicitly planned, approved, implemented, reviewed, and regression-tested.
 
 ---
 
