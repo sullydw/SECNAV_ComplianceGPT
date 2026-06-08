@@ -266,12 +266,11 @@ def main() -> int:
     # ------------------------------------------------------------------
     # 14. No validator logic changes occurred at H.6 baseline
     # ------------------------------------------------------------------
-    # Compare against H.6 baseline so later phases like H.9/H.4 do not
+    # Compare only the H.6 commit itself so later phases like H.9 do not
     # cause false positives here.
-    changed = run_git(["git", "diff", "--name-only", "662afbb", "HEAD"], root)
+    changed = run_git(["git", "diff", "--name-only", "662afbb^", "662afbb"], root)
     changed_files = [c.strip() for c in changed.splitlines() if c.strip()]
     validator_changed = [f for f in changed_files if f.startswith("src/cci_") and f.endswith("_validate.py")]
-    # src/cci_routing_validate.py may be changed by later phases (H.4, H.9); H.6 only verifies no changes at its own baseline
     ok = len(validator_changed) == 0
     results.append(("Check 14: No validator logic changes occurred at H.6 baseline", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 14")

@@ -118,10 +118,10 @@ def main() -> int:
     results.append(("Check 10: Rule implementation_target is rule_catalog", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 10")
 
-    # 11. No validator files modified (compare against H.8 baseline, not current HEAD,
-    #     so later phases like H.9 do not cause false positives)
+    # 11. No validator files modified (compare only the H.8 commit itself,
+    #     not later phases like H.9 that legitimately modified validators)
     result11 = run_git(
-        ["git", "diff", "--stat", "769437d", "HEAD", "--"] + [f"src/{m}" for m in [
+        ["git", "diff", "--stat", "769437d^", "769437d", "--"] + [f"src/{m}" for m in [
             "cci_routing_validate.py", "cci_subject_validate.py", "cci_acronym_validate.py",
             "cci_ref_encl_validate.py", "cci_date_time_validate.py", "cci_personnel_validate.py",
             "cci_poc_validate.py",
