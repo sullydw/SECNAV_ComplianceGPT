@@ -1,6 +1,6 @@
 # Phase H.13 / Phase I.12 — Feature-Flag/Config Support Implementation Checkpoint
 
-**Commit:** `[TBD]` — `CCI: Add H.13 severity config support`  
+**Commit:** `084ce64` — `CCI: Add H.13 severity config support`  
 **Planning Document:** `1759c9f` — `Docs: Fix markdown table formatting in Phase H.13 config plan`  
 **Functional Baseline:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`  
 **Regression Gate:** 33 suites (32 existing + 1 new H.13 runner) — **33/33 PASS**  
