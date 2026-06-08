@@ -1,0 +1,15 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": [
+    "Commanding Officer, Recipient Activity"
+  ],
+  "via": [
+    "(1) Via One",
+    "(2) Via Two"
+  ],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.10 pos 08 \u2014 complex with via",
+  "date": "2026-06-08",
+  "body": "Synthetic positive control \u2014 missing From with via present."
+}

@@ -1,0 +1,13 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "from": "C O, USS EXAMPLE",
+  "to": [
+    "Commanding Officer, Recipient Activity"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.10 neg 09 \u2014 From with comma",
+  "date": "2026-06-08",
+  "body": "Synthetic negative control \u2014 From line with comma."
+}

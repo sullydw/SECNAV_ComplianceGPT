@@ -1,0 +1,13 @@
+{
+  "doc_type": "multiple_address_letter",
+  "to": [
+    "Commanding Officer, Recipient Activity",
+    "Commanding Officer, Second Activity"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.10 neg 08 \u2014 multiple-address letter skips",
+  "date": "2026-06-08",
+  "body": "Synthetic negative control \u2014 multiple-address letter without From."
+}

@@ -1,0 +1,14 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "from": "Commanding Officer, Example Activity",
+  "to": [
+    "Commanding Officer, Recipient Activity"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.10 neg 20 \u2014 explicit false window_envelope",
+  "date": "2026-06-08",
+  "body": "Synthetic negative control \u2014 window_envelope false with From present.",
+  "window_envelope": false
+}

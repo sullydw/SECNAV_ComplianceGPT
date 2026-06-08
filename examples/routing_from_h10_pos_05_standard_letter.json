@@ -1,0 +1,12 @@
+{
+  "doc_type": "standard_letter",
+  "to": [
+    "Commanding Officer, Recipient Activity"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.10 pos 05 \u2014 standard_letter missing From",
+  "date": "2026-06-08",
+  "body": "Synthetic positive control \u2014 standard_letter doc_type without From."
+}

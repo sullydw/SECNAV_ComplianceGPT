@@ -1,0 +1,12 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": [
+    "Commanding Officer, 12345"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.10 pos 07 \u2014 dual rule trigger",
+  "date": "2026-06-08",
+  "body": "Synthetic positive control \u2014 missing From plus numeric to addressee triggers both ROUTE-010 and ROUTE-011."
+}

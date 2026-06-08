@@ -1,0 +1,12 @@
+{
+  "doc_type": "DT_MFR",
+  "to": [
+    "Commanding Officer, Recipient Activity"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.10 neg 05 \u2014 MFR skips",
+  "date": "2026-06-08",
+  "body": "Synthetic negative control \u2014 MFR without From."
+}
