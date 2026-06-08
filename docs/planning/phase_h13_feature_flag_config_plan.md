@@ -78,9 +78,9 @@ Current validator behavior:
 
 | Level | Meaning | Catalog Severity Equivalent | Promotion Criteria |
 |---|---|---|---|
-| `advisory` | Non-blocking warning, advisory prefix, does not affect `overall_pass` | Current validator behavior | Default for all rules unless config overrides |
-| `warning` | Blocking warning, moves finding from `warnings` list to `errors` list, affects `overall_pass` | Effective severity = warning | Requires: config override + rule in allowlist + no catalog override prohibiting it |
-| `error` | True hard error, always blocking, treated as schema/critical failure | Effective severity = error | Requires: config override + rule in allowlist + explicit separate approval + warning stage evidence |
+|| `advisory` | Non-blocking warning, advisory prefix, does not affect `overall_pass` | Current validator behavior | Default for all rules unless config overrides |
+|| `warning` | Blocking warning, validator emits finding directly into `errors` list (not `warnings`), affects `overall_pass` | Effective severity = warning | Requires: config override + rule in allowlist + no catalog override prohibiting it |
+|| `error` | True hard error, always blocking, treated as schema/critical failure | Effective severity = error | Requires: config override + rule in allowlist + explicit separate approval + warning stage evidence |
 
 Promotion criteria before moving up:
 
@@ -159,14 +159,27 @@ Path justification:
 
 ### Example: Out-of-phase initial config
 
-Default for all unapproved deployments:
+Default for all unapproved deployments — both allowlisted rules remain advisory, with explicit entries for audit self-documentation:
 
 ```json
 {
   "_schema_version": "CCI_ENFORCEMENT_CONFIG_V1",
   "_allowlist": ["CCI-ROUTE-010", "CCI-ROUTE-011"],
   "global_default": "advisory",
-  "overrides": {}
+  "overrides": {
+    "CCI-ROUTE-010": {
+      "effective_severity": "advisory",
+      "allow_override_up_to": "error",
+      "reason": "Office code prefix rule; evidence collected in Phase H.6; advisory by default",
+      "snapshot_id": "cfg_YYYYMMDD_default"
+    },
+    "CCI-ROUTE-011": {
+      "effective_severity": "advisory",
+      "allow_override_up_to": "error",
+      "reason": "From line required rule; evidence collected in Phase H.10; advisory by default",
+      "snapshot_id": "cfg_YYYYMMDD_default"
+    }
+  }
 }
 ```
 
@@ -190,6 +203,22 @@ Default for all unapproved deployments:
 ### Disabled Rule Behavior
 
 If a rule ID is present in `overrides` with `effective_severity = "advisory"`, the rule stays advisory. If the rule ID is completely omitted from `overrides`, the rule takes `global_default` severity (which defaults to advisory). There is no explicit `"disabled"` level — omission or advisory both mean advisory.
+
+### Catalog Severity Ceiling and Override Limits
+
+The rule catalog (`rules_v6/CCI/*.json`) defines the long-term/manual severity for each rule. The config override system may not exceed catalog severity:
+
+- For `CCI-ROUTE-010` and `CCI-ROUTE-011`, the catalog severity is `"error"`. Therefore, `allow_override_up_to: "error"` in the config matches the catalog ceiling and is permitted.
+- The config `effective_severity` must never be higher than `allow_override_up_to`.
+- If `allow_override_up_to` were set below catalog severity, the config ceiling would still be respected and the rule would be capped at the lower level. This would require a separate catalog change to raise.
+- **No rule is promoted by default.** Even though the catalog severity is `error` and the config ceiling is `error`, `effective_severity` remains `advisory` unless explicitly changed in a later approved phase.
+
+### Local Override Gitignore Policy
+
+- **Tracked default config:** `config/cci_enforcement_config.json` — versioned in git, deployed with the repo, contains only default (advisory) entries.
+- **Optional user-local override:** `config/cci_enforcement_config.local.json` — **must be gitignored** and never committed.
+- The severity mapper should prefer the local override file if present, falling back to the tracked default.
+- **H.13 implementation should not require local override support** unless separately approved; the tracked default config is sufficient for the initial implementation.
 
 ---
 
