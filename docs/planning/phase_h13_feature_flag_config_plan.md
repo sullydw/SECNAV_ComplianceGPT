@@ -78,9 +78,9 @@ Current validator behavior:
 
 | Level | Meaning | Catalog Severity Equivalent | Promotion Criteria |
 |---|---|---|---|
-|| `advisory` | Non-blocking warning, advisory prefix, does not affect `overall_pass` | Current validator behavior | Default for all rules unless config overrides |
-|| `warning` | Blocking warning, validator emits finding directly into `errors` list (not `warnings`), affects `overall_pass` | Effective severity = warning | Requires: config override + rule in allowlist + no catalog override prohibiting it |
-|| `error` | True hard error, always blocking, treated as schema/critical failure | Effective severity = error | Requires: config override + rule in allowlist + explicit separate approval + warning stage evidence |
+| `advisory` | Non-blocking warning, advisory prefix, does not affect `overall_pass` | Current validator behavior | Default for all rules unless config overrides |
+| `warning` | Blocking warning, validator emits finding directly into `errors` list (not `warnings`), affects `overall_pass` | Effective severity = warning | Requires: config override + rule in allowlist + no catalog override prohibiting it |
+| `error` | True hard error, always blocking, treated as schema/critical failure | Effective severity = error | Requires: config override + rule in allowlist + explicit separate approval + warning stage evidence |
 
 Promotion criteria before moving up:
 
