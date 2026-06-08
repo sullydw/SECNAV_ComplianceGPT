@@ -96,7 +96,7 @@ Design decisions required:
    - Reference/enclosure (`cci_ch7_ref_encl_rules.json`)
    - Date/time (`cci_ch7_date_time_rules.json`)
    - Personnel (`cci_ch7_personnel_rules.json`)
-   - Acronym (`cci_ch7_acronym_rules.json`)
+   - Acronym (`cci_ch2_acronym_rules.json`)
    - Other CCI domain
 
 2. **Candidate selection criteria:**

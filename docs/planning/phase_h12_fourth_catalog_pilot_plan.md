@@ -184,7 +184,7 @@ Verify the proposed `rule_id` does not exist in any of:
 - `rules_v6/CCI/cci_ch2_date_time_rules.json`
 - `rules_v6/CCI/cci_ch2_personnel_rules.json`
 - `rules_v6/CCI/cci_ch2_poc_rules.json`
-- `rules_v6/CCI/cci_acronym_rules.json`
+- `rules_v6/CCI/cci_ch2_acronym_rules.json`
 - `rules_v6/CCI/cci_ch2_routing_rules.json`
 
 ### 5.2 Existing Validator Behavior
