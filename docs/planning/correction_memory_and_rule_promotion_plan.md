@@ -1,6 +1,7 @@
 # Correction Memory and Rule Promotion Layer Plan
 
 **Current Verified Baseline:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
+**Phase H.11 Planning Checkpoint:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`
 **Phase H.10 Implementation:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
 **Phase H.10 Planning Checkpoint:** `310fd3a` — `Docs: Refine Phase H.10 From line evidence plan`
 **Phase H.9 Implementation:** `6f320af` — `CCI: Add From line advisory validator (Phase H.9)`
@@ -23,7 +24,7 @@
 **Phase B Implementation:** `519fad6` — `CCI: Add correction classification (Phase B)`  
 **Phase A Implementation:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
 **Latest Checkpoint:** `d808cb8` / Phase H.10 From-line evidence collection and regression hardening complete  
-**Next Phase:** Phase H.11 / Phase I.10 From-line evidence review, fourth catalog-pilot planning, or feature-flag/config planning — planning-only until approved
+**Next Phase:** Phase H.11 / Phase I.10 From-line evidence review — planning-only; not yet approved
 
 ---
 
@@ -390,7 +391,17 @@ Phase H.10 summary:
 - Current functional baseline: `d808cb8`. Regression set: 32 suites.
 - Latest planning checkpoint commit: `310fd3a`.
 
-**Phase H.10 is now complete.** The next planning-only phase is **Phase H.11 / Phase I.10**.
+### Phase H.11 / Phase I.10 — Planning Checkpoint Created (Not Yet Approved)
+
+- Planning document: `docs/planning/phase_h11_from_line_evidence_review_plan.md`.
+- Planning commit: `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`.
+- **This is planning-only. No implementation is authorized.**
+- **Functional baseline remains `d808cb8`.** Regression set remains 32 suites.
+- **No validator, catalog, renderer/layout, prompt-contract, or command-layer changes occurred.**
+- H.11 must be reviewed and approved before any code changes.
+- H.11 design review must decide: review H.10 evidence, keep advisory-only, collect real-world evidence, start fourth catalog pilot, or design feature flag/config support.
+
+**Phase H.10 is now complete.** The next phase is **Phase H.11 / Phase I.10** (pending approval).
 
 Phase H.11 / Phase I.10 must decide **one** of the following directions (planning-only until approved):
 
@@ -422,13 +433,13 @@ Phase H.11 / Phase I.10 must decide **one** of the following directions (plannin
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
 - All 32 regression suites must pass before any commit.
-- Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
+- Use `C:\\Users\\drryl\\pinokio\\bin\\miniconda\\python.exe` for full regression runs.
 - No renderer/layout changes unless explicitly scoped and regression-protected.
 - No automatic enforcement from approved/pending logs.
 - No AI-only implementation decisions.
 - No real command/user data committed.
 
-No validator, prompt-contract, or renderer changes may occur until Phase H.11 / Phase I.10 is explicitly planned, approved, implemented, reviewed, and regression-tested.
+No validator, prompt-contract, or renderer changes may occur until Phase H.11 / Phase I.10 is explicitly reviewed, approved, and implemented.
 
 ---
 
