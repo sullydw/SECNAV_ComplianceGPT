@@ -12,9 +12,10 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest planning checkpoint commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`  
+**Latest planning checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
 **Latest implementation commit:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`  
-**Phase H.11 planning checkpoint commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`  
+**Phase H.11 approved planning checkpoint commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`
+**Phase H.11 evidence review checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
 **Phase H.10 implementation commit:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`  
 **Phase H.9 implementation commit:** `6f320af` — `CCI: Add From line advisory validator (Phase H.9)`  
 **Phase H.8 implementation commit:** `769437d` — `CCI: Add From line catalog rule (Phase H.8)`  
@@ -42,34 +43,35 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 
 1. Read `docs/BOOTSTRAP.md`.
 2. Read this file: `docs/PROJECT_STATUS.md`.
-3. Read `docs/checkpoints/phase_h10_from_line_evidence_checkpoint.md` for the latest Phase H.10 implementation checkpoint status.
-4. Read `docs/planning/phase_h11_from_line_evidence_review_plan.md` for the current Phase H.11 planning document.
-5. Read `docs/planning/phase_h10_from_line_evidence_hardening_plan.md` for the Phase H.10 / Phase I.9 From-line evidence plan.
-6. Read `docs/checkpoints/phase_h9_from_line_validator_checkpoint.md` for Phase H.9 implementation checkpoint status.
+3. Read `docs/checkpoints/phase_h11_from_line_evidence_review_checkpoint.md` for the latest Phase H.11 evidence review checkpoint status.
+4. Read `docs/checkpoints/phase_h10_from_line_evidence_checkpoint.md` for the Phase H.10 implementation checkpoint status.
+5. Read `docs/planning/phase_h11_from_line_evidence_review_plan.md` for the Phase H.11 approved planning document.
+6. Read `docs/planning/phase_h10_from_line_evidence_hardening_plan.md` for the Phase H.10 / Phase I.9 From-line evidence plan.
+7. Read `docs/checkpoints/phase_h9_from_line_validator_checkpoint.md` for Phase H.9 implementation checkpoint status.
 7. Read `docs/checkpoints/phase_h8_third_catalog_pilot_checkpoint.md` for Phase H.8 implementation checkpoint status.
-7. Read `docs/checkpoints/phase_h7_routing_office_code_evidence_review_checkpoint.md` for Phase H.7 planning checkpoint status.
-8. Read `docs/checkpoints/phase_h6_routing_office_code_evidence_checkpoint.md` for Phase H.6 implementation status.
-9. Read `docs/checkpoints/phase_h5_routing_office_code_severity_review_checkpoint.md` for Phase H.5 planning status.
-10. Read `docs/checkpoints/phase_h4_routing_office_code_validator_checkpoint.md` for Phase H.4 status.
-11. Read `docs/checkpoints/phase_h3_second_rule_catalog_pilot_checkpoint.md` for Phase H.3 status.
-12. Read `docs/checkpoints/phase_h2_subject_acronym_validator_enforcement_checkpoint.md` for Phase H.2 status.
-13. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for Phase H.1 status.
-14. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
-15. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
-16. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
-17. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
-18. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
-19. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
-20. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
-21. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
-22. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
-23. Do not modify renderer/layout unless explicitly asked.
-24. Continue from the **Recommended Next Work** section below.
-25. Run all regressions before committing implementation changes.
+8. Read `docs/checkpoints/phase_h7_routing_office_code_evidence_review_checkpoint.md` for Phase H.7 planning checkpoint status.
+9. Read `docs/checkpoints/phase_h6_routing_office_code_evidence_checkpoint.md` for Phase H.6 implementation status.
+10. Read `docs/checkpoints/phase_h5_routing_office_code_severity_review_checkpoint.md` for Phase H.5 planning status.
+11. Read `docs/checkpoints/phase_h4_routing_office_code_validator_checkpoint.md` for Phase H.4 status.
+12. Read `docs/checkpoints/phase_h3_second_rule_catalog_pilot_checkpoint.md` for Phase H.3 status.
+13. Read `docs/checkpoints/phase_h2_subject_acronym_validator_enforcement_checkpoint.md` for Phase H.2 status.
+14. Read `docs/checkpoints/phase_h1_pilot_approved_rule_implementation_checkpoint.md` for Phase H.1 status.
+15. Read `docs/checkpoints/phase_h_approved_rule_implementation_planner_checkpoint.md` for Phase H Stage 1 planner details if needed.
+16. Read `docs/checkpoints/phase_g_natural_language_command_mediation_checkpoint.md` for Phase G details if needed.
+17. Read `docs/checkpoints/phase_f_ui_command_integration_checkpoint.md` for Phase F details if needed.
+18. Read `docs/checkpoints/phase_e_review_promotion_utility_checkpoint.md` for Phase E details if needed.
+19. Read `docs/checkpoints/phase_d_pending_global_rule_candidate_log_checkpoint.md` for Phase D details if needed.
+20. Read `docs/checkpoints/phase_c_local_command_profile_promotion_checkpoint.md` for Phase C details if needed.
+21. Read `docs/checkpoints/phase_b_correction_classification_checkpoint.md` for Phase B details if needed.
+22. Read `docs/checkpoints/phase_a_session_persistence_checkpoint.md` for Phase A details if needed.
+23. Read `docs/checkpoints/cci_content_compliance_checkpoint.md` if detailed CCI/intake/correction history is needed.
+24. Do not modify renderer/layout unless explicitly asked.
+25. Continue from the **Recommended Next Work** section below.
+26. Run all regressions before committing implementation changes.
 
 Suggested startup prompt:
 
-> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, `docs/checkpoints/phase_h10_from_line_evidence_checkpoint.md`, and `docs/planning/phase_h11_from_line_evidence_review_plan.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
+> Read `docs/BOOTSTRAP.md`, `docs/PROJECT_STATUS.md`, `docs/checkpoints/phase_h11_from_line_evidence_review_checkpoint.md`, and `docs/planning/phase_h11_from_line_evidence_review_plan.md` first. Then help continue from the recommended next phase. Do not modify renderer/layout unless explicitly asked. Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs. Run all regressions before committing implementation changes.
 
 ---
 
@@ -280,64 +282,78 @@ The 32-suite set passed locally after Phase H.10 when run with `C:\Users\drryl\p
 
 ## Recommended Next Work
 
-### Next Phase: Phase H.10 / Phase I.9 Evidence Collection/Regression Hardening, Fourth Catalog-Pilot Planning, or Feature-Flag/Config Planning
+### Next Phase: Phase H.12 / Phase I.11 Fourth Catalog-Only Pilot Planning
 
-Phase H.9 / Phase I.8 From-line advisory validator enforcement is **complete**.
+Phase H.11 / Phase I.10 From-line evidence review is **complete and approved**.
 
-**Implementation commit:** `6f320af` — `CCI: Add From line advisory validator (Phase H.9)`.
-**Full regression gate:** 31/31 PASS.
+**Planning commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`.
+**Evidence review checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`.
+**Full regression gate:** 32/32 PASS (unchanged).
 
-Phase H.9 summary:
-- Added advisory/non-blocking validator behavior for catalog rule `CCI-ROUTE-011`.
-- Rule: `Every standard letter must have a "From:" line, except a letter that will be used with a window envelope.`
-- Source: SECNAV M-5216.5, Chapter 7, Section 6, `"From:" Line`, subparagraph a. General (PDF page 50).
-- Approved record: `agr_20260607_49947aca`.
-- Source candidate: `cand_20260607_5dcc97cf`.
-- Advisory code: `CCI-ROUTE-011`.
-- Catalog severity remains `error`; validator enforcement is interim advisory/non-blocking only.
-- Added `_check_from_line_required()` helper in `src/cci_routing_validate.py`.
-- Scope: `DT_STD_LTR` and `"standard_letter"` document types only; missing `doc_type` skips; memorandum, endorsement, joint_letter, and multiple_address_letter excluded.
-- `window_envelope: true` suppresses the advisory.
-- Added `tools/run_phase_h9_from_line_validator_regression.py` with 18 checks.
-- 8 synthetic `examples/routing_from_*.json` fixtures added for edge-case coverage.
-- Catalog now has 11 routing rules; object schema with `"rules"` array preserved.
+Phase H.11 approved verdict:
+- **H.11 plan is approved as planning documentation source of truth.**
+- **`CCI-ROUTE-011` remains advisory-only for now.**
+- **H.10 evidence is sufficient for advisory maintenance.**
+- **H.10 evidence is not sufficient for warning/error promotion.**
+- **Severity promotion remains deferred.**
+- **Feature flag/config planning is required before any future promotion.**
+- **`window_envelope` remains read-only unless separately approved.**
+- **Productive next path: fourth low-risk catalog-only pilot planning.**
+
+Phase H.11 safety boundaries preserved:
+- No validator changes.
+- No rule catalog changes.
 - No renderer/layout changes.
-- No runtime prompt-contract changes.
+- No prompt-contract/context/intake/UI/command-flow changes.
 - No Phase F/G command-layer changes.
-- No approved/pending/session logs committed. No real data committed.
-- CCI-ROUTE-010 remains advisory-only. No severity promotion occurred.
-- Current functional baseline: `6f320af`. Regression set: 31 suites (30 existing + 1 new H.9 runner).
+- No approved/pending/session/evidence logs committed.
+- No real data committed.
+- `CCI-ROUTE-011` remains advisory-only.
+- `CCI-ROUTE-010` remains advisory-only.
 
-Phase H.10 / Phase I.9 must decide among the following directions (planning-only until approved):
+Any future promotion to warning/error requires:
+1. Real-world evidence review.
+2. Feature flag/config design and implementation.
+3. Explicit user approval.
+4. Targeted regression update.
+5. Full regression gate (32 suites).
 
-1. **Evidence collection and regression hardening for CCI-ROUTE-011:**
-   - Add more negative/positive fixtures for From-line edge cases.
-   - Expand coverage for window-envelope false-positive scenarios, missing `doc_type` behavior, and non-standard-letter document types.
-   - Does not change validator severity; advisory-only remains.
+Current functional baseline: `d808cb8`. Regression set: 32 suites.
 
-2. **Fourth low-risk catalog pilot:**
-   - Search for a new deterministic rule in subject, ref/encl, date/time, personnel, or acronym domains.
-   - Requires planning document, provenance verification, Phase D/E workflow, and regression runner.
-   - No validator/renderer/prompt/command-layer changes.
+Phase H.12 / Phase I.11 must decide (planning-only until approved):
 
-3. **Feature flag / config support for severity promotion:**
-   - Design config-driven severity override mechanism for advisory rules.
-   - Requires planning document, schema design, and regression coverage.
-   - No implementation until explicitly approved.
+1. **Candidate domain to search first:**
+   - Subject, ref/encl, date/time, personnel, acronym, or other CCI domain.
+   - Must be deterministic and verifiable.
 
-4. **Keep all advisory rules advisory indefinitely:**
-   - Do not promote `CCI-ROUTE-010` or `CCI-ROUTE-011`.
-   - Maintain existing 31-suite regression.
-   - No additional evidence collection or config support.
+2. **Candidate selection criteria:**
+   - Clear SECNAV M-5216.5 source with chapter/paragraph citation.
+   - Low risk (no layout implications, no renderer dependency).
+   - Deterministic yes/no compliance.
+   - No overlap with existing routing rules.
 
-5. **Improve rule-catalog governance / provenance tooling:**
-   - Add catalog schema validation, change audit trails, or catalog change review workflow.
-   - Requires planning document.
-   - No validator/renderer/prompt/command-layer changes.
+3. **Source/provenance verification requirements:**
+   - Manual chapter/paragraph text.
+   - Figure title/caption if applicable.
+   - Instructional text inside examples.
+   - Actual visual/layout geometry if applicable.
+
+4. **Duplicate/overlap checks:**
+   - Verify candidate does not duplicate `CCI-CH7-SUBJ-006`, `CCI-ROUTE-010`, or `CCI-ROUTE-011`.
+   - Check `rules_v6/CCI/*.json` for existing coverage.
+
+5. **Rule-catalog-only target:**
+   - Target: `rule_catalog`.
+   - No validator, renderer, prompt-contract, or command-layer changes.
+   - Expected Phase D/E workflow required.
+
+6. **Future regression gate:**
+   - Current 32 suites.
+   - 33 suites if a new H.12 runner is added.
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
-- All 31 regression suites must pass before any commit.
+- All 32 regression suites must pass before any commit.
 - Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
 - No renderer/layout changes unless explicitly scoped and regression-protected.
 - No automatic enforcement from approved/pending logs.
@@ -510,6 +526,26 @@ Phase H.10 / Phase I.9 must decide among the following directions (planning-only
 - No automatic enforcement from approved logs.
 - CCI-ROUTE-010 remains advisory-only. No severity promotion occurred.
 - Current functional baseline: `6f320af`. Regression set: 31 suites (30 existing + 1 new H.9 runner).
+
+### Phase H.11 / Phase I.10 — From-Line Evidence Review (Completed — Approved)
+
+- Planning document: `docs/planning/phase_h11_from_line_evidence_review_plan.md`.
+- Planning commit: `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`.
+- Evidence review checkpoint commit: `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`.
+- **H.11 plan approved as planning documentation source of truth.**
+- **`CCI-ROUTE-011` remains advisory-only.**
+- **H.10 evidence sufficient for advisory maintenance; insufficient for warning/error promotion.**
+- **Severity promotion remains deferred.**
+- **Feature flag/config planning required before any future promotion.**
+- **`window_envelope` remains read-only unless separately approved.**
+- **No validator changes.** `src/cci_routing_validate.py` untouched.
+- **No rule catalog changes.** `rules_v6/CCI/cci_ch2_routing_rules.json` untouched.
+- **No renderer/layout changes.** `src/pdf_v6_render.py` untouched.
+- **No prompt-contract changes.** `src/context_resolver.py` untouched.
+- **No Phase F/G command-layer changes.** `src/correction_commands.py`, `src/correction_nl_commands.py` untouched.
+- **No approved/pending/session logs committed.**
+- **No real data committed.**
+- Current functional baseline remains `d808cb8`. Regression set remains 32 suites.
 
 ### Phase H.10 / Phase I.9 — From-Line Evidence Collection and Regression Hardening (Completed)
 

@@ -23,8 +23,10 @@
 **Phase C Implementation:** `8b8a95c` — `CCI: Add local command profile promotion (Phase C)`  
 **Phase B Implementation:** `519fad6` — `CCI: Add correction classification (Phase B)`  
 **Phase A Implementation:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
-**Latest Checkpoint:** `d808cb8` / Phase H.10 From-line evidence collection and regression hardening complete  
-**Next Phase:** Phase H.11 / Phase I.10 From-line evidence review — planning-only; not yet approved
+**Phase H.11 Evidence Review Checkpoint:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
+**Phase H.11 Approved Verdict:** `CCI-ROUTE-011` remains advisory-only; severity promotion deferred; productive next path: fourth low-risk catalog-only pilot planning  
+**Latest Checkpoint:** `52076a1` / Phase H.11 From-line evidence review complete (approved)  
+**Next Phase:** Phase H.12 / Phase I.11 fourth catalog-only pilot planning — planning-only until approved
 
 ---
 
@@ -391,21 +393,33 @@ Phase H.10 summary:
 - Current functional baseline: `d808cb8`. Regression set: 32 suites.
 - Latest planning checkpoint commit: `310fd3a`.
 
-### Phase H.11 / Phase I.10 — Planning Checkpoint Created (Not Yet Approved)
+### Phase H.11 / Phase I.10 — From-Line Evidence Review (Completed — Approved)
 
 - Planning document: `docs/planning/phase_h11_from_line_evidence_review_plan.md`.
 - Planning commit: `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`.
-- **This is planning-only. No implementation is authorized.**
-- **Functional baseline remains `d808cb8`.** Regression set remains 32 suites.
-- **No validator, catalog, renderer/layout, prompt-contract, or command-layer changes occurred.**
-- H.11 must be reviewed and approved before any code changes.
-- H.11 design review must decide: review H.10 evidence, keep advisory-only, collect real-world evidence, start fourth catalog pilot, or design feature flag/config support.
+- Evidence review checkpoint commit: `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`.
+- **H.11 plan approved as planning documentation source of truth.**
+- **`CCI-ROUTE-011` remains advisory-only.**
+- **H.10 evidence sufficient for advisory maintenance; insufficient for warning/error promotion.**
+- **Severity promotion remains deferred.**
+- **Feature flag/config planning required before any future promotion.**
+- **`window_envelope` remains read-only unless separately approved.**
+- **No validator changes.** `src/cci_routing_validate.py` untouched.
+- **No rule catalog changes.** `rules_v6/CCI/cci_ch2_routing_rules.json` untouched.
+- **No renderer/layout changes.** `src/pdf_v6_render.py` untouched.
+- **No prompt-contract changes.** `src/context_resolver.py` untouched.
+- **No Phase F/G command-layer changes.** `src/correction_commands.py`, `src/correction_nl_commands.py` untouched.
+- **No approved/pending/session logs committed.**
+- **No real data committed.**
+- Current functional baseline remains `d808cb8`. Regression set remains 32 suites.
 
-**Phase H.10 is now complete.** The next phase is **Phase H.11 / Phase I.10** (pending approval).
+### Phase H.12 / Phase I.11 — Fourth Catalog-Only Pilot Planning (Not Yet Approved)
 
-Phase H.11 / Phase I.10 must decide **one** of the following directions (planning-only until approved):
+**Phase H.11 is now approved.** The next phase is **Phase H.12 / Phase I.11** (planning-only until approved).
 
-1. **Review H.10 From-line evidence and decide on advisory status:**
+Phase H.12 / Phase I.11 must decide **one** of the following directions (planning-only until approved):
+
+1. **Candidate domain to search first:**
    - Review the 30 synthetic fixtures and 50 corpus patterns.
    - Decide whether to keep `CCI-ROUTE-011` advisory-only, collect more real-world evidence, or plan for future severity promotion.
    - No validator changes; no severity promotion without separate approval and config support.
