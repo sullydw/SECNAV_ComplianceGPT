@@ -14,8 +14,10 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 
 **Latest planning checkpoint commit:** `a520eb2` — `Docs: Record Phase H.13 implementation checkpoint`  
 **Latest implementation commit:** `084ce64` — `CCI: Add H.13 severity config support`  
-**Phase H.13 implementation review checkpoint:** `a520eb2` — `Docs: Record Phase H.13 implementation review checkpoint`  
+**Phase H.13 implementation review checkpoint:** `fcb1d4c` — `Docs: Record Phase H.13 implementation review checkpoint`  
 **Phase H.13 planning commits:** `dd1989e` — `Docs: Add Phase H.13 feature flag config plan`; `115f4e0` — `Docs: Refine Phase H.13 config plan`; `1759c9f` — `Docs: Fix markdown table formatting in Phase H.13 config plan`  
+**Phase H.14 review checkpoint:** `fcb1d4c` — `Docs: Phase H.14 controlled promotion readiness review (read-only; no files modified)`  
+**Phase H.15 planning document:** `docs/planning/phase_h15_route011_warning_pilot_plan.md` — `Docs: Add Phase H.15 warning pilot plan`  
 **Phase H.11 approved planning checkpoint commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`
 **Phase H.11 evidence review checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
 **Phase H.10 implementation commit:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
@@ -310,13 +312,13 @@ Any future promotion to warning/error requires:
 4. Targeted regression update.
 5. Full regression gate (33 suites).
 
-Current functional baseline: `d808cb8`. Regression set: 33 suites. H.13 stable baseline: `084ce64`.
+**Current functional baseline:** `d808cb8`. Regression set: 33 suites. H.13 stable baseline: `084ce64`.
 
 **Recommended next phase: planning-only until approved.** Possible directions:
-- Fourth catalog-only pilot search (if new candidate identified).
-- Controlled severity promotion pilot for `CCI-ROUTE-010` or `CCI-ROUTE-011`.
-- Body-scanning validator expansion.
-- Additional CCI domain coverage.
+- Approve Phase H.15 controlled warning pilot for `CCI-ROUTE-011`.
+- Defer promotion and keep both rules advisory indefinitely.
+- Collect real-world Navy standard-letter payloads for future hardening.
+- Collect real-world Navy To/Via line patterns for `CCI-ROUTE-010` future reconsideration.
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
@@ -606,44 +608,44 @@ Figures are rule-bearing and must be reviewed when referenced.
 
 ## Recommended Next Work
 
-### Next Phase: Phase H.11 / Phase I.10 From-Line Evidence Review (Planning-Only)
+### Phase H.15 / Phase I.14 — Controlled Warning Pilot for CCI-ROUTE-011 (Planning-Only)
 
-Phase H.10 / Phase I.9 From-line evidence collection and regression hardening is **complete**. Planning commits: `8735461`, `310fd3a`. Infrastructure fix: `49577d9`. Implementation commit: `d808cb8`.
+**Status:** Planning document created; not yet approved; no implementation authorized.
 
-Phase H.10 summary:
-- Added 20 negative-control and 10 positive-control fixtures for `CCI-ROUTE-011`.
-- Added 50-pattern local corpus `corrections/evidence/from_line_patterns.jsonl` (gitignored, not committed).
-- Added `tools/run_phase_h10_from_line_evidence_regression.py` with 39 checks.
-- **No severity promotion.** `CCI-ROUTE-011` remains advisory-only.
-- **No validator logic changes.** `src/cci_routing_validate.py` untouched.
-- **No rule catalog changes.** `rules_v6/CCI/cci_ch2_routing_rules.json` untouched.
-- **No renderer/layout changes.** `src/pdf_v6_render.py` untouched.
-- **No prompt-contract changes.** `src/context_resolver.py` untouched.
-- **No Phase F/G command-layer changes.** `src/correction_commands.py`, `src/correction_nl_commands.py` untouched.
-- **No approved/pending/session logs committed.**
-- **No real data committed.**
-- Full 32-suite local regression set passed using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`.
-- Current functional baseline: `d808cb8`. Regression set: 32 suites.
-- Latest implementation checkpoint commit: `d808cb8`.
+**H.14 review verdict:** `CCI-ROUTE-011` READY FOR WARNING PILOT; `CCI-ROUTE-010` NOT READY; error promotion NOT RECOMMENDED for either rule.
 
-### Phase H.11 / Phase I.10 — Planning-Only, Not Yet Approved
+**H.15 plan document:** `docs/planning/phase_h15_route011_warning_pilot_plan.md`
+**H.15 checkpoint (when created):** `[TBD]`
 
-- Planning document created: `docs/planning/phase_h11_from_line_evidence_review_plan.md`.
-- Planning commit: `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`.
-- **This is planning-only. No implementation is authorized.**
-- **Functional baseline remains `d808cb8`.** Regression set remains 32 suites.
-- **No validator, catalog, renderer/layout, prompt-contract, or command-layer changes occurred.**
-- Phase H.11 must be explicitly reviewed, approved, and planned before any code changes.
-- H.11 design review must decide: review H.10 evidence, keep advisory-only, collect more real-world evidence, start fourth catalog pilot, or design feature flag/config support.
+Phase H.15 design:
+- Pilot target: `CCI-ROUTE-011` only.
+- `CCI-ROUTE-010` remains advisory indefinitely until real-world evidence collected.
+- Pilot is config-only — change `effective_severity` from `advisory` to `warning` in `config/cci_enforcement_config.json`.
+- No validator changes. No catalog changes. No renderer/layout changes. No prompt-contract changes. No command-layer changes.
+- Mandatory 30-day burn-in / observation period.
+- Immediate rollback by reverting config to `advisory`.
+- Full 33-suite regression gate required after any config change.
+- Operators must understand `window_envelope` field usage before pilot activation.
+- Error promotion is explicitly out of scope and requires a separate future phase.
 
-**Constraints:**
+**Alternative:** Reject promotion. Keep both rules advisory indefinitely and shift effort to real-world evidence collection or other work.
+
+**Preconditions for H.15 approval:**
+1. This planning document (`phase_h15_route011_warning_pilot_plan.md`) reviewed and approved.
+2. Operator readiness: users understand `window_envelope` payload field.
+3. Staging or safe environment identified.
+4. Synthetic batch prepared.
+5. No open blockers.
+
+**Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
-- All 32 regression suites must pass before any commit.
+- All 33 regression suites must pass before any commit.
 - Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
 - No renderer/layout changes unless explicitly scoped and regression-protected.
 - No automatic enforcement from approved/pending logs.
 - No AI-only implementation decisions.
 - No real command/user data committed.
+- No validator, prompt-contract, or renderer changes may occur until explicitly planned, approved, implemented, reviewed, and regression-tested.
 
 ---
 

@@ -490,12 +490,38 @@ Phase H.12 safety boundaries preserved:
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
 - All 33 regression suites must pass before any commit.
-- Use `C:\\Users\\drryl\\pinokio\\bin\\miniconda\\python.exe` for full regression runs.
+- Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
 - No renderer/layout changes unless explicitly scoped and regression-protected.
 - No automatic enforcement from approved/pending logs.
 - No AI-only implementation decisions.
 - No real command/user data committed.
 - No validator, prompt-contract, or renderer changes may occur until explicitly planned, approved, implemented, reviewed, and regression-tested.
+
+### Phase H.14 / Phase I.13 — Controlled Promotion Readiness Review (Completed — Read-Only)
+
+**Review commit:** `fcb1d4c` — `Docs: Record Phase H.13 implementation review checkpoint`.
+**Scope:** Read-only review. No files modified. No severity changed. No commits.
+**H.14 review verdict:**
+- `CCI-ROUTE-010`: **NOT READY — NEEDS MORE EVIDENCE**
+- `CCI-ROUTE-011`: **READY FOR WARNING PILOT**
+- Error promotion for either rule: **NOT RECOMMENDED**
+
+**Regression results:**
+- H.13 config regression: 26/26 PASS
+- H.9 From-line validator: 18/18 PASS
+- H.10 From-line evidence: 39/39 PASS
+- H.6 office-code evidence: 15/15 PASS
+- H.8 third-rule catalog: 16/16 PASS
+- H.4 office-code validator: 18/18 PASS
+- Full gate: 33/33 PASS (explicit Miniconda Python)
+
+**Key findings:**
+- `CCI-ROUTE-010` remains advisory. Parsing complexity and lack of real-world To/Via patterns create unquantified false-positive risk.
+- `CCI-ROUTE-011` is simpler (binary present/absent), narrow in scope, handles the `window_envelope` exception, and has lower false-positive risk.
+- Config-driven severity mechanism (H.13) enables immediate rollback.
+- A 30-day burn-in period should be required before any error-level discussion.
+
+**Recommended next phase:** Phase H.15 / Phase I.14 — Controlled Warning Pilot for `CCI-ROUTE-011`.
 
 ---
 
