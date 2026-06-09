@@ -3,6 +3,7 @@
   "doc_type": "standard_letter",
   "component": "navy",
   "to": "Chief of Naval Operations",
+  "from": "Commanding Officer, Example Unit",
   "via": [
     "Commander, Naval Surface Force Atlantic",
     "Commander, U.S. Pacific Fleet",

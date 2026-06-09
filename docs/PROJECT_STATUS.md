@@ -18,7 +18,8 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 **Phase H.13 planning commits:** `dd1989e` — `Docs: Add Phase H.13 feature flag config plan`; `115f4e0` — `Docs: Refine Phase H.13 config plan`; `1759c9f` — `Docs: Fix markdown table formatting in Phase H.13 config plan`  
 **Phase H.14 review checkpoint:** `fcb1d4c` — `Docs: Phase H.14 controlled promotion readiness review (read-only; no files modified)`  
 **Phase H.15 planning document:** `docs/planning/phase_h15_route011_warning_pilot_plan.md` — `Docs: Add Phase H.15 warning pilot plan`  
-**Phase H.15 plan review checkpoint:** `[TBD]` — `Docs: Record Phase H.15 plan review checkpoint`
+**Phase H.15 plan review checkpoint:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
+**Phase H.15 warning pilot checkpoint:** `[TBD]` — `CCI: Start H.15 ROUTE-011 warning pilot`
 **Phase H.11 approved planning checkpoint commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`
 **Phase H.11 evidence review checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
 **Phase H.10 implementation commit:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
@@ -609,28 +610,29 @@ Figures are rule-bearing and must be reviewed when referenced.
 
 ## Recommended Next Work
 
-### Phase H.15 / Phase I.14 — Controlled Warning Pilot for CCI-ROUTE-011 (Approved as Planning Source of Truth; Implementation Not Authorized)
+### Phase H.15 / Phase I.14 — Controlled Warning Pilot for CCI-ROUTE-011 (Active)
 
-**Status:** Planning document approved as source of truth. No implementation authorized by this approval. Separate explicit go-ahead required before any config change.
+**Status:** Warning pilot active. `CCI-ROUTE-011.effective_severity` = `warning` in default config.
 
-**H.14 review verdict:** `CCI-ROUTE-011` READY FOR WARNING PILOT; `CCI-ROUTE-010` NOT READY; error promotion NOT RECOMMENDED for either rule.
+**Implementation commit:** `[TBD]` — `CCI: Start H.15 ROUTE-011 warning pilot`  
+**Plan review checkpoint:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
+**Warning pilot checkpoint:** `docs/checkpoints/phase_h15_route011_warning_pilot_checkpoint.md`
 
-**H.15 plan document:** `docs/planning/phase_h15_route011_warning_pilot_plan.md` — `Docs: Add Phase H.15 warning pilot plan`  
-**H.15 plan review checkpoint:** `[TBD]` — `Docs: Record Phase H.15 plan review checkpoint`
+- `CCI-ROUTE-011` now produces warning-level (blocking) enforcement by default.
+- `CCI-ROUTE-010` remains advisory.
+- Rollback is immediate by restoring `CCI-ROUTE-011.effective_severity` to `advisory` in `config/cci_enforcement_config.json`.
+- Full 33-suite regression gate passed after activation.
+- Mandatory burn-in observation period required before any error-level promotion discussion.
 
-Phase H.15 design:
-- Pilot target: `CCI-ROUTE-011` only.
-- `CCI-ROUTE-010` remains advisory indefinitely until real-world evidence collected.
-- Pilot is config-only — change `effective_severity` from `advisory` to `warning` in `config/cci_enforcement_config.json`.
-- No validator changes. No catalog changes. No renderer/layout changes. No prompt-contract changes. No command-layer changes.
-- Mandatory 30-day burn-in / observation period.
-- Immediate rollback by reverting config to `advisory`.
-- Full 33-suite regression gate required after any config change.
-- Operators must understand `window_envelope` field usage before pilot activation.
-- Error promotion is explicitly out of scope and requires a separate future phase.
-
-**Plan review verdict:** `APPROVE H.15 WARNING PILOT PLAN FOR CONFIG-ONLY IMPLEMENTATION`.  
-**Default config verified:** Both `CCI-ROUTE-010` and `CCI-ROUTE-011` remain `advisory`. No config changed. No severity changed. No commits made during review. No blockers.
+**Constraints:**
+- No validator changes.
+- No catalog changes.
+- No renderer/layout changes.
+- No prompt-contract changes.
+- No command-layer changes.
+- No error-level promotion without separate future phase.
+- No real data committed.
+- All 33 regression suites must continue to pass before any future commit.
 
 ---
 

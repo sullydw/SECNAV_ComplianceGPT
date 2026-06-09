@@ -16,10 +16,10 @@
       "snapshot_id": "cfg_20260608_default"
     },
     "CCI-ROUTE-011": {
-      "effective_severity": "advisory",
+      "effective_severity": "warning",
       "allow_override_up_to": "error",
-      "reason": "From line required rule; evidence collected in Phase H.10; advisory by default",
-      "snapshot_id": "cfg_20260608_default"
+      "reason": "From line required rule; evidence collected in Phase H.10; warning pilot active in Phase H.15",
+      "snapshot_id": "cfg_20260608_warning"
     }
   }
 }

@@ -48,8 +48,13 @@ def load_fixture(name: str) -> dict:
         return json.load(f)
 
 
-def has_route_011(warnings: list[str]) -> bool:
-    return any("CCI-ROUTE-011" in w for w in warnings)
+def has_route_011(warnings: list[str], errors: list[str] | None = None) -> bool:
+    targets = warnings if errors is None else warnings + errors
+    return any("CCI-ROUTE-011" in t for t in targets)
+
+
+def has_route_011_in_errors(errors: list[str]) -> bool:
+    return any("CCI-ROUTE-011" in e for e in errors)
 
 
 def has_route_010(warnings: list[str]) -> bool:
@@ -83,97 +88,97 @@ def main() -> int:
 
     # 03: Missing From line triggers advisory
     payload = load_fixture("routing_from_missing.json")
-    _, warnings = validate_cci_routing(payload)
-    ok = has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = has_route_011(warnings, errors)
     results.append(("Check 03: Missing From line triggers CCI-ROUTE-011 advisory", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 03")
 
     # 04: Empty From line triggers advisory
     payload = load_fixture("routing_from_empty.json")
-    _, warnings = validate_cci_routing(payload)
-    ok = has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = has_route_011(warnings, errors)
     results.append(("Check 04: Empty From line triggers CCI-ROUTE-011 advisory", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 04")
 
     # 05: Whitespace-only From line triggers advisory
     payload = load_fixture("routing_from_empty.json")
     payload["from"] = "   "
-    _, warnings = validate_cci_routing(payload)
-    ok = has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = has_route_011(warnings, errors)
     results.append(("Check 05: Whitespace-only From line triggers CCI-ROUTE-011 advisory", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 05")
 
     # 06: Present From line passes
     payload = load_fixture("routing_from_present.json")
-    _, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = not has_route_011(warnings, errors)
     results.append(("Check 06: Present From line produces no CCI-ROUTE-011 finding", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 06")
 
     # 07: window_envelope=true suppresses advisory
     payload = load_fixture("routing_from_window_envelope.json")
-    _, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = not has_route_011(warnings, errors)
     results.append(("Check 07: window_envelope=true suppresses CCI-ROUTE-011 advisory", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 07")
 
     # 08: window_envelope=true with From line still passes
     payload = load_fixture("routing_from_present.json")
     payload["window_envelope"] = True
-    _, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = not has_route_011(warnings, errors)
     results.append(("Check 08: window_envelope=true with From line still passes", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 08")
 
     # 09: Memorandum skipped
     payload = load_fixture("routing_from_memo_skipped.json")
-    _, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = not has_route_011(warnings, errors)
     results.append(("Check 09: Memorandum skipped — no CCI-ROUTE-011", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 09")
 
     # 10: Endorsement skipped
     payload = load_fixture("routing_from_endorsement_skipped.json")
-    _, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = not has_route_011(warnings, errors)
     results.append(("Check 10: Endorsement skipped — no CCI-ROUTE-011", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 10")
 
     # 11: Joint letter skipped
     payload = load_fixture("routing_from_endorsement_skipped.json")
     payload["doc_type"] = "joint_letter"
-    _, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = not has_route_011(warnings, errors)
     results.append(("Check 11: Joint letter skipped — no CCI-ROUTE-011", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 11")
 
     # 12: Multiple-address letter skipped
     payload = load_fixture("routing_from_endorsement_skipped.json")
     payload["doc_type"] = "multiple_address_letter"
-    _, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = not has_route_011(warnings, errors)
     results.append(("Check 12: Multiple-address letter skipped — no CCI-ROUTE-011", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 12")
 
     # 13: Both ROUTE-010 and ROUTE-011 trigger independently
     payload = load_fixture("routing_from_both_rules.json")
-    _, warnings = validate_cci_routing(payload)
-    ok = has_route_011(warnings) and has_route_010(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = has_route_011(warnings, errors) and has_route_010(warnings)
     results.append(("Check 13: Both ROUTE-010 and ROUTE-011 trigger independently on same payload", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 13")
 
     # 14: Missing doc_type skips From-line check
     payload = load_fixture("routing_from_no_doctype.json")
-    _, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = not has_route_011(warnings, errors)
     results.append(("Check 14: Missing doc_type skips From-line check — no CCI-ROUTE-011", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 14")
 
     # 15: Existing CCI-ROUTE-010 behavior preserved
     payload = load_fixture("routing_from_both_rules.json")
     payload["from"] = "Commanding Officer, Example Activity"
-    _, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings) and has_route_010(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = not has_route_011(warnings, errors) and has_route_010(warnings)
     results.append(("Check 15: Existing ROUTE-010 preserved when ROUTE-011 not triggered", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 15")
 
@@ -184,8 +189,8 @@ def main() -> int:
         "to": ["Commanding Officer, Recipient Activity"],
         "via": ["(1) First Intermediate", "(2) Second Intermediate", "(4) Third Intermediate"],
     }
-    _, warnings = validate_cci_routing(payload)
-    ok = any("CCI-ROUTE-002" in w for w in warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = any("CCI-ROUTE-002" in w for w in warnings) or any("CCI-ROUTE-002" in e for e in errors)
     results.append(("Check 16: Existing routing warnings (Via numbering) still appear", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 16")
 

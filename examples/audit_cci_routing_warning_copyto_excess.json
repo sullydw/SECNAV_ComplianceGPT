@@ -3,6 +3,7 @@
   "doc_type": "standard_letter",
   "component": "navy",
   "to": "Chief of Naval Operations",
+  "from": "Commanding Officer, Example Unit",
   "copy_to": [
     "Commander, U.S. Fleet Forces Command",
     "Commander, Naval Air Force Atlantic",

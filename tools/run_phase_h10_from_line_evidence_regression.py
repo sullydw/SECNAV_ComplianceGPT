@@ -38,8 +38,13 @@ def load_fixture(name: str) -> dict:
         return json.load(f)
 
 
-def has_route_011(warnings: list[str]) -> bool:
-    return any("CCI-ROUTE-011" in w for w in warnings)
+def has_route_011(warnings: list[str], errors: list[str] | None = None) -> bool:
+    targets = warnings if errors is None else warnings + errors
+    return any("CCI-ROUTE-011" in t for t in targets)
+
+
+def has_route_011_in_errors(errors: list[str]) -> bool:
+    return any("CCI-ROUTE-011" in e for e in errors)
 
 
 def has_route_010(warnings: list[str]) -> bool:
@@ -103,8 +108,8 @@ def main() -> int:
         exists = path.exists()
         if exists:
             payload = load_fixture(name)
-            _, warnings = validate_cci_routing(payload)
-            no_trigger = not has_route_011(warnings)
+            errors, warnings = validate_cci_routing(payload)
+            no_trigger = not has_route_011(warnings, errors)
         else:
             no_trigger = False
         ok = exists and no_trigger
@@ -130,8 +135,8 @@ def main() -> int:
         exists = path.exists()
         if exists:
             payload = load_fixture(name)
-            _, warnings = validate_cci_routing(payload)
-            triggers = has_route_011(warnings)
+            errors, warnings = validate_cci_routing(payload)
+            triggers = has_route_011(warnings, errors)
         else:
             triggers = False
         ok = exists and triggers
@@ -140,19 +145,19 @@ def main() -> int:
 
     # 31: window_envelope true suppresses
     payload = load_fixture("routing_from_h10_neg_02_window_envelope_true.json")
-    _, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok = not has_route_011(warnings, errors)
     results.append(("Check 31: window_envelope=true suppresses advisory", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 31")
 
     # 32: window_envelope truthy values suppress (string yes + int 1)
     payload = load_fixture("routing_from_h10_neg_11_window_envelope_yes.json")
-    _, warnings = validate_cci_routing(payload)
-    ok_yes = not has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok_yes = not has_route_011(warnings, errors)
 
     payload = load_fixture("routing_from_h10_neg_12_window_envelope_one.json")
-    _, warnings = validate_cci_routing(payload)
-    ok_one = not has_route_011(warnings)
+    errors, warnings = validate_cci_routing(payload)
+    ok_one = not has_route_011(warnings, errors)
 
     ok = ok_yes and ok_one
     results.append(("Check 32: window_envelope truthy string/int suppresses advisory", ok))
@@ -161,7 +166,7 @@ def main() -> int:
     # 33: missing doc_type skips
     payload = load_fixture("routing_from_h10_neg_03_missing_doctype.json")
     errors, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings) and len(errors) == 0
+    ok = not has_route_011(warnings, errors) and len(errors) == 0
     results.append(("Check 33: Missing doc_type skips with empty errors", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 33")
 
@@ -169,17 +174,17 @@ def main() -> int:
     for name in ["routing_from_h10_neg_04_memo.json", "routing_from_h10_neg_06_endorsement.json"]:
         payload = load_fixture(name)
         errors, warnings = validate_cci_routing(payload)
-        ok = not has_route_011(warnings) and len(errors) == 0
+        ok = not has_route_011(warnings, errors) and len(errors) == 0
         if not ok:
             break
     results.append(("Check 34: Non-standard doc types skip with empty errors", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 34")
 
-    # 35: CCI-ROUTE-010 preserved
+    # 35: CCI-ROUTE-010 preserved alongside ROUTE-011 under default warning config
     payload = load_fixture("routing_from_h10_pos_07_dual_rule.json")
     errors, warnings = validate_cci_routing(payload)
-    ok = has_route_010(warnings) and has_route_011(warnings) and len(errors) == 0
-    results.append(("Check 35: CCI-ROUTE-010 preserved alongside ROUTE-011", ok))
+    ok = has_route_010(warnings) and has_route_011(warnings, errors)
+    results.append(("Check 35: CCI-ROUTE-010 preserved alongside ROUTE-011 (warning config)", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 35")
 
     # 36: H.9 runner still passes

@@ -3,6 +3,7 @@
   "doc_type": "standard_letter",
   "component": "navy",
   "to": "Commander, Navy Installations Command",
+  "from": "Commanding Officer, Example Unit",
   "copy_to": [
     "All Hands",
     "Interested Parties",

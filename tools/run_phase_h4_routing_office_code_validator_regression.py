@@ -252,12 +252,32 @@ def main() -> int:
         "docs/checkpoints/phase_h6_routing_office_code_evidence_checkpoint.md",
         "docs/planning/phase_h7_routing_office_code_evidence_review_plan.md",
         "docs/checkpoints/phase_h7_routing_office_code_evidence_review_checkpoint.md",
-        # Phase H.8 artifacts (third catalog pilot) are allowed as subsequent rule_catalog additions
+        # Phase H.8 artifacts (third catalog pilot)
         "rules_v6/CCI/cci_ch2_routing_rules.json",
         "tools/run_phase_h8_third_rule_catalog_regression.py",
         "tools/run_phase_h6_routing_office_code_evidence_regression.py",
         "docs/planning/phase_h8_third_catalog_pilot_plan.md",
         "docs/checkpoints/phase_h8_from_line_catalog_rule_checkpoint.md",
+        # Phase H.9 / H.10 / H.13 / H.15 artifacts (From-line rule)
+        "tools/run_phase_h9_from_line_validator_regression.py",
+        "tools/run_phase_h10_from_line_evidence_regression.py",
+        "tools/run_phase_h13_config_regression.py",
+        "docs/planning/phase_h9_from_line_validator_plan.md",
+        "docs/planning/phase_h10_from_line_evidence_plan.md",
+        "docs/planning/phase_h13_feature_flag_config_support_plan.md",
+        "docs/planning/phase_h15_route011_warning_pilot_plan.md",
+        "docs/checkpoints/phase_h9_from_line_validator_checkpoint.md",
+        "docs/checkpoints/phase_h10_from_line_evidence_checkpoint.md",
+        "docs/checkpoints/phase_h13_implementation_review_checkpoint.md",
+        "docs/checkpoints/phase_h13_feature_flag_config_checkpoint.md",
+        "docs/checkpoints/phase_h14_controlled_promotion_readiness_checkpoint.md",
+        "docs/checkpoints/phase_h15_warning_pilot_plan_review_checkpoint.md",
+        "config/cci_enforcement_config.json",
+        "examples/audit_cci_combined_warning.json",
+        "examples/audit_cci_routing_valid.json",
+        "examples/audit_cci_routing_warning_via_unnumbered.json",
+        "examples/audit_cci_routing_warning_copyto_excess.json",
+        "examples/audit_cci_routing_warning_need_to_know.json",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
