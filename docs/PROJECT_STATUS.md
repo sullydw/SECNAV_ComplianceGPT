@@ -3,6 +3,7 @@
 **Last Updated:** 2026-06-08
 **Latest Checkpoint:** `docs/checkpoints/phase_h17_route011_day0_burnin_checkpoint.md` — Phase H.17 Day 0 burn-in checkpoint
 **H.17 Checkpoint Commit:** See git log for `Docs: Record H.17 day zero burn-in checkpoint`
+**H.18 Observation Template:** `docs/planning/phase_h18_route011_burnin_observation_template.md` — Burn-in observation template for manual/staged review
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE  
 **Renderer:** v6 PDF (ReportLab)  
@@ -645,11 +646,12 @@ Figures are rule-bearing and must be reviewed when referenced.
 - No temp config files remain.
 - No validator, catalog, renderer, prompt, or command-layer changes.
 
-**Recommended next phase:** Phase H.17 / Phase I.16 — Burn-in observation continues. Day 0 checkpoint recorded at `docs/checkpoints/phase_h17_route011_day0_burnin_checkpoint.md`.
+**Recommended next phase:** Phase H.18 / Phase I.17 — Burn-in observation continues. Use `docs/planning/phase_h18_route011_burnin_observation_template.md` for manual/staged observation recording. Day 0 checkpoint recorded at `docs/checkpoints/phase_h17_route011_day0_burnin_checkpoint.md`.
 
 **Burn-in status:**
 - Burn-in clock started: `18fc9bf` (H.15 activation).
-- Day 0 checkpoint: recorded.
+- Day 0 checkpoint: `0b4c669` recorded.
+- H.18 observation template: created for structured manual observation.
 - 30-day observation period ends approximately 2026-07-08.
 - H.16 burn-in regression (`7e42f64`) remains stable baseline.
 - Full 34-suite regression gate verified PASS at Day 0.

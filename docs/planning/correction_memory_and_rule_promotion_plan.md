@@ -39,7 +39,8 @@
 **Phase H.16 Burn-In Plan:** `docs/planning/phase_h16_route011_warning_burnin_plan.md`
 **Phase H.16 Operator Guidance:** `docs/guidance/window_envelope_payload_guidance.md`
 **Phase H.17 Day 0 Burn-In Checkpoint:** `docs/checkpoints/phase_h17_route011_day0_burnin_checkpoint.md` — Day 0 of 30-day observation period; 34/34 regression PASS; config unchanged; error promotion unauthorized.
-**Next Phase:** Continue H.16/H.17 burn-in observation. After the observation period, possible H.18 / I.17 Error Promotion Readiness Review (requires separate approval; planning-only until authorized).
+**Phase H.18 Burn-In Observation Template:** `docs/planning/phase_h18_route011_burnin_observation_template.md` — Structured manual observation template for the active warning pilot; no code changes; no real data committed.
+**Next Phase:** Continue H.16/H.17/H.18 burn-in observation. After the observation period, possible H.19 / I.18 Error Promotion Readiness Review (requires separate approval; planning-only until authorized).
 
 **Burn-in clock note:** The 30-day observation period starts from the H.15 warning pilot activation commit (`18fc9bf`), not from H.16. H.16 is regression hardening and burn-in evidence collection, not pilot activation.
 
