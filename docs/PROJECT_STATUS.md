@@ -1,8 +1,9 @@
 # SECNAV ComplianceGPT - Project Status
 
 **Last Updated:** 2026-06-08
-**Latest Checkpoint:** `docs/checkpoints/phase_h19_route011_synthetic_burnin_observation_01.md` — Phase H.19 synthetic burn-in observation checkpoint #1
-**H.19 Checkpoint Commit:** See git log for `Docs: Record H.19 synthetic burn-in observation`
+**Latest Checkpoint:** `docs/checkpoints/phase_h20_route011_synthetic_burnin_observation_02.md` — Phase H.20 synthetic burn-in observation checkpoint #2
+**H.20 Checkpoint Commit:** See git log for `Docs: Record H.20 synthetic burn-in observation`
+**H.19 Checkpoint #1:** `docs/checkpoints/phase_h19_route011_synthetic_burnin_observation_01.md` — Phase H.19 synthetic burn-in observation checkpoint #1
 **H.18 Observation Template:** `docs/planning/phase_h18_route011_burnin_observation_template.md` — Burn-in observation template for manual/staged review
 **H.17 Day 0 Checkpoint:** `docs/checkpoints/phase_h17_route011_day0_burnin_checkpoint.md` — Phase H.17 Day 0 burn-in checkpoint
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
