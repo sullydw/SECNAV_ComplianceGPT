@@ -1,0 +1,13 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": [
+    "Commanding Officer, Recipient Activity"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.16 burn-in WE 09 \u2014 no from, string 1",
+  "date": "2026-06-08",
+  "body": "Synthetic burn-in window-envelope control \u2014 no from, string 1.",
+  "window_envelope": "1"
+}

@@ -1,0 +1,13 @@
+{
+  "to": [
+    "Commanding Officer, Recipient Activity"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.16 burn-in non-std 09 \u2014 memo with from present",
+  "date": "2026-06-08",
+  "body": "Synthetic burn-in non-standard control \u2014 memo with from present (9).",
+  "doc_type": "DT_MEMO_FROM_TO_PLAIN",
+  "from": "Commanding Officer, Example"
+}

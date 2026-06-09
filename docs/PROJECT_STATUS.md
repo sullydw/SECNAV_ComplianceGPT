@@ -19,7 +19,7 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 **Phase H.14 review checkpoint:** `fcb1d4c` — `Docs: Phase H.14 controlled promotion readiness review (read-only; no files modified)`  
 **Phase H.15 planning document:** `docs/planning/phase_h15_route011_warning_pilot_plan.md` — `Docs: Add Phase H.15 warning pilot plan`  
 **Phase H.15 plan review checkpoint:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
-**Phase H.15 warning pilot checkpoint:** `[TBD]` — `CCI: Start H.15 ROUTE-011 warning pilot`
+**Phase H.15 warning pilot checkpoint:** `18fc9bf` — `CCI: Start H.15 ROUTE-011 warning pilot`
 **Phase H.11 approved planning checkpoint commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`
 **Phase H.11 evidence review checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
 **Phase H.10 implementation commit:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
@@ -217,9 +217,10 @@ C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c9_regression.py
 C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c10_regression.py
 ```
 
-The current local regression set is **33 suites**:
+The current local regression set is **34 suites**:
 
-- Phase H.13 severity config support regression (26 checks).
+- Phase H.16 ROUTE-011 warning pilot burn-in regression (96 checks).
+- Phase H.13 severity config support regression (27 checks).
 - Phase H.10 From-line evidence collection and regression hardening (39 checks).
 - Phase H.9 From-line advisory validator regression (18 checks).
 - Phase H.8 third catalog-pilot rule-catalog regression (16 checks).
@@ -237,7 +238,7 @@ The current local regression set is **33 suites**:
 - Phase B classification regression.
 - Intake, correction, session, profile, audit, context-schema, CCI subject/ref-encl/acronym/date-time/personnel/POC/routing, and C7-C10 layout regressions.
 
-The 33-suite set passed locally after Phase H.13 review when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF, not code defects.
+The 34-suite set passed locally after Phase H.16 burn-in regression when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF, not code defects.
 
 ## Key Files
 
@@ -269,6 +270,8 @@ The 33-suite set passed locally after Phase H.13 review when run with `C:\Users\
 - `tools/run_phase_h6_routing_office_code_evidence_regression.py` — Phase H.6 targeted evidence regression runner (15 checks).
 - `tools/run_phase_h8_third_rule_catalog_regression.py` — Phase H.8 targeted regression runner (16 checks).
 - `tools/run_phase_h9_from_line_validator_regression.py` — Phase H.9 targeted regression runner (18 checks).
+- `tools/run_phase_h16_route011_burnin_regression.py` — Phase H.16 warning pilot burn-in regression runner (96 checks).
+- `tools/run_phase_h13_config_regression.py` — Phase H.13 severity config support regression runner (27 checks).
 - `tools/run_correction_implementation_regression.py` — Phase H/H.1 planner regression runner (45 checks).
 - `profiles/README.md` — external profile safety documentation.
 - `corrections/README.md` — local-only correction storage safety documentation.
@@ -626,7 +629,20 @@ Figures are rule-bearing and must be reviewed when referenced.
 - Full 33-suite regression gate passed after activation.
 - Mandatory burn-in observation period required before any error-level promotion discussion.
 
-**Recommended next phase:** H.16 / I.15 — Burn-in observation and review (planning-only until approved).
+### Phase H.16 / Phase I.15 — Burn-In Observation and Regression (Completed)
+
+**Implementation commit:** `[TBD]` — `CCI: Add H.16 ROUTE-011 burn-in regression`  
+**Burn-in checkpoint:** `docs/checkpoints/phase_h16_route011_burnin_regression_checkpoint.md`
+
+- 90 synthetic burn-in fixtures added under `examples/burnin_h16_route011/`.
+- New 34th regression suite: `tools/run_phase_h16_route011_burnin_regression.py` (96 checks).
+- Full 34-suite regression gate verified PASS.
+- Known limitation: exotic whitespace (zero-width space, BOM) not caught by `str.strip()`; documented as operator/data-quality edge case.
+- `CCI-ROUTE-010` remains advisory. No error-level promotion exists.
+- No temp config files remain.
+- No validator, catalog, renderer, prompt, or command-layer changes.
+
+**Recommended next phase:** Continue H.16 burn-in observation. After observation period, possible future H.17 / I.16 Error Promotion Readiness Review (requires separate approval; planning-only until authorized).
 
 **Constraints:**
 - No validator changes.
@@ -634,9 +650,9 @@ Figures are rule-bearing and must be reviewed when referenced.
 - No renderer/layout changes.
 - No prompt-contract changes.
 - No command-layer changes.
-- No error-level promotion without separate future phase.
+- No error-level promotion without separate future phase and burn-in evidence.
 - No real data committed.
-- All 33 regression suites must continue to pass before any future commit.
+- All 34 regression suites must continue to pass before any future commit.
 
 ---
 

@@ -1,0 +1,18 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": [
+    "Commander, Naval Sea Systems Command"
+  ],
+  "via": [
+    "(1) Commander, Navy Regional Maintenance Center"
+  ],
+  "copy_to": [
+    "Technical Director"
+  ],
+  "distribution": [
+    "Fleet Maintenance Officer"
+  ],
+  "subject": "H.16 realistic 03 \u2014 missing From (should fail)",
+  "date": "2026-06-08",
+  "body": "1. Request maintenance support for Main Propulsion Diesel Engine."
+}

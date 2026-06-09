@@ -34,8 +34,9 @@
 **Phase H.15 Warning Pilot Plan Document:** `94d420d` — `Docs: Add Phase H.15 warning pilot plan`  
 **Phase H.15 Plan Review Checkpoint:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
 **Phase H.15 Warning Pilot Checkpoint:** `c12e904` — `Docs: Update H.15 checkpoint commit hash`  
+**Phase H.16 Burn-In Regression:** `[TBD]` — `CCI: Add H.16 ROUTE-011 burn-in regression`  
 **Phase H.16 Burn-In Plan:** `docs/planning/phase_h16_route011_warning_burnin_plan.md`  
-**Next Phase:** Phase H.16 / Phase I.15 burn-in observation planning — planning-only until approved
+**Next Phase:** Continue H.16 burn-in observation. After observation period, possible H.17 / I.16 Error Promotion Readiness Review (requires separate approval; planning-only until authorized).
 
 ---
 

@@ -1,0 +1,14 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": [
+    "Commanding Officer, Recipient Activity"
+  ],
+  "via": [],
+  "copy_to": [
+    "Information Warfare Commander"
+  ],
+  "distribution": [],
+  "subject": "H.16 burn-in WE-like 07 \u2014 no window_envelope tag",
+  "date": "2026-06-08",
+  "body": "Synthetic burn-in window-envelope-like \u2014 missing From, no window_envelope tag (7). Operator/data-quality risk."
+}

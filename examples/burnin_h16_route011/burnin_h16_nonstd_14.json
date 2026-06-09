@@ -1,0 +1,13 @@
+{
+  "to": [
+    "Commanding Officer, Recipient Activity"
+  ],
+  "via": [],
+  "copy_to": [
+    "Copy Recipient"
+  ],
+  "distribution": [],
+  "subject": "H.16 burn-in non-std 14 \u2014 no doc_type key at all",
+  "date": "2026-06-08",
+  "body": "Synthetic burn-in non-standard control \u2014 no doc_type key at all (14)."
+}
