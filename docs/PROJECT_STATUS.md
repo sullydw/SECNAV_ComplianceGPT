@@ -273,6 +273,7 @@ The 34-suite set passed locally after Phase H.16 burn-in regression when run wit
 - `tools/run_phase_h6_routing_office_code_evidence_regression.py` — Phase H.6 targeted evidence regression runner (15 checks).
 - `tools/run_phase_h8_third_rule_catalog_regression.py` — Phase H.8 targeted regression runner (16 checks).
 - `tools/run_phase_h9_from_line_validator_regression.py` — Phase H.9 targeted regression runner (18 checks).
+- `docs/guidance/window_envelope_payload_guidance.md` — operator guidance for `window_envelope` tagging during active H.15/H.16 warning pilot.
 - `tools/run_phase_h16_route011_burnin_regression.py` — Phase H.16 warning pilot burn-in regression runner (96 checks).
 - `tools/run_phase_h13_config_regression.py` — Phase H.13 severity config support regression runner (27 checks).
 - `tools/run_correction_implementation_regression.py` — Phase H/H.1 planner regression runner (45 checks).
@@ -309,6 +310,8 @@ The 34-suite set passed locally after Phase H.16 burn-in regression when run wit
 Phase H.15 changed `CCI-ROUTE-011.effective_severity` from `advisory` to `warning` in `config/cci_enforcement_config.json`. No validator, catalog, renderer, prompt-contract, or command-layer changes were needed because the validator already branches on `effective_severity()`. Rollback is immediate by restoring `CCI-ROUTE-011.effective_severity` to `"advisory"`.
 
 Phase H.16 added 90 synthetic burn-in fixtures under `examples/burnin_h16_route011/` and a 96-check runner (`tools/run_phase_h16_route011_burnin_regression.py`) to stress-test the warning pilot. Fixture coverage includes valid standard letters, missing/empty/null/whitespace From, non-standard document exclusions, window-envelope suppressions, window-envelope-like without tag, and realistic Navy/Marine Corps mixed payloads.
+
+**Operator guidance:** `docs/guidance/window_envelope_payload_guidance.md` provides payload examples and tagging instructions for operators using window-envelope letters during the warning pilot.
 
 **Burn-in clock:** The 30-day observation period starts from the H.15 activation commit (`18fc9bf`), not from H.16. H.16 is regression hardening / burn-in evidence, not pilot activation.
 

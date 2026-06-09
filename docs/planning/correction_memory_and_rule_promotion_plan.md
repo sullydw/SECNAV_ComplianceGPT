@@ -37,6 +37,7 @@
 **Phase H.16 Burn-In Regression:** `7e42f64` — `CCI: Add H.16 ROUTE-011 burn-in regression`  
 **Phase H.16 Review Verdict:** `APPROVE H.16 BURN-IN REGRESSION AS STABLE 34-SUITE BASELINE`  
 **Phase H.16 Burn-In Plan:** `docs/planning/phase_h16_route011_warning_burnin_plan.md`  
+**Phase H.16 Operator Guidance:** `docs/guidance/window_envelope_payload_guidance.md`  
 **Next Phase:** Continue H.16 burn-in observation. After the observation period, possible H.17 / I.16 Error Promotion Readiness Review (requires separate approval; planning-only until authorized).
 
 **Burn-in clock note:** The 30-day observation period starts from the H.15 warning pilot activation commit (`18fc9bf`), not from H.16. H.16 is regression hardening and burn-in evidence collection, not pilot activation.
