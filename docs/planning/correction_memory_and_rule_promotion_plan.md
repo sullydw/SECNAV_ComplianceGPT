@@ -1,6 +1,10 @@
 # Correction Memory and Rule Promotion Layer Plan
 
-**Current Verified Baseline:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
+**Latest Verified Baseline:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
+**H.13 Stable Baseline:** `084ce64` — `CCI: Add H.13 severity config support`
+**Phase H.13 Implementation Review Checkpoint:** `[TBD]` — `Docs: Record Phase H.13 implementation review checkpoint`
+**Phase H.13 Implementation Checkpoint:** `a520eb2` — `Docs: Record Phase H.13 implementation checkpoint`
+**Phase H.13 Planning Commits:** `dd1989e` — `Docs: Add Phase H.13 feature flag config plan`; `115f4e0` — `Docs: Refine Phase H.13 config plan`; `1759c9f` — `Docs: Fix markdown table formatting in Phase H.13 config plan`
 **Phase H.11 Planning Checkpoint:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`
 **Phase H.10 Implementation:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
 **Phase H.10 Planning Checkpoint:** `310fd3a` — `Docs: Refine Phase H.10 From line evidence plan`
@@ -452,15 +456,46 @@ Phase H.12 safety boundaries preserved:
 
 **Phase D candidate creation remains blocked.** No suitable candidate found.
 
+### Phase H.13 / Phase I.12 — Feature-Flag/Config Support (Implemented, Reviewed, Approved as Stable Baseline)
+
+**Phase H.13 implementation commit:** `084ce64` — `CCI: Add H.13 severity config support`.  
+**Phase H.13 implementation checkpoint:** `a520eb2` — `Docs: Record Phase H.13 implementation checkpoint`.  
+**Phase H.13 implementation review checkpoint:** `[TBD]` — `Docs: Record Phase H.13 implementation review checkpoint`.  
+**Phase H.13 planning commits:** `dd1989e`, `115f4e0`, `1759c9f`.  
+**Review verdict:** `APPROVE H.13 IMPLEMENTATION AS STABLE BASELINE`.  
+**Regression gate:** 33/33 PASS (32 existing + 1 new H.13 runner).
+
+**What changed:**
+- Added `src/cci_severity_mapper.py` — shared config-driven severity resolver.
+- Added `config/cci_enforcement_config.json` — tracked default config with explicit `CCI-ROUTE-010` and `CCI-ROUTE-011` entries set to `effective_severity: advisory`.
+- Added `tools/run_phase_h13_config_regression.py` — 26-check targeted regression runner.
+- Modified `src/cci_routing_validate.py` — severity branching for ROUTE-010/011; `validator_runner.py` untouched.
+- Added `.gitignore` entry for `config/cci_enforcement_config.local.json`.
+
+**Safety preserved:**
+- Default config does not promote either rule.
+- Missing/malformed/unknown/unapproved config → advisory fallback.
+- `effective_severity` clamped to `allow_override_up_to` and catalog severity.
+- `validator_runner.py` untouched.
+- No renderer/layout changes.
+- No prompt-contract/context/intake/UI/command-flow changes.
+- No Phase F/G command-layer changes.
+- No approved/pending/session/evidence logs committed.
+- No real data committed.
+- `CCI-ROUTE-010` remains advisory-only.
+- `CCI-ROUTE-011` remains advisory-only.
+
+**Current functional baseline:** `d808cb8`. Regression set: 33 suites. H.13 stable baseline: `084ce64`.
+
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
-- All 32 regression suites must pass before any commit.
+- All 33 regression suites must pass before any commit.
 - Use `C:\\Users\\drryl\\pinokio\\bin\\miniconda\\python.exe` for full regression runs.
 - No renderer/layout changes unless explicitly scoped and regression-protected.
 - No automatic enforcement from approved/pending logs.
 - No AI-only implementation decisions.
 - No real command/user data committed.
-- No validator, prompt-contract, or renderer changes may occur until Phase H.12 / Phase I.11 is explicitly planned, approved, implemented, reviewed, and regression-tested.
+- No validator, prompt-contract, or renderer changes may occur until explicitly planned, approved, implemented, reviewed, and regression-tested.
 
 ---
 

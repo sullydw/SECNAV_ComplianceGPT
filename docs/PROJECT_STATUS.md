@@ -12,15 +12,17 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest planning checkpoint commit:** `[TBD]` — `Docs: Record Phase H.12 no-candidate search checkpoint`  
-**Latest implementation commit:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`  
+**Latest planning checkpoint commit:** `a520eb2` — `Docs: Record Phase H.13 implementation checkpoint`  
+**Latest implementation commit:** `084ce64` — `CCI: Add H.13 severity config support`  
+**Phase H.13 implementation review checkpoint:** `a520eb2` — `Docs: Record Phase H.13 implementation review checkpoint`  
+**Phase H.13 planning commits:** `dd1989e` — `Docs: Add Phase H.13 feature flag config plan`; `115f4e0` — `Docs: Refine Phase H.13 config plan`; `1759c9f` — `Docs: Fix markdown table formatting in Phase H.13 config plan`  
 **Phase H.11 approved planning checkpoint commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`
 **Phase H.11 evidence review checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
-**Phase H.10 implementation commit:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`  
-**Phase H.9 implementation commit:** `6f320af` — `CCI: Add From line advisory validator (Phase H.9)`  
-**Phase H.8 implementation commit:** `769437d` — `CCI: Add From line catalog rule (Phase H.8)`  
-**Phase H.7 planning checkpoint commit:** `1e16493` — `Docs: Record Phase H.7 evidence review checkpoint`  
-**Phase H.6 implementation commit:** `662afbb` — `CCI: Add routing office code evidence regression (Phase H.6)`  
+**Phase H.10 implementation commit:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
+**Phase H.9 implementation commit:** `6f320af` — `CCI: Add From line advisory validator (Phase H.9)`
+**Phase H.8 implementation commit:** `769437d` — `CCI: Add From line catalog rule (Phase H.8)`
+**Phase H.7 planning checkpoint commit:** `1e16493` — `Docs: Record Phase H.7 evidence review checkpoint`
+**Phase H.6 implementation commit:** `662afbb` — `CCI: Add routing office code evidence regression (Phase H.6)`
 **Phase H.4 implementation commit:** `1e990a6` — `CCI: Add routing office code advisory validator (Phase H.4)`  
 **Phase H.3 implementation commit:** `46edcbd` — `CCI: Add routing office code catalog rule (Phase H.3)`  
 **Phase H.2 implementation commit:** `609821e` — `CCI: Add subject acronym advisory validator (Phase H.2)`  
@@ -35,9 +37,10 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 **Phase B implementation commit:** `519fad6` — `CCI: Add correction classification (Phase B)`  
 **Phase A functional baseline:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
 **Current verified functional baseline:** `d808cb8` — Phase H.10 From-line evidence collection and regression hardening complete; 20 negative + 10 positive fixtures + 50 corpus patterns + 39-check H.10 runner added; CCI-ROUTE-011 remains advisory-only; 32-suite regression set verified PASS  
+**H.13 stable baseline:** `084ce64` — Phase H.13 severity config support implemented and reviewed; `cci_severity_mapper.py` + `config/cci_enforcement_config.json` + severity branching in `cci_routing_validate.py`; default config preserves advisory for CCI-ROUTE-010/011; safe fallback on all error paths; `validator_runner.py` untouched; 33-suite regression set verified PASS  
 **Previous functional baseline:** `6f320af` — Phase H.9 From-line advisory validator enforcement complete; 31-suite regression set verified PASS  
-**GitHub Actions / regressions:** local 33-suite regression set verified PASS after Phase H.13 using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`; GitHub Actions must be verified manually if needed  
-**Expected repository state:** clean and up to date with `origin/main`
+**GitHub Actions / regressions:** local 33-suite regression set verified PASS after Phase H.13 review using `C:\Users\drryl\pinokio\bin\miniconda\python.exe`; GitHub Actions must be verified manually if needed  
+**Expected repository state:** clean and up to date with `origin/main`; H.13 implementation reviewed and approved as stable baseline
 
 ### Start Here For New Chat
 
@@ -210,8 +213,9 @@ C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c9_regression.py
 C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c10_regression.py
 ```
 
-The current local regression set is **32 suites**:
+The current local regression set is **33 suites**:
 
+- Phase H.13 severity config support regression (26 checks).
 - Phase H.10 From-line evidence collection and regression hardening (39 checks).
 - Phase H.9 From-line advisory validator regression (18 checks).
 - Phase H.8 third catalog-pilot rule-catalog regression (16 checks).
@@ -229,7 +233,7 @@ The current local regression set is **32 suites**:
 - Phase B classification regression.
 - Intake, correction, session, profile, audit, context-schema, CCI subject/ref-encl/acronym/date-time/personnel/POC/routing, and C7-C10 layout regressions.
 
-The 32-suite set passed locally after Phase H.10 when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF, not code defects.
+The 33-suite set passed locally after Phase H.13 review when run with `C:\Users\drryl\pinokio\bin\miniconda\python.exe`. Earlier C7-C10 failures were environment-only from using the wrong Python interpreter without `fitz`/PyMuPDF, not code defects.
 
 ## Key Files
 
@@ -282,71 +286,47 @@ The 32-suite set passed locally after Phase H.10 when run with `C:\Users\drryl\p
 
 ## Recommended Next Work
 
-### Next Phase: Phase H.13 / Phase I.12 Feature-Flag/Config Planning
+### Phase H.13 / Phase I.12 — Feature-Flag/Config Support (Implemented, Reviewed, and Approved as Stable Baseline)
+
+**Phase H.13 implementation commit:** `084ce64` — `CCI: Add H.13 severity config support`.  
+**Phase H.13 implementation checkpoint:** `a520eb2` — `Docs: Record Phase H.13 implementation checkpoint`.  
+**Phase H.13 implementation review checkpoint:** `[TBD]` — `Docs: Record Phase H.13 implementation review checkpoint`.  
+**Phase H.13 planning commits:** `dd1989e`, `115f4e0`, `1759c9f`.  
+**Review verdict:** `APPROVE H.13 IMPLEMENTATION AS STABLE BASELINE`.  
+**Full regression gate:** 33/33 PASS.
+
+Phase H.13 adds `src/cci_severity_mapper.py`, `config/cci_enforcement_config.json`, and severity branching in `cci_routing_validate.py`. Default config preserves advisory for `CCI-ROUTE-010` and `CCI-ROUTE-011`. Safe fallback on all error paths. `validator_runner.py` untouched. No renderer/layout/prompt-contract/command-layer changes.
 
 Phase H.12 / Phase I.11 fourth catalog-only pilot search is **complete — no safe candidate found**.
 
 **H.12 plan commit:** `c608ef6` — `Docs: Add Phase H.12 fourth catalog pilot plan`.
 **H.12 search checkpoint commit:** `[TBD]` — `Docs: Record Phase H.12 no-candidate search checkpoint`.
 **H.12 design review commit:** `a450208` — `Docs: Fix H.12 catalog path references`.
-**Full regression gate:** 32/32 PASS (unchanged).
-
-Phase H.12 search results:
-- **Priority-domain search:** No candidate found in subject, ref/encl, date/time, or routing.
-- **Expanded-domain search:** No candidate found in paragraphing, proofreading, signature line, writing style, abbreviations, personnel, memo salutation/close, enclosure numbering, addressing, or page numbering.
-- **Catalog maturity assessment:** Current catalog is reasonably mature for obvious deterministic catalog-only rules in current scope.
-- **Future expansion requires:** feature-flag/config planning, body-scanning validator expansion, or model extension.
-
-Phase H.12 safety boundaries preserved:
-- No validator changes.
-- No rule catalog changes.
-- No renderer/layout changes.
-- No prompt-contract/context/intake/UI/command-flow changes.
-- No Phase F/G command-layer changes.
-- No approved/pending/session/evidence logs committed.
-- No real data committed.
-- `CCI-ROUTE-011` remains advisory-only.
-- `CCI-ROUTE-010` remains advisory-only.
 
 Any future promotion to warning/error requires:
-1. Feature flag/config design and implementation.
+1. Edit `config/cci_enforcement_config.json` (already implemented).
 2. Real-world evidence review (already collected in H.6/H.10).
 3. Explicit user approval.
 4. Targeted regression update.
-5. Full regression gate (32 suites).
+5. Full regression gate (33 suites).
 
-Current functional baseline: `d808cb8`. Regression set: 32 suites.
+Current functional baseline: `d808cb8`. Regression set: 33 suites. H.13 stable baseline: `084ce64`.
 
-**Phase H.13 / Phase I.12 must plan (planning-only until approved):**
-
-1. **Feature-flag/config schema:**
-   - Global config file vs per-profile severity overrides.
-   - Default severity preservation (no breaking changes).
-   - Runtime-switchable vs startup-config only.
-
-2. **Integration target:**
-   - Integration with existing validator runner.
-   - No renderer/layout changes.
-   - No prompt-contract changes.
-   - No command-layer changes.
-
-3. **Eligible rules for severity override:**
-   - Which rules should be configurable (all `heuristic_warning` rules? all rules?)
-   - Minimum viable feature-flag implementation for next promotion pilot.
-
-4. **Future regression gate:**
-   - Current 32 suites.
-   - 33 suites if a new H.13 runner is added.
+**Recommended next phase: planning-only until approved.** Possible directions:
+- Fourth catalog-only pilot search (if new candidate identified).
+- Controlled severity promotion pilot for `CCI-ROUTE-010` or `CCI-ROUTE-011`.
+- Body-scanning validator expansion.
+- Additional CCI domain coverage.
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
-- All 32 regression suites must pass before any commit.
+- All 33 regression suites must pass before any commit.
 - Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
 - No renderer/layout changes unless explicitly scoped and regression-protected.
 - No automatic enforcement from approved/pending logs.
 - No AI-only implementation decisions.
 - No real command/user data committed.
-- No validator, prompt-contract, or renderer changes may occur until Phase H.13 / Phase I.12 is explicitly planned, approved, implemented, reviewed, and regression-tested.
+- No validator, prompt-contract, or renderer changes may occur until explicitly planned, approved, implemented, reviewed, and regression-tested.
 
 ---
 
