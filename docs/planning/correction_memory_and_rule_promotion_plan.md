@@ -32,8 +32,10 @@
 **Latest Checkpoint:** `fcb1d4c` / Phase H.13 implementation review complete (approved as stable baseline)  
 **Phase H.14 Review Checkpoint:** `fcb1d4c` — `Docs: Record Phase H.13 implementation review checkpoint` (read-only H.14 review conducted on same commit)  
 **Phase H.15 Warning Pilot Plan Document:** `94d420d` — `Docs: Add Phase H.15 warning pilot plan`  
-**Phase H.15 Plan Review Checkpoint:** `[TBD]` — `Docs: Record Phase H.15 plan review checkpoint`  
-**Next Phase:** Phase H.15 / Phase I.14 warning pilot implementation — requires explicit go-ahead; config-only scope; no code changes until separately approved
+**Phase H.15 Plan Review Checkpoint:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
+**Phase H.15 Warning Pilot Checkpoint:** `c12e904` — `Docs: Update H.15 checkpoint commit hash`  
+**Phase H.16 Burn-In Plan:** `docs/planning/phase_h16_route011_warning_burnin_plan.md`  
+**Next Phase:** Phase H.16 / Phase I.15 burn-in observation planning — planning-only until approved
 
 ---
 

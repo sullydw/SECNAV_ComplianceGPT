@@ -614,15 +614,19 @@ Figures are rule-bearing and must be reviewed when referenced.
 
 **Status:** Warning pilot active. `CCI-ROUTE-011.effective_severity` = `warning` in default config.
 
-**Implementation commit:** `[TBD]` — `CCI: Start H.15 ROUTE-011 warning pilot`  
+**Implementation commit:** `18fc9bf` — `CCI: Start H.15 ROUTE-011 warning pilot`  
+**Follow-up commit:** `c12e904` — `Docs: Update H.15 checkpoint commit hash`  
 **Plan review checkpoint:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
-**Warning pilot checkpoint:** `docs/checkpoints/phase_h15_route011_warning_pilot_checkpoint.md`
+**Warning pilot checkpoint:** `docs/checkpoints/phase_h15_route011_warning_pilot_checkpoint.md`  
+**H.16 burn-in plan:** `docs/planning/phase_h16_route011_warning_burnin_plan.md`
 
 - `CCI-ROUTE-011` now produces warning-level (blocking) enforcement by default.
 - `CCI-ROUTE-010` remains advisory.
 - Rollback is immediate by restoring `CCI-ROUTE-011.effective_severity` to `advisory` in `config/cci_enforcement_config.json`.
 - Full 33-suite regression gate passed after activation.
 - Mandatory burn-in observation period required before any error-level promotion discussion.
+
+**Recommended next phase:** H.16 / I.15 — Burn-in observation and review (planning-only until approved).
 
 **Constraints:**
 - No validator changes.
