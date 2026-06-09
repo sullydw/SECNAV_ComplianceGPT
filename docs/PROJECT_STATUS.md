@@ -12,6 +12,7 @@
 **H.23 Read-Only Review Verdict:** `APPROVE H.23 READ-ONLY PLANNING REVIEW` — Confirmed H.19/H.20/H.21 identical clean results; approved H.22 direction
 **H.24 Sanitized Fixture Implementation Plan:** `docs/planning/phase_h24_route011_sanitized_fixture_implementation_plan.md` — Future fixture/runner implementation plan; does not create artifacts
 **H.25 Read-Only Review Verdict:** `APPROVE H.25 READ-ONLY PLANNING REVIEW` — Confirmed H.24 plan is bounded and safe
+**H.26 Sanitized Fixture and Runner Implementation Plan:** `docs/planning/phase_h26_route011_sanitized_fixture_runner_plan.md` — Exact future implementation design: 32 fixtures, naming convention, manifest schema, runner behavior, regression integration, and approval gates; no fixtures or runner created; planning-only.
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE  
 **Renderer:** v6 PDF (ReportLab)  
