@@ -1,0 +1,13 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": [
+    "SAMPLE ADDRESSEE"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.24 empty from test 001",
+  "date": "2099-01-01",
+  "body": "Synthetic sanitized fixture for empty_from sequence 1.",
+  "from": ""
+}

@@ -1,0 +1,18 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": [
+    "SAMPLE ADDRESSEE"
+  ],
+  "via": [
+    "SAMPLE VIA"
+  ],
+  "copy_to": [
+    "SAMPLE COPY TO"
+  ],
+  "distribution": [
+    "SAMPLE DISTRIBUTION"
+  ],
+  "subject": "H.24 distribution combo test 001",
+  "date": "2099-01-01",
+  "body": "Synthetic sanitized fixture for distribution_combo sequence 1."
+}

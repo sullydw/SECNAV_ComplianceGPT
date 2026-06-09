@@ -1,0 +1,13 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": [
+    "SAMPLE ADDRESSEE"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.24 whitespace from test 001",
+  "date": "2099-01-01",
+  "body": "Synthetic sanitized fixture for whitespace_from sequence 1.",
+  "from": "   "
+}

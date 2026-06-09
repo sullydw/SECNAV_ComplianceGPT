@@ -1,0 +1,16 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": [
+    "COMMANDING OFFICER, MARINE CORPS BASE EXAMPLE"
+  ],
+  "via": [
+    "SAMPLE VIA"
+  ],
+  "copy_to": [
+    "SAMPLE COPY TO"
+  ],
+  "distribution": [],
+  "subject": "H.24 marine routing test 002",
+  "date": "2099-01-01",
+  "body": "Synthetic sanitized fixture for marine_routing sequence 2."
+}

@@ -1,0 +1,12 @@
+{
+  "doc_type": "DT_MEMORANDUM",
+  "to": [
+    "SAMPLE ADDRESSEE"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.24 nonstandard doc test 001",
+  "date": "2099-01-01",
+  "body": "Synthetic sanitized fixture for nonstandard_doc sequence 1."
+}

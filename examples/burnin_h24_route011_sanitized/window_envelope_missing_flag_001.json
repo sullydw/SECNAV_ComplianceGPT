@@ -1,0 +1,14 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": [
+    "SAMPLE ADDRESSEE"
+  ],
+  "via": [],
+  "copy_to": [],
+  "distribution": [],
+  "subject": "H.24 window envelope missing flag test 001",
+  "date": "2099-01-01",
+  "body": "Synthetic sanitized fixture for window_envelope_missing_flag sequence 1.",
+  "window_envelope": false,
+  "from": ""
+}

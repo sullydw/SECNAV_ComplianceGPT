@@ -1,0 +1,16 @@
+{
+  "doc_type": "DT_STD_LTR",
+  "to": [
+    "COMMANDING OFFICER, USS EXAMPLE"
+  ],
+  "via": [
+    "SAMPLE VIA"
+  ],
+  "copy_to": [
+    "SAMPLE COPY TO"
+  ],
+  "distribution": [],
+  "subject": "H.24 navy routing test 003",
+  "date": "2099-01-01",
+  "body": "Synthetic sanitized fixture for navy_routing sequence 3."
+}
