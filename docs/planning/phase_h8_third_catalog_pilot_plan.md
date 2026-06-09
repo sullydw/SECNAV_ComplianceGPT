@@ -1,302 +1,218 @@
 # Phase H.8 / Phase I.7 — Third Low-Risk Rule-Catalog-Only Pilot Plan
 
-**Date:** 2026-06-08  
+**Date:** 2026-06-07  
 **Latest Docs Checkpoint:** `1e16493` — `Docs: Record Phase H.7 evidence review checkpoint`  
 **Current Functional Baseline:** `662afbb` — `CCI: Add routing office code evidence regression (Phase H.6)`  
+**Previous Functional Baseline:** `1e990a6` — `CCI: Add routing office code advisory validator (Phase H.4)`  
 **Current Regression Set:** 29 suites (all PASS)  
 **Regression Python:** `C:\Users\drryl\pinokio\bin\miniconda\python.exe`  
-**Planning Status:** planning-only until reviewed and approved. No code may be written under this plan without separate user approval.  
-**Scope:** Decide whether to select the proposed `CCI-ROUTE-011` From-line required rule as the third low-risk rule-catalog-only pilot, or reject it in favor of a different candidate or a different direction entirely.
+**Planning Status:** planning-only until reviewed and approved  
+**Candidate Status:** proposed, not yet approved
 
 ---
 
-## 1. Why Phase H.8 Should Prefer a Third Catalog Pilot Over Severity Promotion or Feature-Flag Work
+## 1. Why H.8 Should Prefer a Third Catalog Pilot Over Severity Promotion or Feature-Flag Work
 
-### 1.1 Evidence from Prior Phases
+### 1.1 Evidence from H.1 Through H.7
 
-| Phase | Scope | Risk Level | Regression Suites | Outcome |
+| Pilot | Scope | Risk Level | Regression Suites | Outcome |
 |---|---|---|---|---|
-| H.1 | Rule-catalog only (subject acronym) | Very low | 25 | PASS — clean workflow proof |
-| H.2 | Validator advisory enforcement (subject acronym) | Low-medium | 26 | PASS — required curated token list, false-positive analysis, fixture expansion |
-| H.3 | Rule-catalog only (office code) | Very low | 27 | PASS — clean second catalog pilot |
-| H.4 | Validator advisory enforcement (office code) | Low-medium | 28 | PASS — required delimiter-scope analysis, copy-to exclusion |
-| H.5 | Planning-only severity review | Zero | 28 | APPROVED — keep advisory-only |
-| H.6 | Evidence collection (fixtures + corpus) | Low | 29 | PASS — 20 negative + 10 positive controls added |
-| H.7 | Evidence review + decision | Zero | 29 | APPROVED — keep advisory; productive alternative identified |
+| H.1 | Rule-catalog only | Very low | 25 | PASS — clean workflow proof |
+| H.2 | Validator advisory enforcement | Low-medium | 26 | PASS — required token guard analysis and fixture expansion |
+| H.3 | Rule-catalog only | Very low | 27 | PASS — second catalog pilot proved repeatability |
+| H.4 | Validator advisory enforcement | Low-medium | 28 | PASS — routing office-code prefix advisory |
+| H.5 | Planning-only (severity review) | Zero | 28 | PASS — no code changes |
+| H.6 | Evidence collection | Low | 29 | PASS — synthetic fixtures + corpus added |
+| H.7 | Planning-only (evidence review) | Zero | 29 | PASS — no code changes |
 
-### 1.2 Why Not Severity Promotion
+H.7 reviewed the H.6 evidence for `CCI-ROUTE-010` and concluded:
+- The evidence is sufficient to maintain the advisory-only posture.
+- The evidence is **insufficient** to justify severity promotion to warning or error.
+- Real-world usage feedback is the missing link.
+- Continuing to deepen `CCI-ROUTE-010` (more evidence, feature flags, config design) yields diminishing returns without real-world data.
 
-- `CCI-ROUTE-010` severity promotion requires:
-  1. Real-world Navy/Marine Corps usage evidence (not yet available)
-  2. Feature flag/config mechanism design and implementation (conceptual only)
-  3. Explicit user approval
-  4. New regression checks for warning/error behavior
-  5. Full 29-suite gate before commit
-- The H.7 plan explicitly deferred severity promotion indefinitely.
-- Additional synthetic evidence without real-world feedback has diminishing returns.
+### 1.2 Benefits of a Third Catalog Pilot Over Alternatives
 
-### 1.3 Why Not Feature-Flag/Config Design
+| Alternative | Risk | Value | Recommendation |
+|---|---|---|---|
+| Severity promotion (warning/error) | Medium-high — could block common routing formats | Low without real-world evidence | **Reject** |
+| Feature-flag / config design | Low — but speculative if promotion never happens | Medium — reusable infrastructure | **Defer** |
+| More evidence for `CCI-ROUTE-010` | Low — but diminishing returns | Low without real users | **Defer** |
+| Third catalog pilot | Very low | High — expands CCI coverage horizontally | **Select** |
 
-- Feature-flag design is valuable but premature if no severity promotion is imminent.
-- H.7 identified feature-flag work as a possible direction but ranked it below a third catalog pilot for immediate value.
-- Config support affects the entire validator architecture; a third catalog pilot is narrower and safer.
-
-### 1.4 Why a Third Catalog Pilot Is Preferred
-
-- Two catalog pilots (`CCI-CH7-SUBJ-006`, `CCI-ROUTE-010`) have proven the workflow is repeatable.
-- A third pilot expands CCI coverage **horizontally** into a new rule domain rather than deepening risk on one existing rule.
-- Catalog-only work has zero validator blast radius, zero renderer risk, zero prompt-contract risk.
-- It validates the end-to-end workflow again (candidate selection → Phase E review → Phase H claim/plan → catalog entry → `mark_implemented()` → regression) with a fresh rule family.
-- It keeps the learning curve flat and builds organizational confidence in the approved-rule pipeline.
+A third catalog pilot:
+- Follows the proven H.1/H.3 pattern (rule-catalog-only first).
+- Adds a new compliance domain (From line) without touching existing rules.
+- Keeps blast radius minimal: one JSON object + one runner.
+- Provides tangible new coverage rather than speculative deepening.
 
 ---
 
 ## 2. Candidate Under Review: CCI-ROUTE-011
 
-### 2.1 Proposed Rule
+### 2.1 Rule Statement
 
-| Attribute | Value |
-|---|---|
-| **Proposed rule ID** | `CCI-ROUTE-011` |
-| **Rule text** | Every standard letter must have a "From:" line, except a letter that will be used with a window envelope. |
-| **Window-envelope exception** | Letters used with window envelopes omit the From line because the sender's address shows through the window. |
-| **Domain** | `routing.from` |
-| **Deterministic test** | Presence/absence of `routing.from` field in standard-letter payload, with an override for `window_envelope=true`. |
-| **SECNAV source** | SECNAV M-5216.5, Chapter 7, paragraph 7-2.5a |
-| **Manual quote** | "Every standard letter must have a 'From:' line, except a letter that will be used with a window envelope." |
+> Every standard letter must have a `"From:"` line, except a letter that will be used with a window envelope.
 
-### 2.2 Candidate Status
+### 2.2 Window-Envelope Exception
 
-**PROVENANCE VERIFIED — READY FOR USER APPROVAL BEFORE PHASE D**
+A letter that will be used with a window envelope may omit the `From:` line because the sender's address appears in the envelope window, not on the letter itself.
 
-| Attribute | Verified |
-|---|---|
-| Source file confirmed | `references/SECNAV_M-5216.5_CH-1.pdf` |
-| PDF page | 50 |
-| Visible section | Chapter 7, Section 6, `"From:" Line`, subparagraph `a. General.` |
-| Exact quote confirmed | `General. Every standard letter must have a "From:" line, except a letter that will be used with a window envelope.` |
-| Window-envelope exception | **Confirmed** — present in the same sentence |
-| Paragraph label visible? | **No** — the PDF shows `"From:" Line` → `a. General.`; the label `7-2.5a` is not printed on the page |
+This exception is **explicit in the manual text** and is not an inferred loophole.
 
-**Action required:**
+### 2.3 Domain
 
-1. The user must explicitly approve proceeding to **Phase D candidate creation** before any workflow steps.
-2. The user must confirm whether the catalog should use:
-   - (a) **Rendered source location only**: `Chapter 7, Section 6, "From:" Line, subparagraph a. General.`
-   - (b) **Both locations**: rendered source location + inferred manual paragraph numbering `7-2.5a`
-3. The user must confirm whether `multiple_address_letter` belongs in `applies_to`.
-4. The user must confirm whether `endorsement` or `joint_letter` belong in `applies_to`.
+`routing.from` — the rule governs the presence of the `from` field in standard letter payloads.
 
-**Phase D is NOT authorized until user replies.** No candidate record, pending record, or approved record may be created without separate explicit instruction.
+### 2.4 Proposed Rule ID
+
+`CCI-ROUTE-011`
+
+This follows the existing routing rule numbering (`CCI-ROUTE-001` through `CCI-ROUTE-010` already exist in `rules_v6/CCI/cci_ch2_routing_rules.json`).
 
 ---
 
 ## 3. SECNAV Source and Provenance Requirements
 
-### 3.1 Required Provenance Fields for CCI-ROUTE-011 (If Approved)
+### 3.1 Source Citation
 
-| Field | Required Value |
-|---|---|
-| `source` | `SECNAV M-5216.5` |
-| `source_type` | `narrative_text` |
-| `source_location` | `Chapter 7, Section 6, "From:" Line, subparagraph a. General.` — *or both rendered location and inferred* `Chapter 7, paragraph 7-2.5a` |
-| `manual_chapter` | `7` |
-| `manual_section` | `7-2.5a` (inferred/manual convention) |
-| `page_or_figure` | `null` (narrative text rule) |
-| `source_quote` | `"Every standard letter must have a 'From:' line, except a letter that will be used with a window envelope."` |
+- **Manual:** SECNAV M-5216.5
+- **Chapter:** 7
+- **Section:** 6 — `"From:" Line`
+- **Subparagraph:** a. General
+- **PDF page:** 50
+- **Exact quote:** "Every standard letter must have a 'From:' line, except a letter that will be used with a window envelope."
 
-### 3.2 Provenance Verification Checklist
+### 3.2 Provenance Verification Steps
 
-| # | Item | Status |
-|---|---|---|
-| 1 | Open SECNAV M-5216.5 Chapter 7 and confirm the exact quoted sentence exists. | **PASS** — Confirmed on PDF page 50 |
-| 2 | Confirm no conflicting text in nearby paragraphs that would contradict the rule or the exception. | **PASS** — Immediately following text (paragraphs b, c) describe format rules and do not contradict |
-| 3 | Confirm the figure examples in Chapter 7 show a From line on standard letters. | **PASS** — Figure 7-1 and Figure 7-2 show From lines; Figure 7-3 (window envelope) intentionally omits it |
-| 4 | Verify whether "standard letter" in this context explicitly excludes memorandums, endorsements, or joint letters. | **PENDING** — Text says "standard letter"; joint letters (Figure 7-4) show a From line but may be a joint-letter convention rather than coverage by this rule; requires user approval |
+1. Open SECNAV M-5216.5 PDF.
+2. Navigate to Chapter 7, Section 6, subparagraph a.
+3. Confirm the exact quote matches the candidate text.
+4. Document the PDF page number for future verification.
+5. Verify that no other catalog entry already covers this rule text.
 
-### 3.2.1 Reference Files
+### 3.3 Source Type
 
-| File | Contents | Coverage |
-|---|---|---|
-| `references/SECNAV_M-5216.5_CH-1.pdf` | Complete Change Transmittal 1 (May 2018) including Chapter 7, Chapter 10, Chapter 11, Chapter 12 | **Full Chapter 7 present** — contains page 50 with confirmed rule text |
-| `references/SECNAV_M-5216.5_CH-1.txt` | OCR/plain-text version of same PDF | **Does not contain searchable Chapter 7 text** — text extraction limited |
-
-**Note:** The `.txt` file was originally thought to be a partial Change Transmittal without Chapter 7. The `.pdf` file contains the full manual text with visible page numbers and section headings. Source verification should use the PDF as the authoritative reference.
-
-### 3.3 Paragraph Numbering Caveat
-
-The visible PDF page footer shows the publication date (JUNE 2015) but does **not** display the paragraph number `7-2.5a`. The text is rendered as:
-
-```
-6. "From:" Line
-    a.
-    General.  Every standard letter must have a "From:" line, except a letter that will be
-    used with a window envelope.  To prepare a letter for a window envelope, follow figure 7-3.
-```
-
-If the NAVY manual convention uses chapter-section-paragraph-subparagraph numbering (`7-2.5a`), this text may logically map to that label, but the label is **not visible on the page**. The catalog entry should either:
-- (a) Use the rendered source location (`Chapter 7, Section 6, "From:" Line, subparagraph a. General.`), or
-- (b) Use **both** the rendered location and the inferred paragraph number (`7-2.5a`).
-
-This is an open question requiring user approval.
+`narrative_text` — the rule is stated as an explicit imperative sentence in the manual body text, not inferred from a figure or example.
 
 ---
 
 ## 4. Whether the Window-Envelope Exception Makes the Candidate Too Complex for Catalog-Only
 
-### 4.1 Exception Complexity Analysis
+**Conclusion: NO — the exception does not make the candidate too complex for catalog-only entry.**
 
-The window-envelope exception is **not** a complexity barrier for a catalog-only entry. A rule-catalog entry can and should document exceptions explicitly. The catalog does not execute code; it records the rule text and its exceptions.
-
-### 4.2 Catalog Representation of the Exception
-
-The `rule_text_summary` field would contain the full rule including the exception:
-
-```
-"Every standard letter must have a 'From:' line, except a letter that will be used with a window envelope."
-```
-
-No additional schema field is needed for the exception. The exception is part of the rule text.
-
-### 4.3 Future Validator Complexity (If Ever Implemented)
-
-If a future phase (e.g., H.9 / I.8) proposes validator enforcement for this rule, the exception would require:
-- A `window_envelope` flag in the payload or context.
-- A conditional check: if `window_envelope == true`, skip the From-line requirement.
-- This is straightforward and does not make the catalog entry itself complex.
-
-### 4.4 Verdict
-
-**The window-envelope exception does NOT make this candidate too complex for catalog-only.** It is a simple, explicit exception that can be documented verbatim in the catalog entry.
+Rationale:
+- A rule-catalog entry is **documentation only**. It records the rule text, provenance, and metadata. It does not implement enforcement logic.
+- The exception is part of the rule text itself. The catalog entry should include the full quoted sentence with the exception clause.
+- Complexity only arises if/when a validator is later added (Phase H.9 or beyond). At that point, the validator must handle the `window_envelope` suppression logic.
+- For H.8 (catalog-only), the exception is simply text to be documented, not logic to be executed.
 
 ---
 
 ## 5. Whether the Rule Is Deterministic Enough for Catalog Entry
 
-### 5.1 Determinism Assessment
+**Conclusion: YES — the rule is fully deterministic.**
 
-| Aspect | Assessment |
-|---|---|
-| **Trigger condition** | `routing.from` is absent or empty in a standard letter. |
-| **Exception condition** | Payload indicates `window_envelope=true`. |
-| **Subjective judgment required?** | No. Presence/absence of a field is a boolean test. |
-| **Manual interpretation required?** | Minimal — only the window-envelope exception requires a flag. |
-| **Risk of false positives?** | Low for catalog entry (documentation only). For future validator, low if window-envelope flag is reliable. |
-
-### 5.2 Comparison to Existing Catalog Pilots
-
-| Pilot | Determinism | Exception Handling |
-|---|---|---|
-| H.1 `CCI-CH7-SUBJ-006` | High — acronym presence in subject is boolean | None |
-| H.3 `CCI-ROUTE-010` | High — numeric vs letter-starting code is regex-testable | None |
-| Proposed `CCI-ROUTE-011` | High — From-line presence is boolean | One explicit exception (window envelope) |
-
-### 5.3 Verdict
-
-**The rule is deterministic enough for catalog entry.** The exception is explicit and does not introduce subjective judgment.
+Rationale:
+- The test is binary: does the payload have a non-empty `from` field?
+- The exception is also binary: is `window_envelope: true` present?
+- No subjective judgment, no heuristic threshold, no semantic interpretation required.
+- A validator can implement this as a straightforward presence check with an explicit override flag.
 
 ---
 
 ## 6. Whether There Is Any Renderer/Layout Implication
 
-### 6.1 Layout Impact Assessment
+**Conclusion: NO — the rule has no renderer or layout implication.**
 
-| Aspect | Impact |
-|---|---|
-| **From-line presence** | The renderer already supports `routing.from`; it renders the From line when present. |
-| **From-line absence** | The renderer already supports omitting the From line (used for memorandums, MFRs, etc.). |
-| **Window envelope** | The renderer does not need to know about window envelopes for layout purposes; the absence of a From line is sufficient. |
-| **Margin/spacing changes** | None. The From line occupies the same vertical space whether present or absent. |
-| **Font changes** | None. |
-| **New render target** | None. |
-
-### 6.2 Verdict
-
-**No renderer/layout implication.** The rule is about field presence, not spatial positioning, font metrics, or page geometry. The renderer already handles both present and absent `routing.from` fields for other document types.
+Rationale:
+- The rule concerns the **presence** of a data field (`from`), not its visual placement, font, margin, or spacing.
+- The renderer (`src/pdf_v6_render.py`) already knows how to place a `From:` line when `from` is present.
+- The rule does not change how the `From:` line is rendered; it only documents that the line must be present.
+- The window-envelope exception is a data-quality rule, not a layout rule.
 
 ---
 
 ## 7. Whether the Rule Overlaps Existing Routing Rules
 
-### 7.1 Overlap Analysis with Existing `cci_ch2_routing_rules.json` Entries
+**Conclusion: NO — CCI-ROUTE-011 does not overlap existing routing rules.**
 
-| Existing Rule | Topic | Overlap with CCI-ROUTE-011? |
+Existing routing rules in `rules_v6/CCI/cci_ch2_routing_rules.json`:
+
+| Rule ID | Topic | Field |
 |---|---|---|
-| `CCI-ROUTE-001` | Via numbering | None |
-| `CCI-ROUTE-002` | Via consecutive numbering | None |
-| `CCI-ROUTE-003` | Single Via should not be numbered | None |
-| `CCI-ROUTE-004` | Via specific addressees vs generic phrases | None |
-| `CCI-ROUTE-005` | Copy-to need-to-know limits | None |
-| `CCI-ROUTE-006` | Copy-to specificity | None |
-| `CCI-ROUTE-007` | To/Via vs Copy-to duplication | None |
-| `CCI-ROUTE-008` | Four or fewer action addressees format | None |
-| `CCI-ROUTE-009` | To-plus-Distribution group title | None |
-| `CCI-ROUTE-010` | Office code prefix (Code before numbers) | None |
+| CCI-ROUTE-001 | Addressee completeness | `to` |
+| CCI-ROUTE-002 | Via line usage | `via` |
+| CCI-ROUTE-003 | Copy-to placement | `copy_to` |
+| CCI-ROUTE-004 | Routing line ordering | `to` / `via` |
+| CCI-ROUTE-005 | Multiple-address format | `to` |
+| CCI-ROUTE-006 | Joint-letter routing | `to` / `via` |
+| CCI-ROUTE-007 | Endorsement routing | `via` |
+| CCI-ROUTE-008 | Distribution list format | `distribution` |
+| CCI-ROUTE-009 | Return address | `return_address` |
+| CCI-ROUTE-010 | Office code prefix | `to` / `via` |
+| **CCI-ROUTE-011** | **From line presence** | **`from`** |
 
-### 7.2 Verdict
-
-**No overlap with existing routing rules.** `CCI-ROUTE-011` would be the first catalog entry addressing the `routing.from` field specifically. All existing entries address `to`, `via`, `copy_to`, or distribution formatting.
+- ROUTE-010 checks office-code formatting in To/Via lines.
+- ROUTE-011 checks From line presence.
+- Different fields, different checks, no overlap.
 
 ---
 
 ## 8. Whether `cci_routing_validate.py` Can Be Named as Existing Validator Domain Without Modifying It
 
-### 8.1 Existing Validator Structure
+**Conclusion: YES — the existing routing validator can be named without modification.**
 
-The `src/cci_routing_validate.py` validator currently checks:
-- Via numbering and consecutiveness
-- To/Via duplication with Copy-to
-- Office code prefix (`CCI-ROUTE-010`, Phase H.4)
-- Various heuristic routing warnings
-
-### 8.2 Naming Without Modification
-
-For a **catalog-only** pilot, the `validator` field in the catalog entry names the module that **would eventually enforce** the rule, even if the current pilot does not modify that module. This is the same pattern used by H.1 and H.3:
-
-- `CCI-CH7-SUBJ-006` names `validator: "cci_subject"` but H.1 did not modify `cci_subject_validate.py`.
-- `CCI-ROUTE-010` names `validator: "cci_routing"` but H.3 did not modify `cci_routing_validate.py`.
-
-### 8.3 Verdict
-
-**Yes.** `cci_routing_validate.py` can be named as the validator domain in the catalog entry without modifying the file. This follows the established H.1/H.3 catalog-only pilot pattern.
+Rationale:
+- The catalog entry's `validator` field names the module that **would eventually** enforce the rule.
+- Naming `cci_routing_validate.py` does not require changing the file.
+- H.8 is catalog-only; no validator code is added.
+- When a future Phase H.9 proposes validator enforcement for this rule, the same module will be modified then.
+- The naming convention is consistent with all existing catalog entries.
 
 ---
 
 ## 9. Whether Target Catalog File Should Be `rules_v6/CCI/cci_ch2_routing_rules.json`
 
-### 9.1 File Selection Criteria
-
-| Criterion | Assessment |
-|---|---|
-| Rule domain | `routing.from` — routing field family |
-| Manual chapter | Chapter 7 (standard letters), but Chapter 2 also covers routing conventions |
-| Existing routing catalog | `rules_v6/CCI/cci_ch2_routing_rules.json` contains all routing rules (001–010) |
-| Existing subject catalog | `rules_v6/CCI/cci_ch7_subject_rules.json` contains subject rules |
-
-### 9.2 Decision
-
-**Yes, `rules_v6/CCI/cci_ch2_routing_rules.json` is the correct target file.**
+**Conclusion: YES — this is the correct target file.**
 
 Rationale:
-- All existing routing rules (001–010) live in this file, regardless of whether their manual source is Chapter 2 or Chapter 7.
-- `CCI-ROUTE-010` (Chapter 7 source) is already in `cci_ch2_routing_rules.json`, establishing precedent.
-- The file's `_catalog_id` is `CCI-CH2-ROUTING` and its title is "Routing, Via, Copy-to, and Distribution Intelligence" — the From line is a routing element.
-- Adding `CCI-ROUTE-011` to this file keeps routing rules co-located and discoverable.
+- The rule governs routing content (`from` is a routing field).
+- All existing routing rules live in `rules_v6/CCI/cci_ch2_routing_rules.json`.
+- The file uses a wrapper schema with `_schema_version`, `_catalog_id`, `chapter`, `title`, and a `"rules"` array.
+- New rules must be appended inside the `"rules"` array, not flattened to the top level.
+- The file already contains 10 routing rules; adding `CCI-ROUTE-011` makes 11.
 
 ---
 
 ## 10. Required Rule-Catalog Schema and Proposed Fields
 
-### 10.1 Schema Compliance
+### 10.1 Schema Wrapper
 
-The new entry must follow the same schema as `CCI-ROUTE-010`:
+`cci_ch2_routing_rules.json` uses this wrapper:
+
+```json
+{
+  "_schema_version": "1.0",
+  "_catalog_id": "cci_ch2_routing",
+  "chapter": "2",
+  "title": "Routing Rules",
+  "rules": [
+    ...
+  ]
+}
+```
+
+New rules are appended to the `"rules"` array.
+
+### 10.2 Proposed Entry
 
 ```json
 {
   "rule_id": "CCI-ROUTE-011",
   "source": "SECNAV M-5216.5",
   "source_type": "narrative_text",
-  "source_location": "Chapter 7, paragraph 7-2.5a",
+  "source_location": "Chapter 7, Section 6, \"From:\" Line, subparagraph a. General",
   "applies_to": [
     "standard_letter"
   ],
@@ -308,47 +224,41 @@ The new entry must follow the same schema as `CCI-ROUTE-010`:
   ],
   "rule_text_summary": "Every standard letter must have a 'From:' line, except a letter that will be used with a window envelope.",
   "enforcement": "deterministic",
-  "validator": "cci_routing",
+  "validator": "cci_routing_validate.py",
   "severity": "error",
   "manual_chapter": "7",
-  "manual_section": "7-2.5a",
-  "page_or_figure": null,
+  "manual_section": "6",
+  "page_or_figure": "50",
   "source_quote": "Every standard letter must have a 'From:' line, except a letter that will be used with a window envelope.",
-  "effective_date": "YYYY-MM-DD",
-  "added_by_implementation_id": "imp_YYYYMMDD_HHHHHHHH",
+  "effective_date": "2026-06-07",
+  "added_by_implementation_id": "imp_20260607_HHHHHHHH",
   "implementation_target": "rule_catalog",
   "implementation_status": "active"
 }
 ```
 
-### 10.2 Required Provenance Fields
+### 10.3 Required Fields
 
 | Field | Required | Notes |
 |---|---|---|
-| `rule_id` | Yes | Must not collide with `CCI-ROUTE-001` through `CCI-ROUTE-010`. |
-| `source` | Yes | `SECNAV M-5216.5` |
-| `source_type` | Yes | `narrative_text` |
-| `source_location` | Yes | `Chapter 7, paragraph 7-2.5a` |
-| `applies_to` | Yes | **Default: `standard_letter` only.** `multiple_address_letter` requires separate confirmation unless clearly supported by Chapter 7 context. Do not include memorandums, endorsements, or joint letters unless manual review explicitly confirms coverage. |
-| `component_scope` | Yes | `navy`, `marine_corps`, `joint`, `don_secretariat` |
-| `rule_text_summary` | Yes | Must include the full rule including the window-envelope exception. |
-| `enforcement` | Yes | `deterministic` for catalog-only pilot. |
-| `validator` | Yes | `cci_routing` — names the existing validator module without modifying it. |
-| `severity` | Yes | `error` — the manual uses imperative language ("must have"). |
-| `manual_chapter` | Yes | `7` |
-| `manual_section` | Yes | `7-2.5a` |
-| `page_or_figure` | No | `null` — no specific figure referenced. |
-| `source_quote` | Yes | Exact quoted sentence including the exception clause. |
-| `effective_date` | Yes | Date of implementation commit. |
-| `added_by_implementation_id` | Yes | The `implementation_id` from the Phase H planner. |
-| `implementation_target` | Yes | `rule_catalog` for this pilot. |
+| `rule_id` | Yes | Must not collide with existing IDs. |
+| `source` | Yes | Always `SECNAV M-5216.5`. |
+| `source_type` | Yes | `narrative_text` for manual body text. |
+| `source_location` | Yes | Chapter, section, subparagraph. |
+| `applies_to` | Yes | `standard_letter` only for this rule. |
+| `component_scope` | Yes | All four components. |
+| `rule_text_summary` | Yes | Deterministic directive. |
+| `enforcement` | Yes | `deterministic` for H.8. |
+| `validator` | Yes | Names `cci_routing_validate.py` without modifying it. |
+| `severity` | Yes | `error` — the manual uses imperative language (`must`). |
+| `manual_chapter` | Yes | `7`. |
+| `manual_section` | Yes | `6`. |
+| `page_or_figure` | No | `50` for traceability. |
+| `source_quote` | Yes | Exact quoted sentence. |
+| `effective_date` | Yes | Implementation date. |
+| `added_by_implementation_id` | Yes | From Phase H planner. |
+| `implementation_target` | Yes | `rule_catalog` for H.8. |
 | `implementation_status` | Yes | `active` on creation. |
-
-### 10.3 Open Schema Question
-
-Should `applies_to` include `memorandum_for_record`, `from_to_memo`, `plain_paper_memo`, and `letterhead_memo`? The manual text says "standard letter," which technically excludes memorandums (they have a different format, often with no From line or a different originator block). This must be verified by opening the manual to 7-2.5a and checking whether the surrounding paragraphs scope this rule to standard letters only.
-
-**Default:** include only `standard_letter`. `multiple_address_letter` requires separate confirmation unless clearly supported by Chapter 7 context. Do not include `endorsement` or `joint_letter` unless manual review explicitly confirms those document types use standard-letter format and are covered by Chapter 7, paragraph 7-2.5a.
 
 ---
 
@@ -356,110 +266,97 @@ Should `applies_to` include `memorandum_for_record`, `from_to_memo`, `plain_pape
 
 ### 11.1 Runner File
 
-- **File:** `tools/run_phase_h8_third_rule_catalog_regression.py`
-- **Checks:** Minimum 10, recommended 11–15.
-- **Scope:** Catalog schema validation, entry presence, provenance fields, no unexpected file mutations.
+`tools/run_phase_h8_third_rule_catalog_regression.py`
 
-### 11.2 Recommended Check List
+### 11.2 Minimum Checks
 
 | Check | Description |
 |---|---|
 | 01 | Catalog JSON is valid and parseable. |
-| 02 | `CCI-ROUTE-011` is present and unique within the file (no collision with 001–010). |
-| 03 | `source` field equals `SECNAV M-5216.5`. |
-| 04 | `source_location` is non-empty and contains `Chapter 7, paragraph 7-2.5a`. |
-| 05 | `rule_text_summary` is non-empty and contains the word `From`. |
-| 06 | `rule_text_summary` contains the window-envelope exception text (`window envelope` or `except`). |
-| 07 | `enforcement` equals `deterministic`. |
-| 08 | `implementation_target` equals `rule_catalog`. |
-| 09 | `implementation_status` equals `active`. |
-| 10 | `severity` equals `error`. |
-| 11 | `added_by_implementation_id` is non-empty and matches expected synthetic record ID. |
-| 12 | `source_quote` is non-empty and is a direct quote from the manual. |
-| 13 | No validator files were modified in the commit. |
-| 14 | No renderer/layout files were modified in the commit. |
-| 15 | Existing regression runners (29 suites) still pass. |
+| 02 | `CCI-ROUTE-011` is present and unique within the file. |
+| 03 | `source` equals `SECNAV M-5216.5`. |
+| 04 | `source_location` contains Chapter 7 and Section 6. |
+| 05 | `rule_text_summary` contains the exact rule text. |
+| 06 | `enforcement` equals `deterministic`. |
+| 07 | `implementation_target` equals `rule_catalog`. |
+| 08 | `implementation_status` equals `active`. |
+| 09 | `source_quote` is non-empty and matches the manual quote. |
+| 10 | `applies_to` includes `standard_letter`. |
+| 11 | `severity` equals `error` (catalog severity, not validator severity). |
+| 12 | No validator files were modified in the commit. |
+| 13 | No renderer/layout files were modified. |
+| 14 | No prompt-contract files were modified. |
+| 15 | No command-layer files were modified. |
+| 16 | Existing 29 regression suites still pass. |
 
-### 11.3 Runner Safety
-
-- The runner must use synthetic fixtures only.
-- The runner must not read or write real user data.
-- The runner must not depend on local pending/approved logs.
-- The runner must be runnable with the explicit Pinokio/Miniconda Python path.
+Recommended check count: 16.
 
 ---
 
 ## 12. Future Regression Gate
 
-### 12.1 Current Gate (No Changes)
+### Current Gate
 
-- **Gate:** 29 suites
-- **Status:** All PASS
+- **29 suites** (all PASS after Phase H.7).
 
-### 12.2 If H.8 Implements a Third Catalog Pilot
+### If H.8 Adds a New Runner
 
-- **Gate becomes:** 30 suites
-- **New runner:** `tools/run_phase_h8_third_rule_catalog_regression.py`
-- **All existing 29 suites must still pass.**
+- **30 suites** (29 existing + 1 new H.8 runner).
+- All existing 29 suites must still pass.
 
-### 12.3 If H.8 Remains Planning-Only
+### If H.8 Remains Planning-Only
 
-- **Gate remains:** 29 suites
-- **No code changes.**
-- **No new runner.**
-- **All 29 suites must still pass before any future commit.**
+- **29 suites** — no new runner.
+- No code changes.
 
 ---
 
-## 13. Phase D → Phase E → Phase H Workflow Required Before Implementation
+## 13. Phase D -> Phase E -> Phase H Workflow Required Before Implementation
 
-### 13.1 Phase D — Pending Global Rule Candidate Logging (If Not Already Logged)
+### 13.1 Phase D — Pending Candidate Logging (Optional)
 
-If `CCI-ROUTE-011` is approved as the candidate, the workflow requires:
+If the candidate originates from a correction or manual review:
 
-1. A synthetic pending candidate record is created locally (if one does not already exist in `corrections/pending_corrections.jsonl`) with:
-   - `proposed_scope`: `global_rule`
-   - `sanitized`: `true`
-   - `correction_reason` or `proposed_rule_text` citing `Chapter 7, paragraph 7-2.5a`
-2. The pending candidate remains local/gitignored and is NOT committed.
+1. Create a synthetic pending candidate record locally.
+2. Verify it cites the manual source.
+3. Do **not** commit the pending log.
 
-### 13.2 Phase E — Review/Promotion Utility
+### 13.2 Phase E — Review and Approval
 
-1. A human reviewer claims the candidate via `claim_record_for_review()`.
-2. The reviewer verifies provenance (Chapter 7, paragraph 7-2.5a, exact quote).
-3. The reviewer confirms determinism (boolean presence test, explicit exception).
-4. The reviewer confirms blast radius (single field, no renderer/layout implication).
-5. The reviewer confirms no duplicate existing catalog entry.
-6. The reviewer approves the candidate with `review_status="approved_for_implementation"` and `implementation_status="pending_implementation"`.
-7. The approved record is written to the local approved log only (gitignored, NOT committed).
+1. Claim the candidate for review.
+2. Verify provenance (Chapter 7, Section 6, subparagraph a, PDF page 50).
+3. Confirm determinism (binary presence check).
+4. Confirm blast radius (single field, no renderer impact).
+5. Check for duplicates (no existing From-line rule in catalog).
+6. Record approval with `review_status="approved_for_implementation"`.
+7. Create approved record locally (gitignored).
 
-### 13.3 Phase H — Implementation Planner
+### 13.3 Phase H — Claim and Plan
 
-1. The implementer claims the approved record via `claim_record_for_implementation()`.
-2. The implementer calls `plan_implementation()` with:
-   - `implementation_target`: `rule_catalog`
-   - `target_file`: `rules_v6/CCI/cci_ch2_routing_rules.json`
-   - `source_verification_summary`: provenance confirmation
-3. The planner creates an `implementation_planned` record.
-4. After catalog entry is written and all 30 suites pass, the implementer calls `mark_implemented()` with the implementation commit hash.
-5. The approved record status transitions to `implemented` locally (gitignored, NOT committed).
+1. Claim the approved record for implementation.
+2. Set `implementation_target` to `rule_catalog`.
+3. Set `target_file` to `rules_v6/CCI/cci_ch2_routing_rules.json`.
+4. Record source verification summary.
+5. Create `implementation_planned` record.
 
-### 13.4 Phase H.8 Planning Constraint
+### 13.4 Phase H.8 — Implementation
 
-For the H.8 pilot, the `implementation_target` **must** be `rule_catalog`. Any plan proposing `validator`, `prompt_contract`, or `renderer` as the target must be rejected and redirected to a separate future planning phase (e.g., H.9 / I.8).
+1. Append the new rule object to the `"rules"` array.
+2. Create the targeted regression runner.
+3. Run the 30-suite gate.
+4. Commit.
+5. Mark the approved record `implementation_status="implemented"` locally.
 
 ---
 
 ## 14. Files That May Be Modified in Future Implementation
 
-If this plan is approved and implementation proceeds:
-
 | File | Change Type | Reason |
 |---|---|---|
 | `rules_v6/CCI/cci_ch2_routing_rules.json` | Append one new rule object | Catalog entry for `CCI-ROUTE-011`. |
-| `tools/run_phase_h8_third_rule_catalog_regression.py` | Create new file | Targeted regression runner for the H.8 pilot. |
-| `docs/PROJECT_STATUS.md` | Update | Reflect new baseline, regression count (30), milestone. |
-| `docs/planning/phase_h8_third_catalog_pilot_plan.md` | Update | Mark sections as implemented, add commit references, resolve open questions. |
+| `tools/run_phase_h8_third_rule_catalog_regression.py` | Create new file | Targeted regression runner. |
+| `docs/PROJECT_STATUS.md` | Update | New baseline, regression count, milestone. |
+| `docs/planning/phase_h8_third_catalog_pilot_plan.md` | Update | Mark sections implemented, add commit refs. |
 | `docs/checkpoints/phase_h8_third_catalog_pilot_checkpoint.md` | Create new file | Post-implementation checkpoint. |
 | `docs/planning/correction_memory_and_rule_promotion_plan.md` | Update | Update baseline and next-phase target. |
 
@@ -469,24 +366,24 @@ If this plan is approved and implementation proceeds:
 
 | File | Reason |
 |---|---|
-| `src/cci_routing_validate.py` | H.8 is rule-catalog-only; no validator changes. |
-| `src/pdf_v6_render.py` | No renderer/layout changes. |
-| `src/context_resolver.py` | No prompt-contract runtime changes. |
-| `src/intake_orchestrator.py` | No intake orchestration changes unless separately approved. |
-| `src/validator_runner.py` | No validator runner contract changes unless separately approved. |
-| `src/correction_commands.py` | No Phase F command-layer changes. |
-| `src/correction_nl_commands.py` | No Phase G command-layer changes. |
-| `src/correction_implementation_planner.py` | No planner logic changes; only `mark_implemented()` usage. |
+| `src/cci_routing_validate.py` | H.8 is catalog-only; no validator changes. |
 | `src/cci_subject_validate.py` | No subject validator changes. |
 | `src/cci_acronym_validate.py` | No acronym validator changes. |
 | `src/cci_ref_encl_validate.py` | No ref/encl validator changes. |
 | `src/cci_date_time_validate.py` | No date/time validator changes. |
 | `src/cci_personnel_validate.py` | No personnel validator changes. |
 | `src/cci_poc_validate.py` | No POC validator changes. |
-| `corrections/approved_rule_promotions.json` | Remains local/gitignored; do not commit. |
-| `corrections/pending_corrections.jsonl` | Remains local/gitignored; do not commit. |
-| `corrections/session/*.jsonl` | Remains local/gitignored; do not commit. |
-| `corrections/evidence/*` | Remains local/gitignored; do not commit. |
+| `src/pdf_v6_render.py` | No renderer/layout changes. |
+| `src/context_resolver.py` | No prompt-contract changes. |
+| `src/intake_orchestrator.py` | No intake changes. |
+| `src/validator_runner.py` | No runner contract changes. |
+| `src/correction_commands.py` | No Phase F command-layer changes. |
+| `src/correction_nl_commands.py` | No Phase G command-layer changes. |
+| `src/correction_implementation_planner.py` | No planner logic changes; only `mark_implemented()` usage. |
+| `corrections/pending_corrections.jsonl` | Remains gitignored; do not commit. |
+| `corrections/approved_rule_promotions.json` | Remains gitignored; do not commit. |
+| `corrections/session/*.jsonl` | Remains gitignored; do not commit. |
+| `corrections/evidence/*` | Remains gitignored; do not commit. |
 | Any real command/user profile | Do not commit contact data or local profiles. |
 | `docs/BOOTSTRAP.md` | Do not modify. |
 | `docs/HERMES_INSTRUCTIONS.md` | Do not modify. |
@@ -495,30 +392,26 @@ If this plan is approved and implementation proceeds:
 
 ## 16. What Phase H.8 Must NOT Do
 
-Phase H.8 is a **planning-only phase** unless explicitly approved for implementation. It must NOT:
+Phase H.8 is a **rule-catalog-only pilot**. It must NOT:
 
-| # | Prohibition | Rationale |
-|---|---|---|
-| 1 | **No validator changes** | `src/cci_routing_validate.py` must remain untouched. Catalog-only pilot does not add runtime enforcement. |
-| 2 | **No renderer/layout changes** | `src/pdf_v6_render.py` must remain untouched. No x/y, margin, font, or spacing changes. |
-| 3 | **No prompt-contract changes** | `src/context_resolver.py` must remain untouched. No runtime prompt template changes. |
-| 4 | **No Phase F/G command-layer changes** | No new slash commands or NL command mappings for From-line management or window-envelope toggling. |
-| 5 | **No automatic enforcement from approved logs** | The catalog entry is documentation only; no runtime code reads the catalog and enforces it automatically. |
-| 6 | **No severity promotion of `CCI-ROUTE-010`** | H.7 already approved keeping `CCI-ROUTE-010` advisory-only. H.8 must not revisit or override that decision. |
-| 7 | **No feature flag/config implementation** | Feature-flag support remains conceptual only. No config files, environment variables, or severity override mechanisms may be added. |
-| 8 | **No approved/pending/session logs committed** | All correction storage remains local/gitignored. |
-| 9 | **No real command/user data committed** | All fixtures must be synthetic. No real names, commands, or contact data. |
-| 10 | **No background automation** | No cron jobs, watchers, or CI triggers for rule activation. |
-| 11 | **No AI-only implementation decisions** | Candidate selection, approval, and implementation target require human approval. |
-| 12 | **No multi-record batch implementation** | The pilot is one record only. |
+- **No validator changes.** `src/cci_routing_validate.py` must remain untouched.
+- **No renderer/layout changes.** `src/pdf_v6_render.py` and layout profiles must not be modified.
+- **No prompt-contract changes.** `src/context_resolver.py` must remain untouched.
+- **No Phase F/G command-layer changes.** `src/correction_commands.py`, `src/correction_nl_commands.py` must not be modified.
+- **No automatic enforcement from approved logs.** The catalog entry is documentation only; no runtime code reads the catalog to enforce it automatically.
+- **No severity promotion of CCI-ROUTE-010.** The existing office-code rule remains advisory-only.
+- **No feature flag/config implementation.** Config support remains conceptual; no new config files or severity override mechanisms.
+- **No approved/pending/session/evidence logs committed.** All correction storage remains local/gitignored.
+- **No real command/user data committed.** All fixtures must be synthetic.
+- **No background automation.** No cron jobs, auto-apply scripts, or silent rule activation.
 
 ---
 
 ## 17. Rollback Plan
 
-If the H.8 pilot must be rolled back after implementation:
+If the H.8 pilot must be rolled back:
 
-1. **Revert the catalog entry** — remove the single JSON object for `CCI-ROUTE-011` from `rules_v6/CCI/cci_ch2_routing_rules.json`.
+1. **Revert the catalog entry** — remove the `CCI-ROUTE-011` JSON object from `rules_v6/CCI/cci_ch2_routing_rules.json`.
 2. **Delete the runner** — remove `tools/run_phase_h8_third_rule_catalog_regression.py`.
 3. **Revert documentation** — revert `docs/PROJECT_STATUS.md` and `docs/planning/correction_memory_and_rule_promotion_plan.md` to the pre-H.8 state.
 4. **Delete the checkpoint** — remove `docs/checkpoints/phase_h8_third_catalog_pilot_checkpoint.md` if created.
@@ -531,69 +424,63 @@ Rollback should require **no more than 4 file deletions/reverts and one regressi
 
 ## 18. Open Questions Needing Approval
 
-| # | Question | Default if Unanswered |
+| # | Question | Default if unanswered |
 |---|---|---|
-| 1 | **Should `CCI-ROUTE-011` (From-line required) be accepted as the third catalog pilot, or rejected in favor of a different candidate?** | Default: **proceed to Phase D if user approves** — provenance is verified; candidate is low-risk, deterministic, and non-overlapping. Proceed only after explicit user approval of the rendered source location and conservative `applies_to`. |
-| 2 | **If accepted, should the `applies_to` list include memorandum types, or is it standard-letter only?** | Default: standard-letter only unless manual review at 7-2.5a explicitly includes memorandums. |
-| 3 | **Should the targeted runner verify that `CCI-ROUTE-011` does NOT trigger any existing validator (to prove catalog-only isolation)?** | Default: yes — add a check that runs `cci_routing_validate` against a synthetic fixture and confirms no new errors/warnings appear. |
-| 4 | **Should the window-envelope exception be documented in a separate catalog field (e.g., `exceptions`), or is inclusion in `rule_text_summary` sufficient?** | Default: `rule_text_summary` inclusion is sufficient. No new schema field. |
-| 5 | **Should H.8 remain planning-only, or is implementation authorized if the user approves this plan?** | Default: planning-only until user explicitly authorizes implementation. |
-| 6 | **If `CCI-ROUTE-011` is rejected, which alternative candidate domain should be searched?** | Default: date/time format (Chapter 2, paragraph 2-4.2) or reference/enclosure sequencing (Chapter 7, paragraph 7-3.3) — both have explicit manual text and existing validators. |
-| 7 | **Should the H.8 runner be frozen at 15 checks, or is a different count acceptable?** | Default: 11–15 checks is acceptable; exact count determined at implementation time. |
-| 8 | **Should the 30-suite regression gate be the new permanent standard, or should H.8 be designed so the runner can later be merged into an existing runner?** | Default: 30 suites is acceptable — a separate runner makes the pilot independently verifiable and deletable. |
-| 9 | **Should the catalog entry include a `note` or `caveat` field about the window-envelope exception, or is the quote sufficient?** | Default: the `source_quote` and `rule_text_summary` are sufficient; no new field needed. |
-| 10 | **Who approves the final candidate — the user only, or a documented reviewer workflow through Phase E?** | Default: user-only approval for planning; Phase E reviewer workflow required for actual implementation. |
+| 1 | **Should CCI-ROUTE-011 be approved as the third catalog pilot?** | Default: yes — it is deterministic, low blast radius, and well-provenanced. |
+| 2 | **Is the SECNAV source citation (Chapter 7, Section 6, subparagraph a, PDF page 50) correct and verifiable?** | Default: yes — must be verified by opening the manual before implementation. |
+| 3 | **Should the rule ID be CCI-ROUTE-011, or does a different numbering scheme apply?** | Default: yes — follows existing routing rule sequence. |
+| 4 | **Should the catalog severity be error (matching manual imperative language) even though a future validator may start as advisory?** | Default: yes — catalog severity reflects the manual; validator severity can be overridden later. |
+| 5 | **Should the applies_to list include any document types beyond standard_letter?** | Default: no — the manual text explicitly says "standard letter." Memorandums, endorsements, and joint letters are excluded. |
+| 6 | **Should a window_envelope exception be documented in the catalog entry metadata, or only in the rule text summary?** | Default: rule text summary only — the exception is part of the quoted sentence. Future validator planning (H.9) will handle the suppression logic. |
+| 7 | **Should the H.8 runner verify that the new catalog entry does NOT trigger any existing validator?** | Default: yes — include a check that runs `cci_routing_validate.py` against a synthetic fixture and confirms no new errors/warnings appear. |
+| 8 | **Is a 30-suite regression gate acceptable?** | Default: yes — one new runner for an independently verifiable pilot. |
+| 9 | **Should Phase H.8 remain strictly planning-only until this document is approved, or is any implementation authorized now?** | Default: strictly planning-only — no code changes until explicit approval. |
+| 10 | **If CCI-ROUTE-011 is rejected, should the project search for a different third pilot, or pause implementation?** | Default: search for a different third pilot — the H.7 recommendation is to expand horizontally, not to pause. |
 
 ---
 
-## Recommended Decision Summary
+## Recommended Decision
 
-| Decision | Recommended Default |
+| Decision | Recommendation |
 |---|---|
-| **Accept `CCI-ROUTE-011` as third pilot?** | **Proceed to Phase D if user approves** — provenance verified; accept only after confirmed rendered source location and conservative `applies_to` |
-| **Keep `CCI-ROUTE-010` advisory?** | Yes — unchanged; H.8 does not revisit H.7 decision |
-| **Severity promotion?** | No — deferred indefinitely |
-| **Feature flag/config design?** | Deferred until severity promotion is requested |
-| **Copy-to scope?** | Remain out of scope |
-| **Implementation target** | `rule_catalog` only |
-| **Target file** | `rules_v6/CCI/cci_ch2_routing_rules.json` |
-| **Regression coverage if implemented** | 30-suite gate (29 existing + 1 new H.8 runner) |
-| **Rollback risk** | Very low — one JSON object + one runner + docs |
+| **Use CCI-ROUTE-011 candidate?** | **YES** — Approve as the third low-risk catalog pilot. |
+| **Reject CCI-ROUTE-011?** | No — the candidate meets all selection criteria. |
+| **Search for a different third pilot?** | Only if the user rejects this candidate after review. |
 
 ---
 
-## Recommended Implementation Target (If Approved)
+## Recommended Implementation Target
 
 | Attribute | Value |
 |---|---|
 | Implementation target | `rule_catalog` |
 | Target file | `rules_v6/CCI/cci_ch2_routing_rules.json` |
-| Validator named but not modified | Yes — `validator: "cci_routing"` |
-| Enforcement level | Documentation only — no runtime code reads the catalog |
-| Severity | `error` (manual uses imperative "must have") |
-| Expected new rule ID | `CCI-ROUTE-011` |
-| Expected new runner | `tools/run_phase_h8_third_rule_catalog_regression.py` |
-| Expected regression gate | 30 suites |
+| Validator named but not modified | `cci_routing_validate.py` |
+| Enforcement level | Documentation only |
+| Severity | `error` (catalog) — future validator may start as `advisory` in a separate phase |
+| Rule ID | `CCI-ROUTE-011` |
 
 ---
 
 ## Recommended Regression Gate
 
-- **If planning-only:** 29 suites (current gate, no changes).
-- **If third pilot implemented:** 30 suites (29 existing + 1 new H.8 runner).
-- **All suites must pass before any commit.**
+| Scenario | Gate |
+|---|---|
+| Planning-only (no implementation) | 29 suites (current gate, no changes) |
+| If H.8 implemented with new runner | 30 suites (29 existing + 1 new H.8 runner) |
+
+All suites must pass before any commit.
 
 ---
 
-## Open Questions Needing Approval
+## Open Questions Needing Approval (Summary)
 
-1. Should `CCI-ROUTE-011` be accepted as the third catalog pilot, or should a different candidate be selected?
-2. Should the `applies_to` list for `CCI-ROUTE-011` include `standard_letter` only, or also `multiple_address_letter` / `endorsement` / `joint_letter`?
-3. Should the catalog `source_location` use the rendered location (`Chapter 7, Section 6, "From:" Line, subparagraph a. General.`), the inferred number (`7-2.5a`), or both?
-4. Should H.8 remain planning-only, or is implementation authorized upon approval of this plan?
-5. If `CCI-ROUTE-011` is rejected, which alternative domain (date/time, ref/encl, personnel, POC, acronym) should be searched?
-6. Should the 30-suite regression gate become the new permanent standard?
+1. Is the proposed `CCI-ROUTE-011` candidate approved for implementation?
+2. Has the SECNAV source citation been verified in the actual manual PDF?
+3. Is the `error` catalog severity acceptable given that validator enforcement (if any) would come later at advisory level?
+4. Should `applies_to` remain `standard_letter` only?
+5. Is implementation authorized, or should this plan remain planning-only pending further review?
 
 ---
 
-End of Phase H.8 / Phase I.7 — Third Low-Risk Rule-Catalog-Only Pilot Plan.
+End of Phase H.8 / Phase I.7 Third Low-Risk Rule-Catalog-Only Pilot Plan.
