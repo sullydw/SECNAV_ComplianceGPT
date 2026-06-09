@@ -1,0 +1,214 @@
+# Phase H.19 / Phase I.18 — Synthetic Burn-In Observation Checkpoint #1
+
+**Observation Checkpoint:** 01  
+**Date:** 2026-06-08  
+**Data Type:** synthetic/sanitized only  
+**No real command/user data used**  
+
+**Latest Commit:** `a42d149` — `Docs: Add H.18 burn-in observation template`  
+**H.15 Activation Commit:** `18fc9bf` — `CCI: Start H.15 ROUTE-011 warning pilot`  
+**H.17 Day 0 Checkpoint Commit:** `0b4c669`  
+**H.18 Template Commit:** `a42d149`  
+**Current Functional Baseline:** `a42d149`  
+**Regression Set:** 34 suites  
+**Last Verified Gate:** 34/34 PASS  
+**Status:** Documentation-only checkpoint. No code changes. No config changes. No real data committed.
+
+---
+
+## 1. Config State Verification
+
+Before recording this observation checkpoint, the following config checks were performed:
+
+| Check | Expected Value | Result |
+|---|---|---|
+| `CCI-ROUTE-011.effective_severity` | `warning` | PASS |
+| `CCI-ROUTE-010.effective_severity` | `advisory` | PASS |
+| `global_default` | `advisory` | PASS |
+| No error-level promotion exists | yes | PASS |
+| Config file tracked in git, no uncommitted changes | yes | PASS |
+
+**Config file path:** `config/cci_enforcement_config.json`  
+**Config unchanged since H.15 activation.**
+
+---
+
+## 2. Regression Results
+
+All required regression runners were executed with the explicit Miniconda Python interpreter:
+
+| Priority | Runner | Expected Result | Actual Result |
+|---|---|---|---|
+| Required | `tools/run_phase_h16_route011_burnin_regression.py` | PASS | PASS |
+| Required | `tools/run_phase_h13_config_regression.py` | PASS | PASS |
+| Required | `tools/run_phase_h9_from_line_validator_regression.py` | PASS | PASS |
+| Required | `tools/run_phase_h10_from_line_evidence_regression.py` | PASS | PASS |
+| Required | Full 34-suite gate | ALL PASS | 34/34 PASS |
+
+**Full gate summary:**
+- `run_pilot_subject_acronym_rule_catalog_regression.py` — PASS
+- `run_phase_h2_subject_acronym_validator_regression.py` — PASS
+- `run_phase_h3_second_rule_catalog_regression.py` — PASS
+- `run_phase_h4_routing_office_code_validator_regression.py` — PASS
+- `run_phase_h6_routing_office_code_evidence_regression.py` — PASS
+- `run_phase_h8_third_rule_catalog_regression.py` — PASS
+- `run_correction_implementation_regression.py` — PASS
+- `run_correction_nl_command_regression.py` — PASS
+- `run_correction_command_regression.py` — PASS
+- `run_correction_review_regression.py` — PASS
+- `run_correction_pending_regression.py` — PASS
+- `run_correction_profile_promotion_regression.py` — PASS
+- `run_correction_classify_regression.py` — PASS
+- `run_intake_regression.py` — PASS
+- `run_correction_regression.py` — PASS
+- `run_correction_session_regression.py` — PASS
+- `run_profile_regression.py` — PASS
+- `run_cci_audit_regression.py` — PASS
+- `run_context_schema_regression.py` — PASS
+- `run_cci_subject_regression.py` — PASS
+- `run_cci_ref_encl_regression.py` — PASS
+- `run_cci_acronym_regression.py` — PASS
+- `run_cci_date_time_regression.py` — PASS
+- `run_cci_personnel_regression.py` — PASS
+- `run_cci_poc_regression.py` — PASS
+- `run_cci_routing_regression.py` — PASS
+- `run_c7_phase1_regression.py` — PASS
+- `run_c8_regression.py` — PASS
+- `run_c9_regression.py` — PASS
+- `run_c10_regression.py` — PASS
+- `run_phase_h13_config_regression.py` — PASS
+- `run_phase_h16_route011_burnin_regression.py` — PASS
+- `run_phase_h9_from_line_validator_regression.py` — PASS
+- `run_phase_h10_from_line_evidence_regression.py` — PASS
+
+**Gate status: GREEN. All 34 suites PASS.**
+
+---
+
+## 3. H.16 Synthetic Batch Results
+
+This checkpoint uses synthetic fixtures from `examples/burnin_h16_route011/` and the H.16 burn-in regression runner. No real operational data was reviewed.
+
+### 3.1 Synthetic Payload Summary
+
+| Metric | Value | Notes |
+|---|---|---|
+| Total payloads reviewed | 90 (synthetic fixtures) | H.16 burn-in fixture set |
+| Expected `CCI-ROUTE-011` triggers | 45 | Missing-from / empty-from / whitespace-from / window-envelope-like-without-tag cases |
+| Unexpected triggers (false positives) | 0 | None observed in synthetic batch |
+| False negatives | 0 | All expected trigger cases produced warnings |
+| Window-envelope tagging observations | 15 | `window_envelope: true` correctly suppressed; `window_envelope: false/absent` correctly warned |
+
+### 3.2 Category Breakdown (Synthetic Fixtures)
+
+| Category | Description | Count | Result |
+|---|---|---|---|
+| A — Standard letter with valid `from` | `from` is non-empty real string | 20 | No finding — correct |
+| B — Standard letter missing `from` | `from` absent/null/empty | 15 | Warning triggered — correct |
+| C — Null `from` | `"from": null` | 5 | Warning triggered — correct |
+| D — Empty string `from` | `"from": ""` | 5 | Warning triggered — correct |
+| E — Whitespace-only `from` | `"from": "   "` or `\t` / `\n` | 5 | Warning triggered — correct |
+| F — Non-standard document | memo, endorsement, joint, MFR, etc. | 10 | No finding — correct |
+| G — Missing `doc_type` | `doc_type` absent/unknown | 5 | No finding — correct |
+| H — Window envelope with tag | `window_envelope: true`, no `from` | 10 | No finding (suppressed) — correct |
+| I — Window envelope with tag + `from` | `window_envelope: true`, `from` present | 5 | No finding — correct |
+| J — Window-envelope-like without tag | Looks like window envelope but tag absent | 5 | Warning triggered — correct (operator risk documented) |
+| K — Realistic synthetic/sanitized | Representative payload | 15 | Varies by case; all matched expectations |
+
+**Total: 90 synthetic payloads. All behaved as expected.**
+
+---
+
+## 4. Known Limitations
+
+| Limitation | Impact | Status |
+|---|---|---|
+| Exotic whitespace (ZWS, BOM, invisible chars) not explicitly caught | Low | Documented. Basic whitespace (` `, `\t`, `\n`) is caught. No false negatives observed with standard fixtures. |
+| Window-envelope-like letters without `window_envelope: true` block as expected | Moderate (operator education) | Documented in `docs/guidance/window_envelope_payload_guidance.md`. Operator must tag window-envelope letters manually. |
+| No real-world payload variety in this synthetic batch | Low | Expected. This is a synthetic checkpoint. Real-world observation remains future work. |
+
+---
+
+## 5. Decision
+
+### 5.1 Checkpoint Decision
+
+| Option | Selected | Rationale |
+|---|---|---|
+| Continue warning pilot | **YES** | Zero false positives, zero false negatives, regressions green, synthetic batch behaved as expected. |
+| Rollback to advisory | NO | No rollback triggers encountered. |
+| Extend observation | NO | Not required at this checkpoint. Next checkpoint scheduled at operator discretion or Day ~15. |
+| Block future error promotion | NO | No anomalies encountered that would block future promotion review. |
+
+### 5.2 Error Promotion Status
+
+**Future error promotion remains UNAUTHORIZED.**
+
+This checkpoint does not approve, plan, or implement error promotion for `CCI-ROUTE-011`. If future clean observation checkpoints accumulate and explicit user approval is obtained, a separate Phase H.20+ / I.19+ planning document must be created before any promotion work.
+
+---
+
+## 6. Recommendation
+
+- **Continue the `CCI-ROUTE-011` warning pilot.**
+- Maintain current config (`warning` for `CCI-ROUTE-011`, `advisory` for `CCI-ROUTE-010`).
+- Schedule next checkpoint at ~Day 15 or after operator feedback, whichever comes first.
+- No code, config, or catalog changes needed at this time.
+- No validator, renderer, or command-layer changes needed.
+
+---
+
+## 7. Rollback Readiness
+
+If a future observation reveals a false positive, false negative, or operator emergency:
+
+1. Edit `config/cci_enforcement_config.json`:
+   - Change `"CCI-ROUTE-011".effective_severity` from `"warning"` to `"advisory"`.
+2. Run `tools/run_phase_h13_config_regression.py` and `tools/run_phase_h16_route011_burnin_regression.py`.
+3. If regressions pass, rollback is complete.
+4. Document rollback in a new checkpoint file.
+
+Rollback is **config-only**. No validator, catalog, or renderer changes are required.
+
+---
+
+## 8. Related Documents
+
+| Document | Role |
+|---|---|
+| `docs/planning/phase_h18_route011_burnin_observation_template.md` | Template used for this checkpoint |
+| `docs/checkpoints/phase_h17_route011_day0_burnin_checkpoint.md` | Day 0 baseline |
+| `docs/checkpoints/phase_h16_route011_burnin_regression_checkpoint.md` | H.16 burn-in baseline |
+| `docs/guidance/window_envelope_payload_guidance.md` | Operator guidance |
+| `docs/planning/phase_h15_route011_warning_pilot_plan.md` | H.15 warning pilot plan |
+| `docs/planning/phase_h16_route011_warning_burnin_plan.md` | H.16 burn-in plan |
+| `config/cci_enforcement_config.json` | Severity config (unchanged) |
+| `tools/run_phase_h16_route011_burnin_regression.py` | Burn-in runner |
+| `tools/run_phase_h13_config_regression.py` | Config runner |
+| `tools/run_phase_h9_from_line_validator_regression.py` | Validator runner |
+| `tools/run_phase_h10_from_line_evidence_regression.py` | Evidence runner |
+
+---
+
+## 9. What Was NOT Modified in This Checkpoint
+
+This checkpoint is documentation-only. No code changes occurred:
+
+- `config/cci_enforcement_config.json` — not modified.
+- `src/cci_routing_validate.py` — not modified.
+- `src/cci_severity_mapper.py` — not modified.
+- `rules_v6/CCI/cci_ch2_routing_rules.json` — not modified.
+- `src/pdf_v6_render.py` — not modified.
+- `src/context_resolver.py` — not modified.
+- `src/intake_orchestrator.py` — not modified.
+- `src/validator_runner.py` — not modified.
+- `src/correction_commands.py` — not modified.
+- `src/correction_nl_commands.py` — not modified.
+- No fixtures added, removed, or modified.
+- No runners added, removed, or modified.
+- No approved/pending/session/evidence logs committed.
+- No real command/user data committed.
+
+---
+
+End of Phase H.19 / Phase I.18 Synthetic Burn-In Observation Checkpoint #1.
