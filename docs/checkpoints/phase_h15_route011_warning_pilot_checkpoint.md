@@ -1,7 +1,7 @@
 # Phase H.15 / Phase I.14 — ROUTE-011 Warning Pilot Checkpoint
 
 **Date:** 2026-06-08  
-**Commit:** `[TBD]` — `CCI: Start H.15 ROUTE-011 warning pilot`  
+**Commit:** `18fc9bf` — `CCI: Start H.15 ROUTE-011 warning pilot`  
 **Previous commit:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
 **Plan document:** `docs/planning/phase_h15_route011_warning_pilot_plan.md`  
 **Plan review checkpoint:** `docs/checkpoints/phase_h15_warning_pilot_plan_review_checkpoint.md`
