@@ -27,10 +27,11 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest planning checkpoint commit:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
-**Latest implementation commit:** `7e42f64` — `CCI: Add H.16 ROUTE-011 burn-in regression`  
-**Phase H.16 burn-in review checkpoint:** `Docs: Record H.16 burn-in review approval`  
-**Phase H.13 implementation review checkpoint:** `fcb1d4c` — `Docs: Record Phase H.13 implementation review checkpoint`  
+**Latest planning checkpoint commit:** `94b01dc` — `Docs: Record H.29 implementation review approval`
+**Latest implementation commit:** `ee4f3a2` — `CCI: Add H.28 ROUTE-011 sanitized fixture regression`
+**Phase H.30 review checkpoint:** `docs/checkpoints/phase_h30_h29_readonly_implementation_review_checkpoint.md` — Phase H.30 H.29 read-only implementation review approval checkpoint; H.28 accepted as stable baseline; suite count 35.
+**Phase H.28 implementation checkpoint:** `docs/checkpoints/phase_h28_route011_sanitized_fixture_runner_checkpoint.md` — Implementation checkpoint: 32 fixtures, `manifest.json`, `tools/run_phase_h24_route011_sanitized_fixture_regression.py` (35th suite); full 35-suite gate PASS; config/severity/catalog/validator/renderer/prompt/command untouched.
+**Phase H.13 implementation review checkpoint:** `fcb1d4c` — `Docs: Record Phase H.13 implementation review checkpoint`
 **Phase H.13 planning commits:** `dd1989e` — `Docs: Add Phase H.13 feature flag config plan`; `115f4e0` — `Docs: Refine Phase H.13 config plan`; `1759c9f` — `Docs: Fix markdown table formatting in Phase H.13 config plan`  
 **Phase H.14 review checkpoint:** `fcb1d4c` — `Docs: Phase H.14 controlled promotion readiness review (read-only; no files modified)`  
 **Phase H.15 planning document:** `docs/planning/phase_h15_route011_warning_pilot_plan.md` — `Docs: Add Phase H.15 warning pilot plan`  
@@ -233,10 +234,12 @@ C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c7_phase1_regression.p
 C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c8_regression.py
 C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c9_regression.py
 C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_c10_regression.py
+C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\run_phase_h24_route011_sanitized_fixture_regression.py
 ```
 
-The current local regression set is **34 suites**:
+The current local regression set is **35 suites**:
 
+- Phase H.24 ROUTE-011 sanitized fixture regression (36 checks).
 - Phase H.16 ROUTE-011 warning pilot burn-in regression (96 checks).
 - Phase H.13 severity config support regression (27 checks).
 - Phase H.10 From-line evidence collection and regression hardening (39 checks).
@@ -290,6 +293,7 @@ The 34-suite set passed locally after Phase H.16 burn-in regression when run wit
 - `tools/run_phase_h9_from_line_validator_regression.py` — Phase H.9 targeted regression runner (18 checks).
 - `docs/guidance/window_envelope_payload_guidance.md` — operator guidance for `window_envelope` tagging during active H.15/H.16 warning pilot.
 - `tools/run_phase_h16_route011_burnin_regression.py` — Phase H.16 warning pilot burn-in regression runner (96 checks).
+- `tools/run_phase_h24_route011_sanitized_fixture_regression.py` — Phase H.24 sanitized fixture regression runner (36 checks).
 - `tools/run_phase_h13_config_regression.py` — Phase H.13 severity config support regression runner (27 checks).
 - `tools/run_correction_implementation_regression.py` — Phase H/H.1 planner regression runner (45 checks).
 - `profiles/README.md` — external profile safety documentation.
@@ -316,15 +320,20 @@ The 34-suite set passed locally after Phase H.16 burn-in regression when run wit
 
 **Status:** Warning pilot active. `CCI-ROUTE-011.effective_severity` = `warning` in default config.
 
-**Implementation commit:** `18fc9bf` — `CCI: Start H.15 ROUTE-011 warning pilot`.  
-**Warning pilot checkpoint commit:** `c12e904` — `Docs: Update H.15 checkpoint commit hash`.  
-**H.16 burn-in regression commit:** `7e42f64` — `CCI: Add H.16 ROUTE-011 burn-in regression`.  
-**H.16 review verdict:** `APPROVE H.16 BURN-IN REGRESSION AS STABLE 34-SUITE BASELINE`.  
-**Full regression gate:** 34/34 PASS.
+**Implementation commit:** `18fc9bf` — `CCI: Start H.15 ROUTE-011 warning pilot`.
+**Warning pilot checkpoint commit:** `c12e904` — `Docs: Update H.15 checkpoint commit hash`.
+**H.16 burn-in regression commit:** `7e42f64` — `CCI: Add H.16 ROUTE-011 burn-in regression`.
+**H.16 review verdict:** `APPROVE H.16 BURN-IN REGRESSION AS STABLE 34-SUITE BASELINE`.
+**H.28 sanitized fixture regression commit:** `ee4f3a2` — `CCI: Add H.28 ROUTE-011 sanitized fixture regression`.
+**H.29 review verdict:** `APPROVE H.29 READ-ONLY IMPLEMENTATION REVIEW`.
+**H.30 review checkpoint:** `94b01dc` — `Docs: Record H.29 implementation review approval`.
+**Full regression gate:** 35/35 PASS.
 
 Phase H.15 changed `CCI-ROUTE-011.effective_severity` from `advisory` to `warning` in `config/cci_enforcement_config.json`. No validator, catalog, renderer, prompt-contract, or command-layer changes were needed because the validator already branches on `effective_severity()`. Rollback is immediate by restoring `CCI-ROUTE-011.effective_severity` to `"advisory"`.
 
-Phase H.16 added 90 synthetic burn-in fixtures under `examples/burnin_h16_route011/` and a 96-check runner (`tools/run_phase_h16_route011_burnin_regression.py`) to stress-test the warning pilot. Fixture coverage includes valid standard letters, missing/empty/null/whitespace From, non-standard document exclusions, window-envelope suppressions, window-envelope-like without tag, and realistic Navy/Marine Corps mixed payloads.
+Phase H.16 added 90 synthetic burn-in fixtures under `examples/burnin_h16_route011/` and a 96-check runner (`tools/run_phase_h16_route011_burnin_regression.py`) to stress-test the warning pilot.
+
+Phase H.28 added 32 sanitized fixtures under `examples/burnin_h24_route011_sanitized/` and a 36-check runner (`tools/run_phase_h24_route011_sanitized_fixture_regression.py`) as the 35th suite.
 
 **Operator guidance:** `docs/guidance/window_envelope_payload_guidance.md` provides payload examples and tagging instructions for operators using window-envelope letters during the warning pilot.
 
@@ -336,14 +345,14 @@ Phase H.16 added 90 synthetic burn-in fixtures under `examples/burnin_h16_route0
 
 **CCI-ROUTE-010 status:** Remains `advisory`. No error-level promotion exists for any rule.
 
-**Current functional baseline:** `7e42f64`. Regression set: 34 suites. H.13 stable baseline: `084ce64`.
+**Current functional baseline:** `ee4f3a2`. Regression set: **35 suites**. H.13 stable baseline: `084ce64`.
 
-**Recommended next phase:** Continue H.16 burn-in observation. After the observation period, possible future phase:
-- **H.17 / I.16 — Error Promotion Readiness Review** (requires separate user approval; planning-only until authorized).
+**Recommended next phase:** Continue burn-in observation. Possible future phase:
+- **Phase H.31 / Phase I.30 — Sanitized Fixture Burn-In Observation Checkpoint #1** (requires separate user approval; planning-only until authorized).
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
-- All 34 regression suites must pass before any commit.
+- All 35 regression suites must pass before any commit.
 - Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
 - No renderer/layout changes unless explicitly scoped and regression-protected.
 - No automatic enforcement from approved/pending logs.
