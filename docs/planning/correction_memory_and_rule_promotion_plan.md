@@ -1,19 +1,19 @@
 # Correction Memory and Rule Promotion Layer Plan
 
-**Latest Verified Baseline:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
-**H.13 Stable Baseline:** `084ce64` — `CCI: Add H.13 severity config support`
-**Phase H.13 Implementation Review Checkpoint:** `[TBD]` — `Docs: Record Phase H.13 implementation review checkpoint`
-**Phase H.13 Implementation Checkpoint:** `a520eb2` — `Docs: Record Phase H.13 implementation checkpoint`
-**Phase H.13 Planning Commits:** `dd1989e` — `Docs: Add Phase H.13 feature flag config plan`; `115f4e0` — `Docs: Refine Phase H.13 config plan`; `1759c9f` — `Docs: Fix markdown table formatting in Phase H.13 config plan`
-**Phase H.11 Planning Checkpoint:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`
-**Phase H.10 Implementation:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
-**Phase H.10 Planning Checkpoint:** `310fd3a` — `Docs: Refine Phase H.10 From line evidence plan`
-**Phase H.9 Implementation:** `6f320af` — `CCI: Add From line advisory validator (Phase H.9)`
-**Phase H.9 Planning Checkpoint:** `17bae2f` — `Docs: Refine Phase H.9 window-envelope boundary`
-**Phase H.8 Implementation:** `769437d` — `CCI: Add From line catalog rule (Phase H.8)`
-**Phase H.7 Planning Checkpoint:** `532993d` — `Docs: Add Phase H.7 routing office code evidence review plan`
-**Phase H.7 Approved Verdict:** keep `CCI-ROUTE-010` advisory-only by default; severity promotion deferred
-**Phase H.6 Implementation:** `662afbb` — `CCI: Add routing office code evidence regression (Phase H.6)`
+**Latest Verified Baseline:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`  
+**H.13 Stable Baseline:** `084ce64` — `CCI: Add H.13 severity config support`  
+**Phase H.13 Implementation Review Checkpoint:** `fcb1d4c` — `Docs: Record Phase H.13 implementation review checkpoint`  
+**Phase H.13 Implementation Checkpoint:** `a520eb2` — `Docs: Record Phase H.13 implementation checkpoint`  
+**Phase H.13 Planning Commits:** `dd1989e` — `Docs: Add Phase H.13 feature flag config plan`; `115f4e0` — `Docs: Refine Phase H.13 config plan`; `1759c9f` — `Docs: Fix markdown table formatting in Phase H.13 config plan`  
+**Phase H.11 Planning Checkpoint:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`  
+**Phase H.10 Implementation:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`  
+**Phase H.10 Planning Checkpoint:** `310fd3a` — `Docs: Refine Phase H.10 From line evidence plan`  
+**Phase H.9 Implementation:** `6f320af` — `CCI: Add From line advisory validator (Phase H.9)`  
+**Phase H.9 Planning Checkpoint:** `17bae2f` — `Docs: Refine Phase H.9 window-envelope boundary`  
+**Phase H.8 Implementation:** `769437d` — `CCI: Add From line catalog rule (Phase H.8)`  
+**Phase H.7 Planning Checkpoint:** `532993d` — `Docs: Add Phase H.7 routing office code evidence review plan`  
+**Phase H.7 Approved Verdict:** keep `CCI-ROUTE-010` advisory-only by default; severity promotion deferred  
+**Phase H.6 Implementation:** `662afbb` — `CCI: Add routing office code evidence regression (Phase H.6)`  
 **Phase H.4 Implementation:** `1e990a6` — `CCI: Add routing office code advisory validator (Phase H.4)`  
 **Phase H.3 Implementation:** `46edcbd` — `CCI: Add routing office code catalog rule (Phase H.3)`  
 **Phase H.2 Implementation:** `609821e` — `CCI: Add subject acronym advisory validator (Phase H.2)`  
@@ -29,8 +29,11 @@
 **Phase A Implementation:** `71ddf64` — `CCI: Add session correction persistence (Phase A)`  
 **Phase H.11 Evidence Review Checkpoint:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
 **Phase H.11 Approved Verdict:** `CCI-ROUTE-011` remains advisory-only; severity promotion deferred; productive next path: fourth low-risk catalog-only pilot planning  
-**Latest Checkpoint:** `[TBD]` / Phase H.12 no-candidate search complete (approved plan; no candidate found)  
-**Next Phase:** Phase H.13 / Phase I.12 feature-flag/config planning — planning-only until approved
+**Latest Checkpoint:** `fcb1d4c` / Phase H.13 implementation review complete (approved as stable baseline)  
+**Phase H.14 Review Checkpoint:** `fcb1d4c` — `Docs: Record Phase H.13 implementation review checkpoint` (read-only H.14 review conducted on same commit)  
+**Phase H.15 Warning Pilot Plan Document:** `94d420d` — `Docs: Add Phase H.15 warning pilot plan`  
+**Phase H.15 Plan Review Checkpoint:** `[TBD]` — `Docs: Record Phase H.15 plan review checkpoint`  
+**Next Phase:** Phase H.15 / Phase I.14 warning pilot implementation — requires explicit go-ahead; config-only scope; no code changes until separately approved
 
 ---
 

@@ -18,6 +18,7 @@ This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or d
 **Phase H.13 planning commits:** `dd1989e` — `Docs: Add Phase H.13 feature flag config plan`; `115f4e0` — `Docs: Refine Phase H.13 config plan`; `1759c9f` — `Docs: Fix markdown table formatting in Phase H.13 config plan`  
 **Phase H.14 review checkpoint:** `fcb1d4c` — `Docs: Phase H.14 controlled promotion readiness review (read-only; no files modified)`  
 **Phase H.15 planning document:** `docs/planning/phase_h15_route011_warning_pilot_plan.md` — `Docs: Add Phase H.15 warning pilot plan`  
+**Phase H.15 plan review checkpoint:** `[TBD]` — `Docs: Record Phase H.15 plan review checkpoint`
 **Phase H.11 approved planning checkpoint commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`
 **Phase H.11 evidence review checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
 **Phase H.10 implementation commit:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
@@ -608,14 +609,14 @@ Figures are rule-bearing and must be reviewed when referenced.
 
 ## Recommended Next Work
 
-### Phase H.15 / Phase I.14 — Controlled Warning Pilot for CCI-ROUTE-011 (Planning-Only)
+### Phase H.15 / Phase I.14 — Controlled Warning Pilot for CCI-ROUTE-011 (Approved as Planning Source of Truth; Implementation Not Authorized)
 
-**Status:** Planning document created; not yet approved; no implementation authorized.
+**Status:** Planning document approved as source of truth. No implementation authorized by this approval. Separate explicit go-ahead required before any config change.
 
 **H.14 review verdict:** `CCI-ROUTE-011` READY FOR WARNING PILOT; `CCI-ROUTE-010` NOT READY; error promotion NOT RECOMMENDED for either rule.
 
-**H.15 plan document:** `docs/planning/phase_h15_route011_warning_pilot_plan.md`
-**H.15 checkpoint (when created):** `[TBD]`
+**H.15 plan document:** `docs/planning/phase_h15_route011_warning_pilot_plan.md` — `Docs: Add Phase H.15 warning pilot plan`  
+**H.15 plan review checkpoint:** `[TBD]` — `Docs: Record Phase H.15 plan review checkpoint`
 
 Phase H.15 design:
 - Pilot target: `CCI-ROUTE-011` only.
@@ -628,24 +629,8 @@ Phase H.15 design:
 - Operators must understand `window_envelope` field usage before pilot activation.
 - Error promotion is explicitly out of scope and requires a separate future phase.
 
-**Alternative:** Reject promotion. Keep both rules advisory indefinitely and shift effort to real-world evidence collection or other work.
-
-**Preconditions for H.15 approval:**
-1. This planning document (`phase_h15_route011_warning_pilot_plan.md`) reviewed and approved.
-2. Operator readiness: users understand `window_envelope` payload field.
-3. Staging or safe environment identified.
-4. Synthetic batch prepared.
-5. No open blockers.
-
-**Constraints for any next phase:**
-- Planning documents must be created and approved before any code changes.
-- All 33 regression suites must pass before any commit.
-- Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
-- No renderer/layout changes unless explicitly scoped and regression-protected.
-- No automatic enforcement from approved/pending logs.
-- No AI-only implementation decisions.
-- No real command/user data committed.
-- No validator, prompt-contract, or renderer changes may occur until explicitly planned, approved, implemented, reviewed, and regression-tested.
+**Plan review verdict:** `APPROVE H.15 WARNING PILOT PLAN FOR CONFIG-ONLY IMPLEMENTATION`.  
+**Default config verified:** Both `CCI-ROUTE-010` and `CCI-ROUTE-011` remain `advisory`. No config changed. No severity changed. No commits made during review. No blockers.
 
 ---
 
