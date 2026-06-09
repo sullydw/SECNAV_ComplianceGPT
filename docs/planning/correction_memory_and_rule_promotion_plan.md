@@ -34,11 +34,12 @@
 **Phase H.15 Warning Pilot Plan Document:** `94d420d` — `Docs: Add Phase H.15 warning pilot plan`  
 **Phase H.15 Plan Review Checkpoint:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
 **Phase H.15 Warning Pilot Checkpoint:** `c12e904` — `Docs: Update H.15 checkpoint commit hash`  
-**Phase H.16 Burn-In Regression:** `7e42f64` — `CCI: Add H.16 ROUTE-011 burn-in regression`  
-**Phase H.16 Review Verdict:** `APPROVE H.16 BURN-IN REGRESSION AS STABLE 34-SUITE BASELINE`  
-**Phase H.16 Burn-In Plan:** `docs/planning/phase_h16_route011_warning_burnin_plan.md`  
-**Phase H.16 Operator Guidance:** `docs/guidance/window_envelope_payload_guidance.md`  
-**Next Phase:** Continue H.16 burn-in observation. After the observation period, possible H.17 / I.16 Error Promotion Readiness Review (requires separate approval; planning-only until authorized).
+**Phase H.16 Burn-In Regression:** `7e42f64` — `CCI: Add H.16 ROUTE-011 burn-in regression`
+**Phase H.16 Review Verdict:** `APPROVE H.16 BURN-IN REGRESSION AS STABLE 34-SUITE BASELINE`
+**Phase H.16 Burn-In Plan:** `docs/planning/phase_h16_route011_warning_burnin_plan.md`
+**Phase H.16 Operator Guidance:** `docs/guidance/window_envelope_payload_guidance.md`
+**Phase H.17 Day 0 Burn-In Checkpoint:** `docs/checkpoints/phase_h17_route011_day0_burnin_checkpoint.md` — Day 0 of 30-day observation period; 34/34 regression PASS; config unchanged; error promotion unauthorized.
+**Next Phase:** Continue H.16/H.17 burn-in observation. After the observation period, possible H.18 / I.17 Error Promotion Readiness Review (requires separate approval; planning-only until authorized).
 
 **Burn-in clock note:** The 30-day observation period starts from the H.15 warning pilot activation commit (`18fc9bf`), not from H.16. H.16 is regression hardening and burn-in evidence collection, not pilot activation.
 

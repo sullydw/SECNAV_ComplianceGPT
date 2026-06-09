@@ -1,6 +1,8 @@
 # SECNAV ComplianceGPT - Project Status
 
 **Last Updated:** 2026-06-08
+**Latest Checkpoint:** `docs/checkpoints/phase_h17_route011_day0_burnin_checkpoint.md` — Phase H.17 Day 0 burn-in checkpoint
+**H.17 Checkpoint Commit:** See git log for `Docs: Record H.17 day zero burn-in checkpoint`
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE  
 **Renderer:** v6 PDF (ReportLab)  
@@ -643,7 +645,16 @@ Figures are rule-bearing and must be reviewed when referenced.
 - No temp config files remain.
 - No validator, catalog, renderer, prompt, or command-layer changes.
 
-**Recommended next phase:** Continue H.16 burn-in observation. After observation period, possible future H.17 / I.16 Error Promotion Readiness Review (requires separate approval; planning-only until authorized).
+**Recommended next phase:** Phase H.17 / Phase I.16 — Burn-in observation continues. Day 0 checkpoint recorded at `docs/checkpoints/phase_h17_route011_day0_burnin_checkpoint.md`.
+
+**Burn-in status:**
+- Burn-in clock started: `18fc9bf` (H.15 activation).
+- Day 0 checkpoint: recorded.
+- 30-day observation period ends approximately 2026-07-08.
+- H.16 burn-in regression (`7e42f64`) remains stable baseline.
+- Full 34-suite regression gate verified PASS at Day 0.
+- Operator guidance: `docs/guidance/window_envelope_payload_guidance.md` (unchanged).
+- Future error promotion: unauthorized. Separate planning + explicit user approval required.
 
 **Constraints:**
 - No validator changes.
