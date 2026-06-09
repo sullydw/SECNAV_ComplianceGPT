@@ -34,9 +34,18 @@
 **Phase H.15 Warning Pilot Plan Document:** `94d420d` — `Docs: Add Phase H.15 warning pilot plan`  
 **Phase H.15 Plan Review Checkpoint:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
 **Phase H.15 Warning Pilot Checkpoint:** `c12e904` — `Docs: Update H.15 checkpoint commit hash`  
-**Phase H.16 Burn-In Regression:** `[TBD]` — `CCI: Add H.16 ROUTE-011 burn-in regression`  
+**Phase H.16 Burn-In Regression:** `7e42f64` — `CCI: Add H.16 ROUTE-011 burn-in regression`  
+**Phase H.16 Review Verdict:** `APPROVE H.16 BURN-IN REGRESSION AS STABLE 34-SUITE BASELINE`  
 **Phase H.16 Burn-In Plan:** `docs/planning/phase_h16_route011_warning_burnin_plan.md`  
-**Next Phase:** Continue H.16 burn-in observation. After observation period, possible H.17 / I.16 Error Promotion Readiness Review (requires separate approval; planning-only until authorized).
+**Next Phase:** Continue H.16 burn-in observation. After the observation period, possible H.17 / I.16 Error Promotion Readiness Review (requires separate approval; planning-only until authorized).
+
+**Burn-in clock note:** The 30-day observation period starts from the H.15 warning pilot activation commit (`18fc9bf`), not from H.16. H.16 is regression hardening and burn-in evidence collection, not pilot activation.
+
+**Known limitations (non-blocking for warning pilot):**
+- Exotic whitespace (zero-width space `\u200B`, BOM `\uFEFF`) does not trigger `CCI-ROUTE-011` because `str.strip()` does not strip them. Acceptable for warning pilot. Consider validator hardening before any future error promotion.
+- Window-envelope-like letters without `window_envelope: true` block as expected. This is operator/data-quality risk, not a false positive.
+
+**Future error promotion:** Unauthorized. Requires separate planning, review checkpoint, and explicit user approval before any discussion of H.17 / I.16.
 
 ---
 

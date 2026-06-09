@@ -1,6 +1,6 @@
 # Phase H.16 / Phase I.15 — ROUTE-011 Warning Pilot Burn-In Regression Checkpoint
 
-**Commit:** `[TBD]` — `CCI: Add H.16 ROUTE-011 burn-in regression`  
+**Commit:** `7e42f64` — `CCI: Add H.16 ROUTE-011 burn-in regression`  
 **Date:** 2026-06-08
 
 ---

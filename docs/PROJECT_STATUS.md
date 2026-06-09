@@ -12,14 +12,17 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest planning checkpoint commit:** `a520eb2` — `Docs: Record Phase H.13 implementation checkpoint`  
-**Latest implementation commit:** `084ce64` — `CCI: Add H.13 severity config support`  
+**Latest planning checkpoint commit:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
+**Latest implementation commit:** `7e42f64` — `CCI: Add H.16 ROUTE-011 burn-in regression`  
+**Phase H.16 burn-in review checkpoint:** `Docs: Record H.16 burn-in review approval`  
 **Phase H.13 implementation review checkpoint:** `fcb1d4c` — `Docs: Record Phase H.13 implementation review checkpoint`  
 **Phase H.13 planning commits:** `dd1989e` — `Docs: Add Phase H.13 feature flag config plan`; `115f4e0` — `Docs: Refine Phase H.13 config plan`; `1759c9f` — `Docs: Fix markdown table formatting in Phase H.13 config plan`  
 **Phase H.14 review checkpoint:** `fcb1d4c` — `Docs: Phase H.14 controlled promotion readiness review (read-only; no files modified)`  
 **Phase H.15 planning document:** `docs/planning/phase_h15_route011_warning_pilot_plan.md` — `Docs: Add Phase H.15 warning pilot plan`  
 **Phase H.15 plan review checkpoint:** `575c2aa` — `Docs: Record Phase H.15 plan review checkpoint`  
-**Phase H.15 warning pilot checkpoint:** `18fc9bf` — `CCI: Start H.15 ROUTE-011 warning pilot`
+**Phase H.15 warning pilot checkpoint:** `18fc9bf` — `CCI: Start H.15 ROUTE-011 warning pilot`  
+**Phase H.16 burn-in regression commit:** `7e42f64` — `CCI: Add H.16 ROUTE-011 burn-in regression`  
+**Phase H.16 review verdict:** `APPROVE H.16 BURN-IN REGRESSION AS STABLE 34-SUITE BASELINE`
 **Phase H.11 approved planning checkpoint commit:** `4c3cdb8` — `Docs: Add Phase H.11 From line evidence review plan`
 **Phase H.11 evidence review checkpoint commit:** `52076a1` — `Docs: Record Phase H.11 evidence review checkpoint`  
 **Phase H.10 implementation commit:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`
@@ -293,41 +296,36 @@ The 34-suite set passed locally after Phase H.16 burn-in regression when run wit
 
 ## Recommended Next Work
 
-### Phase H.13 / Phase I.12 — Feature-Flag/Config Support (Implemented, Reviewed, and Approved as Stable Baseline)
+### Phase H.15 / Phase I.14 — Controlled Warning Pilot for CCI-ROUTE-011 (Active)
 
-**Phase H.13 implementation commit:** `084ce64` — `CCI: Add H.13 severity config support`.  
-**Phase H.13 implementation checkpoint:** `a520eb2` — `Docs: Record Phase H.13 implementation checkpoint`.  
-**Phase H.13 implementation review checkpoint:** `[TBD]` — `Docs: Record Phase H.13 implementation review checkpoint`.  
-**Phase H.13 planning commits:** `dd1989e`, `115f4e0`, `1759c9f`.  
-**Review verdict:** `APPROVE H.13 IMPLEMENTATION AS STABLE BASELINE`.  
-**Full regression gate:** 33/33 PASS.
+**Status:** Warning pilot active. `CCI-ROUTE-011.effective_severity` = `warning` in default config.
 
-Phase H.13 adds `src/cci_severity_mapper.py`, `config/cci_enforcement_config.json`, and severity branching in `cci_routing_validate.py`. Default config preserves advisory for `CCI-ROUTE-010` and `CCI-ROUTE-011`. Safe fallback on all error paths. `validator_runner.py` untouched. No renderer/layout/prompt-contract/command-layer changes.
+**Implementation commit:** `18fc9bf` — `CCI: Start H.15 ROUTE-011 warning pilot`.  
+**Warning pilot checkpoint commit:** `c12e904` — `Docs: Update H.15 checkpoint commit hash`.  
+**H.16 burn-in regression commit:** `7e42f64` — `CCI: Add H.16 ROUTE-011 burn-in regression`.  
+**H.16 review verdict:** `APPROVE H.16 BURN-IN REGRESSION AS STABLE 34-SUITE BASELINE`.  
+**Full regression gate:** 34/34 PASS.
 
-Phase H.12 / Phase I.11 fourth catalog-only pilot search is **complete — no safe candidate found**.
+Phase H.15 changed `CCI-ROUTE-011.effective_severity` from `advisory` to `warning` in `config/cci_enforcement_config.json`. No validator, catalog, renderer, prompt-contract, or command-layer changes were needed because the validator already branches on `effective_severity()`. Rollback is immediate by restoring `CCI-ROUTE-011.effective_severity` to `"advisory"`.
 
-**H.12 plan commit:** `c608ef6` — `Docs: Add Phase H.12 fourth catalog pilot plan`.
-**H.12 search checkpoint commit:** `[TBD]` — `Docs: Record Phase H.12 no-candidate search checkpoint`.
-**H.12 design review commit:** `a450208` — `Docs: Fix H.12 catalog path references`.
+Phase H.16 added 90 synthetic burn-in fixtures under `examples/burnin_h16_route011/` and a 96-check runner (`tools/run_phase_h16_route011_burnin_regression.py`) to stress-test the warning pilot. Fixture coverage includes valid standard letters, missing/empty/null/whitespace From, non-standard document exclusions, window-envelope suppressions, window-envelope-like without tag, and realistic Navy/Marine Corps mixed payloads.
 
-Any future promotion to warning/error requires:
-1. Edit `config/cci_enforcement_config.json` (already implemented).
-2. Real-world evidence review (already collected in H.6/H.10).
-3. Explicit user approval.
-4. Targeted regression update.
-5. Full regression gate (33 suites).
+**Burn-in clock:** The 30-day observation period starts from the H.15 activation commit (`18fc9bf`), not from H.16. H.16 is regression hardening / burn-in evidence, not pilot activation.
 
-**Current functional baseline:** `d808cb8`. Regression set: 33 suites. H.13 stable baseline: `084ce64`.
+**Known limitations (non-blocking for warning pilot):**
+- Exotic whitespace (zero-width space `\u200B`, BOM `\uFEFF`) does not trigger `CCI-ROUTE-011` because `str.strip()` does not strip them. Acceptable for warning pilot. Consider validator hardening before any future error promotion.
+- Window-envelope-like letters without `window_envelope: true` block as expected. This is operator/data-quality risk, not a false positive.
 
-**Recommended next phase: planning-only until approved.** Possible directions:
-- Approve Phase H.15 controlled warning pilot for `CCI-ROUTE-011`.
-- Defer promotion and keep both rules advisory indefinitely.
-- Collect real-world Navy standard-letter payloads for future hardening.
-- Collect real-world Navy To/Via line patterns for `CCI-ROUTE-010` future reconsideration.
+**CCI-ROUTE-010 status:** Remains `advisory`. No error-level promotion exists for any rule.
+
+**Current functional baseline:** `7e42f64`. Regression set: 34 suites. H.13 stable baseline: `084ce64`.
+
+**Recommended next phase:** Continue H.16 burn-in observation. After the observation period, possible future phase:
+- **H.17 / I.16 — Error Promotion Readiness Review** (requires separate user approval; planning-only until authorized).
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
-- All 33 regression suites must pass before any commit.
+- All 34 regression suites must pass before any commit.
 - Use `C:\Users\drryl\pinokio\bin\miniconda\python.exe` for full regression runs.
 - No renderer/layout changes unless explicitly scoped and regression-protected.
 - No automatic enforcement from approved/pending logs.
