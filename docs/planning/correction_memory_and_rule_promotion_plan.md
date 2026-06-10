@@ -556,7 +556,20 @@ Phase H.12 safety boundaries preserved:
 - Config-driven severity mechanism (H.13) enables immediate rollback.
 - A 30-day burn-in period should be required before any error-level discussion.
 
-**Recommended next phase:** Phase H.15 / Phase I.14 — Controlled Warning Pilot for `CCI-ROUTE-011`.
+|**Recommended next phase:** Phase H.15 / Phase I.14 — Controlled Warning Pilot for `CCI-ROUTE-011`.
+
+### Phase I.37 / Phase J.1 — CCI-ROUTE-010 Warning Pilot Plan (Planning-Only)
+
+- Planning document: `docs/planning/phase_i37_route010_warning_pilot_plan.md`.
+- **Scope:** Evaluate whether `CCI-ROUTE-010` should enter a controlled warning pilot, mirroring the H.15 `CCI-ROUTE-011` warning pilot process.
+- **Current state:** `CCI-ROUTE-010` = `advisory`; `CCI-ROUTE-011` = `warning` (active pilot); `global_default` = `advisory`; 35-suite regression baseline; no error promotion authorized.
+- **Proposed activation (future phase only):** Change `CCI-ROUTE-010.effective_severity` from `advisory` to `warning` in `config/cci_enforcement_config.json`. No validator, catalog, renderer, prompt, or command-layer changes.
+- **Why reasonable:** Deterministic rule; exact source quote exists; validator already detects both Check A and Check B; rule is allowlisted; rollback is config-only; precedent from ROUTE-011 warning pilot.
+- **Risks documented:** False positives on non-office-code text; unusual office-code formats; parsing limits; mixed Navy/Marine Corps expectations; possible context-specific `Code` usage.
+- **Burn-in required before activation:** H.4 validator regression (18 checks), H.6 evidence regression (15 checks), H.13 config regression (27 checks), full 35-suite gate.
+- **Rollback path:** Restore `effective_severity` to `advisory`; rerun H.13, H.4, H.6; rerun full gate if needed.
+- **Explicit prohibitions:** No config change in this planning phase; no severity change; no error promotion; no validator/catalog/renderer/prompt/command changes; no logs or unsanitized material committed; do not modify `docs/BOOTSTRAP.md` or `docs/HERMES_INSTRUCTIONS.md`.
+- **Recommended next phase:** Phase I.38 / Phase J.2 — CCI-ROUTE-010 Warning Pilot Plan Review (approve / defer / reject).
 
 ---
 

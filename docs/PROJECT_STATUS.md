@@ -1,6 +1,7 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-10
+**Phase I.37 Warning Pilot Plan:** `docs/planning/phase_i37_route010_warning_pilot_plan.md` — Planning-only document evaluating whether `CCI-ROUTE-010` should enter a controlled warning pilot; no config change, no severity change, no code change.
 **Latest Checkpoint:** `docs/checkpoints/phase_h35_route011_warning_pilot_paused_observation_checkpoint.md` — Phase H.35 warning pilot paused observation posture checkpoint
 **H.35 Posture:** H.31–H.33 identical clean fixture burn-in observations reviewed; H.34 decided to pause repeated fixture-only observation; H.35 documents the paused posture; no new observation data; pilot remains active
 **H.34 Review Result:** H.31–H.33 identical clean results; pause fixture-only observation; continue warning pilot; error promotion remains unauthorized
@@ -355,7 +356,9 @@ Phase H.28 added 32 sanitized fixtures under `examples/burnin_h24_route011_sanit
 
 **Current functional baseline:** `ee4f3a2`. Regression set: **35 suites**. H.13 stable baseline: `084ce64`.
 
-**Recommended next phase:** Continue warning pilot; pause repeated fixture-only observation. Hold steady until operator feedback arrives or user direction changes. Possible future phase:
+**Recommended next phase:** Phase I.38 / Phase J.2 — CCI-ROUTE-010 Warning Pilot Plan Review. Read `docs/planning/phase_i37_route010_warning_pilot_plan.md` and decide whether to approve, defer, or reject the proposed warning pilot for `CCI-ROUTE-010`.
+
+**Active warning pilot:** `CCI-ROUTE-011` remains active (Phase H.15). Hold steady until operator feedback arrives or user direction changes. Possible future phase:
 - **Phase H.37 / Phase I.36 — Operator Feedback Observation Checkpoint** (only created if sanitized operator feedback is available; otherwise hold warning pilot steady).
 
 **Constraints for any next phase:**
