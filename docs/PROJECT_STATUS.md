@@ -725,7 +725,9 @@ Figures are rule-bearing and must be reviewed when referenced.
 - Future error promotion: unauthorized. Separate planning + explicit user approval required.
 - Future sanitized fixture implementation: unauthorized without separate approval.
 
-**Recommended next phase:** Phase J.15 / Phase K.7 — ROUTE-007 Source/Catalog Refinement Review. Read `docs/checkpoints/phase_j14_route007_source_citation_review_note.md` and decide whether the inferred nature of ROUTE-007 is acceptable for future allowlist consideration, or whether a stronger direct citation should be sought before any promotion. No config changes. No severity changes. Error promotion unauthorized.
+**Phase J.15 / Phase K.7 ROUTE-007 Candidate Closeout Checkpoint:** `docs/checkpoints/phase_j15_route007_candidate_closeout_checkpoint.md` — Track closed without promotion; ROUTE-007 has dedicated regression coverage but insufficient direct source authority for warning-pilot activation; catalog left unchanged; no config/severity/validator/catalog/renderer/prompt/command changes; error promotion unauthorized.
+
+**Recommended next phase:** Pick a new catalog rule with explicit source text for future candidate evaluation. ROUTE-010 and ROUTE-011 warning pilots remain active. Continue monitoring through existing observation checkpoints. Error promotion unauthorized.
 
 **Constraints:**
 - No validator changes.
