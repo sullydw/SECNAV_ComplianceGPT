@@ -1,8 +1,9 @@
 # SECNAV ComplianceGPT - Project Status
 
 **Last Updated:** 2026-06-09
-**Latest Checkpoint:** `docs/checkpoints/phase_h34_route011_sanitized_fixture_burnin_review_decision.md` — Phase H.34 sanitized fixture burn-in review and next-step decision
-**H.34 Review Result:** H.31–H.33 identical clean results; three consecutive identical clean observations; pause fixture-only observation; continue warning pilot; error promotion remains unauthorized
+**Latest Checkpoint:** `docs/checkpoints/phase_h35_route011_warning_pilot_paused_observation_checkpoint.md` — Phase H.35 warning pilot paused observation posture checkpoint
+**H.35 Posture:** H.31–H.33 identical clean fixture burn-in observations reviewed; H.34 decided to pause repeated fixture-only observation; H.35 documents the paused posture; no new observation data; pilot remains active
+**H.34 Review Result:** H.31–H.33 identical clean results; pause fixture-only observation; continue warning pilot; error promotion remains unauthorized
 **H.33 Observation Result:** 32 fixtures PASS, 4 sub-runners PASS, full 35-suite gate PASS, 0 false positives, 0 false negatives; identical to H.31 and H.32
 **H.32 Observation Result:** 32 fixtures PASS, 4 sub-runners PASS, full 35-suite gate PASS, 0 false positives, 0 false negatives; identical to H.31
 **H.31 Observation Result:** 32 fixtures PASS, 4 sub-runners PASS, full 35-suite gate PASS, 0 false positives, 0 false negatives
@@ -21,6 +22,7 @@
 **H.28 Sanitized Fixture and Runner Implementation Checkpoint:** `docs/checkpoints/phase_h28_route011_sanitized_fixture_runner_checkpoint.md` — Implementation checkpoint: 32 fixtures, `manifest.json`, `tools/run_phase_h24_route011_sanitized_fixture_regression.py` (35th suite); full 35-suite gate PASS; config/severity/catalog/validator/renderer/prompt/command untouched.
 **H.30 Read-Only Implementation Review Checkpoint:** `docs/checkpoints/phase_h30_h29_readonly_implementation_review_checkpoint.md` — Phase H.30 H.29 read-only implementation review approval checkpoint; H.28 accepted as stable baseline; 21 review criteria pass; suite count 35.
 **H.34 Sanitized Fixture Burn-In Review Decision:** `docs/checkpoints/phase_h34_route011_sanitized_fixture_burnin_review_decision.md` — H.34 review of H.31–H.33; confirms stability, pauses repeated fixture-only observation, continues warning pilot; error promotion unauthorized; no code changes.
+**H.35 Warning Pilot Paused Observation Checkpoint:** `docs/checkpoints/phase_h35_route011_warning_pilot_paused_observation_checkpoint.md` — Documents paused-observation posture after H.34; no new fixture observation; pilot remains active; lists 5 triggers for resuming observation; error promotion unauthorized; no code changes.
 **GitHub (Active):** https://github.com/sullydw/SECNAV_ComplianceGPT  
 **GitHub (Invalid/Nonexistent):** https://github.com/drryl-worqx/SECNAV-ComplianceGPT — DO NOT USE  
 **Renderer:** v6 PDF (ReportLab)  
@@ -352,8 +354,8 @@ Phase H.28 added 32 sanitized fixtures under `examples/burnin_h24_route011_sanit
 
 **Current functional baseline:** `ee4f3a2`. Regression set: **35 suites**. H.13 stable baseline: `084ce64`.
 
-**Recommended next phase:** Continue warning pilot; pause repeated fixture-only observation until real operator feedback arrives. No planning-only document required for H.35 unless user requests it.
-- **Phase H.35 / Phase I.34 — Continue Warning Pilot with Paused Fixture Observation** (maintain current state; resume observation only when real operator feedback or new edge-case reports arrive; no code changes unless directed).
+**Recommended next phase:** Continue warning pilot; pause repeated fixture-only observation. Possible future phase:
+- **Phase H.36 / Phase I.35 — Sanitized Operator Feedback Observation Plan** (create planning document for evaluating sanitized operator feedback if/when it arrives; planning-only, no code changes unless directed).
 
 **Constraints for any next phase:**
 - Planning documents must be created and approved before any code changes.
