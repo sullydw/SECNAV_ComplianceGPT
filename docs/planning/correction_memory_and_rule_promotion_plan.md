@@ -558,18 +558,28 @@ Phase H.12 safety boundaries preserved:
 
 |**Recommended next phase:** Phase H.15 / Phase I.14 — Controlled Warning Pilot for `CCI-ROUTE-011`.
 
-### Phase I.37 / Phase J.1 — CCI-ROUTE-010 Warning Pilot Plan (Planning-Only)
+### Phase I.37 / Phase J.1 — CCI-ROUTE-010 Warning Pilot Plan (Planning-Only, Approved)
 
 - Planning document: `docs/planning/phase_i37_route010_warning_pilot_plan.md`.
+- **Review phase:** I.38 / J.2 — `APPROVE I.38 / J.2 ROUTE-010 WARNING PILOT PLAN REVIEW`
 - **Scope:** Evaluate whether `CCI-ROUTE-010` should enter a controlled warning pilot, mirroring the H.15 `CCI-ROUTE-011` warning pilot process.
-- **Current state:** `CCI-ROUTE-010` = `advisory`; `CCI-ROUTE-011` = `warning` (active pilot); `global_default` = `advisory`; 35-suite regression baseline; no error promotion authorized.
-- **Proposed activation (future phase only):** Change `CCI-ROUTE-010.effective_severity` from `advisory` to `warning` in `config/cci_enforcement_config.json`. No validator, catalog, renderer, prompt, or command-layer changes.
+- **Current state at planning time:** `CCI-ROUTE-010` = `advisory`; `CCI-ROUTE-011` = `warning` (active pilot); `global_default` = `advisory`; 35-suite regression baseline; no error promotion authorized.
+- **Activation (I.39/J.3):** Config-only change; `CCI-ROUTE-010.effective_severity` changed from `advisory` to `warning`. No validator, catalog, renderer, prompt, or command-layer changes.
 - **Why reasonable:** Deterministic rule; exact source quote exists; validator already detects both Check A and Check B; rule is allowlisted; rollback is config-only; precedent from ROUTE-011 warning pilot.
 - **Risks documented:** False positives on non-office-code text; unusual office-code formats; parsing limits; mixed Navy/Marine Corps expectations; possible context-specific `Code` usage.
-- **Burn-in required before activation:** H.4 validator regression (18 checks), H.6 evidence regression (15 checks), H.13 config regression (27 checks), full 35-suite gate.
+- **Burn-in executed at activation:** H.4 validator regression (18 checks PASS), H.6 evidence regression (15 checks PASS), H.13 config regression (27 checks PASS), full 35-suite gate PASS.
 - **Rollback path:** Restore `effective_severity` to `advisory`; rerun H.13, H.4, H.6; rerun full gate if needed.
-- **Explicit prohibitions:** No config change in this planning phase; no severity change; no error promotion; no validator/catalog/renderer/prompt/command changes; no logs or unsanitized material committed; do not modify `docs/BOOTSTRAP.md` or `docs/HERMES_INSTRUCTIONS.md`.
-- **Recommended next phase:** Phase I.38 / Phase J.2 — CCI-ROUTE-010 Warning Pilot Plan Review (approve / defer / reject).
+- **Explicit prohibitions maintained:** No error promotion; no validator/catalog/renderer/prompt/command changes; no logs or unsanitized material committed; `docs/BOOTSTRAP.md` and `docs/HERMES_INSTRUCTIONS.md` untouched.
+- **Recommended next phase:** Phase I.40 / Phase J.4 — ROUTE-010 Warning Pilot Burn-In Checkpoint #1.
+
+### Phase I.39 / Phase J.3 — CCI-ROUTE-010 Warning Pilot Activation (Completed)
+
+- Activation checkpoint: `docs/checkpoints/phase_i39_route010_warning_pilot_activation_checkpoint.md`
+- **Action:** Config-only activation; `CCI-ROUTE-010.effective_severity` = `warning`
+- **Runner updates:** H.4, H.6, H.9, H.10, H.13 runner expectations updated to check both warnings and errors for ROUTE-010 presence/absence
+- **Results:** 18/18 H.4 PASS, 15/15 H.6 PASS, 18/18 H.9 PASS, 39/39 H.10 PASS, 27/27 H.13 PASS, 35-suite gate PASS
+- **Post-activation state:** `CCI-ROUTE-010` = `warning`, `CCI-ROUTE-011` = `warning`, `global_default` = `advisory`
+- **Error promotion:** Unauthorized
 
 ---
 

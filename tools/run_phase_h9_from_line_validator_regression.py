@@ -57,8 +57,9 @@ def has_route_011_in_errors(errors: list[str]) -> bool:
     return any("CCI-ROUTE-011" in e for e in errors)
 
 
-def has_route_010(warnings: list[str]) -> bool:
-    return any("CCI-ROUTE-010" in w for w in warnings)
+def has_route_010(warnings: list[str], errors: list[str] | None = None) -> bool:
+    targets = warnings if errors is None else warnings + errors
+    return any("CCI-ROUTE-010" in t for t in targets)
 
 
 def run_git(cmd: list[str]) -> str:
@@ -163,7 +164,7 @@ def main() -> int:
     # 13: Both ROUTE-010 and ROUTE-011 trigger independently
     payload = load_fixture("routing_from_both_rules.json")
     errors, warnings = validate_cci_routing(payload)
-    ok = has_route_011(warnings, errors) and has_route_010(warnings)
+    ok = has_route_011(warnings, errors) and has_route_010(warnings, errors)
     results.append(("Check 13: Both ROUTE-010 and ROUTE-011 trigger independently on same payload", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 13")
 
@@ -178,7 +179,7 @@ def main() -> int:
     payload = load_fixture("routing_from_both_rules.json")
     payload["from"] = "Commanding Officer, Example Activity"
     errors, warnings = validate_cci_routing(payload)
-    ok = not has_route_011(warnings, errors) and has_route_010(warnings)
+    ok = not has_route_011(warnings, errors) and has_route_010(warnings, errors)
     results.append(("Check 15: Existing ROUTE-010 preserved when ROUTE-011 not triggered", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 15")
 

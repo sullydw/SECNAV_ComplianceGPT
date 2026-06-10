@@ -10,10 +10,10 @@
   "global_default": "advisory",
   "overrides": {
     "CCI-ROUTE-010": {
-      "effective_severity": "advisory",
+      "effective_severity": "warning",
       "allow_override_up_to": "error",
-      "reason": "Office code prefix rule; evidence collected in Phase H.6; advisory by default",
-      "snapshot_id": "cfg_20260608_default"
+      "reason": "Office code prefix rule; evidence collected in Phase H.6; warning pilot active in Phase I.39 / Phase J.3",
+      "snapshot_id": "cfg_20260610_warning"
     },
     "CCI-ROUTE-011": {
       "effective_severity": "warning",

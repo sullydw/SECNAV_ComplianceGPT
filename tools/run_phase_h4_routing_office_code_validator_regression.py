@@ -64,8 +64,23 @@ def route_010_present(warnings: list[str], expected_snippet: str) -> bool:
     )
 
 
+def route_010_present_errors(errors: list[str], expected_snippet: str) -> bool:
+    return any(
+        "CCI-ROUTE-010" in e and expected_snippet in e
+        for e in errors
+    )
+
+
 def route_010_absent(warnings: list[str]) -> bool:
     return not any("CCI-ROUTE-010" in w for w in warnings)
+
+
+def route_010_absent_errors(errors: list[str]) -> bool:
+    return not any("CCI-ROUTE-010" in e for e in errors)
+
+
+def route_010_absent_both(warnings: list[str], errors: list[str]) -> bool:
+    return route_010_absent(warnings) and route_010_absent_errors(errors)
 
 
 def main() -> int:
@@ -114,7 +129,7 @@ def main() -> int:
     # 3. Numeric missing Code (comma) triggers ROUTE-010
     # ------------------------------------------------------------------
     errors, warnings = run_validator(root, "routing_numeric_no_code_comma.json")
-    ok = route_010_present(warnings, "numeric office code missing")
+    ok = route_010_present_errors(errors, "numeric office code missing")
     results.append(("Check 03: numeric comma-delimited missing Code triggers ROUTE-010", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 03")
 
@@ -122,7 +137,7 @@ def main() -> int:
     # 4. Numeric missing Code (parentheses) triggers ROUTE-010
     # ------------------------------------------------------------------
     errors, warnings = run_validator(root, "routing_numeric_no_code_paren.json")
-    ok = route_010_present(warnings, "numeric office code missing")
+    ok = route_010_present_errors(errors, "numeric office code missing")
     results.append(("Check 04: numeric parenthetical missing Code triggers ROUTE-010", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 04")
 
@@ -130,7 +145,7 @@ def main() -> int:
     # 5. Letter-starting with improper Code (comma) triggers ROUTE-010
     # ------------------------------------------------------------------
     errors, warnings = run_validator(root, "routing_letter_with_code_comma.json")
-    ok = route_010_present(warnings, "letter-starting office code should not use 'Code' prefix")
+    ok = route_010_present_errors(errors, "letter-starting office code should not use 'Code' prefix")
     results.append(("Check 05: letter with improper Code comma triggers ROUTE-010", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 05")
 
@@ -138,7 +153,7 @@ def main() -> int:
     # 6. Letter-starting with improper Code (parentheses) triggers ROUTE-010
     # ------------------------------------------------------------------
     errors, warnings = run_validator(root, "routing_letter_with_code_paren.json")
-    ok = route_010_present(warnings, "letter-starting office code should not use 'Code' prefix")
+    ok = route_010_present_errors(errors, "letter-starting office code should not use 'Code' prefix")
     results.append(("Check 06: letter with improper Code parentheses triggers ROUTE-010", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 06")
 
@@ -146,7 +161,7 @@ def main() -> int:
     # 7. Numeric with Code (comma) does NOT trigger
     # ------------------------------------------------------------------
     errors, warnings = run_validator(root, "routing_numeric_with_code_comma.json")
-    ok = route_010_absent(warnings)
+    ok = route_010_absent_both(warnings, errors)
     results.append(("Check 07: numeric with correct Code comma does NOT trigger", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 07")
 
@@ -154,7 +169,7 @@ def main() -> int:
     # 8. Numeric with Code (parentheses) does NOT trigger
     # ------------------------------------------------------------------
     errors, warnings = run_validator(root, "routing_numeric_with_code_paren.json")
-    ok = route_010_absent(warnings)
+    ok = route_010_absent_both(warnings, errors)
     results.append(("Check 08: numeric with correct Code parentheses does NOT trigger", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 08")
 
@@ -162,7 +177,7 @@ def main() -> int:
     # 9. Letter without Code (comma) does NOT trigger
     # ------------------------------------------------------------------
     errors, warnings = run_validator(root, "routing_letter_no_code_comma.json")
-    ok = route_010_absent(warnings)
+    ok = route_010_absent_both(warnings, errors)
     results.append(("Check 09: letter without Code comma does NOT trigger", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 09")
 
@@ -170,7 +185,7 @@ def main() -> int:
     # 10. Letter without Code (parentheses SUP) does NOT trigger
     # ------------------------------------------------------------------
     errors, warnings = run_validator(root, "routing_letter_no_code_comma_sup.json")
-    ok = route_010_absent(warnings)
+    ok = route_010_absent_both(warnings, errors)
     results.append(("Check 10: letter without Code parentheses does NOT trigger", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 10")
 
@@ -178,7 +193,7 @@ def main() -> int:
     # 11. Trailing number without delimiter does NOT trigger
     # ------------------------------------------------------------------
     errors, warnings = run_validator(root, "routing_no_delimiter.json")
-    ok = route_010_absent(warnings)
+    ok = route_010_absent_both(warnings, errors)
     results.append(("Check 11: trailing number without delimiter does NOT trigger", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 11")
 
@@ -202,7 +217,7 @@ def main() -> int:
     via_fixture = root / "examples" / "routing_via_numeric_comma.json"
     via_fixture.write_text('{\"via\": [\"U.S. Pacific Fleet, 12345\"]}', encoding="utf-8")
     errors, warnings = run_validator(root, "routing_via_numeric_comma.json")
-    ok = route_010_present(warnings, "numeric office code missing")
+    ok = route_010_present_errors(errors, "numeric office code missing")
     results.append(("Check 14: Via scope triggers ROUTE-010", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 14")
 
@@ -210,7 +225,7 @@ def main() -> int:
     # 15. Copy-to scope is not checked in Phase H.4
     # ------------------------------------------------------------------
     errors, warnings = run_validator(root, "routing_copy_to_numeric_comma.json")
-    ok = route_010_absent(warnings)
+    ok = route_010_absent_both(warnings, errors)
     results.append(("Check 15: copy_to scope does NOT trigger in Phase H.4", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 15")
 
@@ -221,7 +236,7 @@ def main() -> int:
     existing_raw = root / "examples" / "routing_existing_behavior.json"
     existing_raw.write_text('{\"via\": [\"(1) Commander U.S. Pacific Fleet\"]}', encoding="utf-8")
     errors, warnings = run_validator(root, "routing_existing_behavior.json")
-    ok = any("CCI-ROUTE-003" in w for w in warnings) and route_010_absent(warnings)
+    ok = any("CCI-ROUTE-003" in w for w in warnings) and route_010_absent_both(warnings, errors)
     results.append(("Check 16: existing ROUTE-003 warning still preserved", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 16")
 
@@ -272,6 +287,9 @@ def main() -> int:
         "docs/checkpoints/phase_h13_feature_flag_config_checkpoint.md",
         "docs/checkpoints/phase_h14_controlled_promotion_readiness_checkpoint.md",
         "docs/checkpoints/phase_h15_warning_pilot_plan_review_checkpoint.md",
+        # Phase I.37 / I.39 artifacts (ROUTE-010 warning pilot)
+        "docs/planning/phase_i37_route010_warning_pilot_plan.md",
+        "docs/checkpoints/phase_i39_route010_warning_pilot_activation_checkpoint.md",
         "config/cci_enforcement_config.json",
         "examples/audit_cci_combined_warning.json",
         "examples/audit_cci_routing_valid.json",

@@ -47,8 +47,9 @@ def has_route_011_in_errors(errors: list[str]) -> bool:
     return any("CCI-ROUTE-011" in e for e in errors)
 
 
-def has_route_010(warnings: list[str]) -> bool:
-    return any("CCI-ROUTE-010" in w for w in warnings)
+def has_route_010(warnings: list[str], errors: list[str] | None = None) -> bool:
+    targets = warnings if errors is None else warnings + errors
+    return any("CCI-ROUTE-010" in t for t in targets)
 
 
 def run_git(cmd: list[str]) -> str:
@@ -183,7 +184,7 @@ def main() -> int:
     # 35: CCI-ROUTE-010 preserved alongside ROUTE-011 under default warning config
     payload = load_fixture("routing_from_h10_pos_07_dual_rule.json")
     errors, warnings = validate_cci_routing(payload)
-    ok = has_route_010(warnings) and has_route_011(warnings, errors)
+    ok = has_route_010(warnings, errors) and has_route_011(warnings, errors)
     results.append(("Check 35: CCI-ROUTE-010 preserved alongside ROUTE-011 (warning config)", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 35")
 

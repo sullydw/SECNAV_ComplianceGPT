@@ -1,8 +1,9 @@
 # SECNAV ComplianceGPT - Project Status
 
 **Last Updated:** 2026-06-10
-**Phase I.37 Warning Pilot Plan:** `docs/planning/phase_i37_route010_warning_pilot_plan.md` — Planning-only document evaluating whether `CCI-ROUTE-010` should enter a controlled warning pilot; no config change, no severity change, no code change.
-**Latest Checkpoint:** `docs/checkpoints/phase_h35_route011_warning_pilot_paused_observation_checkpoint.md` — Phase H.35 warning pilot paused observation posture checkpoint
+**Phase I.39 Warning Pilot Activation:** `docs/checkpoints/phase_i39_route010_warning_pilot_activation_checkpoint.md` — Config-only activation of `CCI-ROUTE-010` warning pilot; `effective_severity` changed from `advisory` to `warning`; all targeted regressions PASS; full 35-suite gate PASS.
+**Phase I.37 Warning Pilot Plan:** `docs/planning/phase_i37_route010_warning_pilot_plan.md` — Planning-only document evaluating whether `CCI-ROUTE-010` should enter a controlled warning pilot; reviewed and approved in I.38/J.2.
+**Latest Checkpoint:** `docs/checkpoints/phase_i39_route010_warning_pilot_activation_checkpoint.md` — Phase I.39/J.3 activation checkpoint
 **H.35 Posture:** H.31–H.33 identical clean fixture burn-in observations reviewed; H.34 decided to pause repeated fixture-only observation; H.35 documents the paused posture; no new observation data; pilot remains active
 **H.34 Review Result:** H.31–H.33 identical clean results; pause fixture-only observation; continue warning pilot; error promotion remains unauthorized
 **H.33 Observation Result:** 32 fixtures PASS, 4 sub-runners PASS, full 35-suite gate PASS, 0 false positives, 0 false negatives; identical to H.31 and H.32
@@ -660,9 +661,10 @@ Figures are rule-bearing and must be reviewed when referenced.
 **H.16 burn-in plan:** `docs/planning/phase_h16_route011_warning_burnin_plan.md`
 
 - `CCI-ROUTE-011` now produces warning-level (blocking) enforcement by default.
-- `CCI-ROUTE-010` remains advisory.
-- Rollback is immediate by restoring `CCI-ROUTE-011.effective_severity` to `advisory` in `config/cci_enforcement_config.json`.
-- Full 33-suite regression gate passed after activation.
+- `CCI-ROUTE-010` now produces warning-level (blocking) enforcement by default as of Phase I.39 / J.3.
+- Both rules active as warning pilots.
+- Rollback is immediate by restoring `effective_severity` to `advisory` in `config/cci_enforcement_config.json`.
+- Full 35-suite regression gate passed after activation.
 - Mandatory burn-in observation period required before any error-level promotion discussion.
 
 ### Phase H.16 / Phase I.15 — Burn-In Observation and Regression (Completed)
@@ -702,15 +704,18 @@ Figures are rule-bearing and must be reviewed when referenced.
 **H.29 Implementation Review Verdict:** `APPROVE H.29 READ-ONLY IMPLEMENTATION REVIEW` — H.28 implementation reviewed read-only and accepted as stable baseline; all 21 review criteria pass; suite count 35; no anomalies found.
 
 **Burn-in status:**
-- Burn-in clock started: `18fc9bf` (H.15 activation).
+- Burn-in clock started: `18fc9bf` (H.15 activation for ROUTE-011).
+- ROUTE-010 warning pilot activated: Phase I.39 / J.3 — config-only; full 35-suite gate PASS.
 - Day 0 checkpoint: `0b4c669` recorded.
 - H.18 observation template: created for structured manual observation.
 - 30-day observation period ends approximately 2026-07-08.
 - H.16 burn-in regression (`7e42f64`) remains stable baseline.
-- Full 34-suite regression gate verified PASS at Day 0.
+- Full 35-suite regression gate verified PASS at I.39 activation.
 - Operator guidance: `docs/guidance/window_envelope_payload_guidance.md` (unchanged).
 - Future error promotion: unauthorized. Separate planning + explicit user approval required.
 - Future sanitized fixture implementation: unauthorized without separate approval.
+
+**Recommended next phase:** Phase I.40 / Phase J.4 — ROUTE-010 Warning Pilot Burn-In Checkpoint #1. Observe pilot behavior, collect feedback, verify no regressions before any further promotion.
 
 **Constraints:**
 - No validator changes.
@@ -720,7 +725,7 @@ Figures are rule-bearing and must be reviewed when referenced.
 - No command-layer changes.
 - No error-level promotion without separate future phase and burn-in evidence.
 - No real data committed.
-- All 34 regression suites must continue to pass before any future commit.
+- All 35 regression suites must continue to pass before any future commit.
 - Implementation (fixtures, runner) requires explicit approval before any code change.
 
 ---

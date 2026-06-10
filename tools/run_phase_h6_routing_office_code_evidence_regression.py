@@ -54,16 +54,19 @@ def run_validator(root: Path, fixture: str) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
-def route_010_present(warnings: list[str]) -> bool:
-    return any("CCI-ROUTE-010" in w for w in warnings)
+def route_010_present(warnings: list[str], errors: list[str] | None = None) -> bool:
+    targets = warnings if errors is None else warnings + errors
+    return any("CCI-ROUTE-010" in t for t in targets)
 
 
-def route_010_absent(warnings: list[str]) -> bool:
-    return not any("CCI-ROUTE-010" in w for w in warnings)
+def route_010_absent(warnings: list[str], errors: list[str] | None = None) -> bool:
+    targets = warnings if errors is None else warnings + errors
+    return not any("CCI-ROUTE-010" in t for t in targets)
 
 
-def has_advisory_format(warnings: list[str]) -> bool:
-    return any("(advisory):" in w for w in warnings)
+def has_advisory_format(warnings: list[str], errors: list[str] | None = None) -> bool:
+    targets = warnings if errors is None else warnings + errors
+    return any("(advisory):" in t for t in targets)
 
 
 def has_no_bracket_advisory(warnings: list[str]) -> bool:
@@ -114,7 +117,7 @@ def main() -> int:
     for i in range(1, 21):
         fixture = f"routing_h6_negative_{i:02d}.json"
         errors, warnings = run_validator(root, fixture)
-        if not route_010_absent(warnings):
+        if not route_010_absent(warnings, errors):
             neg_false_positives.append(fixture)
     ok = len(neg_false_positives) == 0
     results.append(("Check 03: Negative controls do NOT trigger CCI-ROUTE-010", ok))
@@ -129,7 +132,7 @@ def main() -> int:
     for i in range(1, 11):
         fixture = f"routing_h6_positive_{i:02d}.json"
         errors, warnings = run_validator(root, fixture)
-        if not route_010_present(warnings):
+        if not route_010_present(warnings, errors):
             pos_false_negatives.append(fixture)
     ok = len(pos_false_negatives) == 0
     results.append(("Check 04: Positive controls DO trigger CCI-ROUTE-010", ok))
@@ -138,24 +141,24 @@ def main() -> int:
         print(f"  False negatives: {pos_false_negatives}")
 
     # ------------------------------------------------------------------
-    # 5. Warnings contain CCI-ROUTE-010 for positive controls
+    # 5. Findings contain CCI-ROUTE-010 for positive controls
     # ------------------------------------------------------------------
     ok = len(pos_false_negatives) == 0  # same as check 4
-    results.append(("Check 05: Warnings contain CCI-ROUTE-010 for positive controls", ok))
+    results.append(("Check 05: Findings contain CCI-ROUTE-010 for positive controls", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 05")
 
     # ------------------------------------------------------------------
-    # 6. Warnings contain (advisory): format
+    # 6. Findings contain (advisory): format
     # ------------------------------------------------------------------
     advisory_format_ok = True
     for i in range(1, 11):
         fixture = f"routing_h6_positive_{i:02d}.json"
-        _, warnings = run_validator(root, fixture)
-        if route_010_present(warnings) and not has_advisory_format(warnings):
+        errors, warnings = run_validator(root, fixture)
+        if route_010_present(warnings, errors) and not has_advisory_format(warnings, errors):
             advisory_format_ok = False
             print(f"  FAIL — {fixture} missing (advisory): format")
             break
-    results.append(("Check 06: Warnings contain (advisory): format", advisory_format_ok))
+    results.append(("Check 06: Findings contain (advisory): format", advisory_format_ok))
     print(f"{'PASS' if advisory_format_ok else 'FAIL'} — Check 06")
 
     # ------------------------------------------------------------------
@@ -181,7 +184,7 @@ def main() -> int:
     print(f"{'PASS' if bracket_ok else 'FAIL'} — Check 07")
 
     # ------------------------------------------------------------------
-    # 8. errors list remains empty for all fixtures
+    # 8. errors list may contain ROUTE-010 under warning config; negatives must be error-free
     # ------------------------------------------------------------------
     errors_empty_ok = True
     for i in range(1, 21):
@@ -191,29 +194,22 @@ def main() -> int:
             errors_empty_ok = False
             print(f"  FAIL — {fixture} has errors: {errors}")
             break
-    for i in range(1, 11):
-        fixture = f"routing_h6_positive_{i:02d}.json"
-        errors, _ = run_validator(root, fixture)
-        if errors:
-            errors_empty_ok = False
-            print(f"  FAIL — {fixture} has errors: {errors}")
-            break
-    results.append(("Check 08: errors list remains empty for all fixtures", errors_empty_ok))
+    results.append(("Check 08: Negative fixtures have empty errors list", errors_empty_ok))
     print(f"{'PASS' if errors_empty_ok else 'FAIL'} — Check 08")
 
     # ------------------------------------------------------------------
-    # 9. Advisory findings go into warnings only
+    # 9. Positive fixtures produce ROUTE-010 findings (in errors under warning config)
     # ------------------------------------------------------------------
-    warnings_only_ok = True
+    findings_ok = True
     for i in range(1, 11):
         fixture = f"routing_h6_positive_{i:02d}.json"
         errors, warnings = run_validator(root, fixture)
-        if route_010_present(warnings) and errors:
-            warnings_only_ok = False
-            print(f"  FAIL — {fixture} has CCI-ROUTE-010 in errors")
+        if not route_010_present(warnings, errors):
+            findings_ok = False
+            print(f"  FAIL — {fixture} missing CCI-ROUTE-010 entirely")
             break
-    results.append(("Check 09: Advisory findings go into warnings only", warnings_only_ok))
-    print(f"{'PASS' if warnings_only_ok else 'FAIL'} — Check 09")
+    results.append(("Check 09: Positive fixtures produce CCI-ROUTE-010 findings", findings_ok))
+    print(f"{'PASS' if findings_ok else 'FAIL'} — Check 09")
 
     # ------------------------------------------------------------------
     # 10. copy_to fixtures do NOT trigger
@@ -221,13 +217,13 @@ def main() -> int:
     copy_to_fixture = root / "examples" / "routing_copy_to_numeric_comma.json"
     if copy_to_fixture.exists():
         errors, warnings = run_validator(root, "routing_copy_to_numeric_comma.json")
-        ok = route_010_absent(warnings)
+        ok = route_010_absent(warnings, errors)
     else:
         # Create temporary copy-to fixture
         tmp = root / "examples" / "routing_h6_copy_to_temp.json"
         tmp.write_text('{\"copy_to\": [\"Commanding Officer, 12345\"]}', encoding="utf-8")
         errors, warnings = run_validator(root, "routing_h6_copy_to_temp.json")
-        ok = route_010_absent(warnings)
+        ok = route_010_absent(warnings, errors)
         tmp.unlink(missing_ok=True)
     results.append(("Check 10: copy_to fixtures do NOT trigger", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 10")

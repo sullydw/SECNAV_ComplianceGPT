@@ -183,8 +183,8 @@ def main() -> int:
     overrides = cfg_data.get("overrides", {})
     sev010 = overrides.get("CCI-ROUTE-010", {}).get("effective_severity")
     sev011 = overrides.get("CCI-ROUTE-011", {}).get("effective_severity")
-    ok = sev010 == "advisory" and sev011 == "warning"
-    results.append(("Check 06: Default config effective_severity=advisory for ROUTE-010, warning for ROUTE-011", ok))
+    ok = sev010 == "warning" and sev011 == "warning"
+    results.append(("Check 06: Default config effective_severity=warning for ROUTE-010 and ROUTE-011", ok))
     print(f"{'PASS' if ok else 'FAIL'}  Check 06")
 
     # 07: Missing config → advisory fallback
@@ -231,11 +231,11 @@ def main() -> int:
     results.append(("Check 10: Unsupported severity string → advisory fallback", ok))
     print(f"{'PASS' if ok else 'FAIL'}  Check 10")
 
-    # 11: Advisory config still produces warnings (not errors) for ROUTE-010
+    # 11: Default warning config produces errors (blocking) for ROUTE-010
     payload = load_fixture("routing_h6_positive_01.json")
     errors, warnings = validate_cci_routing(payload)
-    ok = route_010_in_warnings(warnings) and not route_010_in_errors(errors)
-    results.append(("Check 11: Advisory config → ROUTE-010 in warnings, not errors", ok))
+    ok = route_010_in_errors(errors) and not route_010_in_warnings(warnings)
+    results.append(("Check 11: Default warning config → ROUTE-010 in errors, not warnings", ok))
     print(f"{'PASS' if ok else 'FAIL'}  Check 11")
 
     # 11b: Default config (warning for ROUTE-011) produces errors (blocking) for ROUTE-011
@@ -389,16 +389,16 @@ def main() -> int:
     results.append(("Check 18: validator_runner overall_pass=False with temp error config", ok))
     print(f"{'PASS' if ok else 'FAIL'}  Check 18")
 
-    # 19: Existing H.6 positive fixtures still warnings, not errors (default config)
+    # 19: Existing H.6 positive fixtures produce ROUTE-010 errors under default warning config
     h6_ok = True
     for i in range(1, 11):
         payload = load_fixture(f"routing_h6_positive_{i:02d}.json")
         errors, warnings = validate_cci_routing(payload)
-        if route_010_in_errors(errors):
+        if not route_010_in_errors(errors):
             h6_ok = False
-            print(f"  FAIL  H.6 positive {i:02d} produced ROUTE-010 in errors")
+            print(f"  FAIL  H.6 positive {i:02d} did NOT produce ROUTE-010 in errors")
             break
-    results.append(("Check 19: H.6 positive fixtures still warnings only", h6_ok))
+    results.append(("Check 19: H.6 positive fixtures produce ROUTE-010 errors under default warning config", h6_ok))
     print(f"{'PASS' if h6_ok else 'FAIL'}  Check 19")
 
     # 20: Existing H.10 positive fixtures produce errors for ROUTE-011 under default warning config
