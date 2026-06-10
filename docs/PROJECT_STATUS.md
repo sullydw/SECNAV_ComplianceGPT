@@ -721,7 +721,7 @@ Figures are rule-bearing and must be reviewed when referenced.
 - Future error promotion: unauthorized. Separate planning + explicit user approval required.
 - Future sanitized fixture implementation: unauthorized without separate approval.
 
-**Recommended next phase:** Phase I.40 / Phase J.4 — ROUTE-010 Warning Pilot Burn-In Checkpoint #1. Observe pilot behavior, collect feedback, verify no regressions before any further promotion.
+**Recommended next phase:** Phase J.10 / Phase K.2 — CCI-ROUTE-007 Candidate Plan Review. Read `docs/planning/phase_j9_route007_duplicate_copyto_candidate_plan.md` and decide whether to approve, defer, or reject the proposed evaluation path for `CCI-ROUTE-007`. No code changes. Error promotion unauthorized.
 
 **Constraints:**
 - No validator changes.
