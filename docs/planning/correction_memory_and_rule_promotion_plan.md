@@ -581,6 +581,16 @@ Phase H.12 safety boundaries preserved:
 - **Post-activation state:** `CCI-ROUTE-010` = `warning`, `CCI-ROUTE-011` = `warning`, `global_default` = `advisory`
 - **Error promotion:** Unauthorized
 
+### Phase I.39B / Phase J.3B — CCI-ROUTE-010 Warning Pilot Runner Comment Cleanup (Completed)
+
+- Cleanup checkpoint: `docs/checkpoints/phase_i39b_route010_runner_comment_cleanup_checkpoint.md`
+- **Action:** Comment/docstring/header text cleanup only in regression runner files (H.4, H.6, H.9, H.10, H.13); removed stale advisory-era wording
+- **No behavior change:** executable logic, fixtures, config, validator, catalog, renderer, prompt, command-layer untouched
+- **Results:** 18/18 H.4 PASS, 15/15 H.6 PASS, 18/18 H.9 PASS, 39/39 H.10 PASS, 27/27 H.13 PASS, 35-suite gate PASS
+- **Post-cleanup state:** `CCI-ROUTE-010` = `warning`, `CCI-ROUTE-011` = `warning`, `global_default` = `advisory`
+- **Error promotion:** Unauthorized
+- **Recommended next phase:** Phase I.40 / Phase J.4 — ROUTE-010 Warning Pilot Burn-In Checkpoint #1
+
 ---
 
 ## 10. Manual-and-Figure Source Standard

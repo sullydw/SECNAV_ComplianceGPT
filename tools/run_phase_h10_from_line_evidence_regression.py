@@ -3,6 +3,8 @@
 Phase H.10 / Phase I.9 — From-Line Evidence Collection and Regression Hardening Runner
 
 Validates evidence fixtures, corpus, and cross-phase compatibility for CCI-ROUTE-011.
+ROUTE-011 is at warning severity; findings appear in errors.
+ROUTE-010 is also at warning severity; findings appear in errors.
 
 Exit 0 only when all expectations are met.
 
@@ -12,7 +14,7 @@ Checks:
   31–32: window_envelope truthy values suppress (bool, string, int).
   33:    Missing doc_type skips.
   34:    Non-standard doc types skip.
-  35:    CCI-ROUTE-010 behavior preserved.
+  35:    CCI-ROUTE-010 behavior preserved (findings in errors under warning config).
   36:    H.9 runner still passes.
   37:    H.8 runner still passes.
   38:    Corpus path is gitignored and untracked.

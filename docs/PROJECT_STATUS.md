@@ -1,6 +1,7 @@
 # SECNAV ComplianceGPT - Project Status
 
 **Last Updated:** 2026-06-10
+**Phase I.39B Warning Pilot Runner Comment Cleanup:** `docs/checkpoints/phase_i39b_route010_runner_comment_cleanup_checkpoint.md` — Comment/docstring cleanup only; no behavior change; stale advisory-era wording removed from H.4, H.6, H.9, H.10, H.13 runners; all targeted regressions PASS; full 35-suite gate PASS.
 **Phase I.39 Warning Pilot Activation:** `docs/checkpoints/phase_i39_route010_warning_pilot_activation_checkpoint.md` — Config-only activation of `CCI-ROUTE-010` warning pilot; `effective_severity` changed from `advisory` to `warning`; all targeted regressions PASS; full 35-suite gate PASS.
 **Phase I.37 Warning Pilot Plan:** `docs/planning/phase_i37_route010_warning_pilot_plan.md` — Planning-only document evaluating whether `CCI-ROUTE-010` should enter a controlled warning pilot; reviewed and approved in I.38/J.2.
 **Latest Checkpoint:** `docs/checkpoints/phase_i39_route010_warning_pilot_activation_checkpoint.md` — Phase I.39/J.3 activation checkpoint

@@ -2,20 +2,21 @@
 """
 Phase H.6 Routing Office-Code Evidence Regression Runner
 
-Collects and verifies evidence for CCI-ROUTE-010 without changing severity.
+Collects and verifies evidence for CCI-ROUTE-010 under the active warning pilot.
+ROUTE-010 is now at warning severity; positive findings appear in errors.
 
 Exit 0 only when all expectations are met.
 
 Checks:
   1.  All 20 negative-control fixtures exist
   2.  All 10 positive-control fixtures exist
-  3.  Negative controls do NOT trigger CCI-ROUTE-010
-  4.  Positive controls DO trigger CCI-ROUTE-010
-  5.  Warnings contain CCI-ROUTE-010 for positive controls
-  6.  Warnings contain (advisory): format
+  3.  Negative controls do NOT trigger CCI-ROUTE-010 (absent from warnings and errors)
+  4.  Positive controls DO trigger CCI-ROUTE-010 (present in errors under warning config)
+  5.  Findings contain CCI-ROUTE-010 for positive controls
+  6.  Findings contain (advisory): format
   7.  Warnings do NOT contain [ADVISORY]
-  8.  errors list remains empty for all fixtures
-  9.  Advisory findings go into warnings only
+  8.  Negative fixtures have empty errors list
+  9.  Positive fixtures produce ROUTE-010 findings (in errors under warning config)
  10.  copy_to fixtures do NOT trigger
  11.  H.4 runner still passes
  12.  Local corpus path is gitignored

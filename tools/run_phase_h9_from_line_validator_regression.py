@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 """
-Phase H.9 / Phase I.8 — From-Line Advisory Validator Enforcement Regression Runner
+Phase H.9 / Phase I.8 — From-Line Warning Validator Enforcement Regression Runner
 
-Validates the CCI-ROUTE-011 From-line-required advisory/non-blocking check
+Validates the CCI-ROUTE-011 From-line-required warning (blocking) check
 implemented in src/cci_routing_validate.py.
+ROUTE-011 is at warning severity; findings appear in errors.
+ROUTE-010 is also at warning severity; findings appear in errors.
 
 Exit 0 only when all expectations are met.
 
 Checks:
   1. Validator module loads successfully.
   2. _check_from_line_required helper exists and is callable.
-  3. Missing From line on DT_STD_LTR triggers advisory ROUTE-011.
-  4. Empty From line on DT_STD_LTR triggers advisory ROUTE-011.
-  5. Whitespace-only From line on DT_STD_LTR triggers advisory ROUTE-011.
+  3. Missing From line on DT_STD_LTR triggers warning ROUTE-011.
+  4. Empty From line on DT_STD_LTR triggers warning ROUTE-011.
+  5. Whitespace-only From line on DT_STD_LTR triggers warning ROUTE-011.
   6. Present From line on DT_STD_LTR produces no ROUTE-011 finding.
-  7. window_envelope=true suppresses advisory even without From line.
+  7. window_envelope=true suppresses warning even without From line.
   8. window_envelope=true with From line still produces no finding.
   9. Memorandum (DT_MEMO_FROM_TO_PLAIN) is skipped — no ROUTE-011.
  10. Endorsement is skipped — no ROUTE-011.
@@ -70,7 +72,7 @@ def run_git(cmd: list[str]) -> str:
 def main() -> int:
     python = sys.executable
     print("=" * 72)
-    print("PHASE H.9 FROM-LINE ADVISORY VALIDATOR REGRESSION RUNNER")
+    print("PHASE H.9 FROM-LINE WARNING VALIDATOR REGRESSION RUNNER")
     print(f"REPO ROOT: {REPO_ROOT}")
     print(f"PYTHON: {python}")
     print("=" * 72)
@@ -87,26 +89,26 @@ def main() -> int:
     results.append(("Check 02: _check_from_line_required helper is callable", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 02")
 
-    # 03: Missing From line triggers advisory
+    # 03: Missing From line triggers warning
     payload = load_fixture("routing_from_missing.json")
     errors, warnings = validate_cci_routing(payload)
     ok = has_route_011(warnings, errors)
-    results.append(("Check 03: Missing From line triggers CCI-ROUTE-011 advisory", ok))
+    results.append(("Check 03: Missing From line triggers CCI-ROUTE-011 warning", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 03")
 
-    # 04: Empty From line triggers advisory
+    # 04: Empty From line triggers warning
     payload = load_fixture("routing_from_empty.json")
     errors, warnings = validate_cci_routing(payload)
     ok = has_route_011(warnings, errors)
-    results.append(("Check 04: Empty From line triggers CCI-ROUTE-011 advisory", ok))
+    results.append(("Check 04: Empty From line triggers CCI-ROUTE-011 warning", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 04")
 
-    # 05: Whitespace-only From line triggers advisory
+    # 05: Whitespace-only From line triggers warning
     payload = load_fixture("routing_from_empty.json")
     payload["from"] = "   "
     errors, warnings = validate_cci_routing(payload)
     ok = has_route_011(warnings, errors)
-    results.append(("Check 05: Whitespace-only From line triggers CCI-ROUTE-011 advisory", ok))
+    results.append(("Check 05: Whitespace-only From line triggers CCI-ROUTE-011 warning", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 05")
 
     # 06: Present From line passes
@@ -116,11 +118,11 @@ def main() -> int:
     results.append(("Check 06: Present From line produces no CCI-ROUTE-011 finding", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 06")
 
-    # 07: window_envelope=true suppresses advisory
+    # 07: window_envelope=true suppresses warning
     payload = load_fixture("routing_from_window_envelope.json")
     errors, warnings = validate_cci_routing(payload)
     ok = not has_route_011(warnings, errors)
-    results.append(("Check 07: window_envelope=true suppresses CCI-ROUTE-011 advisory", ok))
+    results.append(("Check 07: window_envelope=true suppresses CCI-ROUTE-011 warning", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 07")
 
     # 08: window_envelope=true with From line still passes

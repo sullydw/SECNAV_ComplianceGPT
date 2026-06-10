@@ -14,7 +14,7 @@ Checks:
   66–75:  Window-envelope fixtures suppress CCI-ROUTE-011.
   76–85:  Window-envelope-like (no tag) fixtures fail with CCI-ROUTE-011 in errors.
   86–90:  Realistic Navy/Marine Corps mixed fixtures behave correctly.
-  91:     CCI-ROUTE-010 remains advisory (no errors).
+  91:     CCI-ROUTE-010 now warning (errors, not warnings).
   92:     No error-level promotion exists in default config.
   93:     No temporary config files remain.
   94–96:  Existing H.13, H.9, H.10 runners still pass.
@@ -185,12 +185,12 @@ def main() -> int:
         print(f"{'PASS' if ok else 'FAIL'} — Check {idx:02d}")
 
     # ------------------------------------------------------------
-    # 91: CCI-ROUTE-010 remains advisory
+    # 91: CCI-ROUTE-010 now warning (errors, not warnings)
     # ------------------------------------------------------------
     payload = json.loads((REPO_ROOT / "examples" / "routing_h6_positive_01.json").read_text(encoding="utf-8"))
     errors, warnings = validate_cci_routing(payload)
-    ok = has_route_010_in_warnings(warnings) and not has_route_010_in_errors(errors)
-    results.append(("Check 91: CCI-ROUTE-010 remains advisory (warnings, not errors)", ok))
+    ok = has_route_010_in_errors(errors) and not has_route_010_in_warnings(warnings)
+    results.append(("Check 91: CCI-ROUTE-010 now warning (errors, not warnings)", ok))
     print(f"{'PASS' if ok else 'FAIL'} — Check 91")
 
     # ------------------------------------------------------------

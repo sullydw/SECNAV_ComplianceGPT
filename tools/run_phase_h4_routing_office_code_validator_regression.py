@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 """
-Phase H.4 Routing Office-Code Prefix Advisory Validator Regression Runner
+Phase H.4 Routing Office-Code Prefix Warning Validator Regression Runner
 
-Runs the CCI routing validator against synthetic fixtures that exercise the new
-CCI-ROUTE-010 office-code prefix advisory (Check A + Check B).
+Runs the CCI routing validator against synthetic fixtures that exercise
+CCI-ROUTE-010 office-code prefix checks (Check A + Check B).
+ROUTE-010 is now at warning severity; positive findings appear in errors.
 
 Exit 0 only when all expectations are met.
 
 Checks:
   1.  validate_cci_routing loads and public API preserved
   2.  _check_office_code_prefix exists
-  3.  "Commanding Officer, 123"       -> ROUTE-010 positive (comma, missing Code)
-  4.  "Commanding Officer (123)"      -> ROUTE-010 positive (parenthetical, missing Code)
-  5.  "Commanding Officer, Code N1"   -> ROUTE-010 positive (comma, improper Code)
-  6.  "Commanding Officer (Code SUP)" -> ROUTE-010 positive (parenthetical, improper Code)
+  3.  "Commanding Officer, 123"       -> ROUTE-010 positive in errors (comma, missing Code)
+  4.  "Commanding Officer (123)"      -> ROUTE-010 positive in errors (parenthetical, missing Code)
+  5.  "Commanding Officer, Code N1"   -> ROUTE-010 positive in errors (comma, improper Code)
+  6.  "Commanding Officer (Code SUP)" -> ROUTE-010 positive in errors (parenthetical, improper Code)
   7.  "Commanding Officer, Code 123"  -> no ROUTE-010 (comma, numeric with Code)
   8.  "Commanding Officer (Code 123)" -> no ROUTE-010 (parenthetical, numeric with Code)
   9.  "Commanding Officer, N1"        -> no ROUTE-010 (comma, letter without Code)
@@ -87,7 +88,7 @@ def main() -> int:
     root = repo_root()
     python = sys.executable
     print("=" * 72)
-    print("PHASE H.4 ROUTING OFFICE-CODE PREFIX ADVISORY REGRESSION RUNNER")
+    print("PHASE H.4 ROUTING OFFICE-CODE PREFIX WARNING REGRESSION RUNNER")
     print(f"REPO ROOT: {root}")
     print(f"PYTHON: {python}")
     print("=" * 72)
@@ -296,6 +297,8 @@ def main() -> int:
         "examples/audit_cci_routing_warning_via_unnumbered.json",
         "examples/audit_cci_routing_warning_copyto_excess.json",
         "examples/audit_cci_routing_warning_need_to_know.json",
+        "tools/run_phase_h16_route011_burnin_regression.py",
+        "tools/run_phase_h24_route011_sanitized_fixture_regression.py",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0

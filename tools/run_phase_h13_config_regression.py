@@ -5,6 +5,9 @@ Phase H.13 / Phase I.12 — Severity Config Support Regression Runner
 Validates the cci_severity_mapper module, default config, and
 config-driven severity behavior in cci_routing_validate.py.
 
+Both CCI-ROUTE-010 and CCI-ROUTE-011 are now at warning severity by default.
+Positive findings for both rules appear in errors (blocking).
+
 Exit 0 only when all expectations are met.
 
 Checks:
@@ -13,22 +16,22 @@ Checks:
   3. Default config file exists and is readable.
   4. Default config schema is CCI_ENFORCEMENT_CONFIG_V1.
   5. Default config has ROUTE-010/011 in allowlist.
-  6. Default config has ROUTE-010 effective_severity=advisory, ROUTE-011 effective_severity=warning.
+  6. Default config has ROUTE-010 effective_severity=warning, ROUTE-011 effective_severity=warning.
   7. Missing config → advisory fallback for both rules.
   8. Malformed config → advisory fallback.
   9. Unknown rule ID → advisory fallback.
  10. Unsupported severity string → advisory fallback.
- 11. Advisory config still produces warnings (not errors).
+ 11. Default warning config produces errors (blocking) for ROUTE-010.
  12. Error config (temp) produces errors for ROUTE-010.
  13. Error config (temp) produces errors for ROUTE-011.
  14. Warning config (temp) produces errors (blocking) for ROUTE-010.
  14b. Warning config (temp) produces errors (blocking) for ROUTE-011.
  15. Allowlist-denied rule stays advisory even if override says error.
  16. Ceiling clamp: effective_severity cannot exceed allow_override_up_to.
- 17. validator_runner overall_pass=True with default config (warnings only).
+ 17. validator_runner overall_pass=True with default config (no trigger).
  18. validator_runner overall_pass=False with temp error config.
- 19. Existing H.6 positive fixtures still emit warnings, not errors.
- 20. Existing H.10 positive fixtures still emit warnings, not errors.
+ 19. Existing H.6 positive fixtures produce ROUTE-010 errors under default warning config.
+ 20. Existing H.10 positive fixtures produce ROUTE-011 errors under default warning config.
  21. H.6 regression runner still passes.
  22. H.10 regression runner still passes.
  23. H.9 regression runner still passes.
