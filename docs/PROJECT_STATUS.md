@@ -1,6 +1,7 @@
 # SECNAV ComplianceGPT - Project Status
 
 **Last Updated:** 2026-06-10
+**Phase J.14 / Phase K.6 ROUTE-007 Source Citation Review:** `docs/checkpoints/phase_j14_route007_source_citation_review_note.md` — Lean source citation check of SECNAV M-5216.5 Chapter 7; no explicit prohibition of duplicate To/Via+Copy-to addressees found; rule is derived from functional role separation (action vs information); catalog citation left unchanged as narrative inference; no config/severity/validator/renderer/prompt/command changes.
 **Phase J.13 / Phase K.5 ROUTE-007 Regression Evidence Review:** `docs/checkpoints/phase_j13_route007_regression_evidence_review_checkpoint.md` — Read-only evidence review of J.12/K.4 implementation; 13/13 checks verified against J.11 plan; full 36-suite gate PASS; verdict: `APPROVE J.13 / K.5`; evidence adequate for source/catalog refinement planning; allowlist/warning-pilot activation premature until source citation refined; no files modified.
 **Phase J.12 / Phase K.4 ROUTE-007 Duplicate Copy-to Regression Runner Implementation:** `docs/checkpoints/phase_j12_route007_duplicate_copyto_regression_checkpoint.md` — Dedicated regression runner `tools/run_phase_j12_route007_duplicate_copyto_regression.py` created; 13 checks (6 positive, 5 negative, 2 cross-rule preservation); all PASS; full 36-suite gate PASS; no config/severity/catalog/validator/renderer/prompt/command changes; error promotion unauthorized.
 **Phase J.11 / Phase K.3 ROUTE-007 Duplicate Copy-to Regression Runner Plan:** `docs/planning/phase_j11_route007_duplicate_copyto_regression_plan.md` — Planning-only document for dedicated regression runner and fixture set for `CCI-ROUTE-007` exact duplicate Copy-to detection; 13 proposed fixture categories (6 positive, 5 negative, 2 cross-rule preservation); runner filename `tools/run_phase_j12_route007_duplicate_copyto_regression.py`; uses existing validator entry point; no config/severity/catalog/validator/renderer/prompt/command changes; error promotion unauthorized.
@@ -724,7 +725,7 @@ Figures are rule-bearing and must be reviewed when referenced.
 - Future error promotion: unauthorized. Separate planning + explicit user approval required.
 - Future sanitized fixture implementation: unauthorized without separate approval.
 
-**Recommended next phase:** Phase J.14 / Phase K.6 — ROUTE-007 Source/Catalog Refinement Planning. Read `docs/checkpoints/phase_j13_route007_regression_evidence_review_checkpoint.md` and decide whether to refine `CCI-ROUTE-007` source_location in the catalog. No config changes. No severity changes. Error promotion unauthorized.
+**Recommended next phase:** Phase J.15 / Phase K.7 — ROUTE-007 Source/Catalog Refinement Review. Read `docs/checkpoints/phase_j14_route007_source_citation_review_note.md` and decide whether the inferred nature of ROUTE-007 is acceptable for future allowlist consideration, or whether a stronger direct citation should be sought before any promotion. No config changes. No severity changes. Error promotion unauthorized.
 
 **Constraints:**
 - No validator changes.
