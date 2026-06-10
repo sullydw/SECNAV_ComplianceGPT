@@ -61,7 +61,8 @@
 **Phase I.39B / Phase J.3B ROUTE-010 Warning Pilot Runner Comment Cleanup:** `fc11a06` — `Docs: Clean ROUTE-010 warning pilot runner comments`; comment/docstring-only cleanup; no behavior/config/severity/catalog/validator/renderer/prompt/command changes; H.4/H.6/H.9/H.10/H.13 runner headers and check descriptions updated to reflect warning-pilot semantics; H.16 Check 91 comments corrected; full 35-suite gate PASS.
 **Phase I.39 / Phase J.3 ROUTE-010 Warning Pilot Activation:** `e60e888` — `CCI: Start I.39 ROUTE-010 warning pilot`; config-only activation; `CCI-ROUTE-010.effective_severity` changed from `advisory` to `warning`; full 35-suite gate PASS.
 **Phase I.37 / Phase J.1 ROUTE-010 Warning Pilot Plan:** `docs/planning/phase_i37_route010_warning_pilot_plan.md` — Planning-only document evaluating whether `CCI-ROUTE-010` should enter a controlled warning pilot; risks, rollback path, and burn-in requirements documented.
-**Next Phase:** Phase I.41 / Phase J.5 — ROUTE-010 Warning Pilot Burn-In Checkpoint #2. Error promotion remains unauthorized.
+**Phase I.41 / Phase J.5 ROUTE-010 Warning Pilot Burn-In Checkpoint #2:** `docs/checkpoints/phase_i41_route010_warning_pilot_burnin_checkpoint_02.md` — Second burn-in checkpoint; identical clean results to I.40; targeted regressions PASS (H.4 18/18, H.6 15/15, H.13 27/27, H.16 96/96, H.24 36/36); cross-area H.9/H.10 confirmed clean; full 35-suite gate PASS; 0 false positives, 0 false negatives; decision: continue warning pilot; error promotion unauthorized.
+**Next Phase:** Phase I.42 / Phase J.6 — ROUTE-010 Warning Pilot Burn-In Checkpoint #3. Error promotion remains unauthorized.
 
 **Burn-in clock note:** The 30-day observation period starts from the H.15 warning pilot activation commit (`18fc9bf`), not from H.16. H.16 is regression hardening and burn-in evidence collection, not pilot activation.
 
