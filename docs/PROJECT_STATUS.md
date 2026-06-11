@@ -727,7 +727,9 @@ Figures are rule-bearing and must be reviewed when referenced.
 
 **Phase J.15 / Phase K.7 ROUTE-007 Candidate Closeout Checkpoint:** `docs/checkpoints/phase_j15_route007_candidate_closeout_checkpoint.md` — Track closed without promotion; ROUTE-007 has dedicated regression coverage but insufficient direct source authority for warning-pilot activation; catalog left unchanged; no config/severity/validator/catalog/renderer/prompt/command changes; error promotion unauthorized.
 
-**Recommended next phase:** Pick a new catalog rule with explicit source text for future candidate evaluation. ROUTE-010 and ROUTE-011 warning pilots remain active. Continue monitoring through existing observation checkpoints. Error promotion unauthorized.
+**Phase K.1 Next Explicit-Source Rule Candidate Scan:** `docs/planning/phase_k1_next_explicit_source_rule_candidate_scan.md` — Scan of all rule catalogs and validators; three deterministic, explicit-source-text candidates identified (CCI-CH7-SUBJ-002, CCI-REF-005, CCI-DTM-003); all already implemented in validators but lack dedicated regression runners; **recommended candidate: CCI-CH7-SUBJ-002** (subject line terminal punctuation); no config/severity/validator/catalog/renderer/prompt/command changes; error promotion unauthorized.
+
+**Recommended next phase:** Phase K.2 — CCI-CH7-SUBJ-002 Candidate Evaluation Plan (if user approves). ROUTE-010 and ROUTE-011 warning pilots remain active. Continue monitoring through existing observation checkpoints. Error promotion unauthorized.
 
 **Constraints:**
 - No validator changes.
