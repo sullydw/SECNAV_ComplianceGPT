@@ -2,10 +2,11 @@
   "_schema_version": "CCI_ENFORCEMENT_CONFIG_V1",
   "_description": "Per-rule severity override configuration. Default is advisory for all rules unless overridden below.",
   "_created": "2026-06-08",
-  "_updated": "2026-06-08",
+  "_updated": "2026-06-11",
   "_allowlist": [
     "CCI-ROUTE-010",
-    "CCI-ROUTE-011"
+    "CCI-ROUTE-011",
+    "CCI-CH7-SUBJ-002"
   ],
   "global_default": "advisory",
   "overrides": {
@@ -20,6 +21,12 @@
       "allow_override_up_to": "error",
       "reason": "From line required rule; evidence collected in Phase H.10; warning pilot active in Phase H.15",
       "snapshot_id": "cfg_20260608_warning"
+    },
+    "CCI-CH7-SUBJ-002": {
+      "effective_severity": "warning",
+      "allow_override_up_to": "error",
+      "reason": "Subject line terminal punctuation rule; evidence collected in Phase K.3; warning pilot active in Phase K.6",
+      "snapshot_id": "cfg_20260611_warning"
     }
   }
 }
