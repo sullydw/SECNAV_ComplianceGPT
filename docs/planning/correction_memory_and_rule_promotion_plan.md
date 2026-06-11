@@ -72,7 +72,9 @@
 **Phase J.15 / Phase K.7 ROUTE-007 Candidate Closeout Checkpoint:** `docs/checkpoints/phase_j15_route007_candidate_closeout_checkpoint.md` — Track closed without promotion; regression coverage preserved; source citation found insufficient for warning-pilot activation; catalog unchanged; no config/severity/validator/catalog/renderer/prompt/command changes; error promotion unauthorized.
 **Phase K.1 Next Explicit-Source Rule Candidate Scan:** `docs/planning/phase_k1_next_explicit_source_rule_candidate_scan.md` — Scan of all rule catalogs and validators; three deterministic, explicit-source-text candidates identified (CCI-CH7-SUBJ-002, CCI-REF-005, CCI-DTM-003); all already implemented in validators but lack dedicated regression runners; **recommended candidate: CCI-CH7-SUBJ-002** (subject line terminal punctuation); error promotion unauthorized.
 
-**Next Phase:** Phase K.2 — CCI-CH7-SUBJ-002 Candidate Evaluation Plan (if user approves). Continue monitoring ROUTE-010 and ROUTE-011 warning pilots through existing observation checkpoints.
+**Phase K.2 CCI-CH7-SUBJ-002 Candidate Evaluation Plan:** `docs/planning/phase_k2_subject_terminal_punctuation_candidate_plan.md` — Planning-only document evaluating `CCI-CH7-SUBJ-002` (subject line terminal punctuation) as next controlled rule candidate; validator already implemented at `src/cci_subject_validate.py` lines 280-284; 11 proposed regression checks (3 positive, 6 negative, 2 cross-rule preservation); future runner `tools/run_phase_k3_subject_terminal_punctuation_regression.py`; no config/severity/allowlist/validator/catalog/renderer/prompt/command changes; error promotion unauthorized.
+
+**Next Phase:** Phase K.3 — CCI-CH7-SUBJ-002 Dedicated Regression Runner (if user approves). Continue monitoring ROUTE-010 and ROUTE-011 warning pilots through existing observation checkpoints.
 
 **Burn-in clock note:** The 30-day observation period starts from the H.15 warning pilot activation commit (`18fc9bf`), not from H.16. H.16 is regression hardening and burn-in evidence collection, not pilot activation.
 

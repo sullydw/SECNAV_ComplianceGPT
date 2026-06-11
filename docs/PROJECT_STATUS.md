@@ -729,7 +729,9 @@ Figures are rule-bearing and must be reviewed when referenced.
 
 **Phase K.1 Next Explicit-Source Rule Candidate Scan:** `docs/planning/phase_k1_next_explicit_source_rule_candidate_scan.md` — Scan of all rule catalogs and validators; three deterministic, explicit-source-text candidates identified (CCI-CH7-SUBJ-002, CCI-REF-005, CCI-DTM-003); all already implemented in validators but lack dedicated regression runners; **recommended candidate: CCI-CH7-SUBJ-002** (subject line terminal punctuation); no config/severity/validator/catalog/renderer/prompt/command changes; error promotion unauthorized.
 
-**Recommended next phase:** Phase K.2 — CCI-CH7-SUBJ-002 Candidate Evaluation Plan (if user approves). ROUTE-010 and ROUTE-011 warning pilots remain active. Continue monitoring through existing observation checkpoints. Error promotion unauthorized.
+**Phase K.2 CCI-CH7-SUBJ-002 Candidate Evaluation Plan:** `docs/planning/phase_k2_subject_terminal_punctuation_candidate_plan.md` — Planning-only document evaluating `CCI-CH7-SUBJ-002` (subject line terminal punctuation) as next controlled rule candidate; validator already implemented; 11 proposed regression checks (3 positive, 6 negative, 2 cross-rule preservation); future runner `tools/run_phase_k3_subject_terminal_punctuation_regression.py`; no config/severity/allowlist/validator/catalog/renderer/prompt/command changes; error promotion unauthorized.
+
+**Recommended next phase:** Phase K.3 — CCI-CH7-SUBJ-002 Dedicated Regression Runner. ROUTE-010 and ROUTE-011 warning pilots remain active. Continue monitoring through existing observation checkpoints. Error promotion unauthorized.
 
 **Constraints:**
 - No validator changes.
