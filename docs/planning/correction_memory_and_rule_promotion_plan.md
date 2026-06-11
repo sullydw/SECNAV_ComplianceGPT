@@ -77,6 +77,8 @@
 
 **Phase L.2 Conversational Builder Entry-Point Review:** `docs/planning/phase_l2_conversational_builder_entrypoint_review.md` — Read-only review confirming `IntakeOrchestrator` is ~80% of builder foundation; identifies missing multi-turn wrapper, plain-English formatter, and `window_envelope` schema gap; recommends L.3 schema definition next; no code changes.
 
+**Phase L.3 Conversational Builder Payload Schema and Question Flow:** `docs/planning/phase_l3_conversational_builder_payload_schema_question_flow.md` — Planning-only schema definition specifying `BuilderSession` state transitions, minimum/recommended/optional field matrix, canonical question flow, plain-English warning formatter map for active pilots (ROUTE-010, ROUTE-011, SUBJ-002), proposed `src/conversational_builder.py` module interface (`BuilderSession` class with `start`, `ingest_user_message`, `next_question`, `build_payload`, `run_validation`, `warning_summary`, `finalize`), and `window_envelope` policy/question additions. No code changes.
+
 **Phase K.7 CCI-CH7-SUBJ-002 Warning Pilot Observation Decision:** `docs/checkpoints/phase_k7_subject_terminal_punctuation_warning_pilot_observation_decision.md` — Post-activation observation decision; config-only activation confirmed stable; full 37-suite gate PASS; decision: `continue warning pilot, pause repeated synthetic burn-in`; no rollback warranted; error promotion unauthorized; triggers for resuming observation listed; recommended next work: shift to user-facing conversational builder workflow or run new explicit-source candidate scan if user requests.
 
 **Next Phase:** User discretion. Existing options:

@@ -49,7 +49,7 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest planning checkpoint commit:** `94b01dc` — `Docs: Record H.29 implementation review approval`
+**Latest planning checkpoint commit:** `c778847` — `Docs: Review conversational builder entry points`
 **Latest implementation commit:** `ee4f3a2` — `CCI: Add H.28 ROUTE-011 sanitized fixture regression`
 **Phase H.30 review checkpoint:** `docs/checkpoints/phase_h30_h29_readonly_implementation_review_checkpoint.md` — Phase H.30 H.29 read-only implementation review approval checkpoint; H.28 accepted as stable baseline; suite count 35.
 **Phase H.28 implementation checkpoint:** `docs/checkpoints/phase_h28_route011_sanitized_fixture_runner_checkpoint.md` — Implementation checkpoint: 32 fixtures, `manifest.json`, `tools/run_phase_h24_route011_sanitized_fixture_regression.py` (35th suite); full 35-suite gate PASS; config/severity/catalog/validator/renderer/prompt/command untouched.
@@ -735,7 +735,9 @@ Figures are rule-bearing and must be reviewed when referenced.
 
 **Phase K.7 CCI-CH7-SUBJ-002 Warning Pilot Observation Decision:** `docs/checkpoints/phase_k7_subject_terminal_punctuation_warning_pilot_observation_decision.md` — Post-activation observation decision; config-only activation confirmed stable; full 37-suite gate PASS; decision: `continue warning pilot, pause repeated synthetic burn-in`; no rollback warranted; error promotion unauthorized; triggers for resuming observation listed; recommended next work: shift to user-facing conversational builder workflow or run new explicit-source candidate scan if user requests.
 
-**Recommended next phase:** Phase L.3 — Conversational Builder Payload Schema and Question Flow. Read `docs/planning/phase_l2_conversational_builder_entrypoint_review.md` first. Produce a lean schema definition specifying `BuilderSession` state transitions, updated `cci_intake_questions.json` / `cci_intake_field_policy.json` with `window_envelope`, plain-English warning message map, and prototype module interface stub. Planning-only; no implementation code.
+**Phase L.3 Conversational Builder Payload Schema and Question Flow:** `docs/planning/phase_l3_conversational_builder_payload_schema_question_flow.md` — Planning-only schema definition specifying `BuilderSession` state transitions, minimum/recommended/optional field matrix, canonical question flow, plain-English warning formatter map for active pilots (ROUTE-010, ROUTE-011, SUBJ-002), proposed `src/conversational_builder.py` module interface (`BuilderSession` class with `start`, `ingest_user_message`, `next_question`, `build_payload`, `run_validation`, `warning_summary`, `finalize`), and `window_envelope` policy/question additions. No code changes.
+
+**Recommended next phase:** Phase L.4 — Conversational Builder Prototype Module. Create `src/conversational_builder.py` stub, wire `BuilderSession` to `IntakeOrchestrator`, implement minimal CLI loop, add `window_envelope` to `cci_intake_field_policy.json` and `cci_intake_questions.json`, write plain-English `warning_summary()` formatter, and produce synthetic fixture tests for builder state transitions. Planning-only until approved; no renderer/validator/config/command-layer changes.
 
 Alternative paths (user discretion):
 - Continue paused observation for all three active warning pilots (ROUTE-010, ROUTE-011, SUBJ-002).
