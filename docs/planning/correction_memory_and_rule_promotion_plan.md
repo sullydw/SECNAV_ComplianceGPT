@@ -74,9 +74,9 @@
 
 **Phase K.2 CCI-CH7-SUBJ-002 Candidate Evaluation Plan:** `docs/planning/phase_k2_subject_terminal_punctuation_candidate_plan.md` — Planning-only document evaluating `CCI-CH7-SUBJ-002` (subject line terminal punctuation) as next controlled rule candidate; validator already implemented at `src/cci_subject_validate.py` lines 280-284; 11 proposed regression checks (3 positive, 6 negative, 2 cross-rule preservation); future runner `tools/run_phase_k3_subject_terminal_punctuation_regression.py`; no config/severity/allowlist/validator/catalog/renderer/prompt/command changes; error promotion unauthorized.
 
-**Phase K.3 CCI-CH7-SUBJ-002 Dedicated Regression Runner:** `docs/checkpoints/phase_k3_subject_terminal_punctuation_regression_checkpoint.md` — Dedicated runner `tools/run_phase_k3_subject_terminal_punctuation_regression.py` created; 11/11 checks PASS (3 positive, 6 negative, 2 cross-rule); uses existing `src/cci_subject_validate.py` with inline sanitized payloads; full 37-suite gate PASS; no config/severity/allowlist/validator/catalog/renderer/prompt/command changes; error promotion unauthorized.
+**Phase K.4 CCI-CH7-SUBJ-002 Regression Coverage Decision:** `docs/checkpoints/phase_k4_subject_terminal_punctuation_regression_decision.md` — Decision after K.3 regression coverage; explicit source support confirmed (Chapter 7, para 7-2.9 and Figure 7-1); validator pre-existed; 11/11 PASS; full 37-suite gate PASS; verdict: `APPROVE regression coverage, recommend future warning-pilot plan`; no config/severity/allowlist/validator/catalog/renderer/prompt/command changes; warning pilot NOT activated in this phase; error promotion unauthorized.
 
-**Next Phase:** Phase K.4 — CCI-CH7-SUBJ-002 Regression Coverage Decision (if user approves). Continue monitoring ROUTE-010 and ROUTE-011 warning pilots through existing observation checkpoints.
+**Next Phase:** Phase K.5 — CCI-CH7-SUBJ-002 Warning Pilot Plan (if user approves). Continue monitoring ROUTE-010 and ROUTE-011 warning pilots through existing observation checkpoints.
 
 **Burn-in clock note:** The 30-day observation period starts from the H.15 warning pilot activation commit (`18fc9bf`), not from H.16. H.16 is regression hardening and burn-in evidence collection, not pilot activation.
 
