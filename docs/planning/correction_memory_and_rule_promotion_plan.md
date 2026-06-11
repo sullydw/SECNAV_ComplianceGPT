@@ -1,7 +1,8 @@
 # Correction Memory and Rule Promotion Layer Plan
 
-**Latest Verified Baseline:** `d808cb8` — `CCI: Add From line evidence regression (Phase H.10)`  
+**Latest Verified Baseline:** `2f2ba95` — Current HEAD (Phase K.7 SUBJ-002 warning pilot observation decision)  
 **H.13 Stable Baseline:** `084ce64` — `CCI: Add H.13 severity config support`  
+**Phase L.1 Conversational Builder Workflow Plan:** `docs/planning/phase_l1_conversational_builder_workflow_plan.md` — Planning-only shift toward user-facing product workflow; no code changes.
 **Phase H.13 Implementation Review Checkpoint:** `fcb1d4c` — `Docs: Record Phase H.13 implementation review checkpoint`  
 **Phase H.13 Implementation Checkpoint:** `a520eb2` — `Docs: Record Phase H.13 implementation checkpoint`  
 **Phase H.13 Planning Commits:** `dd1989e` — `Docs: Add Phase H.13 feature flag config plan`; `115f4e0` — `Docs: Refine Phase H.13 config plan`; `1759c9f` — `Docs: Fix markdown table formatting in Phase H.13 config plan`  

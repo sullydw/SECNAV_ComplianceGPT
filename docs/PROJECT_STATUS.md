@@ -13,7 +13,8 @@
 **Phase I.39B Warning Pilot Runner Comment Cleanup:** `docs/checkpoints/phase_i39b_route010_runner_comment_cleanup_checkpoint.md` — Comment/docstring cleanup only; no behavior change; stale advisory-era wording removed from H.4, H.6, H.9, H.10, H.13 runners; all targeted regressions PASS; full 35-suite gate PASS.
 **Phase I.39 Warning Pilot Activation:** `docs/checkpoints/phase_i39_route010_warning_pilot_activation_checkpoint.md` — Config-only activation of `CCI-ROUTE-010` warning pilot; `effective_severity` changed from `advisory` to `warning`; all targeted regressions PASS; full 35-suite gate PASS.
 **Phase I.37 Warning Pilot Plan:** `docs/planning/phase_i37_route010_warning_pilot_plan.md` — Planning-only document evaluating whether `CCI-ROUTE-010` should enter a controlled warning pilot; reviewed and approved in I.38/J.2.
-**Latest Checkpoint:** `docs/checkpoints/phase_i43_route010_warning_pilot_burnin_review_decision.md` — Phase I.43/J.7 burn-in review and decision
+**Latest Checkpoint:** `docs/checkpoints/phase_i43_route010_warning_pilot_burnin_review_decision.md` — Phase I.43/J.7 burn-in review and decision  
+**Phase L.1 Conversational Builder Workflow Plan:** `docs/planning/phase_l1_conversational_builder_workflow_plan.md` — Planning-only shift toward user-facing product workflow; goal: guided conversation to produce compliant Navy/Marine Corps letter; no renderer/severity/config changes; no rule promotion; no code changes.
 **H.35 Posture:** H.31–H.33 identical clean fixture burn-in observations reviewed; H.34 decided to pause repeated fixture-only observation; H.35 documents the paused posture; no new observation data; pilot remains active
 **H.34 Review Result:** H.31–H.33 identical clean results; pause fixture-only observation; continue warning pilot; error promotion remains unauthorized
 **H.33 Observation Result:** 32 fixtures PASS, 4 sub-runners PASS, full 35-suite gate PASS, 0 false positives, 0 false negatives; identical to H.31 and H.32
@@ -733,10 +734,11 @@ Figures are rule-bearing and must be reviewed when referenced.
 
 **Phase K.7 CCI-CH7-SUBJ-002 Warning Pilot Observation Decision:** `docs/checkpoints/phase_k7_subject_terminal_punctuation_warning_pilot_observation_decision.md` — Post-activation observation decision; config-only activation confirmed stable; full 37-suite gate PASS; decision: `continue warning pilot, pause repeated synthetic burn-in`; no rollback warranted; error promotion unauthorized; triggers for resuming observation listed; recommended next work: shift to user-facing conversational builder workflow or run new explicit-source candidate scan if user requests.
 
-**Recommended next phase:** User discretion. Existing options:
+**Recommended next phase:** Phase L.2 — Conversational Builder Entry-Point Review. Read `docs/planning/phase_l1_conversational_builder_workflow_plan.md` first. Inspect current UI/CLI/chat entry points (`src/intake_orchestrator.py`, `src/correction_nl_commands.py`) and produce a lean review document identifying builder hook points, schema gaps, and NL mediator compatibility. Planning and review only; no code changes.
+
+Alternative paths (user discretion):
 - Continue paused observation for all three active warning pilots (ROUTE-010, ROUTE-011, SUBJ-002).
 - Run K.8 explicit-source candidate scan if user wants additional rules (e.g., REF-005, DTM-003).
-- Shift focus to conversational builder workflow or other non-CCI tasks.
 
 **Error promotion:** Unauthorized.
 
