@@ -731,7 +731,9 @@ Figures are rule-bearing and must be reviewed when referenced.
 
 **Phase K.2 CCI-CH7-SUBJ-002 Candidate Evaluation Plan:** `docs/planning/phase_k2_subject_terminal_punctuation_candidate_plan.md` — Planning-only document evaluating `CCI-CH7-SUBJ-002` (subject line terminal punctuation) as next controlled rule candidate; validator already implemented; 11 proposed regression checks (3 positive, 6 negative, 2 cross-rule preservation); future runner `tools/run_phase_k3_subject_terminal_punctuation_regression.py`; no config/severity/allowlist/validator/catalog/renderer/prompt/command changes; error promotion unauthorized.
 
-**Recommended next phase:** Phase K.3 — CCI-CH7-SUBJ-002 Dedicated Regression Runner. ROUTE-010 and ROUTE-011 warning pilots remain active. Continue monitoring through existing observation checkpoints. Error promotion unauthorized.
+**Phase K.3 CCI-CH7-SUBJ-002 Dedicated Regression Runner:** `tools/run_phase_k3_subject_terminal_punctuation_regression.py` — Created; 11/11 checks PASS (3 positive, 6 negative, 2 cross-rule); uses existing `src/cci_subject_validate.py` with inline sanitized payloads; no config/severity/allowlist/validator/catalog/renderer/prompt/command changes; full 37-suite gate PASS; error promotion unauthorized.
+
+**Recommended next phase:** Phase K.4 — CCI-CH7-SUBJ-002 Regression Coverage Decision. ROUTE-010 and ROUTE-011 warning pilots remain active. Continue monitoring through existing observation checkpoints. Error promotion unauthorized.
 
 **Constraints:**
 - No validator changes.
@@ -741,7 +743,7 @@ Figures are rule-bearing and must be reviewed when referenced.
 - No command-layer changes.
 - No error-level promotion without separate future phase and burn-in evidence.
 - No real data committed.
-- All 36 regression suites must continue to pass before any future commit.
+- All 37 regression suites must continue to pass before any future commit.
 - Warning-pilot activation requires explicit approval before any config change.
 
 ---
