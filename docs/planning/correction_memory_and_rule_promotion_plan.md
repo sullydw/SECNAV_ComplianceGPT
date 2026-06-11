@@ -75,6 +75,8 @@
 
 **Phase K.2 CCI-CH7-SUBJ-002 Candidate Evaluation Plan:** `docs/planning/phase_k2_subject_terminal_punctuation_candidate_plan.md` — Planning-only document evaluating `CCI-CH7-SUBJ-002` (subject line terminal punctuation) as next controlled rule candidate; validator already implemented at `src/cci_subject_validate.py` lines 280-284; 11 proposed regression checks (3 positive, 6 negative, 2 cross-rule preservation); future runner `tools/run_phase_k3_subject_terminal_punctuation_regression.py`; no config/severity/allowlist/validator/catalog/renderer/prompt/command changes; error promotion unauthorized.
 
+**Phase L.2 Conversational Builder Entry-Point Review:** `docs/planning/phase_l2_conversational_builder_entrypoint_review.md` — Read-only review confirming `IntakeOrchestrator` is ~80% of builder foundation; identifies missing multi-turn wrapper, plain-English formatter, and `window_envelope` schema gap; recommends L.3 schema definition next; no code changes.
+
 **Phase K.7 CCI-CH7-SUBJ-002 Warning Pilot Observation Decision:** `docs/checkpoints/phase_k7_subject_terminal_punctuation_warning_pilot_observation_decision.md` — Post-activation observation decision; config-only activation confirmed stable; full 37-suite gate PASS; decision: `continue warning pilot, pause repeated synthetic burn-in`; no rollback warranted; error promotion unauthorized; triggers for resuming observation listed; recommended next work: shift to user-facing conversational builder workflow or run new explicit-source candidate scan if user requests.
 
 **Next Phase:** User discretion. Existing options:
