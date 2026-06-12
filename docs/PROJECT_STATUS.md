@@ -49,7 +49,9 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest planning checkpoint commit:** `c778847` — `Docs: Review conversational builder entry points`
+**Latest planning checkpoint commit:** `PENDING` — `Prototype: Add conversational builder session`
+**Latest implementation commit:** `PENDING` — `Prototype: Add conversational builder session`
+**Phase L.4 Conversational Builder Prototype Checkpoint:** `docs/checkpoints/phase_l4_conversational_builder_prototype_checkpoint.md` — Phase L.4 prototype implementation; `src/conversational_builder.py` created; 10 tests, 39 checks PASS; full 37-suite gate PASS (PDF render/layout pre-existing failures only); no renderer/severity/config/validator/catalog/command changes; no error promotion.
 **Latest implementation commit:** `ee4f3a2` — `CCI: Add H.28 ROUTE-011 sanitized fixture regression`
 **Phase H.30 review checkpoint:** `docs/checkpoints/phase_h30_h29_readonly_implementation_review_checkpoint.md` — Phase H.30 H.29 read-only implementation review approval checkpoint; H.28 accepted as stable baseline; suite count 35.
 **Phase H.28 implementation checkpoint:** `docs/checkpoints/phase_h28_route011_sanitized_fixture_runner_checkpoint.md` — Implementation checkpoint: 32 fixtures, `manifest.json`, `tools/run_phase_h24_route011_sanitized_fixture_regression.py` (35th suite); full 35-suite gate PASS; config/severity/catalog/validator/renderer/prompt/command untouched.
