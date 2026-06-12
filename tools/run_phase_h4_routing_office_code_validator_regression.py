@@ -299,6 +299,15 @@ def main() -> int:
         "examples/audit_cci_routing_warning_need_to_know.json",
         "tools/run_phase_h16_route011_burnin_regression.py",
         "tools/run_phase_h24_route011_sanitized_fixture_regression.py",
+        # Phase L.4 / L.5 artifacts (conversational builder)
+        "src/conversational_builder.py",
+        "tools/run_phase_l4_conversational_builder_regression.py",
+        "tools/run_phase_l5_conversational_builder_validation_summary_regression.py",
+        "docs/planning/phase_l1_conversational_builder_workflow_plan.md",
+        "docs/planning/phase_l2_conversational_builder_entrypoint_review.md",
+        "docs/planning/phase_l3_conversational_builder_payload_schema_question_flow.md",
+        "docs/checkpoints/phase_l4_conversational_builder_prototype_checkpoint.md",
+        "docs/checkpoints/phase_l5_conversational_builder_validation_summary_checkpoint.md",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
