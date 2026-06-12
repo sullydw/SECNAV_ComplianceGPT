@@ -83,10 +83,7 @@
 
 **Phase K.7 CCI-CH7-SUBJ-002 Warning Pilot Observation Decision:** `docs/checkpoints/phase_k7_subject_terminal_punctuation_warning_pilot_observation_decision.md` — Post-activation observation decision; config-only activation confirmed stable; full 37-suite gate PASS; decision: `continue warning pilot, pause repeated synthetic burn-in`; no rollback warranted; error promotion unauthorized; triggers for resuming observation listed; recommended next work: shift to user-facing conversational builder workflow or run new explicit-source candidate scan if user requests.
 
-**Next Phase:** User discretion. Existing options:
-- Continue paused observation for all three active warning pilots (ROUTE-010, ROUTE-011, SUBJ-002).
-- Run K.8 explicit-source candidate scan if user wants additional rules (e.g., REF-005, DTM-003).
-- Shift focus to conversational builder workflow or other non-CCI tasks.
+**Next Phase:** `Phase L.5  Conversational Builder Validation Summary Integration` — Wire `warning_summary()` into user-facing approval flow; add accept/revise/ignore persistence per warning; keep blocking aligned with current severity levels (advisory/warning = non-blocking, error = blocking).
 
 **Burn-in clock note:** The 30-day observation period starts from the H.15 warning pilot activation commit (`18fc9bf`), not from H.16. H.16 is regression hardening and burn-in evidence collection, not pilot activation.
 
