@@ -45,23 +45,22 @@ from letter_model_v6 import normalize_payload
 # Constants
 # ---------------------------------------------------------------------------
 
-_BUILDER_VERSION = "L.4"
+_BUILDER_VERSION = "L.5"
 
 # Plain-English warning formatter map for active pilots + generic fallback
 _WARNING_MAP = {
     "CCI-ROUTE-010": {
         "severity": "warning",
         "message": (
-            "An office code in the To or Via line is written as numbers only. "
-            "SECNAV guidance recommends adding the word 'Code' before it. "
-            "Example: '123' should be 'Code 123'."
+            "A routing office code appears as numbers only (for example, '123'). "
+            "SECNAV M-5216.5 recommends writing it as 'Code 123'."
         ),
         "actions": ["Revise now", "Accept and keep my wording", "Ignore this warning"],
     },
     "CCI-ROUTE-011": {
         "severity": "warning",
         "message": (
-            "This standard letter is missing a 'From:' line. "
+            "This standard letter has no 'From:' line. "
             "Add one, or mark it as a window-envelope letter if it will use a window envelope."
         ),
         "actions": ["Revise now", "Accept and keep my wording", "Ignore this warning"],
@@ -69,8 +68,8 @@ _WARNING_MAP = {
     "CCI-CH7-SUBJ-002": {
         "severity": "warning",
         "message": (
-            "The subject line ends with punctuation. "
-            "SECNAV guidance recommends no terminal punctuation in the subject line."
+            "The subject line ends with punctuation (such as a period or question mark). "
+            "SECNAV M-5216.5 Chapter 7 recommends no terminal punctuation in the subject line."
         ),
         "actions": ["Revise now", "Accept and keep my wording", "Ignore this warning"],
     },
@@ -78,7 +77,7 @@ _WARNING_MAP = {
 
 _ADVISORY_FALLBACK = {
     "severity": "advisory",
-    "message": "A validator finding may need review. Verify the content follows SECNAV conventions.",
+    "message": "A validator finding may need review. Please verify the content follows SECNAV conventions before finalizing.",
     "actions": ["Dismiss"],
 }
 
@@ -348,21 +347,86 @@ class BuilderSession:
 
             for error in validator_result.get("errors", []):
                 rule_code = _extract_rule_code(error) if isinstance(error, str) else None
-                summary.append({
-                    "rule_code": rule_code or "unknown",
-                    "severity": "error",
-                    "message": error,
-                    "raw_warning": error,
-                    "actions": ["Fix before finalizing"],
-                    "user_decision": self._user_decisions.get(rule_code),
-                })
+                mapped = _WARNING_MAP.get(rule_code)
+                if mapped:
+                    # Known pilot rule found in errors list: use mapped severity
+                    # (validators may emit pilot findings in errors when effective
+                    # severity is warning/error; we still present it as the mapped level)
+                    summary.append({
+                        "rule_code": rule_code,
+                        "severity": mapped["severity"],
+                        "message": mapped["message"],
+                        "raw_warning": error,
+                        "actions": mapped["actions"],
+                        "user_decision": self._user_decisions.get(rule_code),
+                    })
+                else:
+                    summary.append({
+                        "rule_code": rule_code or "unknown",
+                        "severity": "error",
+                        "message": error,
+                        "raw_warning": error,
+                        "actions": ["Fix before finalizing"],
+                        "user_decision": self._user_decisions.get(rule_code),
+                    })
 
         return summary
+
+    def validation_summary(self) -> dict[str, Any]:
+        """
+        Return a structured, user-facing validation summary.
+
+        Includes:
+          - total_findings, errors, warnings, advisories
+          - known_pilot_findings count
+          - pending_decisions count
+          - finalize_allowed boolean
+          - block_reason list (empty if allowed)
+          - findings list (from warning_summary)
+        """
+        findings = self.warning_summary()
+        errors = [f for f in findings if f["severity"] == "error"]
+        warnings = [f for f in findings if f["severity"] == "warning"]
+        advisories = [f for f in findings if f["severity"] == "advisory"]
+
+        known_pilot_codes = {"CCI-ROUTE-010", "CCI-ROUTE-011", "CCI-CH7-SUBJ-002"}
+        known_pilot_findings = [f for f in findings if f["rule_code"] in known_pilot_codes]
+
+        pending_decisions = [
+            f for f in findings
+            if f["severity"] == "warning"
+            and f.get("user_decision") not in ("accept", "ignore")
+        ]
+
+        block_reason: list[str] = []
+        if errors:
+            block_reason.append("Errors must be fixed before finalizing.")
+        if pending_decisions and not self._user_decisions.get("_global_accept_warnings"):
+            block_reason.append("Pending warning decisions must be accepted or revised.")
+
+        finalize_allowed = not block_reason
+
+        return {
+            "total_findings": len(findings),
+            "errors": len(errors),
+            "warnings": len(warnings),
+            "advisories": len(advisories),
+            "known_pilot_findings": len(known_pilot_findings),
+            "pending_decisions": len(pending_decisions),
+            "finalize_allowed": finalize_allowed,
+            "block_reason": block_reason,
+            "findings": findings,
+        }
 
     def finalize(self, accept_warnings: bool = False) -> dict[str, Any]:
         """
         Normalize payload, set draft/final status, return structured output.
         Does not render PDF.
+
+        Parameters:
+          accept_warnings: if True, treat all pending warning/advisory findings
+                           as accepted for the purpose of allowing finalization.
+                           Does NOT modify stored user_decisions.
         """
         payload = self.build_payload()
 
@@ -386,12 +450,25 @@ class BuilderSession:
             normalized["draft_final_status"] = "draft"
 
         audit = self.run_validation()
+        v_summary = self.validation_summary()
+
+        # Honor accept_warnings parameter
+        if accept_warnings:
+            v_summary["finalize_allowed"] = True
+            v_summary["block_reason"] = []
+            v_summary["pending_decisions"] = 0
+            for f in v_summary["findings"]:
+                if f["severity"] in ("warning", "advisory"):
+                    f["user_decision"] = f.get("user_decision") or "accepted_via_flag"
 
         return {
             "session_id": self._session_id,
             "payload": normalized,
             "audit": audit,
-            "warning_summary": self.warning_summary(),
+            "validation_summary": v_summary,
+            "warning_summary": v_summary["findings"],
+            "finalize_allowed": v_summary["finalize_allowed"],
+            "block_reason": v_summary["block_reason"],
             "draft_final_status": self._draft_final_status,
             "builder_version": _BUILDER_VERSION,
         }
@@ -413,7 +490,7 @@ class BuilderSession:
 # ---------------------------------------------------------------------------
 
 def main(argv: list[str]) -> int:
-    print("SECNAV Conversational Builder — Phase L.4 Prototype")
+    print("SECNAV Conversational Builder — Phase L.5 Prototype")
     print("=" * 60)
     print()
 
@@ -457,7 +534,16 @@ def main(argv: list[str]) -> int:
             continue
 
         if text.lower() == "/warnings":
-            for item in builder.warning_summary():
+            v_summary = builder.validation_summary()
+            print(f"Findings: {v_summary['total_findings']}  (Errors: {v_summary['errors']}, Warnings: {v_summary['warnings']}, Advisories: {v_summary['advisories']})")
+            if v_summary['pending_decisions']:
+                print(f"Pending decisions: {v_summary['pending_decisions']}")
+            print(f"Finalize allowed: {'Yes' if v_summary['finalize_allowed'] else 'No'}")
+            if v_summary['block_reason']:
+                for reason in v_summary['block_reason']:
+                    print(f"  Block: {reason}")
+            print()
+            for item in v_summary['findings']:
                 print(f"[{item['severity'].upper()}] {item['rule_code']}")
                 print(f"  {item['message']}")
                 print(f"  Actions: {', '.join(item['actions'])}")
@@ -468,6 +554,10 @@ def main(argv: list[str]) -> int:
 
         if text.lower() == "/finalize":
             result = builder.finalize()
+            print(f"Finalize allowed: {'Yes' if result['finalize_allowed'] else 'No'}")
+            if result['block_reason']:
+                for reason in result['block_reason']:
+                    print(f"  Block: {reason}")
             print("FINALIZED PAYLOAD:")
             print(json.dumps(result["payload"], indent=2))
             continue

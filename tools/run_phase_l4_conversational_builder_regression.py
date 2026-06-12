@@ -238,10 +238,13 @@ def test_finalize_returns_structured_payload() -> None:
     _assert("payload" in result, "finalize returns payload")
     _assert("audit" in result, "finalize returns audit")
     _assert("warning_summary" in result, "finalize returns warning_summary")
-    _assert(result["builder_version"] == "L.4", "builder_version is L.4")
+    _assert("validation_summary" in result, "finalize returns validation_summary")
+    _assert("finalize_allowed" in result, "finalize returns finalize_allowed")
+    _assert(result["builder_version"] == "L.5", "builder_version is L.5")
     _assert(result["draft_final_status"] in ("draft", "final"), "draft_final_status is valid")
     print(f"  Finalized payload keys: {sorted(result['payload'].keys())}")
     print(f"  Audit schema: {result['audit'].get('schema_version')}")
+    print(f"  Finalize allowed: {result['finalize_allowed']}")
 
 
 def test_run_validation_returns_audit_v1() -> None:
