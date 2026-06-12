@@ -49,7 +49,7 @@
 
 This is the main status tracker for SECNAV_ComplianceGPT. A new OpenAI chat or developer agent should read this file after `docs/BOOTSTRAP.md` and before starting new work.
 
-**Latest planning checkpoint commit:** `dd17313` — `Prototype: Add builder validation summary`
+**Latest planning checkpoint commit:** `915d356` — `Docs: Update PROJECT_STATUS and correction_memory_plan for L.5`
 **Latest implementation commit:** `dd17313` — `Prototype: Add builder validation summary`
 **Phase L.4 Conversational Builder Prototype Checkpoint:** `docs/checkpoints/phase_l4_conversational_builder_prototype_checkpoint.md` — Phase L.4 prototype implementation; `src/conversational_builder.py` created; 10 tests, 39 checks PASS; full 37-suite gate PASS (PDF render/layout pre-existing failures only); no renderer/severity/config/validator/catalog/command changes; no error promotion.
 **Phase L.5 Conversational Builder Validation Summary Integration Checkpoint:** `docs/checkpoints/phase_l5_conversational_builder_validation_summary_checkpoint.md` — Phase L.5 validation summary integration; `validation_summary()` method added with structured counts, pending-decision tracking, finalize_allowed/block_reason logic; `warning_summary()` improved with known-pilot mapping from errors lists; `finalize(accept_warnings=...)` parameter added; L.4 regression updated to 41 checks; L.5 regression 36 checks; full 37-suite gate PASS (H.4/H.6/H.13/H.16/H.24 cascades are git-status cross-check artifacts, not behavioral regressions); no renderer/severity/config/validator/catalog/command changes; no error promotion.

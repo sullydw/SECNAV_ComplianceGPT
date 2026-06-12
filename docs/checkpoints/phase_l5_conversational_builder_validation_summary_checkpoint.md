@@ -5,7 +5,8 @@
 
 ## Baseline
 Latest verified baseline: `71b8952`
-Current HEAD after L.4: `71b8952`
+Prototype commit: `dd17313` — `Prototype: Add builder validation summary`
+Status update commit: `915d356` — `Docs: Update PROJECT_STATUS and correction_memory_plan for L.5`
 
 ## Files Changed
 - `src/conversational_builder.py` — updated with validation summary and improved finalize behavior
