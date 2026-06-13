@@ -306,8 +306,15 @@ def main() -> int:
         "docs/planning/phase_l1_conversational_builder_workflow_plan.md",
         "docs/planning/phase_l2_conversational_builder_entrypoint_review.md",
         "docs/planning/phase_l3_conversational_builder_payload_schema_question_flow.md",
-        "docs/checkpoints/phase_l4_conversational_builder_prototype_checkpoint.md",
         "docs/checkpoints/phase_l5_conversational_builder_validation_summary_checkpoint.md",
+        "docs/checkpoints/phase_l5a_conversational_builder_regression_harness_allowlist_cleanup.md",
+        # Phase L.6 / L.7 / L.7A artifacts
+        "tools/run_phase_l6_builder_payload_to_pdf_dry_run.py",
+        "tools/run_phase_l7_conversational_builder_cli.py",
+        "tools/run_phase_l7_conversational_builder_cli_regression.py",
+        "docs/checkpoints/phase_l6_conversational_builder_payload_to_pdf_dry_run_checkpoint.md",
+        "docs/checkpoints/phase_l7_conversational_builder_interactive_cli_checkpoint.md",
+        "docs/checkpoints/phase_l7a_conversational_builder_cli_local_verification_checkpoint.md",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0

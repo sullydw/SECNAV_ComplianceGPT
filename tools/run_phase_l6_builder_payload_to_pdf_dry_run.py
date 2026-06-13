@@ -31,8 +31,20 @@ SAMPLE_FIELDS = {
     "to": "Chief of Naval Operations",
     "subj": "Example Subject for Dry Run",
     "body": "This is a sanitized body paragraph for the Phase L.6 dry run.",
-    "signature": "J. Q. Sample",
     "window_envelope": False,
+}
+
+# Renderer-compatible structured signature (dict with role=None).
+# The builder's _coerce_value turns a plain string signature into a list,
+# which the renderer does not handle; we inject a dict directly via the
+# orchestrator to match the known-good sample format.
+STRUCTURED_SIGNATURE = {
+    "name": "J. Q. Sample",
+    "role": None,
+    "title": None,
+    "authority": None,
+    "activity_head_title": None,
+    "affects_pay_or_allowances": False,
 }
 
 
@@ -74,6 +86,9 @@ def main() -> int:
     # ------------------------------------------------------------------
     for field, value in SAMPLE_FIELDS.items():
         builder.ingest_user_message(f"{field}: {value}")
+
+    # Inject renderer-compatible structured signature dict directly
+    builder._orchestrator.apply_answers({"signature": STRUCTURED_SIGNATURE})
 
     payload = builder.build_payload()
     missing = []
