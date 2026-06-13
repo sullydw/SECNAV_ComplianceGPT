@@ -89,9 +89,13 @@
 
 **Phase L.6 Conversational Builder Payload-to-PDF Dry Run:** `docs/checkpoints/phase_l6_conversational_builder_payload_to_pdf_dry_run_checkpoint.md` — Verified `BuilderSession.finalize()` produces normalized payload suitable for existing PDF renderer; dry-run runner attempts PDF generation via `pdf_v6_render.py` entry point; skipped gracefully due to missing `reportlab` in environment (reported as environmental skip, not failure); 7/7 checks PASS; full 35-suite non-PDF gate PASS; no renderer/layout/config/validator/catalog/command changes; no error promotion.
 
-**Next Phase:** `Phase L.7  Conversational Builder Interactive CLI Prototype` — Build a lightweight interactive CLI loop around `BuilderSession` for end-to-end guided conversation; display next question, accept user input, show validation summary, allow revise/finalize; keep as standalone script or module entry point (do not modify gateway/Phase F/G command layer); add user-decision persistence (accept/ignore per warning) in session; regression test CLI flow with synthetic inputs.
+**Phase L.7 Conversational Builder Interactive CLI Prototype:** `docs/checkpoints/phase_l7_conversational_builder_interactive_cli_checkpoint.md` — Interactive CLI wrapper `tools/run_phase_l7_conversational_builder_cli.py` created; exposes `run_interactive()`, `run_scripted_sample()`, `pdf_dependency_status()`; accepts CLI args for `--scripted`, `--accept-warnings`, `--revise`; produces structured JSON output; 7/7 scripted checks PASS; no renderer/config/validator/catalog/command changes; error promotion unauthorized.
 
-**Burn-in clock note:** The 30-day observation period starts from the H.15 warning pilot activation commit (`18fc9bf`), not from H.16. H.16 is regression hardening and burn-in evidence collection, not pilot activation.
+**Phase L.7A Conversational Builder CLI Local Verification:** `docs/checkpoints/phase_l7a_conversational_builder_cli_local_verification_checkpoint.md` — Local environment verification after pulling latest GitHub main (`3961e153`); all L.4–L.7 regressions PASS; L.7 CLI 26/26 PASS; full non-PDF gate 35/35 PASS; L.6 PDF skip is pre-existing environmental (reportlab signature-block error with sanitized payload, not new regression); no renderer/config/validator/catalog/command changes; error promotion unauthorized; approved for next phase.
+
+**Next Phase:** `Phase L.8 Conversational Builder Usability Review and Question-Coverage Audit` — Review L.7 CLI user experience, question coverage gaps, and edge cases; add missing question categories or improve plain-English guidance; keep as standalone review with no config/severity/validator/renderer/command changes.
+
+**Burn-in clock note:**
 
 **Known limitations (non-blocking for warning pilot):**
 - Exotic whitespace (zero-width space `\u200B`, BOM `\uFEFF`) does not trigger `CCI-ROUTE-011` because `str.strip()` does not strip them. Acceptable for warning pilot. Consider validator hardening before any future error promotion.
