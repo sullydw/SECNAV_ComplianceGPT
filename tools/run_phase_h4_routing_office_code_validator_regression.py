@@ -315,6 +315,9 @@ def main() -> int:
         "docs/checkpoints/phase_l6_conversational_builder_payload_to_pdf_dry_run_checkpoint.md",
         "docs/checkpoints/phase_l7_conversational_builder_interactive_cli_checkpoint.md",
         "docs/checkpoints/phase_l7a_conversational_builder_cli_local_verification_checkpoint.md",
+        # Phase L.9 artifacts
+        "docs/checkpoints/phase_l9_conversational_builder_question_text_signature_capture_checkpoint.md",
+        "tools/run_phase_l9_conversational_builder_question_text_signature_capture_regression.py",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0

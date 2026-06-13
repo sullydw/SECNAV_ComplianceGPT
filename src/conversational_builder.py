@@ -45,7 +45,7 @@ from letter_model_v6 import normalize_payload
 # Constants
 # ---------------------------------------------------------------------------
 
-_BUILDER_VERSION = "L.5"
+_BUILDER_VERSION = "L.9"
 
 # Plain-English warning formatter map for active pilots + generic fallback
 _WARNING_MAP = {
@@ -92,10 +92,38 @@ _BUILDER_STEPS = [
     "finalize",
 ]
 
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
+# Friendly question-text overrides (L.9)
+_QUESTION_OVERRIDES = {
+    "subj": {
+        "prompt_text": "What is the subject of this letter?",
+    },
+    "from": {
+        "prompt_text": "Who is sending this letter (name or office)?",
+    },
+    "to": {
+        "prompt_text": "Who is receiving this letter (name or office)?",
+    },
+    "body": {
+        "prompt_text": "Enter the body text of the letter.",
+    },
+    "copy_to": {
+        "prompt_text": "Who else should receive a copy (optional, e.g., copy_to: CNO)?",
+    },
+    "distribution": {
+        "prompt_text": "Add distribution entries if needed (optional).",
+    },
+    "window_envelope": {
+        "prompt_text": "Will this letter use a window envelope (yes/no)?",
+    },
+    "signature": {
+        "prompt_text": (
+            "Provide signer details:\n"
+            "  signature.name: J. Q. Sample\n"
+            "  signature.role: Commanding Officer (optional)\n"
+            "  signature.title: Commanding Officer (optional)"
+        ),
+    },
+}
 
 def _today_military() -> str:
     """Return today's date in military format: '15 May 2026'."""
@@ -108,6 +136,12 @@ def _coerce_value(field_path: str, raw: Any, data_type: str | None = None) -> An
     if raw is None:
         return None
 
+    # Structured signature fields (signature.name, signature.role, signature.title)
+    if field_path.startswith("signature."):
+        if isinstance(raw, str):
+            return raw.strip()
+        return str(raw).strip() if raw else None
+
     # Boolean coercion
     if data_type == "boolean" or field_path == "window_envelope":
         if isinstance(raw, bool):
@@ -117,8 +151,8 @@ def _coerce_value(field_path: str, raw: Any, data_type: str | None = None) -> An
             return s in ("true", "yes", "1", "y")
         return bool(raw)
 
-    # List coercion
-    list_fields = {"via", "ref", "encl", "copy_to", "distribution", "body", "signature", "commands"}
+    # List coercion (signature removed from list_fields — handled as dict below)
+    list_fields = {"via", "ref", "encl", "copy_to", "distribution", "body", "commands"}
     if data_type == "list" or field_path in list_fields:
         if isinstance(raw, list):
             return raw
@@ -136,7 +170,7 @@ def _coerce_value(field_path: str, raw: Any, data_type: str | None = None) -> An
             return [raw] if raw.strip() else []
         return [str(raw)] if raw else []
 
-    # Dict coercion (signature, point_of_contact)
+    # Dict coercion (signature as a top-level field — plain string maps to dict.name)
     if data_type == "dict" or field_path == "signature":
         if isinstance(raw, dict):
             return raw
@@ -170,6 +204,35 @@ def _coerce_value(field_path: str, raw: Any, data_type: str | None = None) -> An
     if isinstance(raw, str):
         return raw.strip()
     return str(raw)
+
+
+def _expand_dot_fields(answers: dict[str, Any]) -> dict[str, Any]:
+    """
+    Expand dotted field names like signature.name into nested dicts.
+    For example: {'signature.name': 'J. Q. Sample'} -> {'signature': {'name': 'J. Q. Sample'}}
+    """
+    expanded: dict[str, Any] = {}
+    for key, value in answers.items():
+        if "." in key:
+            parts = key.split(".")
+            target = expanded
+            for part in parts[:-1]:
+                if part not in target:
+                    target[part] = {}
+                target = target[part]
+            target[parts[-1]] = value
+        else:
+            # Merge with existing if any (e.g., plain 'signature' already created dict)
+            if key in expanded and isinstance(expanded[key], dict) and isinstance(value, dict):
+                expanded[key].update(value)
+            else:
+                expanded[key] = value
+    return expanded
+
+
+def _is_signature_field(field_path: str) -> bool:
+    """Return True if field_path is a structured signature field."""
+    return field_path.startswith("signature.") or field_path == "signature"
 
 
 def _parse_key_value(text: str) -> dict[str, Any]:
@@ -251,7 +314,13 @@ class BuilderSession:
         self._current_step = _resolve_step(status)
 
         questions = self._orchestrator.next_questions(limit=1)
-        self._last_question = questions[0] if questions else None
+        q = questions[0] if questions else None
+        if q:
+            field = q.get("field_path", "")
+            override = _QUESTION_OVERRIDES.get(field)
+            if override:
+                q = {**q, **override}
+        self._last_question = q
 
         return {
             "session_id": self._session_id,
@@ -283,6 +352,9 @@ class BuilderSession:
                 data_type = self._last_question.get("data_type")
             coerced[field_path] = _coerce_value(field_path, raw, data_type)
 
+        # Expand dotted fields like signature.name into nested dicts before applying
+        coerced = _expand_dot_fields(coerced)
+
         self._orchestrator.apply_answers(coerced)
         self._history.append({"answers": coerced, "raw_text": text})
 
@@ -290,7 +362,13 @@ class BuilderSession:
         self._current_step = _resolve_step(status)
 
         questions = self._orchestrator.next_questions(limit=1)
-        self._last_question = questions[0] if questions else None
+        q = questions[0] if questions else None
+        if q:
+            field = q.get("field_path", "")
+            override = _QUESTION_OVERRIDES.get(field)
+            if override:
+                q = {**q, **override}
+        self._last_question = q
 
         return {
             "session_id": self._session_id,
@@ -303,8 +381,14 @@ class BuilderSession:
     def next_question(self) -> dict[str, Any] | None:
         """Return the next missing-field question, or None if all required present."""
         questions = self._orchestrator.next_questions(limit=1)
-        self._last_question = questions[0] if questions else None
-        return self._last_question
+        q = questions[0] if questions else None
+        if q:
+            field = q.get("field_path", "")
+            override = _QUESTION_OVERRIDES.get(field)
+            if override:
+                q = {**q, **override}
+        self._last_question = q
+        return q
 
     def build_payload(self) -> dict[str, Any]:
         """Return the current merged payload."""
@@ -478,6 +562,25 @@ class BuilderSession:
     def record_user_decision(self, rule_code: str, decision: str) -> None:
         """Record an explicit user decision for a warning/rule."""
         self._user_decisions[rule_code] = decision
+
+    def set_signature_field(self, field: str, value: str) -> None:
+        """
+        Set a single key on the structured signature dict.
+        Valid fields: name, role, title, authority, activity_head_title.
+        """
+        payload = self.build_payload()
+        sig = payload.get("signature")
+        if not isinstance(sig, dict):
+            sig = {
+                "name": None,
+                "role": None,
+                "title": None,
+                "authority": None,
+                "activity_head_title": None,
+                "affects_pay_or_allowances": False,
+            }
+        sig[field] = value
+        self._orchestrator.apply_answers({"signature": sig})
 
     def set_draft_final_status(self, status: str) -> None:
         """Set draft or final status."""

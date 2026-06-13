@@ -240,7 +240,7 @@ def test_finalize_returns_structured_payload() -> None:
     _assert("warning_summary" in result, "finalize returns warning_summary")
     _assert("validation_summary" in result, "finalize returns validation_summary")
     _assert("finalize_allowed" in result, "finalize returns finalize_allowed")
-    _assert(result["builder_version"] == "L.5", "builder_version is L.5")
+    _assert(result["builder_version"] == "L.9", "builder_version is L.9")
     _assert(result["draft_final_status"] in ("draft", "final"), "draft_final_status is valid")
     print(f"  Finalized payload keys: {sorted(result['payload'].keys())}")
     print(f"  Audit schema: {result['audit'].get('schema_version')}")

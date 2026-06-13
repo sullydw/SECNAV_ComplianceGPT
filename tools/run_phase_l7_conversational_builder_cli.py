@@ -33,9 +33,18 @@ SAMPLE_INPUTS = [
     "to: Chief of Naval Operations",
     "subj: TRAINING PLAN.",
     "body: This is a sanitized body paragraph for the Phase L.7 CLI prototype.",
-    "signature: J. Q. Sample",
+    "signature.name: J. Q. Sample",
+    "signature.role: Commanding Officer",
     "window_envelope: false",
 ]
+
+# Structured signature capture (L.9+):
+#   Use dotted keys for name, role, and title:
+#     signature.name: J. Q. Sample
+#     signature.role: Commanding Officer
+#     signature.title: Commanding Officer
+#   Plain signature: <value> still works and maps to signature.name for
+#   backward compatibility, but the preferred form is signature.name.
 
 
 def pdf_dependency_status() -> dict[str, str]:

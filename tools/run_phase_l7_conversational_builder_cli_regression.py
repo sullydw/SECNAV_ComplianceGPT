@@ -85,7 +85,7 @@ def test_subprocess_scripted_json() -> None:
     _assert(proc.returncode == 0, "scripted CLI exits zero with accept-warnings")
     parsed = json.loads(proc.stdout)
     _assert(parsed.get("finalized") is True, "subprocess output finalized true")
-    _assert(parsed.get("payload", {}).get("builder_version") == "L.5", "builder version preserved in payload")
+    _assert(parsed.get("payload", {}).get("builder_version") == "L.9", "builder version preserved in payload")
     _assert(parsed.get("pdf", {}).get("status") in {"skipped", "available_not_run"}, "subprocess PDF status is non-failing")
 
 
