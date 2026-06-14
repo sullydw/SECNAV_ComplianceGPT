@@ -16,7 +16,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -101,6 +104,70 @@ def _print_validation_summary(summary: dict[str, Any]) -> None:
         print()
 
 
+def _render_finalized_payload(payload: dict[str, Any], output_path: str) -> dict[str, Any]:
+    """
+    Write payload JSON to a temp file and invoke src/pdf_v6_render.py.
+    Returns a structured result dict.
+    """
+    # Check renderer dependencies
+    try:
+        import reportlab  # noqa: F401
+    except ImportError:
+        return {
+            "status": "skipped",
+            "output_path": output_path,
+            "reason": "reportlab unavailable (install with pip install reportlab)",
+            "stdout": "",
+            "stderr": "",
+        }
+
+    renderer = str(_REPO_ROOT / "src" / "pdf_v6_render.py")
+    tmp_json = ""
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, dir=str(_REPO_ROOT)
+        ) as tf:
+            json.dump(payload, tf, indent=2)
+            tmp_json = tf.name
+
+        os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+        result = subprocess.run(
+            [sys.executable, renderer, tmp_json, output_path],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0 and os.path.exists(output_path):
+            return {
+                "status": "success",
+                "output_path": output_path,
+                "reason": f"PDF rendered ({os.path.getsize(output_path)} bytes)",
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+            }
+        else:
+            return {
+                "status": "failed",
+                "output_path": output_path,
+                "reason": f"Renderer exited with code {result.returncode}",
+                "stdout": result.stdout,
+                "stderr": result.stderr[:500],
+            }
+    except Exception as exc:
+        return {
+            "status": "failed",
+            "output_path": output_path,
+            "reason": str(exc),
+            "stdout": "",
+            "stderr": "",
+        }
+    finally:
+        if tmp_json:
+            try:
+                os.unlink(tmp_json)
+            except OSError:
+                pass
+
+
 def run_scripted_sample(*, accept_warnings: bool = False, revise: bool = False) -> dict[str, Any]:
     """Run a sanitized scripted builder session for regression tests and demos."""
     builder = BuilderSession(session_id="phase_l7_scripted_sample")
@@ -180,8 +247,8 @@ def run_interactive() -> int:
     print("SECNAV Conversational Builder — Phase L.7 CLI Prototype")
     print("=" * 64)
     print("Use key-value input, for example: from: Commanding Officer")
-    print("Commands: /status, /warnings, /accept-warnings, /revise, /finalize, /quit")
-    print("PDF generation is not performed by this prototype.")
+    print("Commands: /status, /warnings, /accept-warnings, /revise, /finalize, /render, /quit")
+    print("PDF generation is now available via /render <output.pdf>.")
     print()
 
     builder = BuilderSession()
@@ -216,12 +283,40 @@ def run_interactive() -> int:
 
         if lower == "/accept-warnings":
             accept_warnings = True
-            print("Warnings will be accepted for this finalize attempt.")
+            print("Warnings will be accepted for this finalize/render attempt.")
             continue
 
         if lower == "/revise":
             accept_warnings = False
             print("Revision path selected. Continue entering corrected key-value fields.")
+            continue
+
+        if lower.startswith("/render"):
+            parts = text.split(maxsplit=1)
+            output_pdf = parts[1].strip() if len(parts) > 1 else str(_REPO_ROOT / "output" / "builder_render.pdf")
+            v_summary = builder.validation_summary()
+            if not v_summary.get("finalize_allowed"):
+                print(f"Render blocked: finalize not allowed.")
+                for reason in v_summary.get("block_reason", []):
+                    print(f"  {reason}")
+                continue
+            final_result = builder.finalize(accept_warnings=accept_warnings)
+            if not final_result.get("finalize_allowed"):
+                print("Render blocked: finalize returned not allowed after attempt.")
+                for reason in final_result.get("block_reason", []):
+                    print(f"  {reason}")
+                continue
+            payload = final_result.get("payload", {})
+            render_result = _render_finalized_payload(payload, output_pdf)
+            print(f"Render status: {render_result['status']}")
+            if render_result["status"] == "success":
+                print(f"PDF written: {render_result['output_path']} ({render_result['reason']})")
+            elif render_result["status"] == "skipped":
+                print(f"PDF generation skipped: {render_result['reason']}")
+            else:
+                print(f"PDF generation failed: {render_result['reason']}")
+                if render_result.get("stderr"):
+                    print(f"  stderr: {render_result['stderr'][:200]}")
             continue
 
         if lower == "/finalize":
@@ -252,11 +347,27 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--scripted-sample", action="store_true", help="Run sanitized scripted sample and print JSON")
     parser.add_argument("--accept-warnings", action="store_true", help="Accept warnings during scripted finalize")
     parser.add_argument("--revise", action="store_true", help="Run scripted revise path without finalizing")
+    parser.add_argument("--render", metavar="PDF_PATH", default=None, help="Render PDF from scripted sample output (requires --scripted-sample)")
     args = parser.parse_args(argv)
 
     if args.scripted_sample:
         result = run_scripted_sample(accept_warnings=args.accept_warnings, revise=args.revise)
         print(json.dumps(result, indent=2, sort_keys=True))
+        if args.render:
+            if not result.get("finalized"):
+                print("\nRender skipped: scripted sample did not finalize.")
+                return 1
+            payload = result.get("payload", {})
+            render_res = _render_finalized_payload(payload, args.render)
+            print(f"\nRender status: {render_res['status']}")
+            if render_res["status"] == "success":
+                print(f"PDF written: {render_res['output_path']} ({render_res['reason']})")
+            elif render_res["status"] == "skipped":
+                print(f"PDF generation skipped: {render_res['reason']}")
+            else:
+                print(f"PDF generation failed: {render_res['reason']}")
+                if render_res.get("stderr"):
+                    print(f"  stderr: {render_res['stderr'][:200]}")
         return 0 if (result.get("finalized") or args.revise) else 1
 
     return run_interactive()

@@ -85,7 +85,7 @@ Exit the CLI:
 | `/accept-warnings` | Records global acceptance; allows finalize despite pending warnings |
 | `/finalize` | Returns normalized payload JSON, audit schema, and validation summary |
 
-**PDF generation:** Not performed by the interactive CLI. The prototype produces structured JSON only. PDF export is a future phase.
+**PDF generation:** Available via `/render <output.pdf>` as of Phase L.11. Requires finalization first.
 
 ---
 
@@ -98,6 +98,7 @@ Exit the CLI:
 | `/accept-warnings` | Accept all pending warnings so `/finalize` can proceed |
 | `/revise` | Clear the accept-warnings flag; continue editing fields |
 | `/finalize` | Produce normalized payload JSON; prints validation summary |
+| `/render` | Generate PDF from finalized payload (e.g., `/render output.pdf`) |
 | `/quit` | Exit the CLI cleanly |
 
 ---
