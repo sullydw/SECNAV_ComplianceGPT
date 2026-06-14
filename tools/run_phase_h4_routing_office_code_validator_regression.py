@@ -324,6 +324,10 @@ def main() -> int:
         "tools/run_phase_l17_fake_backend_llm_mediator_adapter_regression.py",
         "docs/checkpoints/phase_l15_mock_llm_mediator_contract_prototype_checkpoint.md",
         "docs/checkpoints/phase_l17_fake_backend_llm_mediator_adapter_checkpoint.md",
+        # Phase L.19 artifacts (provider config plumbing)
+        "src/llm_provider_config.py",
+        "tools/run_phase_l19_llm_provider_config_regression.py",
+        "docs/checkpoints/phase_l19_llm_provider_interface_config_checkpoint.md",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
