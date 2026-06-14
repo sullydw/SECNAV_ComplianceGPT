@@ -373,6 +373,456 @@ def create_mock_mediator() -> MockLLMBuilderMediator:
 
 
 # ---------------------------------------------------------------------------
+# Phase L.17 — LLM Builder Mediator Adapter with Fake Backend
+# ---------------------------------------------------------------------------
+
+class SafetyFilter:
+    """
+    Configurable safety filter for LLM mediator output.
+
+    Rejects prohibited fields, enforces confirmation for unsafe intents,
+    and marks invented official data for review.
+    """
+
+    _PROHIBITED_KEYS: set[str] = {
+        "cci_severity", "cci_config", "rule_promotion", "severity_override",
+        "renderer_directive", "layout_override", "pdf_engine",
+        "font_settings", "page_margins", "header_format", "footer_format",
+    }
+
+    _OFFICIAL_DATA_KEYS: set[str] = {"ssic", "command", "ref", "encl", "routing"}
+
+    def __init__(
+        self,
+        block_invented_official_data: bool = True,
+        require_confirmation_for_inferred: bool = True,
+        require_confirmation_before_finalize: bool = True,
+        require_confirmation_before_render: bool = True,
+        min_confidence: float = 0.3,
+        max_confidence: float = 1.0,
+    ) -> None:
+        self.block_invented_official_data = block_invented_official_data
+        self.require_confirmation_for_inferred = require_confirmation_for_inferred
+        self.require_confirmation_before_finalize = require_confirmation_before_finalize
+        self.require_confirmation_before_render = require_confirmation_before_render
+        self.min_confidence = min_confidence
+        self.max_confidence = max_confidence
+
+    def apply(
+        self,
+        raw_output: dict[str, Any],
+        input_data: dict[str, Any],
+    ) -> dict[str, Any]:
+        """
+        Run safety filters on raw LLM output.
+        Returns a sanitized MediatorOutput dict.
+        """
+        safety_notes: list[str] = []
+        intent: str = raw_output.get("intent", "unknown")
+        confidence: float = raw_output.get("confidence", 0.5)
+
+        # -- required keys check -----------------------------------------------
+        required_keys = {"intent", "proposed_payload_update", "proposed_key_value_lines", "confidence"}
+        missing_keys = required_keys - set(raw_output.keys())
+        if missing_keys:
+            safety_notes.append(f"Missing required keys from backend output: {sorted(missing_keys)}.")
+            if "intent" in missing_keys:
+                intent = "unknown"
+            if "confidence" in missing_keys:
+                confidence = 0.5
+
+        # -- confidence bounds ------------------------------------------------
+        if not isinstance(confidence, (int, float)):
+            confidence = 0.5
+            safety_notes.append("Confidence was non-numeric; defaulted to 0.5.")
+        confidence = float(confidence)
+        if confidence < self.min_confidence:
+            intent = "unknown"
+            safety_notes.append(f"Confidence {confidence} below threshold {self.min_confidence}; degraded to unknown.")
+        confidence = max(self.min_confidence, min(self.max_confidence, confidence))
+
+        # -- intent validation -------------------------------------------------
+        allowed = input_data.get("allowed_intents", [
+            "start_letter", "provide_field", "revise_field",
+            "accept_warnings", "request_warning_explanation",
+            "finalize", "render_pdf", "unknown",
+        ])
+        if intent not in allowed:
+            intent = "unknown"
+            safety_notes.append(f"Unsupported intent '{raw_output.get('intent')}' replaced with unknown.")
+
+        # -- payload update sanitization ---------------------------------------
+        proposed_payload_update: dict[str, Any] = raw_output.get("proposed_payload_update") or {}
+        if not isinstance(proposed_payload_update, dict):
+            proposed_payload_update = {}
+            safety_notes.append("proposed_payload_update was not a dict; cleared.")
+
+        # Reject prohibited keys
+        for key in list(proposed_payload_update.keys()):
+            if key in self._PROHIBITED_KEYS:
+                del proposed_payload_update[key]
+                safety_notes.append(f"Prohibited key '{key}' rejected from payload update.")
+
+        # Reject invented official data
+        payload_snapshot: dict[str, Any] = input_data.get("payload_snapshot", {})
+        for key in list(proposed_payload_update.keys()):
+            if key in self._OFFICIAL_DATA_KEYS and self.block_invented_official_data:
+                # If key was not already in payload_snapshot, mark as invented
+                if key not in payload_snapshot:
+                    safety_notes.append(f"Invented official data '{key}' detected; marked for confirmation.")
+
+        # -- key-value lines validation ----------------------------------------
+        proposed_key_value_lines: list[str] = raw_output.get("proposed_key_value_lines") or []
+        if not isinstance(proposed_key_value_lines, list):
+            proposed_key_value_lines = []
+            safety_notes.append("proposed_key_value_lines was not a list; cleared.")
+        else:
+            # Keep only str items
+            filtered: list[str] = []
+            for item in proposed_key_value_lines:
+                if isinstance(item, str):
+                    filtered.append(item)
+                else:
+                    safety_notes.append(f"Non-string key-value line removed: {item!r}")
+            proposed_key_value_lines = filtered
+
+        # -- confirmation enforcement -------------------------------------------
+        requires_confirmation: bool = raw_output.get("requires_user_confirmation", False)
+        if intent in {"finalize", "render_pdf"}:
+            if self.require_confirmation_before_finalize and intent == "finalize":
+                requires_confirmation = True
+            if self.require_confirmation_before_render and intent == "render_pdf":
+                requires_confirmation = True
+        if intent == "accept_warnings":
+            requires_confirmation = True
+
+        # -- warnings_to_surface validation -------------------------------------
+        warnings_to_surface: list[dict] = raw_output.get("warnings_to_surface") or []
+        if not isinstance(warnings_to_surface, list):
+            warnings_to_surface = []
+
+        # -- blocked_reason handling --------------------------------------------
+        blocked_reason: str | None = raw_output.get("blocked_reason")
+        if not isinstance(blocked_reason, (str, type(None))):
+            blocked_reason = None
+
+        # -- next_question validation -------------------------------------------
+        next_question: dict[str, Any] | None = raw_output.get("next_question")
+        if not isinstance(next_question, (dict, type(None))):
+            next_question = None
+
+        # -- explanation fallback -----------------------------------------------
+        explanation: str = raw_output.get("explanation", "")
+        if not isinstance(explanation, str):
+            explanation = ""
+        if safety_notes and not explanation:
+            explanation = "Safety filters applied."
+
+        # If degraded to unknown and no next_question, generate one
+        if intent == "unknown" and not next_question:
+            missing = input_data.get("missing_required_fields", [])
+            if missing:
+                field_path = missing[0]
+                next_question = {
+                    "field_path": field_path,
+                    "prompt_text": f"Please provide the {field_path}.",
+                    "bucket": "required",
+                }
+
+        return MediatorOutput(
+            intent=intent,
+            proposed_payload_update=proposed_payload_update,
+            proposed_key_value_lines=proposed_key_value_lines,
+            next_question=next_question,
+            explanation=explanation,
+            requires_user_confirmation=requires_confirmation,
+            warnings_to_surface=warnings_to_surface,
+            blocked_reason=blocked_reason,
+            confidence=confidence,
+            safety_notes=safety_notes,
+        )
+
+
+class FakeBackend:
+    """
+    Deterministic fake backend for testing the LLMBuilderMediatorAdapter.
+    Returns JSON strings based on a response key or callable override.
+    """
+
+    def __init__(
+        self,
+        response_key: str = "valid",
+        custom_response: str | None = None,
+        override: dict[str, Any] | None = None,
+    ) -> None:
+        self.response_key = response_key
+        self.custom_response = custom_response
+        self.override = override or {}
+
+    def __call__(self, prompt: str) -> str:
+        """Return a JSON string matching the configured response key."""
+        if self.custom_response is not None:
+            return self.custom_response
+
+        responses: dict[str, dict[str, Any]] = {
+            "valid": {
+                "intent": "provide_field",
+                "proposed_payload_update": {"from": "Commander Example"},
+                "proposed_key_value_lines": ["from: Commander Example"],
+                "confidence": 0.9,
+                "explanation": "Detected from field.",
+            },
+            "malformed": "this is not json {",
+            "missing_keys": {
+                "proposed_payload_update": {},
+                "confidence": 0.8,
+            },
+            "unsupported_intent": {
+                "intent": "delete_everything",
+                "proposed_payload_update": {},
+                "proposed_key_value_lines": [],
+                "confidence": 0.95,
+            },
+            "low_confidence": {
+                "intent": "provide_field",
+                "proposed_payload_update": {"from": "Commander Example"},
+                "proposed_key_value_lines": ["from: Commander Example"],
+                "confidence": 0.1,
+            },
+            "high_confidence": {
+                "intent": "provide_field",
+                "proposed_payload_update": {"from": "Commander Example"},
+                "proposed_key_value_lines": ["from: Commander Example"],
+                "confidence": 999.0,
+            },
+            "cci_tamper": {
+                "intent": "provide_field",
+                "proposed_payload_update": {"cci_severity": "error", "from": "Commander Example"},
+                "proposed_key_value_lines": ["from: Commander Example"],
+                "confidence": 0.9,
+            },
+            "renderer_directive": {
+                "intent": "provide_field",
+                "proposed_payload_update": {"layout_override": "custom", "from": "Commander Example"},
+                "proposed_key_value_lines": ["from: Commander Example"],
+                "confidence": 0.9,
+            },
+            "invented_ssic": {
+                "intent": "provide_field",
+                "proposed_payload_update": {"ssic": "1234", "from": "Commander Example"},
+                "proposed_key_value_lines": ["ssic: 1234", "from: Commander Example"],
+                "confidence": 0.9,
+            },
+            "finalize_no_confirm": {
+                "intent": "finalize",
+                "proposed_payload_update": {},
+                "proposed_key_value_lines": [],
+                "confidence": 0.95,
+                "requires_user_confirmation": False,
+            },
+            "render_no_confirm": {
+                "intent": "render_pdf",
+                "proposed_payload_update": {},
+                "proposed_key_value_lines": [],
+                "confidence": 0.95,
+                "requires_user_confirmation": False,
+            },
+            "accept_warnings_silent": {
+                "intent": "accept_warnings",
+                "proposed_payload_update": {},
+                "proposed_key_value_lines": [],
+                "confidence": 0.9,
+                "requires_user_confirmation": False,
+            },
+            "unknown": {
+                "intent": "unknown",
+                "proposed_payload_update": {},
+                "proposed_key_value_lines": [],
+                "confidence": 0.5,
+                "explanation": "I did not understand.",
+            },
+        }
+
+        base = responses.get(self.response_key, responses["unknown"])
+        if isinstance(base, dict):
+            merged = {**base, **self.override}
+            import json
+            return json.dumps(merged)
+        return base
+
+
+class LLMBuilderMediatorAdapter:
+    """
+    Thin boundary between a real LLM backend and BuilderSession.
+
+    Injected backend: a callable that takes a prompt string and returns
+    raw text (expected to be JSON matching MediatorOutput schema).
+
+    All output is validated and safety-filtered before return.
+    """
+
+    def __init__(
+        self,
+        backend: Any | None = None,
+        allowed_intents: list[str] | None = None,
+        min_confidence: float = 0.3,
+        max_confidence: float = 1.0,
+        safety_filter: SafetyFilter | None = None,
+    ) -> None:
+        self.backend = backend
+        self.allowed_intents = allowed_intents or [
+            "start_letter", "provide_field", "revise_field",
+            "accept_warnings", "request_warning_explanation",
+            "finalize", "render_pdf", "unknown",
+        ]
+        self.min_confidence = min_confidence
+        self.max_confidence = max_confidence
+        self.safety_filter = safety_filter or SafetyFilter(
+            min_confidence=min_confidence,
+            max_confidence=max_confidence,
+        )
+
+    def _build_prompt(self, input_data: dict[str, Any]) -> str:
+        """Build a prompt string from MediatorInput for the backend."""
+        user_message = input_data.get("user_message", "")
+        payload = input_data.get("payload_snapshot", {})
+        missing_required = input_data.get("missing_required_fields", [])
+        missing_recommended = input_data.get("missing_recommended_fields", [])
+        validation_summary = input_data.get("validation_summary", {})
+        warning_summary = input_data.get("warning_summary", [])
+        error_summary = input_data.get("error_summary", [])
+        current_step = input_data.get("current_step", "intake")
+
+        # Plain-English warning/error messages only
+        warning_texts = []
+        for w in warning_summary:
+            if isinstance(w, dict):
+                warning_texts.append(w.get("message", str(w)))
+            else:
+                warning_texts.append(str(w))
+
+        error_texts = []
+        for e in error_summary:
+            if isinstance(e, dict):
+                error_texts.append(e.get("message", str(e)))
+            else:
+                error_texts.append(str(e))
+
+        prompt_lines = [
+            "You are a translator, not the source of truth.",
+            "Your role: interpret user natural-language input and propose structured field updates.",
+            "You do NOT own final state, validation, or rendering.",
+            "",
+            "Rules:",
+            "1. Do not invent official data (SSIC, command names, routing, references).",
+            "2. Output must be valid JSON matching the schema below — no markdown, no prose outside JSON.",
+            "3. Use only the allowed intents listed below.",
+            "4. Warnings and errors from the validation system must be surfaced, not suppressed.",
+            "5. All field updates are proposals only; they will be reviewed before application.",
+            "6. Do not include renderer/layout instructions.",
+            "7. Do not include CCI configuration or severity directives.",
+            "8. If the user asks for something ambiguous, ask a clarifying question.",
+            "9. If the user asks for official data you do not have, do not guess — set next_question.",
+            "",
+            f"Allowed intents: {self.allowed_intents}",
+            "",
+            "Current builder state:",
+            f"  step: {current_step}",
+            f"  payload: {payload}",
+            f"  missing_required: {missing_required}",
+            f"  missing_recommended: {missing_recommended}",
+            f"  validation_summary: {validation_summary}",
+            f"  warnings: {warning_texts}",
+            f"  errors: {error_texts}",
+            "",
+            "User message:",
+            f'  "{user_message}"',
+            "",
+            "Expected JSON schema:",
+            '{"intent": "<allowed_intent>", "proposed_payload_update": {}, "proposed_key_value_lines": [], "next_question": null, "explanation": "", "requires_user_confirmation": false, "warnings_to_surface": [], "blocked_reason": null, "confidence": 0.0, "safety_notes": []}',
+            "",
+            "Respond with JSON only.",
+        ]
+        return "\n".join(prompt_lines)
+
+    def mediate(self, input_data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Adapter entry point. Mirrors MockLLMBuilderMediator.mediate().
+
+        Flow:
+          1. Build prompt from input_data
+          2. Call backend(prompt) → raw text
+          3. Parse raw text as JSON
+          4. Validate against MediatorOutput schema
+          5. Run safety filters
+          6. Return sanitized MediatorOutput dict
+          7. On any failure → return degraded unknown/clarification output
+        """
+        import json
+
+        # If no backend is configured, degrade safely
+        if self.backend is None:
+            missing = input_data.get("missing_required_fields", [])
+            return MediatorOutput(
+                intent="unknown",
+                explanation="No LLM backend configured.",
+                next_question={
+                    "field_path": missing[0] if missing else "user_input",
+                    "prompt_text": "No backend available. Please try again or use key-value input.",
+                    "bucket": "required",
+                } if missing else None,
+                confidence=0.0,
+                safety_notes=["Backend not configured."],
+            )
+
+        prompt = self._build_prompt(input_data)
+
+        try:
+            raw_text = self.backend(prompt)
+        except Exception as exc:
+            return MediatorOutput(
+                intent="unknown",
+                explanation=f"Backend call failed: {exc}",
+                confidence=0.0,
+                safety_notes=[f"Backend exception: {exc}"],
+            )
+
+        # Parse JSON
+        try:
+            raw_output = json.loads(raw_text)
+        except json.JSONDecodeError as exc:
+            return MediatorOutput(
+                intent="unknown",
+                explanation=f"Backend returned invalid JSON: {exc}",
+                confidence=0.0,
+                safety_notes=["Invalid JSON from backend."],
+            )
+        except Exception as exc:
+            return MediatorOutput(
+                intent="unknown",
+                explanation=f"Unexpected parse error: {exc}",
+                confidence=0.0,
+                safety_notes=[f"Parse exception: {exc}"],
+            )
+
+        # Ensure raw_output is a dict
+        if not isinstance(raw_output, dict):
+            return MediatorOutput(
+                intent="unknown",
+                explanation="Backend returned non-dict JSON root.",
+                confidence=0.0,
+                safety_notes=["JSON root was not an object."],
+            )
+
+        # Inject allowed_intents into safety filter context
+        filter_input = dict(input_data)
+        filter_input["allowed_intents"] = self.allowed_intents
+
+        sanitized = self.safety_filter.apply(raw_output, filter_input)
+        return sanitized
+
+
+# ---------------------------------------------------------------------------
 # Module-level sanity check (not a full test)
 # ---------------------------------------------------------------------------
 

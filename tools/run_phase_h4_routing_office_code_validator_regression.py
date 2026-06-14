@@ -318,6 +318,12 @@ def main() -> int:
         # Phase L.9 artifacts
         "docs/checkpoints/phase_l9_conversational_builder_question_text_signature_capture_checkpoint.md",
         "tools/run_phase_l9_conversational_builder_question_text_signature_capture_regression.py",
+        # Phase L.15 / L.17 artifacts (mock mediator + adapter)
+        "src/llm_builder_mediator.py",
+        "tools/run_phase_l15_mock_llm_mediator_regression.py",
+        "tools/run_phase_l17_fake_backend_llm_mediator_adapter_regression.py",
+        "docs/checkpoints/phase_l15_mock_llm_mediator_contract_prototype_checkpoint.md",
+        "docs/checkpoints/phase_l17_fake_backend_llm_mediator_adapter_checkpoint.md",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
