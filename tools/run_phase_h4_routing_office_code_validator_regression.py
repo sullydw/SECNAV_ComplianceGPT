@@ -334,6 +334,10 @@ def main() -> int:
         # Phase L.24 artifacts (usability pass)
         "docs/checkpoints/phase_l24_streamlit_prototype_usability_pass_checkpoint.md",
         "tools/run_phase_l24_streamlit_usability_regression.py",
+        # Phase L.25 artifacts (manual demo script)
+        "docs/demo/streamlit_guided_intake_manual_demo_script.md",
+        "docs/checkpoints/phase_l25_streamlit_guided_intake_manual_demo_script_checkpoint.md",
+        "tools/run_phase_l25_streamlit_manual_demo_script_regression.py",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
