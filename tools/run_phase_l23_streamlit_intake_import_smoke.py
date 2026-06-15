@@ -50,7 +50,7 @@ required_labels = [
     "Finalize",
     "Render PDF",
     "SECNAV Letter Builder",
-    "LLM-Guided Conversational Intake",
+    "Guided Conversational Intake",
 ]
 found_labels = [label for label in required_labels if label in src_text]
 checks.append(("C. All required UI labels present", len(found_labels) == len(required_labels)))
