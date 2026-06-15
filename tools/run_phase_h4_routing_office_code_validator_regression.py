@@ -328,10 +328,10 @@ def main() -> int:
         "src/llm_provider_config.py",
         "tools/run_phase_l19_llm_provider_config_regression.py",
         "docs/checkpoints/phase_l19_llm_provider_interface_config_checkpoint.md",
-        # Phase L.21 artifacts (LLM-guided NL intake demo)
-        "tools/run_phase_l21_llm_guided_natural_language_intake_demo.py",
-        "docs/checkpoints/phase_l21_llm_guided_natural_language_intake_demo_checkpoint.md",
-        "docs/demo/llm_guided_natural_language_intake_demo.md",
+        # Phase L.23 artifacts (Streamlit prototype)
+        "app_streamlit_llm_guided_intake.py",
+        "tools/run_phase_l23_streamlit_intake_import_smoke.py",
+        "docs/checkpoints/phase_l23_streamlit_llm_guided_intake_prototype_checkpoint.md",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
