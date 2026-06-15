@@ -328,6 +328,9 @@ def main() -> int:
         "src/llm_provider_config.py",
         "tools/run_phase_l19_llm_provider_config_regression.py",
         "docs/checkpoints/phase_l19_llm_provider_interface_config_checkpoint.md",
+        # Phase L.20 artifacts (optional live smoke test)
+        "tools/run_phase_l20_optional_live_llm_smoke_test.py",
+        "docs/checkpoints/phase_l20_optional_live_llm_smoke_test_checkpoint.md",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
