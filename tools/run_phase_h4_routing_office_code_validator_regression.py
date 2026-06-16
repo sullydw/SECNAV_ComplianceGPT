@@ -360,6 +360,11 @@ def main() -> int:
         # Phase L.26E artifacts (Ollama model picker)
         "docs/checkpoints/phase_l26e_ollama_provider_model_picker_checkpoint.md",
         "tools/run_phase_l26e_ollama_model_picker_regression.py",
+        # Phase L.26F artifacts (Ollama inference debug + provider state)
+        "docs/checkpoints/phase_l26f_ollama_inference_debug_and_provider_state_fix_checkpoint.md",
+        "tools/run_phase_l26f_ollama_inference_debug_and_provider_state_fix_regression.py",
+        "app_streamlit_llm_guided_intake.py",
+        "src/llm_provider_config.py",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0

@@ -73,6 +73,14 @@ from conversational_builder import BuilderSession
 from llm_provider_config import (
     LLMProviderConfig,
     build_llm_backend_from_config,
+    list_ollama_models,
+    ollama_service_status,
+    provider_debug_status,
+    resolve_ollama_default_model,
+    selected_model_changed,
+    selected_model_from_state,
+    selected_provider_from_state,
+    ui_provider_config,
 )
 
 
@@ -132,12 +140,8 @@ def _provider_status_label(config: LLMProviderConfig) -> str:
 
 
 def _provider_available(config: LLMProviderConfig) -> bool:
-    backend = build_llm_backend_from_config(config)
-    label = getattr(backend, "__class__", None).__name__ if backend else ""
-    if config.provider == "ollama":
-        # Ollama availability is runtime; we'll show "manual" in UI
-        return False
-    return label == "FakeBackend"
+    status = provider_debug_status(config)
+    return bool(status.get("available", False))
 
 
 def _has_pending_decisions(validation_summary: dict) -> bool:
@@ -159,16 +163,9 @@ def _run_mediation(builder: BuilderSession, user_message: str) -> dict[str, Any]
     Respects UI provider/model selection from session state.
     Returns the full MediatorOutput dict so the UI can display debug info.
     """
-    # Determine provider/model from UI session state or env fallback
-    selected_provider = getattr(st.session_state, "selected_provider", "mock")
-    selected_model = getattr(st.session_state, "selected_model", None)
-
-    if selected_provider == "ollama" and selected_model and selected_model != "not_configured":
-        config = LLMProviderConfig(provider="ollama", model=selected_model)
-    elif selected_provider == "ollama_cloud":
-        config = LLMProviderConfig(provider="ollama_cloud")
-    else:
-        config = LLMProviderConfig.from_env()
+    selected_provider = selected_provider_from_state(st.session_state)
+    selected_model = selected_model_from_state(st.session_state)
+    config = ui_provider_config(selected_provider, selected_model)
 
     backend = build_llm_backend_from_config(config)
     adapter = LLMBuilderMediatorAdapter(backend=backend)
@@ -255,17 +252,15 @@ def _render_page():
 
         st.divider()
 
-        # Provider / Model Picker (L.26E)
+        # Provider / Model Picker (L.26F)
         st.subheader("Provider & Model")
 
-        # Provider selection
         provider_options = {
             "mock": "🛡️ Mock / Offline (default — no network)",
             "ollama": "🦙 Ollama Local (manual — requires local server)",
             "ollama_cloud": "☁️ Ollama Cloud / Hosted (manual — requires config)",
         }
 
-        # Get current selection from session state or env default
         if "selected_provider" not in st.session_state:
             env_provider = os.environ.get("SECNAV_LLM_PROVIDER", "mock").strip().lower()
             if env_provider not in provider_options:
@@ -276,29 +271,22 @@ def _render_page():
             "Provider",
             options=list(provider_options.keys()),
             format_func=lambda k: provider_options[k],
-            index=list(provider_options.keys()).index(st.session_state.selected_provider),
+            index=list(provider_options.keys()).index(selected_provider_from_state(st.session_state)),
             key="provider_select",
         )
-        st.session_state.selected_provider = selected_provider
 
-        # Model selection based on provider
         selected_model = None
         if selected_provider == "mock":
             st.info("Mock mode uses a deterministic offline parser. No network required.")
             selected_model = "mock"
 
         elif selected_provider == "ollama":
-            # Query local Ollama for installed models
-            from llm_provider_config import list_ollama_models
+            ollama_status = ollama_service_status()
             ollama_models = list_ollama_models()
             if ollama_models:
                 if "selected_ollama_model" not in st.session_state:
-                    # Prefer env default or first model
-                    env_model = os.environ.get("SECNAV_OLLAMA_MODEL", "").strip()
-                    if env_model and env_model in ollama_models:
-                        st.session_state.selected_ollama_model = env_model
-                    else:
-                        st.session_state.selected_ollama_model = ollama_models[0]
+                    env_model = os.environ.get("SECNAV_OLLAMA_MODEL", "").strip() or None
+                    st.session_state.selected_ollama_model = resolve_ollama_default_model(ollama_models, env_model)
                 selected_model = st.selectbox(
                     "Ollama Model",
                     options=ollama_models,
@@ -306,10 +294,10 @@ def _render_page():
                     if st.session_state.selected_ollama_model in ollama_models else 0,
                     key="ollama_model_select",
                 )
-                st.session_state.selected_ollama_model = selected_model
                 st.success(f"Using Ollama model: {selected_model}")
             else:
                 st.warning("No Ollama models found. Ensure Ollama is running and you have pulled a model.")
+                st.caption(ollama_status.get("message", "Ollama unavailable."))
                 st.code("ollama pull llama3.2", language="bash")
                 selected_model = None
 
@@ -318,16 +306,23 @@ def _render_page():
             st.code("$env:SECNAV_LLM_PROVIDER = 'ollama_cloud'\n$env:SECNAV_OLLAMA_MODEL = 'your-model'", language="powershell")
             selected_model = "not_configured"
 
-        # Show current effective status
+        selected_model_changed(st.session_state, selected_provider, selected_model)
+        effective_config = ui_provider_config(selected_provider, selected_model)
+        effective_status = provider_debug_status(effective_config)
+
         st.divider()
         st.markdown(f"**Active Provider:** `{selected_provider}`")
         if selected_model:
             st.markdown(f"**Active Model:** `{selected_model}`")
+        st.markdown(f"**Provider Status:** `{effective_status.get('message', 'unknown')}`")
         st.caption("API keys are never shown in this UI.")
 
-        # Store selected config for mediation use
-        if "selected_model" not in st.session_state or st.session_state.get("selected_provider") != selected_provider:
-            st.session_state.selected_model = selected_model
+        if selected_provider == "ollama" and effective_status.get("reachable") and not effective_status.get("models"):
+            st.warning("Ollama is reachable, but no installed models were discovered.")
+        if selected_provider == "ollama" and not effective_status.get("reachable"):
+            st.warning("Ollama does not appear to be running. Start Ollama, then try again.")
+
+        st.session_state.provider_status_snapshot = effective_status
 
     # -- Main columns ---------------------------------------------
     builder = _load_session()
@@ -359,6 +354,9 @@ def _render_page():
             assistant_msg = f"Detected intent: `{intent}`"
             if explanation:
                 assistant_msg += f" — {explanation}"
+            provider_snapshot = st.session_state.get("provider_status_snapshot", {})
+            if provider_snapshot and provider_snapshot.get("provider") == "ollama" and not provider_snapshot.get("available", False):
+                assistant_msg += " [Provider status: Ollama unavailable or inference failed]"
             st.session_state.chat_log.append({
                 "user": user_msg,
                 "assistant": assistant_msg,
