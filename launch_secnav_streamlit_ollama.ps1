@@ -1,5 +1,6 @@
 # SECNAV Compliant Letter Builder — Ollama Streamlit Launcher
 # Phase L.26D — One-click launch with Ollama provider
+# Phase L.26H — Auto-installs streamlit and pyperclip if missing
 
 Write-Host "=============================================="
 Write-Host " SECNAV Compliant Letter Builder"
@@ -18,37 +19,84 @@ if (-not (Test-Path $PYTHON_EXE)) {
     $PYTHON_EXE = "python"
 }
 
-# Check if Streamlit is installed
-Write-Host "[CHECK] Verifying Streamlit is installed..."
-$hasStreamlit = $false
-try {
-    $null = & $PYTHON_EXE -c "import streamlit" 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        $hasStreamlit = $true
+# --- Dependency auto-install helper --------------------------
+function Test-Import {
+    param([string]$module)
+    try {
+        $null = & $PYTHON_EXE -c "import $module" 2>$null
+        return ($LASTEXITCODE -eq 0)
+    } catch {
+        return $false
     }
-} catch {
-    $hasStreamlit = $false
 }
 
-if (-not $hasStreamlit) {
+function Install-Package {
+    param([string]$package)
+    Write-Host "[INSTALL] $package is missing. Installing..."
+    try {
+        & $PYTHON_EXE -m pip install $package 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            return $false
+        }
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+# Check / install streamlit
+if (-not (Test-Import "streamlit")) {
+    if (-not (Install-Package "streamlit")) {
+        Write-Host ""
+        Write-Host "[ERROR] Failed to install streamlit."
+        Write-Host ""
+        Write-Host "Please run the following command manually:"
+        Write-Host "    $PYTHON_EXE -m pip install streamlit"
+        Write-Host ""
+        Read-Host "Press Enter to exit"
+        exit 1
+    }
+    Write-Host "[OK] streamlit installed."
+} else {
+    Write-Host "[OK] streamlit already installed."
+}
+
+# Check / install pyperclip
+if (-not (Test-Import "pyperclip")) {
+    if (-not (Install-Package "pyperclip")) {
+        Write-Host ""
+        Write-Host "[ERROR] Failed to install pyperclip."
+        Write-Host ""
+        Write-Host "Please run the following command manually:"
+        Write-Host "    $PYTHON_EXE -m pip install pyperclip"
+        Write-Host ""
+        Read-Host "Press Enter to exit"
+        exit 1
+    }
+    Write-Host "[OK] pyperclip installed."
+} else {
+    Write-Host "[OK] pyperclip already installed."
+}
+
+# Re-verify both packages
+$verify = & $PYTHON_EXE -c "import streamlit; import pyperclip" 2>$null
+if ($LASTEXITCODE -ne 0) {
     Write-Host ""
-    Write-Host "[ERROR] Streamlit is not installed."
+    Write-Host "[ERROR] One or more dependencies failed to import after installation."
     Write-Host ""
-    Write-Host "Install it with:"
-    Write-Host "    $PYTHON_EXE -m pip install streamlit"
-    Write-Host ""
-    Write-Host "After installing, run this launcher again."
+    Write-Host "Please run the following command manually:"
+    Write-Host "    $PYTHON_EXE -m pip install streamlit pyperclip"
     Write-Host ""
     Read-Host "Press Enter to exit"
     exit 1
 }
-Write-Host "[OK] Streamlit found."
 
 # Check Ollama reachability
+Write-Host ""
 Write-Host "[CHECK] Verifying Ollama is running at localhost:11434..."
 $ollamaReachable = $false
 try {
-    $null = & $PYTHON_EXE -c "import urllib.request; urllib.request.urlopen('http://localhost:11434/api/tags', timeout=5).close(); print('OK')" 2>&1
+    $null = & $PYTHON_EXE -c "import urllib.request; urllib.request.urlopen('http://localhost:11434/api/tags', timeout=5).close(); print('OK')" 2>$null
     if ($LASTEXITCODE -eq 0) {
         $ollamaReachable = $true
     }

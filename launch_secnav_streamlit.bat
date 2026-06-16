@@ -1,6 +1,7 @@
 @echo off
 REM SECNAV Compliant Letter Builder — Simple Streamlit Launcher
 REM Phase L.26 — One-click launch script for Windows
+REM Phase L.26H — Auto-installs streamlit and pyperclip if missing
 
 setlocal enabledelayedexpansion
 
@@ -20,30 +21,67 @@ if not exist "%PYTHON_EXE%" (
     set PYTHON_EXE=python
 )
 
-REM Check if Streamlit is installed
-echo [CHECK] Verifying Streamlit is installed...
+REM --- Dependency auto-install helper ------------------------
+REM Check and install a package using the selected Python.
+REM Args: %1 = package name, %2 = import module name (often same as package)
+
+REM Check streamlit
 "%PYTHON_EXE%" -c "import streamlit" 2>nul
 if errorlevel 1 (
     echo.
-    echo [ERROR] Streamlit is not installed.
+    echo [INSTALL] streamlit is missing. Installing...
+    "%PYTHON_EXE%" -m pip install streamlit
+    if errorlevel 1 (
+        echo [ERROR] Failed to install streamlit.
+        echo.
+        echo Please run the following command manually:
+        echo     "%PYTHON_EXE%" -m pip install streamlit
+        echo.
+        pause
+        exit /b 1
+    )
+    echo [OK] streamlit installed.
+) else (
+    echo [OK] streamlit already installed.
+)
+
+REM Check pyperclip
+"%PYTHON_EXE%" -c "import pyperclip" 2>nul
+if errorlevel 1 (
+    echo [INSTALL] pyperclip is missing. Installing...
+    "%PYTHON_EXE%" -m pip install pyperclip
+    if errorlevel 1 (
+        echo [ERROR] Failed to install pyperclip.
+        echo.
+        echo Please run the following command manually:
+        echo     "%PYTHON_EXE%" -m pip install pyperclip
+        echo.
+        pause
+        exit /b 1
+    )
+    echo [OK] pyperclip installed.
+) else (
+    echo [OK] pyperclip already installed.
+)
+
+REM Re-verify both packages are importable
+"%PYTHON_EXE%" -c "import streamlit; import pyperclip" 2>nul
+if errorlevel 1 (
     echo.
-    echo Install it with:
-    echo     %PYTHON_EXE% -m pip install streamlit
+    echo [ERROR] One or more dependencies failed to import after installation.
     echo.
-    echo After installing, run this launcher again.
+    echo Please run the following command manually:
+    echo     "%PYTHON_EXE%" -m pip install streamlit pyperclip
     echo.
     pause
     exit /b 1
 )
 
-echo [OK] Streamlit found. Starting app...
+echo.
+echo [OK] Dependencies verified. Starting app...
 echo.
 echo Your browser should open automatically at:
 echo     http://localhost:8501
-if not exist "http://localhost:8501" (
-    REM Browser auto-open is best-effort; show URL regardless
-    echo If your browser does not open, visit the URL manually.
-)
 echo.
 echo ==============================================
 

@@ -51,6 +51,26 @@ try:
 except ImportError:
     STREAMLIT_AVAILABLE = False
 
+# Guarded pyperclip import (optional clipboard support)
+try:
+    import pyperclip as _pyperclip  # type: ignore[import-untyped]
+    PYPERCLIP_AVAILABLE = True
+except ImportError:
+    _pyperclip = None  # type: ignore[misc]
+    PYPERCLIP_AVAILABLE = False
+
+
+def _copy_to_clipboard(text: str) -> tuple[bool, str]:
+    """Copy text to clipboard if pyperclip is available; return (success, message)."""
+    if PYPERCLIP_AVAILABLE and _pyperclip is not None:
+        try:
+            _pyperclip.copy(text)
+            return True, "Copied to clipboard"
+        except Exception:
+            pass
+    return False, "Clipboard not available — copy the text manually."
+
+
 # ------------------------------------------------------------------
 # Project paths
 # ------------------------------------------------------------------
@@ -238,9 +258,8 @@ def _render_page():
             cols = st.columns([10, 1])
             cols[0].code(prompt, language="text")
             if cols[1].button("📋", key=f"copy_prompt_{i}"):
-                import pyperclip  # noqa: F811
-                pyperclip.copy(prompt)
-                st.toast("Copied to clipboard")
+                ok, msg = _copy_to_clipboard(prompt)
+                st.toast(msg)
 
     # -- Sidebar: provider picker + reset -----------------------
     with st.sidebar:

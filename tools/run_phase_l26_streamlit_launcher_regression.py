@@ -69,8 +69,8 @@ else:
 # 7. Both handle missing Streamlit
 # ------------------------------------------------------------------
 if BAT_FILE.exists() and PS1_FILE.exists():
-    bat_missing = "Streamlit is not installed" in bat_text or "not installed" in bat_text
-    ps1_missing = "Streamlit is not installed" in ps1_text or "not installed" in ps1_text
+    bat_missing = "Streamlit is not installed" in bat_text or "not installed" in bat_text or "is missing" in bat_text.lower()
+    ps1_missing = "Streamlit is not installed" in ps1_text or "not installed" in ps1_text or "is missing" in ps1_text.lower()
     checks.append(("G. Missing Streamlit handling", bat_missing and ps1_missing))
 else:
     checks.append(("G. Missing Streamlit handling", False))

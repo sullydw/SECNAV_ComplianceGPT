@@ -11,7 +11,8 @@
 
 - Python 3.10+
 - Repo cloned to `C:\Users\drryl\SECNAV_ComplianceGPT`
-- Optional: `pip install streamlit`
+- The launchers will auto-install `streamlit` and `pyperclip` if they are missing
+- No manual `pip install` commands are required
 - No API key required
 - No network connection required
 - Default provider is safe, offline mock
@@ -27,9 +28,12 @@ The simplest way to start the app is with one of the provided launchers:
 
 Both launchers will automatically:
 - locate the correct Python interpreter
-- check if Streamlit is installed
+- check if `streamlit` and `pyperclip` are installed
+- install them automatically if missing
 - start the app at `http://localhost:8501`
 - attempt to open your browser automatically
+
+If the automatic install fails, the launcher prints the manual command and exits cleanly.
 
 ### Ollama Launcher (for local LLM parsing)
 
