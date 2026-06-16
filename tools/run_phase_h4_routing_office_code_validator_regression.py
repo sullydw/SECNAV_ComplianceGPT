@@ -352,6 +352,11 @@ def main() -> int:
         # Phase L.26C artifacts (Ollama provider)
         "docs/checkpoints/phase_l26c_ollama_provider_manual_path_checkpoint.md",
         "tools/run_phase_l26c_ollama_provider_manual_path_regression.py",
+        # Phase L.26D artifacts (Ollama launcher)
+        "launch_secnav_streamlit_ollama.bat",
+        "launch_secnav_streamlit_ollama.ps1",
+        "docs/checkpoints/phase_l26d_one_click_ollama_streamlit_launcher_checkpoint.md",
+        "tools/run_phase_l26d_ollama_launcher_regression.py",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0

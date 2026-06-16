@@ -31,6 +31,19 @@ Both launchers will automatically:
 - start the app at `http://localhost:8501`
 - attempt to open your browser automatically
 
+### Ollama Launcher (for local LLM parsing)
+
+If you have Ollama installed and running, use the Ollama launcher instead:
+
+- Double-click **`launch_secnav_streamlit_ollama.bat`** (Command Prompt)
+- Or run **`./launch_secnav_streamlit_ollama.ps1`** in PowerShell
+
+The Ollama launcher:
+- checks that Ollama is reachable at `localhost:11434`
+- sets `SECNAV_LLM_PROVIDER=ollama` and `SECNAV_OLLAMA_MODEL=llama3.2`
+- starts the app with the Ollama backend enabled
+- prints clear error and exits if Ollama is not running
+
 If you prefer to run it manually:
 
 ```powershell
