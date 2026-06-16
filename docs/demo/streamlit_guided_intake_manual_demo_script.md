@@ -20,6 +20,19 @@
 
 ## Launch Command
 
+The simplest way to start the app is with one of the provided launchers:
+
+- Double-click **`launch_secnav_streamlit.bat`** (Command Prompt)
+- Or run **`./launch_secnav_streamlit.ps1`** in PowerShell
+
+Both launchers will automatically:
+- locate the correct Python interpreter
+- check if Streamlit is installed
+- start the app at `http://localhost:8501`
+- attempt to open your browser automatically
+
+If you prefer to run it manually:
+
 ```powershell
 cd C:\Users\drryl\SECNAV_ComplianceGPT
 streamlit run app_streamlit_llm_guided_intake.py

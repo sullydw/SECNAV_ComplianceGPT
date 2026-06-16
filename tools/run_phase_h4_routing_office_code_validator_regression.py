@@ -338,6 +338,11 @@ def main() -> int:
         "docs/demo/streamlit_guided_intake_manual_demo_script.md",
         "docs/checkpoints/phase_l25_streamlit_guided_intake_manual_demo_script_checkpoint.md",
         "tools/run_phase_l25_streamlit_manual_demo_script_regression.py",
+        # Phase L.26 artifacts (simple launcher)
+        "launch_secnav_streamlit.bat",
+        "launch_secnav_streamlit.ps1",
+        "docs/checkpoints/phase_l26_simple_streamlit_local_launcher_checkpoint.md",
+        "tools/run_phase_l26_streamlit_launcher_regression.py",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
