@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Phase L.24 — Streamlit LLM-Guided Intake Prototype (Usability Pass)
+Phase L.26B — Streamlit LLM-Guided Intake Prototype (Debug Panel Pass)
 
 User-facing web UI that wraps the BuilderSession + Adapter + Provider layers.
 All payload mutations route through BuilderSession.ingest_user_message().
@@ -13,6 +13,15 @@ Usability additions (Phase L.24):
 - Provider status explanation
 - Raw payload in collapsible section
 - Improved validation display (errors, warnings, advisories separated)
+
+Hotfix additions (Phase L.26A):
+- Safe _has_pending_decisions() helper to handle int/list/None types
+
+Debug additions (Phase L.26B):
+- Behind-the-Scenes debug panel showing full mediator output
+- Proposed KV lines visible before ingestion
+- Validator state, block reasons, and warnings/errors exposed
+- Enables copy-paste troubleshooting back to developer
 """
 
 from __future__ import annotations
@@ -96,6 +105,8 @@ def _reset_session() -> None:
         del st.session_state.builder
     if "chat_log" in st.session_state:
         del st.session_state.chat_log
+    if "last_mediator_output" in st.session_state:
+        del st.session_state.last_mediator_output
     # _load_session will recreate on next access
 
 
@@ -128,8 +139,11 @@ def _has_pending_decisions(validation_summary: dict) -> bool:
         return bool(pending)
 
 
-def _run_mediation(builder: BuilderSession, user_message: str):
-    """Run full mediation cycle: build input → adapter → ingest → return result."""
+def _run_mediation(builder: BuilderSession, user_message: str) -> dict[str, Any]:
+    """Run full mediation cycle: build input → adapter → ingest → return result.
+    
+    Returns the full MediatorOutput dict so the UI can display debug info.
+    """
     config = LLMProviderConfig.from_env()
     backend = build_llm_backend_from_config(config)
     adapter = LLMBuilderMediatorAdapter(backend=backend)
@@ -137,6 +151,7 @@ def _run_mediation(builder: BuilderSession, user_message: str):
     payload = builder.build_payload()
     missing_req = []
     missing_rec = []
+    val = {}
     try:
         val = builder.validation_summary()
         missing_req = val.get("missing_required_fields", [])
@@ -150,7 +165,7 @@ def _run_mediation(builder: BuilderSession, user_message: str):
         payload_snapshot=payload,
         missing_required_fields=missing_req,
         missing_recommended_fields=missing_rec,
-        validation_summary=val if "val" in dir() else {},
+        validation_summary=val,
         warning_summary=builder.warning_summary(),
         error_summary=[],
         user_message=user_message,
@@ -261,6 +276,8 @@ def _render_page():
                 "user": user_msg,
                 "assistant": assistant_msg,
             })
+            # Store full mediator output for debug panel
+            st.session_state.last_mediator_output = out
             st.rerun()
 
         # Actions
@@ -391,6 +408,49 @@ def _render_page():
         with st.expander("🔍 Raw Payload Preview", expanded=False):
             preview = json.dumps(payload, indent=2, default=str)
             st.code(preview[:2500] + ("\n... (truncated)" if len(preview) > 2500 else ""), language="json")
+
+        # Debug / Behind-the-Scenes Panel
+        st.divider()
+        with st.expander("🐛 Debug — Behind the Scenes", expanded=False):
+            st.markdown("*This panel shows what the mediator parsed, what the validator sees, and why actions are enabled or blocked. Paste this back to me if something looks wrong.*")
+            
+            # Last mediator output
+            last_out = st.session_state.get("last_mediator_output", {})
+            if last_out:
+                st.markdown("#### Last Mediator Output")
+                st.json(last_out)
+            else:
+                st.info("No mediator output yet. Send a message to populate this panel.")
+            
+            # Proposed KV lines
+            st.markdown("#### Proposed KV Lines")
+            kv = last_out.get("proposed_key_value_lines", [])
+            if kv:
+                for line in kv:
+                    st.code(line, language="text")
+            else:
+                st.info("No KV lines proposed — the mediator didn't extract any fields from your message.")
+            
+            # Current validator state
+            st.markdown("#### Current Validator State")
+            st.json(val)
+            
+            # Block reason
+            st.markdown("#### Block Reason")
+            block = val.get("block_reason", "")
+            if block:
+                st.error(block)
+            else:
+                st.info("No block reason — finalize is allowed if all required fields are present.")
+            
+            # Warnings / errors
+            st.markdown("#### Warnings / Errors")
+            ws = builder.warning_summary()
+            if ws:
+                for w in ws:
+                    st.warning(str(w))
+            else:
+                st.info("No warnings or errors reported by the validator.")
 
 
 # ------------------------------------------------------------------

@@ -346,6 +346,9 @@ def main() -> int:
         # Phase L.26A artifacts (hotfix)
         "docs/checkpoints/phase_l26a_streamlit_pending_decisions_hotfix_checkpoint.md",
         "tools/run_phase_l26a_streamlit_pending_decisions_hotfix_regression.py",
+        # Phase L.26B artifacts (debug panel)
+        "docs/checkpoints/phase_l26b_streamlit_debug_panel_checkpoint.md",
+        "tools/run_phase_l26b_streamlit_debug_panel_regression.py",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
