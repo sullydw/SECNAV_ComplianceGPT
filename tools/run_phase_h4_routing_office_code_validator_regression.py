@@ -343,6 +343,9 @@ def main() -> int:
         "launch_secnav_streamlit.ps1",
         "docs/checkpoints/phase_l26_simple_streamlit_local_launcher_checkpoint.md",
         "tools/run_phase_l26_streamlit_launcher_regression.py",
+        # Phase L.26A artifacts (hotfix)
+        "docs/checkpoints/phase_l26a_streamlit_pending_decisions_hotfix_checkpoint.md",
+        "tools/run_phase_l26a_streamlit_pending_decisions_hotfix_regression.py",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0

@@ -115,6 +115,19 @@ def _provider_available(config: LLMProviderConfig) -> bool:
     return label == "FakeBackend"
 
 
+def _has_pending_decisions(validation_summary: dict) -> bool:
+    """Safely check if there are pending decisions, handling int/list/None types."""
+    pending = validation_summary.get("pending_decisions", 0)
+    if isinstance(pending, int):
+        return pending > 0
+    if pending is None:
+        return False
+    try:
+        return len(pending) > 0
+    except TypeError:
+        return bool(pending)
+
+
 def _run_mediation(builder: BuilderSession, user_message: str):
     """Run full mediation cycle: build input → adapter → ingest → return result."""
     config = LLMProviderConfig.from_env()
@@ -254,7 +267,7 @@ def _render_page():
         st.divider()
         val = builder.validation_summary()
         can_finalize = val.get("finalize_allowed", False)
-        warnings_pending = len(val.get("pending_decisions", [])) > 0
+        warnings_pending = _has_pending_decisions(val)
 
         col_actions = st.columns(3)
         with col_actions[0]:
