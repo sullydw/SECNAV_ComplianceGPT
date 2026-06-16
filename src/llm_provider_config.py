@@ -154,6 +154,9 @@ def call_ollama_inference(prompt: str, config: "LLMProviderConfig") -> str:
         except OllamaEndpointError as e:
             last_error = e
             continue
+        except TimeoutError as e:
+            last_error = e
+            continue
         except json.JSONDecodeError as e:
             return json.dumps({
                 "intent": "unknown",
@@ -628,7 +631,10 @@ class LLMProviderConfig:
         if self.provider == "ollama" and "ollama_model" not in self.extra and self.model:
             self.extra["ollama_model"] = self.model
         if self.provider == "ollama" and self.timeout_seconds <= 0:
-            self.timeout_seconds = 30.0
+            self.timeout_seconds = 120.0
+        if self.provider == "ollama" and self.timeout_seconds < 60:
+            # Cold model loads need headroom; minimum 120s is safest
+            self.timeout_seconds = 120.0
         if self.provider == "ollama" and self.max_tokens is not None and self.max_tokens <= 0:
             self.max_tokens = 512
 

@@ -295,6 +295,7 @@ def _render_page():
                     key="ollama_model_select",
                 )
                 st.success(f"Using Ollama model: {selected_model}")
+                st.caption("Note: First inference may take 60–90 seconds while the model loads into memory. Wait for the response — this is normal for local Ollama.")
             else:
                 st.warning("No Ollama models found. Ensure Ollama is running and you have pulled a model.")
                 st.caption(ollama_status.get("message", "Ollama unavailable."))

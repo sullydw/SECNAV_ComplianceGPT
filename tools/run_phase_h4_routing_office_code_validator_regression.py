@@ -365,6 +365,9 @@ def main() -> int:
         "tools/run_phase_l26f_ollama_inference_debug_and_provider_state_fix_regression.py",
         "app_streamlit_llm_guided_intake.py",
         "src/llm_provider_config.py",
+        # Phase L.26G artifacts (timeout fallback + cold-start headroom)
+        "docs/checkpoints/phase_l26g_ollama_timeout_fallback_and_coldstart_checkpoint.md",
+        "tools/run_phase_l26g_ollama_timeout_fallback_and_coldstart_regression.py",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0
