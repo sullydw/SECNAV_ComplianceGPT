@@ -8,8 +8,8 @@ No API keys are read unless explicitly configured.
 
 from __future__ import annotations
 
-import os
 import json
+import os
 from typing import Any
 
 
@@ -142,21 +142,127 @@ def _openai_placeholder_backend(prompt: str) -> str:
     })
 
 
-def _ollama_placeholder_backend(prompt: str) -> str:
-    """Placeholder Ollama backend — returns unavailable without making calls.
+def _ollama_backend(config: LLMProviderConfig) -> Any:
+    """Real Ollama backend — calls local http://localhost:11434 only when selected.
 
-    If real integration is desired, this callable should be replaced with a
-    wrapper that imports requests/httpx only when needed and targets the
-    local Ollama endpoint.
+    Fail-closed if Ollama is not running or returns non-JSON.
+    No hard dependency on requests/httpx; uses stdlib urllib.
+    """
+    import urllib.request
+    import urllib.error
+    import urllib.parse
+
+    model = config.model or config.extra.get("ollama_model", "llama3.2")
+    timeout = config.timeout_seconds
+
+    def _call(prompt: str) -> str:
+        # Health check first
+        try:
+            urllib.request.urlopen(
+                "http://localhost:11434/api/tags",
+                timeout=5.0
+            ).close()
+        except Exception as e:
+            return json.dumps({
+                "intent": "unknown",
+                "proposed_payload_update": {},
+                "proposed_key_value_lines": [],
+                "confidence": 0.0,
+                "explanation": f"Ollama server not reachable at localhost:11434 ({type(e).__name__}). Ensure Ollama is installed and running.",
+                "requires_user_confirmation": False,
+                "safety_notes": ["Ollama unavailable — fail-closed."],
+            })
+
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": "You are a structured field extractor. Respond ONLY with valid JSON matching the requested schema. Do not include markdown code fences."},
+                {"role": "user", "content": prompt},
+            ],
+            "stream": False,
+            "format": "json",
+            "options": {
+                "temperature": 0.2,
+                "num_predict": config.max_tokens or 512,
+            },
+        }
+
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            "http://localhost:11434/api/chat",
+            data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                raw = resp.read().decode("utf-8")
+                parsed = json.loads(raw)
+                msg = parsed.get("message", {})
+                content = msg.get("content", "")
+                if not content:
+                    return json.dumps({
+                        "intent": "unknown",
+                        "proposed_payload_update": {},
+                        "proposed_key_value_lines": [],
+                        "confidence": 0.0,
+                        "explanation": "Ollama returned empty content.",
+                        "requires_user_confirmation": False,
+                        "safety_notes": ["Ollama response empty."],
+                    })
+                # Ollama should already return JSON because format="json"
+                # but guard against malformed
+                try:
+                    json.loads(content)
+                    return content
+                except json.JSONDecodeError:
+                    return json.dumps({
+                        "intent": "unknown",
+                        "proposed_payload_update": {},
+                        "proposed_key_value_lines": [],
+                        "confidence": 0.0,
+                        "explanation": "Ollama returned non-JSON content despite format=json.",
+                        "requires_user_confirmation": False,
+                        "safety_notes": ["Ollama response was not valid JSON."],
+                    })
+        except urllib.error.URLError as e:
+            return json.dumps({
+                "intent": "unknown",
+                "proposed_payload_update": {},
+                "proposed_key_value_lines": [],
+                "confidence": 0.0,
+                "explanation": f"Ollama request failed: {type(e).__name__}: {e}",
+                "requires_user_confirmation": False,
+                "safety_notes": ["Ollama request failed."],
+            })
+        except Exception as e:
+            return json.dumps({
+                "intent": "unknown",
+                "proposed_payload_update": {},
+                "proposed_key_value_lines": [],
+                "confidence": 0.0,
+                "explanation": f"Unexpected Ollama error: {type(e).__name__}: {e}",
+                "requires_user_confirmation": False,
+                "safety_notes": ["Unexpected Ollama error."],
+            })
+
+    return _call
+
+
+def _ollama_placeholder_backend(prompt: str) -> str:
+    """Legacy placeholder — kept for backward compatibility.
+
+    Replaced by _ollama_backend which is injected at factory time.
     """
     return json.dumps({
         "intent": "unknown",
         "proposed_payload_update": {},
         "proposed_key_value_lines": [],
         "confidence": 0.0,
-        "explanation": "Ollama backend unavailable. Set SECNAV_LLM_PROVIDER=ollama and ensure a local Ollama server is running.",
+        "explanation": "Ollama backend placeholder — should not be called directly.",
         "requires_user_confirmation": False,
-        "safety_notes": ["Ollama backend is a placeholder; no network call made."],
+        "safety_notes": ["Ollama placeholder backend called directly."],
     })
 
 
@@ -190,7 +296,7 @@ def build_llm_backend_from_config(config: LLMProviderConfig | None = None) -> An
         return _openai_placeholder_backend
 
     if provider == "ollama":
-        return _ollama_placeholder_backend
+        return _ollama_backend(config)
 
     # Unsupported provider → safe unavailable backend
     return _unavailable_backend

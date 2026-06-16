@@ -123,6 +123,9 @@ def _provider_status_label(config: LLMProviderConfig) -> str:
 def _provider_available(config: LLMProviderConfig) -> bool:
     backend = build_llm_backend_from_config(config)
     label = getattr(backend, "__class__", None).__name__ if backend else ""
+    if config.provider == "ollama":
+        # Ollama availability is runtime; we'll show "manual" in UI
+        return False
     return label == "FakeBackend"
 
 
