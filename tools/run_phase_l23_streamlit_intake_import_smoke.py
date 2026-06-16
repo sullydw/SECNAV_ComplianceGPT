@@ -45,7 +45,7 @@ required_labels = [
     "Current Fields",
     "Missing Fields",
     "Validation",
-    "Provider Status",
+    "Provider & Model",
     "Accept Warnings",
     "Finalize",
     "Render PDF",

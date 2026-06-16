@@ -14,6 +14,36 @@ from typing import Any
 
 
 # ---------------------------------------------------------------------------
+# Ollama model discovery (for UI picker)
+# ---------------------------------------------------------------------------
+
+def list_ollama_models() -> list[str]:
+    """Query local Ollama for installed models. Returns empty list if unreachable.
+
+    Safe: no crash if Ollama is not running.
+    """
+    import urllib.request
+    import urllib.error
+
+    try:
+        req = urllib.request.Request(
+            "http://localhost:11434/api/tags",
+            method="GET",
+        )
+        with urllib.request.urlopen(req, timeout=5.0) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            models = data.get("models", [])
+            names = []
+            for m in models:
+                name = m.get("name", "")
+                if name:
+                    names.append(name)
+            return sorted(names)
+    except Exception:
+        return []
+
+
+# ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 

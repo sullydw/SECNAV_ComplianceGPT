@@ -357,6 +357,9 @@ def main() -> int:
         "launch_secnav_streamlit_ollama.ps1",
         "docs/checkpoints/phase_l26d_one_click_ollama_streamlit_launcher_checkpoint.md",
         "tools/run_phase_l26d_ollama_launcher_regression.py",
+        # Phase L.26E artifacts (Ollama model picker)
+        "docs/checkpoints/phase_l26e_ollama_provider_model_picker_checkpoint.md",
+        "tools/run_phase_l26e_ollama_model_picker_regression.py",
     }
     extra = [c for c in changed if c not in allowed]
     ok = len(extra) == 0

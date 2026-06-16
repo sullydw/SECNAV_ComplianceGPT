@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Phase L.26B — Streamlit LLM-Guided Intake Prototype (Debug Panel Pass)
+Phase L.26E — Streamlit LLM-Guided Intake Prototype (Provider & Model Picker)
 
 User-facing web UI that wraps the BuilderSession + Adapter + Provider layers.
 All payload mutations route through BuilderSession.ingest_user_message().
@@ -22,6 +22,17 @@ Debug additions (Phase L.26B):
 - Proposed KV lines visible before ingestion
 - Validator state, block reasons, and warnings/errors exposed
 - Enables copy-paste troubleshooting back to developer
+
+Ollama additions (Phase L.26C–L.26D):
+- Real Ollama backend via stdlib urllib
+- One-click Ollama launchers (BAT + PS1)
+
+Provider & Model Picker (Phase L.26E):
+- Sidebar picker: Mock / Ollama Local / Ollama Cloud
+- Local model discovery from localhost:11434/api/tags
+- Model dropdown populated with installed Ollama models
+- Cloud placeholder fail-closed if not configured
+- UI selection overrides env defaults; env respected on first load
 """
 
 from __future__ import annotations
@@ -144,10 +155,21 @@ def _has_pending_decisions(validation_summary: dict) -> bool:
 
 def _run_mediation(builder: BuilderSession, user_message: str) -> dict[str, Any]:
     """Run full mediation cycle: build input → adapter → ingest → return result.
-    
+
+    Respects UI provider/model selection from session state.
     Returns the full MediatorOutput dict so the UI can display debug info.
     """
-    config = LLMProviderConfig.from_env()
+    # Determine provider/model from UI session state or env fallback
+    selected_provider = getattr(st.session_state, "selected_provider", "mock")
+    selected_model = getattr(st.session_state, "selected_model", None)
+
+    if selected_provider == "ollama" and selected_model and selected_model != "not_configured":
+        config = LLMProviderConfig(provider="ollama", model=selected_model)
+    elif selected_provider == "ollama_cloud":
+        config = LLMProviderConfig(provider="ollama_cloud")
+    else:
+        config = LLMProviderConfig.from_env()
+
     backend = build_llm_backend_from_config(config)
     adapter = LLMBuilderMediatorAdapter(backend=backend)
 
@@ -223,7 +245,7 @@ def _render_page():
                 pyperclip.copy(prompt)
                 st.toast("Copied to clipboard")
 
-    # -- Sidebar: provider + reset -------------------------------
+    # -- Sidebar: provider picker + reset -----------------------
     with st.sidebar:
         st.header("Controls")
         if st.button("🔄 New Letter", use_container_width=True):
@@ -233,17 +255,79 @@ def _render_page():
 
         st.divider()
 
-        config = LLMProviderConfig.from_env()
-        provider_label = _provider_status_label(config)
-        available = _provider_available(config)
+        # Provider / Model Picker (L.26E)
+        st.subheader("Provider & Model")
 
-        st.subheader("Provider Status")
-        st.markdown(f"**Type:** `{provider_label}`")
-        st.markdown(f"**Available:** `{'Yes ✅' if available else 'No ⚠️'}`")
-        st.markdown(f"**Model:** `{config.model or '(default)'}`")
-        st.markdown(f"**Timeout:** `{config.timeout_seconds}s`")
-        st.markdown(f"**Max Tokens:** `{config.max_tokens}`")
+        # Provider selection
+        provider_options = {
+            "mock": "🛡️ Mock / Offline (default — no network)",
+            "ollama": "🦙 Ollama Local (manual — requires local server)",
+            "ollama_cloud": "☁️ Ollama Cloud / Hosted (manual — requires config)",
+        }
+
+        # Get current selection from session state or env default
+        if "selected_provider" not in st.session_state:
+            env_provider = os.environ.get("SECNAV_LLM_PROVIDER", "mock").strip().lower()
+            if env_provider not in provider_options:
+                env_provider = "mock"
+            st.session_state.selected_provider = env_provider
+
+        selected_provider = st.selectbox(
+            "Provider",
+            options=list(provider_options.keys()),
+            format_func=lambda k: provider_options[k],
+            index=list(provider_options.keys()).index(st.session_state.selected_provider),
+            key="provider_select",
+        )
+        st.session_state.selected_provider = selected_provider
+
+        # Model selection based on provider
+        selected_model = None
+        if selected_provider == "mock":
+            st.info("Mock mode uses a deterministic offline parser. No network required.")
+            selected_model = "mock"
+
+        elif selected_provider == "ollama":
+            # Query local Ollama for installed models
+            from llm_provider_config import list_ollama_models
+            ollama_models = list_ollama_models()
+            if ollama_models:
+                if "selected_ollama_model" not in st.session_state:
+                    # Prefer env default or first model
+                    env_model = os.environ.get("SECNAV_OLLAMA_MODEL", "").strip()
+                    if env_model and env_model in ollama_models:
+                        st.session_state.selected_ollama_model = env_model
+                    else:
+                        st.session_state.selected_ollama_model = ollama_models[0]
+                selected_model = st.selectbox(
+                    "Ollama Model",
+                    options=ollama_models,
+                    index=ollama_models.index(st.session_state.selected_ollama_model)
+                    if st.session_state.selected_ollama_model in ollama_models else 0,
+                    key="ollama_model_select",
+                )
+                st.session_state.selected_ollama_model = selected_model
+                st.success(f"Using Ollama model: {selected_model}")
+            else:
+                st.warning("No Ollama models found. Ensure Ollama is running and you have pulled a model.")
+                st.code("ollama pull llama3.2", language="bash")
+                selected_model = None
+
+        elif selected_provider == "ollama_cloud":
+            st.info("Ollama Cloud / Hosted is not yet configured. Set environment variables manually to enable.")
+            st.code("$env:SECNAV_LLM_PROVIDER = 'ollama_cloud'\n$env:SECNAV_OLLAMA_MODEL = 'your-model'", language="powershell")
+            selected_model = "not_configured"
+
+        # Show current effective status
+        st.divider()
+        st.markdown(f"**Active Provider:** `{selected_provider}`")
+        if selected_model:
+            st.markdown(f"**Active Model:** `{selected_model}`")
         st.caption("API keys are never shown in this UI.")
+
+        # Store selected config for mediation use
+        if "selected_model" not in st.session_state or st.session_state.get("selected_provider") != selected_provider:
+            st.session_state.selected_model = selected_model
 
     # -- Main columns ---------------------------------------------
     builder = _load_session()
