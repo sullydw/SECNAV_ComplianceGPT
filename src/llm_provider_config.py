@@ -126,6 +126,75 @@ def _ollama_urls_for_host(host: str) -> tuple[str, str, str]:
     return f"{base}/api/tags", f"{base}/api/chat", f"{base}/api/generate"
 
 
+def _safe_response_preview(parsed: dict[str, Any], max_len: int = 500) -> str:
+    """Return a compact, safe preview of the parsed response dict for diagnostics."""
+    try:
+        compact = json.dumps(parsed, separators=(",", ":"), ensure_ascii=False)
+    except Exception:
+        compact = str(parsed)
+    return compact[:max_len]
+
+
+def _extract_ollama_content(parsed: dict[str, Any], endpoint_type: str) -> str | None:
+    """Try multiple safe fields to extract usable text from an Ollama response.
+
+    For /api/chat:
+      1. parsed["message"]["content"]
+      2. parsed["message"]["thinking"]  (only if it parses as valid JSON)
+      3. parsed["response"]
+      4. parsed["content"]
+
+    For /api/generate:
+      1. parsed["response"]
+      2. parsed["message"]["content"]
+      3. parsed["content"]
+      4. parsed["thinking"]  (only if it parses as valid JSON)
+
+    Returns the first non-empty candidate, or None if all are empty/unusable.
+    """
+    candidates: list[str] = []
+    if endpoint_type == "chat":
+        candidates.append((parsed.get("message") or {}).get("content", "") or "")
+        thinking_chat = ((parsed.get("message") or {}).get("thinking", "") or "")
+        if thinking_chat:
+            try:
+                json.loads(thinking_chat)
+                candidates.append(thinking_chat)
+            except Exception:
+                pass
+        candidates.append(parsed.get("response", "") or "")
+        candidates.append(parsed.get("content", "") or "")
+    else:  # generate
+        candidates.append(parsed.get("response", "") or "")
+        candidates.append((parsed.get("message") or {}).get("content", "") or "")
+        candidates.append(parsed.get("content", "") or "")
+        thinking_gen = parsed.get("thinking", "") or ""
+        if thinking_gen:
+            try:
+                json.loads(thinking_gen)
+                candidates.append(thinking_gen)
+            except Exception:
+                pass
+
+    for c in candidates:
+        c = c.strip()
+        if c:
+            return c
+    return None
+
+
+def _diagnose_empty_content(parsed: dict[str, Any]) -> dict[str, Any]:
+    """Collect metadata about an empty-content Ollama response for debugging."""
+    msg = parsed.get("message") or {}
+    return {
+        "top_keys": list(parsed.keys()),
+        "message_keys": list(msg.keys()) if isinstance(msg, dict) else None,
+        "done": parsed.get("done"),
+        "done_reason": parsed.get("done_reason"),
+        "response_preview": _safe_response_preview(parsed, max_len=400),
+    }
+
+
 def call_ollama_inference(prompt: str, config: "LLMProviderConfig") -> str:
     """Call local Ollama, preferring /api/chat and falling back to /api/generate.
 
@@ -150,57 +219,67 @@ def call_ollama_inference(prompt: str, config: "LLMProviderConfig") -> str:
 
     _, chat_url, generate_url = _ollama_urls_for_host(working_host)
 
-    chat_payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": "You are a structured field extractor. Respond ONLY with valid JSON matching the requested schema. Do not include markdown code fences."},
-            {"role": "user", "content": prompt},
-        ],
-        "stream": False,
-        "format": "json",
-        "options": {
-            "temperature": 0.2,
-            "num_predict": config.max_tokens or 512,
-        },
-    }
+    def _make_payload(use_format_json: bool) -> tuple[dict[str, Any], dict[str, Any]]:
+        fmt: str | None = "json" if use_format_json else None
+        chat = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": "You are a structured field extractor. Respond ONLY with valid JSON matching the requested schema. Do not include markdown code fences."},
+                {"role": "user", "content": prompt},
+            ],
+            "stream": False,
+            "options": {
+                "temperature": 0.2,
+                "num_predict": config.max_tokens or 512,
+            },
+        }
+        if fmt:
+            chat["format"] = fmt
+        gen = {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "temperature": 0.2,
+                "num_predict": config.max_tokens or 512,
+            },
+        }
+        if fmt:
+            gen["format"] = fmt
+        return chat, gen
 
-    generate_payload = {
-        "model": model,
-        "prompt": prompt,
-        "stream": False,
-        "format": "json",
-        "options": {
-            "temperature": 0.2,
-            "num_predict": config.max_tokens or 512,
-        },
-    }
+    chat_payload_fmt, generate_payload_fmt = _make_payload(use_format_json=True)
+    chat_payload_plain, generate_payload_plain = _make_payload(use_format_json=False)
 
     diagnostics: list[dict[str, Any]] = []
 
-    for endpoint, payload, extractor in [
-        (chat_url, chat_payload, lambda parsed: parsed.get("message", {}).get("content", "")),
-        (generate_url, generate_payload, lambda parsed: parsed.get("response", "")),
-    ]:
+    def _attempt(endpoint: str, payload: dict[str, Any], endpoint_type: str, attempt_label: str) -> str | None:
+        """Returns usable content string, or None to record diagnostics and continue."""
         attempt: dict[str, Any] = {
             "endpoint": endpoint,
             "model": model,
             "provider": provider,
             "timeout": timeout,
+            "attempt_label": attempt_label,
             "status": None,
             "exception_type": None,
             "exception_message": None,
             "http_code": None,
             "response_snippet": None,
+            "empty_diagnosis": None,
         }
         try:
             parsed = _ollama_http_post_json(endpoint, payload, timeout=timeout)
-            content = extractor(parsed)
+            content = _extract_ollama_content(parsed, endpoint_type)
             if not content:
                 attempt["status"] = "empty_content"
                 attempt["exception_type"] = "OllamaResponseError"
-                attempt["exception_message"] = f"Ollama returned empty content from {endpoint}"
+                attempt["exception_message"] = f"Ollama returned empty content from {endpoint} ({attempt_label})"
+                attempt["empty_diagnosis"] = _diagnose_empty_content(parsed)
+                attempt["response_snippet"] = _safe_response_preview(parsed, max_len=300)
                 diagnostics.append(attempt)
-                continue
+                return None
+            # Safety: still require valid JSON even if found in alternate field
             json.loads(content)
             return content
         except urllib_error.HTTPError as e:
@@ -215,52 +294,69 @@ def call_ollama_inference(prompt: str, config: "LLMProviderConfig") -> str:
             attempt["http_code"] = e.code
             attempt["response_snippet"] = body
             diagnostics.append(attempt)
-            continue
+            return None
         except TimeoutError as e:
             attempt["status"] = "timeout"
             attempt["exception_type"] = "TimeoutError"
             attempt["exception_message"] = str(e)
             diagnostics.append(attempt)
-            continue
+            return None
         except OllamaEndpointError as e:
             attempt["status"] = "endpoint_not_found"
             attempt["exception_type"] = "OllamaEndpointError"
             attempt["exception_message"] = str(e)
             diagnostics.append(attempt)
-            continue
+            return None
         except OllamaResponseError as e:
             attempt["status"] = "response_error"
             attempt["exception_type"] = "OllamaResponseError"
             attempt["exception_message"] = str(e)
             diagnostics.append(attempt)
-            continue
+            return None
         except json.JSONDecodeError as e:
             attempt["status"] = "json_decode_error"
             attempt["exception_type"] = "JSONDecodeError"
             attempt["exception_message"] = str(e)
             diagnostics.append(attempt)
-            continue
+            return None
         except Exception as e:
             attempt["status"] = "unexpected_exception"
             attempt["exception_type"] = type(e).__name__
             attempt["exception_message"] = str(e)
             diagnostics.append(attempt)
-            continue
+            return None
 
-    # Exhausted both endpoints — build comprehensive diagnostics
-    tried_endpoints_str = ", ".join(d.get("endpoint", "") for d in diagnostics)
+    # Attempt order: chat(fmt) → generate(fmt) → chat(plain) → generate(plain)
+    attempts = [
+        (chat_url, chat_payload_fmt, "chat", "format_json"),
+        (generate_url, generate_payload_fmt, "generate", "format_json"),
+        (chat_url, chat_payload_plain, "chat", "no_format_json"),
+        (generate_url, generate_payload_plain, "generate", "no_format_json"),
+    ]
+    for endpoint, payload, endpoint_type, label in attempts:
+        content = _attempt(endpoint, payload, endpoint_type, label)
+        if content is not None:
+            return content
+
+    # Exhausted all endpoints — build comprehensive diagnostics
+    tried_endpoints_str = ", ".join(
+        f"{d.get('endpoint','')}({d.get('attempt_label','')})" for d in diagnostics
+    )
     lines = [
         f"Ollama inference failed after trying all available endpoints ({tried_endpoints_str}).",
         f"Selected provider: {provider}, model: {model}, host: {working_host}, timeout: {timeout}s.",
     ]
     for d in diagnostics:
-        line = f"  {d['endpoint']}: {d['status']} ({d['exception_type']}"
+        line = f"  {d['endpoint']} [{d['attempt_label']}]: {d['status']} ({d['exception_type']}"
         if d.get("http_code"):
             line += f" HTTP {d['http_code']}"
         line += f") — {d['exception_message']}"
         if d.get("response_snippet"):
             snippet = d["response_snippet"].replace("\n", " ")[:120]
             line += f" | Response: {snippet}"
+        if d.get("empty_diagnosis"):
+            diag = d["empty_diagnosis"]
+            line += f" | Keys={diag.get('top_keys')} MsgKeys={diag.get('message_keys')} Done={diag.get('done')}"
         lines.append(line)
 
     explanation = "\n".join(lines)
@@ -268,12 +364,15 @@ def call_ollama_inference(prompt: str, config: "LLMProviderConfig") -> str:
         f"Provider={provider}, Model={model}, Host={working_host}, Timeout={timeout}s.",
     ]
     for d in diagnostics:
-        note = f"{d['endpoint']}: {d['status']} ({d['exception_type']}"
+        note = f"{d['endpoint']} [{d['attempt_label']}]: {d['status']} ({d['exception_type']}"
         if d.get("http_code"):
             note += f" HTTP={d['http_code']}"
         note += f") — {d['exception_message']}"
         if d.get("response_snippet"):
             note += f" | body_preview={d['response_snippet'][:200]}"
+        if d.get("empty_diagnosis"):
+            diag = d["empty_diagnosis"]
+            note += f" | keys={diag.get('top_keys')} msg_keys={diag.get('message_keys')} done={diag.get('done')} done_reason={diag.get('done_reason')}"
         safety_notes.append(note)
 
     return json.dumps({
@@ -1106,6 +1205,10 @@ class LLMProviderConfig:
         self.max_tokens = max_tokens
         self.api_key_env_var = api_key_env_var
         self.extra = extra or {}
+        if self.provider == "ollama" and self.timeout_seconds < 120.0:
+            self.timeout_seconds = 120.0
+        if self.provider == "ollama" and self.max_tokens is not None and self.max_tokens <= 0:
+            self.max_tokens = 512
 
     @classmethod
     def from_env(cls, prefix: str = "SECNAV_LLM") -> LLMProviderConfig:

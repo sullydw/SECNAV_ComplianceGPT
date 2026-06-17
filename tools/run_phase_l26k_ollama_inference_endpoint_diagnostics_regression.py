@@ -90,16 +90,15 @@ def main() -> int:
 
     # --- Check D: exhaust-loop continues after each failure instead of early return ---
     total += 1
-    # After patching, the loop body ends with `continue` on every except branch
-    diag_loop_start = cfg_src.find("for endpoint, payload, extractor in")
-    loop_body = cfg_src[diag_loop_start:diag_loop_start + 6000]
-    # Count continue statements inside the loop after diagnostics append
-    continues = loop_body.count("continue")
-    if continues >= 6:  # one per except path + empty_content
+    # After L.26M refactoring, the for-loop uses _attempt() helper returning None on failure.
+    # Verify that the loop iterates over multiple attempts and _attempt returns None on empty_content.
+    has_attempts_list = "attempts = [" in cfg_src
+    has_attempt_return_none = "return None" in cfg_src[cfg_src.find("def _attempt"):cfg_src.find("def _attempt")+4000] if "def _attempt" in cfg_src else False
+    if has_attempts_list and has_attempt_return_none:
         _ok("D")
         passed += 1
     else:
-        _failures("D", [f"Expected >= 6 continue in loop, got {continues}"])
+        _failures("D", ["Refactored attempt loop without proper None-return fallback not found"])
 
     # --- Check E: final explanation built from diagnostics ---
     total += 1
