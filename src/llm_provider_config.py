@@ -237,18 +237,21 @@ def is_ollama_backend(backend: Any) -> bool:
     return callable(backend) and getattr(backend, "__name__", "") == "_call"
 
 
-def provider_debug_status(config: "LLMProviderConfig") -> dict[str, Any]:
+def provider_debug_status(config: "LLMProviderConfig", cached_ollama_status: dict[str, Any] | None = None) -> dict[str, Any]:
     """Return safe provider status for Streamlit sidebar/debug panel."""
     if config.provider == "mock":
         return {"provider": "mock", "available": True, "message": "Mock/offline backend active."}
     if config.provider == "ollama":
-        status = ollama_service_status()
+        status = cached_ollama_status if cached_ollama_status is not None else ollama_service_status()
         return {
             "provider": "ollama",
             "available": status["reachable"],
+            "reachable": status["reachable"],
             "message": status["message"],
             "models": status["models"],
             "model": config.model or config.extra.get("ollama_model", DEFAULT_OLLAMA_MODEL),
+            "active_endpoint": status.get("active_endpoint"),
+            "tried_endpoints": status.get("tried_endpoints", []),
         }
     if config.provider == "ollama_cloud":
         return {"provider": "ollama_cloud", "available": False, "message": "Ollama Cloud / Hosted not configured."}

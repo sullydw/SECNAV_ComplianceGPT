@@ -301,7 +301,8 @@ def _render_page():
 
         elif selected_provider == "ollama":
             ollama_status = ollama_service_status()
-            ollama_models = list_ollama_models()
+            st.session_state.ollama_status = ollama_status
+            ollama_models = ollama_status.get("models", [])
             if ollama_models:
                 if "selected_ollama_model" not in st.session_state:
                     env_model = os.environ.get("SECNAV_OLLAMA_MODEL", "").strip() or None
@@ -342,7 +343,7 @@ def _render_page():
 
         selected_model_changed(st.session_state, selected_provider, selected_model)
         effective_config = ui_provider_config(selected_provider, selected_model)
-        effective_status = provider_debug_status(effective_config)
+        effective_status = provider_debug_status(effective_config, cached_ollama_status=st.session_state.get("ollama_status"))
 
         st.divider()
         st.markdown(f"**Active Provider:** `{selected_provider}`")
