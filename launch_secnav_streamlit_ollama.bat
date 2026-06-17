@@ -2,6 +2,7 @@
 REM SECNAV Compliant Letter Builder — Ollama Streamlit Launcher
 REM Phase L.26D — One-click launch with Ollama provider
 REM Phase L.26H — Auto-installs streamlit and pyperclip if missing
+REM Phase L.26I — Robust Ollama localhost detection (127.0.0.1 + localhost)
 
 setlocal enabledelayedexpansion
 
@@ -74,26 +75,49 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM Check Ollama reachability
+REM Check Ollama reachability on BOTH 127.0.0.1 and localhost
 echo.
-echo [CHECK] Verifying Ollama is running at localhost:11434...
-"%PYTHON_EXE%" -c "import urllib.request; urllib.request.urlopen('http://localhost:11434/api/tags', timeout=5).close(); print('OK')" 2>nul
-if errorlevel 1 (
+echo [CHECK] Verifying Ollama is running...
+
+set OLLAMA_REACHABLE=false
+set OLLAMA_HOST=
+
+for %%H in (127.0.0.1 localhost) do (
+    if "!OLLAMA_REACHABLE!"=="false" (
+        echo   Trying %%H:11434 ...
+        "%PYTHON_EXE%" -c "import urllib.request; urllib.request.urlopen('http://%%H:11434/api/tags', timeout=5).close(); print('OK')" 2>nul
+        if !errorlevel!==0 (
+            echo   [OK] Ollama responded on %%H:11434
+            set OLLAMA_REACHABLE=true
+            set OLLAMA_HOST=%%H
+        ) else (
+            echo   [FAIL] No response on %%H:11434
+        )
+    )
+)
+
+if "%OLLAMA_REACHABLE%"=="false" (
     echo.
-    echo [ERROR] Ollama does not appear to be running.
+    echo [ERROR] Ollama does not appear to be running on localhost or 127.0.0.1.
     echo.
-    echo Start Ollama first:
-    echo     ollama serve
-    echo.
-    echo Or pull a model if needed:
-    echo     ollama pull llama3.2
+    echo Troubleshooting:
+    echo     1. Start Ollama:
+    echo        ollama serve
+    echo     2. Verify it is listening:
+    echo        curl http://127.0.0.1:11434/api/tags
+    echo        curl http://localhost:11434/api/tags
+    echo     3. Pull a model if needed:
+    echo        ollama pull llama3.2
+    echo     4. List installed models:
+    echo        ollama list
     echo.
     echo Then run this launcher again.
     echo.
     pause
     exit /b 1
 )
-echo [OK] Ollama is reachable.
+
+echo [OK] Ollama is reachable at %OLLAMA_HOST%:11434.
 
 REM Set Ollama environment variables
 set SECNAV_LLM_PROVIDER=ollama
@@ -102,6 +126,7 @@ set SECNAV_OLLAMA_MODEL=llama3.2
 echo.
 echo Provider mode: Ollama
 echo Model: llama3.2
+echo Endpoint: %OLLAMA_HOST%:11434
 echo.
 echo Your browser should open automatically at:
 echo     http://localhost:8501

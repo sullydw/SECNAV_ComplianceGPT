@@ -67,10 +67,12 @@ else:
 # 5. list_ollama_models uses localhost:11434/api/tags
 # ------------------------------------------------------------------
 if CONFIG_FILE.exists():
-    uses_localhost = "localhost:11434/api/tags" in config_text
-    checks.append(("G. list_ollama_models uses localhost:11434", uses_localhost))
+    uses_localhost = ("localhost:11434/api/tags" in config_text or
+                      "127.0.0.1:11434/api/tags" in config_text or
+                      "OLLAMA_HOSTS" in config_text)
+    checks.append(("G. list_ollama_models uses localhost:11434 or 127.0.0.1", uses_localhost))
 else:
-    checks.append(("G. list_ollama_models uses localhost:11434", False))
+    checks.append(("G. list_ollama_models uses localhost:11434 or 127.0.0.1", False))
 
 # ------------------------------------------------------------------
 # 6. list_ollama_models returns empty list on error (fail-closed)

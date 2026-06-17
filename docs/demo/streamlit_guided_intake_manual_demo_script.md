@@ -43,10 +43,20 @@ If you have Ollama installed and running, use the Ollama launcher instead:
 - Or run **`./launch_secnav_streamlit_ollama.ps1`** in PowerShell
 
 The Ollama launcher:
-- checks that Ollama is reachable at `localhost:11434`
+- checks that Ollama is reachable at **both** `127.0.0.1:11434` and `localhost:11434`
+- tries `127.0.0.1` first, then `localhost`
 - sets `SECNAV_LLM_PROVIDER=ollama` and `SECNAV_OLLAMA_MODEL=llama3.2`
 - starts the app with the Ollama backend enabled
-- prints clear error and exits if Ollama is not running
+- prints **which endpoint succeeded** (e.g., `Endpoint: 127.0.0.1:11434`)
+- if Ollama is not running, prints **troubleshooting commands**:
+  ```
+  ollama serve
+  curl http://127.0.0.1:11434/api/tags
+  curl http://localhost:11434/api/tags
+  ollama list
+  ollama pull llama3.2
+  ```
+- exits cleanly (does not fall back to mock)
 
 If you prefer to run it manually:
 

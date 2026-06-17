@@ -314,11 +314,25 @@ def _render_page():
                     key="ollama_model_select",
                 )
                 st.success(f"Using Ollama model: {selected_model}")
+                active_ep = ollama_status.get("active_endpoint", "")
+                if active_ep:
+                    st.caption(f"Connected via {active_ep}")
                 st.caption("Note: First inference may take 60–90 seconds while the model loads into memory. Wait for the response — this is normal for local Ollama.")
             else:
                 st.warning("No Ollama models found. Ensure Ollama is running and you have pulled a model.")
+                tried = ollama_status.get("tried_endpoints", [])
                 st.caption(ollama_status.get("message", "Ollama unavailable."))
-                st.code("ollama pull llama3.2", language="bash")
+                if tried:
+                    with st.expander("Troubleshooting"):
+                        st.write("**Tried endpoints:**")
+                        for ep in tried:
+                            st.code(f"curl {ep}", language="bash")
+                        st.write("**Start Ollama:**")
+                        st.code("ollama serve", language="bash")
+                        st.write("**List models:**")
+                        st.code("ollama list", language="bash")
+                        st.write("**Pull a model:**")
+                        st.code("ollama pull llama3.2", language="bash")
                 selected_model = None
 
         elif selected_provider == "ollama_cloud":

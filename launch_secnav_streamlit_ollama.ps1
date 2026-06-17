@@ -1,6 +1,7 @@
 # SECNAV Compliant Letter Builder — Ollama Streamlit Launcher
 # Phase L.26D — One-click launch with Ollama provider
 # Phase L.26H — Auto-installs streamlit and pyperclip if missing
+# Phase L.26I — Robust Ollama localhost detection (127.0.0.1 + localhost)
 
 Write-Host "=============================================="
 Write-Host " SECNAV Compliant Letter Builder"
@@ -91,35 +92,51 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# Check Ollama reachability
+# Check Ollama reachability on BOTH 127.0.0.1 and localhost
 Write-Host ""
-Write-Host "[CHECK] Verifying Ollama is running at localhost:11434..."
+Write-Host "[CHECK] Verifying Ollama is running..."
+
 $ollamaReachable = $false
-try {
-    $null = & $PYTHON_EXE -c "import urllib.request; urllib.request.urlopen('http://localhost:11434/api/tags', timeout=5).close(); print('OK')" 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        $ollamaReachable = $true
+$ollamaHost = ""
+foreach ($hostName in @("127.0.0.1", "localhost")) {
+    if ($ollamaReachable) { break }
+    Write-Host "  Trying ${hostName}:11434 ..."
+    try {
+        $null = & $PYTHON_EXE -c "import urllib.request; urllib.request.urlopen('http://${hostName}:11434/api/tags', timeout=5).close(); print('OK')" 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  [OK] Ollama responded on ${hostName}:11434"
+            $ollamaReachable = $true
+            $ollamaHost = $hostName
+        } else {
+            Write-Host "  [FAIL] No response on ${hostName}:11434"
+        }
+    } catch {
+        Write-Host "  [FAIL] No response on ${hostName}:11434"
     }
-} catch {
-    $ollamaReachable = $false
 }
 
 if (-not $ollamaReachable) {
     Write-Host ""
-    Write-Host "[ERROR] Ollama does not appear to be running."
+    Write-Host "[ERROR] Ollama does not appear to be running on localhost or 127.0.0.1."
     Write-Host ""
-    Write-Host "Start Ollama first:"
-    Write-Host "    ollama serve"
-    Write-Host ""
-    Write-Host "Or pull a model if needed:"
-    Write-Host "    ollama pull llama3.2"
+    Write-Host "Troubleshooting:"
+    Write-Host "    1. Start Ollama:"
+    Write-Host "       ollama serve"
+    Write-Host "    2. Verify it is listening:"
+    Write-Host "       curl http://127.0.0.1:11434/api/tags"
+    Write-Host "       curl http://localhost:11434/api/tags"
+    Write-Host "    3. Pull a model if needed:"
+    Write-Host "       ollama pull llama3.2"
+    Write-Host "    4. List installed models:"
+    Write-Host "       ollama list"
     Write-Host ""
     Write-Host "Then run this launcher again."
     Write-Host ""
     Read-Host "Press Enter to exit"
     exit 1
 }
-Write-Host "[OK] Ollama is reachable."
+
+Write-Host "[OK] Ollama is reachable at ${ollamaHost}:11434."
 
 # Set Ollama environment variables
 $env:SECNAV_LLM_PROVIDER = "ollama"
@@ -128,6 +145,7 @@ $env:SECNAV_OLLAMA_MODEL = "llama3.2"
 Write-Host ""
 Write-Host "Provider mode: Ollama"
 Write-Host "Model: llama3.2"
+Write-Host "Endpoint: ${ollamaHost}:11434"
 Write-Host ""
 Write-Host "Your browser should open automatically at:"
 Write-Host "    http://localhost:8501"

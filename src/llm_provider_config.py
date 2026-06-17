@@ -15,11 +15,14 @@ from urllib import error as urllib_error
 from urllib import request as urllib_request
 
 
-OLLAMA_TAGS_URL = "http://localhost:11434/api/tags"
-OLLAMA_CHAT_URL = "http://localhost:11434/api/chat"
-OLLAMA_GENERATE_URL = "http://localhost:11434/api/generate"
+OLLAMA_TAGS_URL = "http://127.0.0.1:11434/api/tags"
+OLLAMA_CHAT_URL = "http://127.0.0.1:11434/api/chat"
+OLLAMA_GENERATE_URL = "http://127.0.0.1:11434/api/generate"
 DEFAULT_OLLAMA_MODEL = "llama3.2"
 DEFAULT_OLLAMA_TIMEOUT_SECONDS = 5.0
+
+OLLAMA_HOSTS = ["127.0.0.1", "localhost"]
+OLLAMA_BASE_URLS = [f"http://{host}:11434" for host in OLLAMA_HOSTS]
 
 
 class OllamaEndpointError(RuntimeError):
@@ -75,22 +78,52 @@ def _ollama_http_post_json(
 
 
 def ollama_service_status() -> dict[str, Any]:
-    """Return safe localhost-only Ollama status for UI/debug use."""
-    try:
-        data = _ollama_http_get_json(OLLAMA_TAGS_URL)
-        models = data.get("models", [])
-        names = sorted(m.get("name", "") for m in models if m.get("name"))
-        return {
-            "reachable": True,
-            "models": names,
-            "message": "Ollama reachable.",
-        }
-    except Exception as e:
-        return {
-            "reachable": False,
-            "models": [],
-            "message": f"Ollama not reachable: {type(e).__name__}",
-        }
+    """Return safe localhost-only Ollama status for UI/debug use.
+
+    Tries 127.0.0.1 first, then localhost.
+    """
+    last_err: Exception | None = None
+    for host in OLLAMA_HOSTS:
+        url = f"http://{host}:11434/api/tags"
+        try:
+            data = _ollama_http_get_json(url)
+            models = data.get("models", [])
+            names = sorted(m.get("name", "") for m in models if m.get("name"))
+            return {
+                "reachable": True,
+                "models": names,
+                "message": f"Ollama reachable at {host}:11434.",
+                "active_endpoint": url,
+                "tried_endpoints": [f"http://{h}:11434/api/tags" for h in OLLAMA_HOSTS],
+            }
+        except Exception as e:
+            last_err = e
+    return {
+        "reachable": False,
+        "models": [],
+        "message": f"Ollama not reachable. Tried {OLLAMA_HOSTS}. Last error: {type(last_err).__name__}.",
+        "active_endpoint": None,
+        "tried_endpoints": [f"http://{h}:11434/api/tags" for h in OLLAMA_HOSTS],
+    }
+
+
+def _discover_working_ollama_host(timeout: float = DEFAULT_OLLAMA_TIMEOUT_SECONDS) -> tuple[str | None, list[str]]:
+    """Probe /api/tags on both 127.0.0.1 and localhost. Return (working_host, tried_hosts)."""
+    tried = []
+    for host in OLLAMA_HOSTS:
+        url = f"http://{host}:11434/api/tags"
+        try:
+            _ollama_http_get_json(url, timeout=timeout)
+            return host, tried + [host]
+        except Exception:
+            tried.append(host)
+    return None, tried
+
+
+def _ollama_urls_for_host(host: str) -> tuple[str, str, str]:
+    """Return (tags_url, chat_url, generate_url) for a given host."""
+    base = f"http://{host}:11434"
+    return f"{base}/api/tags", f"{base}/api/chat", f"{base}/api/generate"
 
 
 def call_ollama_inference(prompt: str, config: "LLMProviderConfig") -> str:
@@ -101,18 +134,19 @@ def call_ollama_inference(prompt: str, config: "LLMProviderConfig") -> str:
     model = config.model or config.extra.get("ollama_model", DEFAULT_OLLAMA_MODEL)
     timeout = config.timeout_seconds
 
-    try:
-        _ollama_http_get_json(OLLAMA_TAGS_URL)
-    except Exception as e:
+    working_host, tried_hosts = _discover_working_ollama_host(timeout=min(timeout, 10.0))
+    if working_host is None:
         return json.dumps({
             "intent": "unknown",
             "proposed_payload_update": {},
             "proposed_key_value_lines": [],
             "confidence": 0.0,
-            "explanation": f"Ollama server not reachable at localhost:11434 ({type(e).__name__}). Ensure Ollama is installed and running.",
+            "explanation": f"Ollama server not reachable at {tried_hosts} ({', '.join(tried_hosts)}). Ensure Ollama is installed and running.",
             "requires_user_confirmation": False,
             "safety_notes": ["Ollama unavailable — fail-closed."],
         })
+
+    _, chat_url, generate_url = _ollama_urls_for_host(working_host)
 
     chat_payload = {
         "model": model,
@@ -141,8 +175,8 @@ def call_ollama_inference(prompt: str, config: "LLMProviderConfig") -> str:
 
     last_error = None
     for endpoint, payload, extractor in [
-        (OLLAMA_CHAT_URL, chat_payload, lambda parsed: parsed.get("message", {}).get("content", "")),
-        (OLLAMA_GENERATE_URL, generate_payload, lambda parsed: parsed.get("response", "")),
+        (chat_url, chat_payload, lambda parsed: parsed.get("message", {}).get("content", "")),
+        (generate_url, generate_payload, lambda parsed: parsed.get("response", "")),
     ]:
         try:
             parsed = _ollama_http_post_json(endpoint, payload, timeout=timeout)
@@ -183,7 +217,7 @@ def call_ollama_inference(prompt: str, config: "LLMProviderConfig") -> str:
         "proposed_payload_update": {},
         "proposed_key_value_lines": [],
         "confidence": 0.0,
-        "explanation": f"Ollama inference endpoint unavailable. Tried {OLLAMA_CHAT_URL} and {OLLAMA_GENERATE_URL}.",
+        "explanation": f"Ollama inference endpoint unavailable. Tried {chat_url} and {generate_url}.",
         "requires_user_confirmation": False,
         "safety_notes": [str(last_error) if last_error else "Ollama inference endpoint unavailable."],
     })
