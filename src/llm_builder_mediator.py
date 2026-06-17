@@ -242,24 +242,78 @@ class MockLLMBuilderMediator:
                     requires_confirmation = True
                     safety_notes.append(f"Inferred official field '{field_path}': {value}")
 
+        # Post-process: fix common natural-language crossovers (e.g., "from X to Y")
+        from_val = updates.get("from", "")
+        if from_val and re.search(r"\s+to\s+", from_val, re.IGNORECASE):
+            parts = re.split(r"\s+to\s+", from_val, maxsplit=1, flags=re.IGNORECASE)
+            if len(parts) == 2:
+                updates["from"] = parts[0].strip()
+                updates["to"] = parts[1].strip()
+                # Rebuild KV lines for from/to
+                kv_lines = [line for line in kv_lines if not line.startswith("from:") and not line.startswith("to:")]
+                kv_lines.append(f"from: {updates['from']}")
+                kv_lines.append(f"to: {updates['to']}")
+
+        # Infer plain-language subject from purpose statements
+        if "subj" not in updates:
+            inferred_subj = self._infer_subject(normalized)
+            if inferred_subj:
+                updates["subj"] = inferred_subj
+                kv_lines.append(f"subj: {inferred_subj}")
+                requires_confirmation = True
+                safety_notes.append("Inferred subject from user purpose statement.")
+
+        # Infer body draft from purpose statements
+        if "body" not in updates:
+            inferred_body = self._infer_body(normalized)
+            if inferred_body:
+                updates["body"] = inferred_body
+                kv_lines.append(f"body: {inferred_body}")
+                requires_confirmation = True
+                safety_notes.append("Inferred body draft from user purpose statement.")
+
         # -- missing required fields → ask question ------------------------------
 
         next_question = None
-        if missing_required and not updates:
-            # No field updates this turn → ask for next required field
-            # Always ask questions if there are missing required fields, regardless of intent
+        # Identify required fields that are still missing after extracted/inferred updates
+        fields_still_missing = [f for f in missing_required if f not in updates]
+        if fields_still_missing and not next_question:
+            field_path = fields_still_missing[0]
+            next_question = {
+                "field_path": field_path,
+                "prompt_text": self._generate_question_text(field_path),
+                "bucket": "required",
+            }
+
+        # If absolutely nothing extracted and no missing required fields, fall back to first missing
+        if missing_required and not updates and not next_question:
             field_path = missing_required[0]
             next_question = {
                 "field_path": field_path,
                 "prompt_text": self._generate_question_text(field_path),
                 "bucket": "required",
             }
+            # Early return when no updates at all
             return MediatorOutput(
                 intent=intent,
                 next_question=next_question,
                 explanation=f"Asking for missing required field: {field_path}",
                 confidence=confidence,
             )
+
+        # If we extracted some fields but the user still lacks a key detail, ask one follow-up
+        if next_question is None and not updates:
+            # Already handled by the early-return above when no updates at all
+            pass
+
+        # Follow-up for date-change requests where date is not yet provided
+        if next_question is None and updates and "date" not in updates:
+            if re.search(r"\b(tbd|open date|change a date|change the date|current date|scheduled date|original date)\b", normalized):
+                next_question = {
+                    "field_path": "date",
+                    "prompt_text": "What is the original or currently scheduled date you want to change from?",
+                    "bucket": "recommended",
+                }
 
         # -- assemble output ---------------------------------------------------
 
@@ -342,6 +396,59 @@ class MockLLMBuilderMediator:
                 break
 
         return updates, kv_lines, safety_notes
+
+    def _infer_subject(self, message: str) -> str | None:
+        """Infer a plain-language subject from a user's purpose statement."""
+        # Use only the first sentence that looks like a purpose statement
+        sentences = re.split(r"(?<!\w\w)[.!?]\s+", message)
+        purpose_fragments = [
+            s for s in sentences
+            if re.search(r"\b(request|ask|change|update|modify|need|want)\b", s, re.IGNORECASE)
+        ]
+        purpose_text = purpose_fragments[0] if purpose_fragments else sentences[0] if sentences else message
+        # Trim trailing routing clause markers
+        purpose_text = re.split(r"\s+(it is from|signed by|via)\b", purpose_text, flags=re.IGNORECASE)[0].strip()
+
+        purpose_patterns = [
+            (re.compile(r"\b(request|ask)\b.*?\b(to|for)\b\s+(.+?)(?:[.!?]|$)", re.IGNORECASE), 3),
+            (re.compile(r"\b(need|want)\s+to\s+(request|ask|change|update|modify)\b\s*(.+?)(?:[.!?]|$)", re.IGNORECASE), 3),
+            (re.compile(r"\b(change|update|modify)\s+a\s+(.+?)(?:[.!?]|$)", re.IGNORECASE), 2),
+            (re.compile(r"\b(approve|disapprove|forward|direct)\s+(.+?)(?:[.!?]|$)", re.IGNORECASE), 2),
+        ]
+        for pattern, group_idx in purpose_patterns:
+            match = pattern.search(purpose_text)
+            if match:
+                raw = match.group(group_idx).strip()
+                raw = re.split(r"\s+(it is|this is|signed by|from|via|regards|sincerely)\b", raw, flags=re.IGNORECASE)[0]
+                raw = raw.strip().rstrip(",")
+                if raw and len(raw) > 3:
+                    return raw[:120]
+        return None
+
+    def _infer_body(self, message: str) -> str | None:
+        """Infer a brief body/purpose draft from a user's statement."""
+        sentences = re.split(r"(?<!\w\w)[.!?]\s+", message)
+        purpose_fragments = [
+            s for s in sentences
+            if re.search(r"\b(request|ask|change|update|modify|need|want)\b", s, re.IGNORECASE)
+        ]
+        purpose_text = purpose_fragments[0] if purpose_fragments else sentences[0] if sentences else message
+        purpose_text = re.split(r"\s+(it is from|signed by|via)\b", purpose_text, flags=re.IGNORECASE)[0].strip()
+
+        purpose_patterns = [
+            (re.compile(r"\b(request|ask)\b.*?\b(to|for)\b\s+(.+?)(?:[.!?]|$)", re.IGNORECASE), 3),
+            (re.compile(r"\b(need|want)\s+to\s+(request|ask|change|update|modify)\b\s*(.+?)(?:[.!?]|$)", re.IGNORECASE), 3),
+            (re.compile(r"\b(change|update|modify)\s+a\s+(.+?)(?:[.!?]|$)", re.IGNORECASE), 2),
+        ]
+        for pattern, group_idx in purpose_patterns:
+            match = pattern.search(purpose_text)
+            if match:
+                raw = match.group(group_idx).strip()
+                raw = re.split(r"\s+(it is|this is|signed by|from|via)\b", raw, flags=re.IGNORECASE)[0]
+                raw = raw.strip().rstrip(",")
+                if raw and len(raw) > 3:
+                    return f"Purpose: {raw[:300]}"
+        return None
 
     def _generate_question_text(self, field_path: str) -> str:
         """Generate a natural-language question for a missing required field."""
