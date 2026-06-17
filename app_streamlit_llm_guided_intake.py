@@ -541,7 +541,26 @@ def _render_page():
                 st.json(last_out)
             else:
                 st.info("No mediator output yet. Send a message to populate this panel.")
-            
+
+            # Inference / backend diagnostics (L.26K)
+            explanation = last_out.get("explanation", "")
+            safety = last_out.get("safety_notes", [])
+            is_ollama_diagnostic = (
+                isinstance(explanation, str) and "Ollama inference failed" in explanation
+            )
+            if is_ollama_diagnostic:
+                st.markdown("#### Ollama Inference Diagnostics")
+                st.markdown("*If Ollama is truly running but this panel shows failure, copy the diagnostics below and share them.*")
+                st.markdown(f"**Provider:** `{st.session_state.get('selected_provider', 'unknown')}`")
+                st.markdown(f"**Model:** `{st.session_state.get('selected_model', 'unknown')}`")
+                st.text_area("Full diagnostics", value=explanation, height=220, disabled=True, label_visibility="collapsed")
+                if safety:
+                    st.markdown("**Safety Notes:**")
+                    for note in safety:
+                        st.code(str(note), language="text")
+            else:
+                st.caption("Ollama diagnostics appear here when an inference attempt fails.")
+
             # Proposed KV lines
             st.markdown("#### Proposed KV Lines")
             kv = last_out.get("proposed_key_value_lines", [])

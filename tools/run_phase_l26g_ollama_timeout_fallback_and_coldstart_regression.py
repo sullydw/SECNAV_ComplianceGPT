@@ -30,7 +30,8 @@ checks: list[tuple[str, bool]] = []
 checks.append(("A. Config file exists", CONFIG_FILE.exists()))
 checks.append(("B. App file exists", APP_FILE.exists()))
 checks.append(("C. TimeoutError caught with continue in call_ollama_inference",
-    "except TimeoutError as e:" in config_text and "last_error = e" in config_text and "continue" in config_text))
+    ("except TimeoutError as e:" in config_text and "continue" in config_text)
+    or ("except TimeoutError" in config_text and "attempt[\"status\"] = \"timeout\"" in config_text)))
 checks.append(("D. Ollama default timeout raised to 120s",
     "self.timeout_seconds = 120.0" in config_text))
 checks.append(("E. Ollama timeout capped at minimum 120s",

@@ -130,9 +130,11 @@ def call_ollama_inference(prompt: str, config: "LLMProviderConfig") -> str:
     """Call local Ollama, preferring /api/chat and falling back to /api/generate.
 
     Returns a JSON string matching MediatorOutput schema or a fail-closed unknown.
+    On failure, returns rich per-endpoint diagnostics in explanation and safety_notes.
     """
     model = config.model or config.extra.get("ollama_model", DEFAULT_OLLAMA_MODEL)
     timeout = config.timeout_seconds
+    provider = getattr(config, "provider", "unknown")
 
     working_host, tried_hosts = _discover_working_ollama_host(timeout=min(timeout, 10.0))
     if working_host is None:
@@ -173,53 +175,115 @@ def call_ollama_inference(prompt: str, config: "LLMProviderConfig") -> str:
         },
     }
 
-    last_error = None
+    diagnostics: list[dict[str, Any]] = []
+
     for endpoint, payload, extractor in [
         (chat_url, chat_payload, lambda parsed: parsed.get("message", {}).get("content", "")),
         (generate_url, generate_payload, lambda parsed: parsed.get("response", "")),
     ]:
+        attempt: dict[str, Any] = {
+            "endpoint": endpoint,
+            "model": model,
+            "provider": provider,
+            "timeout": timeout,
+            "status": None,
+            "exception_type": None,
+            "exception_message": None,
+            "http_code": None,
+            "response_snippet": None,
+        }
         try:
             parsed = _ollama_http_post_json(endpoint, payload, timeout=timeout)
             content = extractor(parsed)
             if not content:
-                raise OllamaResponseError(f"Ollama returned empty content from {endpoint}.")
+                attempt["status"] = "empty_content"
+                attempt["exception_type"] = "OllamaResponseError"
+                attempt["exception_message"] = f"Ollama returned empty content from {endpoint}"
+                diagnostics.append(attempt)
+                continue
             json.loads(content)
             return content
-        except OllamaEndpointError as e:
-            last_error = e
+        except urllib_error.HTTPError as e:
+            body = ""
+            try:
+                body = e.read().decode("utf-8", errors="replace")[:500]
+            except Exception:
+                pass
+            attempt["status"] = "http_error"
+            attempt["exception_type"] = "HTTPError"
+            attempt["exception_message"] = str(e.reason)
+            attempt["http_code"] = e.code
+            attempt["response_snippet"] = body
+            diagnostics.append(attempt)
             continue
         except TimeoutError as e:
-            last_error = e
+            attempt["status"] = "timeout"
+            attempt["exception_type"] = "TimeoutError"
+            attempt["exception_message"] = str(e)
+            diagnostics.append(attempt)
+            continue
+        except OllamaEndpointError as e:
+            attempt["status"] = "endpoint_not_found"
+            attempt["exception_type"] = "OllamaEndpointError"
+            attempt["exception_message"] = str(e)
+            diagnostics.append(attempt)
+            continue
+        except OllamaResponseError as e:
+            attempt["status"] = "response_error"
+            attempt["exception_type"] = "OllamaResponseError"
+            attempt["exception_message"] = str(e)
+            diagnostics.append(attempt)
             continue
         except json.JSONDecodeError as e:
-            return json.dumps({
-                "intent": "unknown",
-                "proposed_payload_update": {},
-                "proposed_key_value_lines": [],
-                "confidence": 0.0,
-                "explanation": f"Ollama returned non-JSON content from {endpoint}.",
-                "requires_user_confirmation": False,
-                "safety_notes": [f"Ollama response from {endpoint} was not valid JSON.", str(e)],
-            })
+            attempt["status"] = "json_decode_error"
+            attempt["exception_type"] = "JSONDecodeError"
+            attempt["exception_message"] = str(e)
+            diagnostics.append(attempt)
+            continue
         except Exception as e:
-            return json.dumps({
-                "intent": "unknown",
-                "proposed_payload_update": {},
-                "proposed_key_value_lines": [],
-                "confidence": 0.0,
-                "explanation": f"Ollama request failed at {endpoint}: {type(e).__name__}: {e}",
-                "requires_user_confirmation": False,
-                "safety_notes": ["Ollama request failed."],
-            })
+            attempt["status"] = "unexpected_exception"
+            attempt["exception_type"] = type(e).__name__
+            attempt["exception_message"] = str(e)
+            diagnostics.append(attempt)
+            continue
+
+    # Exhausted both endpoints — build comprehensive diagnostics
+    tried_endpoints_str = ", ".join(d.get("endpoint", "") for d in diagnostics)
+    lines = [
+        f"Ollama inference failed after trying all available endpoints ({tried_endpoints_str}).",
+        f"Selected provider: {provider}, model: {model}, host: {working_host}, timeout: {timeout}s.",
+    ]
+    for d in diagnostics:
+        line = f"  {d['endpoint']}: {d['status']} ({d['exception_type']}"
+        if d.get("http_code"):
+            line += f" HTTP {d['http_code']}"
+        line += f") — {d['exception_message']}"
+        if d.get("response_snippet"):
+            snippet = d["response_snippet"].replace("\n", " ")[:120]
+            line += f" | Response: {snippet}"
+        lines.append(line)
+
+    explanation = "\n".join(lines)
+    safety_notes = [
+        f"Provider={provider}, Model={model}, Host={working_host}, Timeout={timeout}s.",
+    ]
+    for d in diagnostics:
+        note = f"{d['endpoint']}: {d['status']} ({d['exception_type']}"
+        if d.get("http_code"):
+            note += f" HTTP={d['http_code']}"
+        note += f") — {d['exception_message']}"
+        if d.get("response_snippet"):
+            note += f" | body_preview={d['response_snippet'][:200]}"
+        safety_notes.append(note)
 
     return json.dumps({
         "intent": "unknown",
         "proposed_payload_update": {},
         "proposed_key_value_lines": [],
         "confidence": 0.0,
-        "explanation": f"Ollama inference endpoint unavailable. Tried {chat_url} and {generate_url}.",
+        "explanation": explanation,
         "requires_user_confirmation": False,
-        "safety_notes": [str(last_error) if last_error else "Ollama inference endpoint unavailable."],
+        "safety_notes": safety_notes,
     })
 
 
