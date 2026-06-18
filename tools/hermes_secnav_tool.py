@@ -43,7 +43,33 @@ from llm_builder_mediator import MediatorInput, create_mock_mediator
 _SESSION_DIR = Path.home() / ".hermes" / "secnav_sessions"
 _SESSION_DIR.mkdir(parents=True, exist_ok=True)
 
-_VERSION = "L.28.1"
+_VERSION = "L.29C"
+
+_ALLOWED_CANDIDATE_TYPES = {
+    "command_expansion",
+    "unit_identity",
+    "ssic_candidate",
+    "routing_interpretation",
+    "signature_block",
+    "date_confirmation",
+    "subject_draft",
+    "body_draft",
+}
+
+# Unsafe payload keys that candidates must never set directly
+_UNSAFE_PAYLOAD_KEYS = {
+    "cci_severity",
+    "cci_config",
+    "rule_promotion",
+    "severity_override",
+    "renderer_directive",
+    "layout_override",
+    "pdf_engine",
+    "font_settings",
+    "page_margins",
+    "header_format",
+    "footer_format",
+}
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -72,6 +98,16 @@ def _load_session(session_id: str) -> BuilderSession:
         builder.record_user_decision(rule_code, decision)
 
     builder.set_draft_final_status(data.get("draft_final_status", "draft"))
+
+    # Restore candidates (L.29C)
+    candidates_data = data.get("candidates")
+    if candidates_data:
+        builder._candidates = {
+            "pending": {c["candidate_id"]: c for c in candidates_data.get("pending", [])},
+            "confirmed": {c["candidate_id"]: c for c in candidates_data.get("confirmed", [])},
+            "rejected": {c["candidate_id"]: c for c in candidates_data.get("rejected", [])},
+        }
+
     return builder
 
 
@@ -79,6 +115,16 @@ def _save_session(builder: BuilderSession) -> None:
     payload = builder.build_payload()
     # Persist user_answers so future loads are editable (override works)
     user_answers = getattr(getattr(builder, "_orchestrator", None), "_user_answers", payload)
+
+    # Serialize candidates (L.29C)
+    candidates_data = {}
+    if hasattr(builder, "_candidates"):
+        candidates_data = {
+            "pending": list(builder._candidates.get("pending", {}).values()),
+            "confirmed": list(builder._candidates.get("confirmed", {}).values()),
+            "rejected": list(builder._candidates.get("rejected", {}).values()),
+        }
+
     data = {
         "version": _VERSION,
         "saved_at": datetime.now().isoformat(),
@@ -87,6 +133,7 @@ def _save_session(builder: BuilderSession) -> None:
         "user_answers": user_answers,
         "draft_final_status": builder._draft_final_status,
         "user_decisions": getattr(builder, "_user_decisions", {}),
+        "candidates": candidates_data,
     }
     path = _session_path(builder._session_id)
     path.write_text(json.dumps(data, indent=2, default=str), encoding="utf-8")
@@ -390,6 +437,201 @@ def cmd_reset(args: argparse.Namespace) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Candidate commands (L.29C)
+# ---------------------------------------------------------------------------
+
+
+def _validate_candidate(cand: dict[str, Any]) -> tuple[bool, list[str]]:
+    """Validate candidate shape and security constraints. Returns (ok, errors)."""
+    errors: list[str] = []
+    if not isinstance(cand, dict):
+        errors.append("Candidate must be a dict.")
+        return False, errors
+    ctype = cand.get("candidate_type")
+    if not ctype:
+        errors.append("candidate_type is required.")
+    elif ctype not in _ALLOWED_CANDIDATE_TYPES:
+        errors.append(f"Unknown candidate_type: {ctype}.")
+    if not cand.get("input_text"):
+        errors.append("input_text is required.")
+    resolved = cand.get("resolved_value")
+    if not isinstance(resolved, dict):
+        errors.append("resolved_value must be a dict.")
+    else:
+        # Block unsafe payload keys
+        bad_keys = set(resolved.keys()) & _UNSAFE_PAYLOAD_KEYS
+        if bad_keys:
+            errors.append(f"Unsafe keys in resolved_value: {sorted(bad_keys)}")
+    if not isinstance(cand.get("confidence", 0), (int, float)):
+        errors.append("confidence must be numeric.")
+    requires = cand.get("requires_user_confirmation", True)
+    if requires is False:
+        errors.append("requires_user_confirmation cannot be false.")
+    return not bool(errors), errors
+
+
+def cmd_candidate_add(args: argparse.Namespace) -> None:
+    builder = _load_session(args.session)
+    cand_data = json.loads(Path(args.json).read_text(encoding="utf-8"))
+    ok, errors = _validate_candidate(cand_data)
+    if not ok:
+        _emit({
+            "success": False,
+            "command": "candidate-add",
+            "session_id": args.session,
+            "payload": builder.build_payload(),
+            "validation_summary": builder.validation_summary(),
+            "warning_summary": builder.warning_summary(),
+            "candidate_id": None,
+            "candidate_status": None,
+            "error": "; ".join(errors),
+        })
+        return
+    recorded = builder.record_candidate(cand_data)
+    _save_session(builder)
+    _emit({
+        "success": True,
+        "command": "candidate-add",
+        "session_id": args.session,
+        "payload": builder.build_payload(),
+        "validation_summary": builder.validation_summary(),
+        "warning_summary": builder.warning_summary(),
+        "candidate_id": recorded.get("candidate_id"),
+        "candidate_status": "pending",
+        "error": None,
+    })
+
+
+def cmd_candidates(args: argparse.Namespace) -> None:
+    builder = _load_session(args.session)
+    summary = builder.get_candidates()
+    _emit({
+        "success": True,
+        "command": "candidates",
+        "session_id": args.session,
+        "payload": builder.build_payload(),
+        "validation_summary": builder.validation_summary(),
+        "warning_summary": builder.warning_summary(),
+        "candidates": summary,
+        "error": None,
+    })
+
+
+def cmd_candidate_confirm(args: argparse.Namespace) -> None:
+    builder = _load_session(args.session)
+    result = builder.confirm_candidate(args.candidate_id)
+    _save_session(builder)
+    _emit({
+        "success": result.get("success", False),
+        "command": "candidate-confirm",
+        "session_id": args.session,
+        "payload": builder.build_payload(),
+        "validation_summary": builder.validation_summary(),
+        "warning_summary": builder.warning_summary(),
+        "candidate_id": result.get("candidate_id"),
+        "applied_fields": result.get("applied_fields"),
+        "error": result.get("error"),
+    })
+
+
+def cmd_candidate_reject(args: argparse.Namespace) -> None:
+    builder = _load_session(args.session)
+    result = builder.reject_candidate(args.candidate_id, reason=args.reason or "")
+    _save_session(builder)
+    _emit({
+        "success": result.get("success", False),
+        "command": "candidate-reject",
+        "session_id": args.session,
+        "payload": builder.build_payload(),
+        "validation_summary": builder.validation_summary(),
+        "warning_summary": builder.warning_summary(),
+        "candidate_id": result.get("candidate_id"),
+        "error": result.get("error"),
+    })
+
+
+def cmd_apply_resolved(args: argparse.Namespace) -> None:
+    builder = _load_session(args.session)
+    cand_data = json.loads(Path(args.json).read_text(encoding="utf-8"))
+    ok, errors = _validate_candidate(cand_data)
+    if not ok:
+        _emit({
+            "success": False,
+            "command": "apply-resolved",
+            "session_id": args.session,
+            "payload": builder.build_payload(),
+            "validation_summary": builder.validation_summary(),
+            "warning_summary": builder.warning_summary(),
+            "preview": None,
+            "applied": False,
+            "candidate_id": None,
+            "error": "; ".join(errors),
+        })
+        return
+
+    if args.dry_run:
+        # Preview only: do not store or apply
+        preview = {
+            "would_record": True,
+            "would_apply": False,
+            "candidate": cand_data,
+            "dry_run": True,
+        }
+        _emit({
+            "success": True,
+            "command": "apply-resolved",
+            "session_id": args.session,
+            "payload": builder.build_payload(),
+            "validation_summary": builder.validation_summary(),
+            "warning_summary": builder.warning_summary(),
+            "preview": preview,
+            "applied": False,
+            "candidate_id": None,
+            "error": None,
+        })
+        return
+
+    # Record as pending first
+    recorded = builder.record_candidate(cand_data)
+    candidate_id = recorded["candidate_id"]
+
+    if args.confirm:
+        # Apply immediately
+        result = builder.confirm_candidate(candidate_id)
+        _save_session(builder)
+        _emit({
+            "success": result.get("success", False),
+            "command": "apply-resolved",
+            "session_id": args.session,
+            "payload": builder.build_payload(),
+            "validation_summary": builder.validation_summary(),
+            "warning_summary": builder.warning_summary(),
+            "preview": None,
+            "applied": result.get("success", False),
+            "candidate_id": candidate_id,
+            "applied_fields": result.get("applied_fields"),
+            "error": result.get("error"),
+        })
+        return
+
+    # Without --confirm: store as pending only
+    _save_session(builder)
+    _emit({
+        "success": True,
+        "command": "apply-resolved",
+        "session_id": args.session,
+        "payload": builder.build_payload(),
+        "validation_summary": builder.validation_summary(),
+        "warning_summary": builder.warning_summary(),
+        "preview": None,
+        "applied": False,
+        "candidate_id": candidate_id,
+        "candidate_status": "pending",
+        "error": None,
+    })
+
+
+# ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
 
@@ -428,6 +670,29 @@ def main(argv: list[str] | None = None) -> int:
     reset_p = subparsers.add_parser("reset", help="Delete a session")
     reset_p.add_argument("--session", required=True)
 
+    # L.29C candidate commands
+    cand_add_p = subparsers.add_parser("candidate-add", help="Record a candidate (pending)")
+    cand_add_p.add_argument("--session", required=True)
+    cand_add_p.add_argument("--json", required=True, help="Path to candidate JSON file")
+
+    cands_p = subparsers.add_parser("candidates", help="List all candidates")
+    cands_p.add_argument("--session", required=True)
+
+    cand_confirm_p = subparsers.add_parser("candidate-confirm", help="Confirm and apply a candidate")
+    cand_confirm_p.add_argument("--session", required=True)
+    cand_confirm_p.add_argument("--candidate-id", required=True)
+
+    cand_reject_p = subparsers.add_parser("candidate-reject", help="Reject a candidate")
+    cand_reject_p.add_argument("--session", required=True)
+    cand_reject_p.add_argument("--candidate-id", required=True)
+    cand_reject_p.add_argument("--reason", default="", help="Rejection reason")
+
+    apply_resolved_p = subparsers.add_parser("apply-resolved", help="Record/confirm a resolved candidate")
+    apply_resolved_p.add_argument("--session", required=True)
+    apply_resolved_p.add_argument("--json", required=True, help="Path to candidate JSON file")
+    apply_resolved_p.add_argument("--confirm", action="store_true", help="Apply immediately after recording")
+    apply_resolved_p.add_argument("--dry-run", action="store_true", help="Preview only, do not store or apply")
+
     args = parser.parse_args(argv)
 
     handlers: dict[str, Any] = {
@@ -440,6 +705,11 @@ def main(argv: list[str] | None = None) -> int:
         "render": cmd_render,
         "list": cmd_list,
         "reset": cmd_reset,
+        "candidate-add": cmd_candidate_add,
+        "candidates": cmd_candidates,
+        "candidate-confirm": cmd_candidate_confirm,
+        "candidate-reject": cmd_candidate_reject,
+        "apply-resolved": cmd_apply_resolved,
     }
 
     try:

@@ -587,6 +587,198 @@ class BuilderSession:
         if status in ("draft", "final"):
             self._draft_final_status = status
 
+    # -- candidate tracking (L.29C) -------------------------------------------
+
+    def record_candidate(self, candidate: dict[str, Any]) -> dict[str, Any]:
+        """
+        Record a candidate for user confirmation. Does NOT apply it.
+        Assigns candidate_id if missing. Stores as pending.
+        Returns the stored candidate with assigned fields.
+        """
+        if not hasattr(self, "_candidates"):
+            self._candidates: dict[str, dict[str, Any]] = {"pending": {}, "confirmed": {}, "rejected": {}}
+        cand = dict(candidate)
+        if not cand.get("candidate_id"):
+            import uuid
+            cand["candidate_id"] = f"cand_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
+        cand.setdefault("recorded_at", datetime.now().isoformat())
+        cand.setdefault("requires_user_confirmation", True)
+        self._candidates["pending"][cand["candidate_id"]] = cand
+        return cand
+
+    def get_candidates(self) -> dict[str, Any]:
+        """Return all candidate buckets: pending, confirmed, rejected."""
+        if not hasattr(self, "_candidates"):
+            self._candidates = {"pending": {}, "confirmed": {}, "rejected": {}}
+        return {
+            "pending": list(self._candidates["pending"].values()),
+            "confirmed": list(self._candidates["confirmed"].values()),
+            "rejected": list(self._candidates["rejected"].values()),
+            "counts": {
+                "pending": len(self._candidates["pending"]),
+                "confirmed": len(self._candidates["confirmed"]),
+                "rejected": len(self._candidates["rejected"]),
+            },
+        }
+
+    def confirm_candidate(self, candidate_id: str) -> dict[str, Any]:
+        """
+        Move a candidate from pending to confirmed and apply it safely.
+        Safe mapping ensures only expected fields are applied per candidate_type.
+        """
+        if not hasattr(self, "_candidates"):
+            return {"success": False, "error": "No candidates tracked."}
+        pending = self._candidates["pending"]
+        if candidate_id not in pending:
+            return {"success": False, "error": f"Candidate {candidate_id} not found in pending."}
+        cand = pending.pop(candidate_id)
+        cand["confirmed_at"] = datetime.now().isoformat()
+        applied: list[str] = []
+        errors: list[str] = []
+
+        ctype = cand.get("candidate_type", "")
+        resolved = cand.get("resolved_value") or {}
+        kv_lines = cand.get("recommended_kv") or []
+
+        # --- safe application mapping ---
+        # Helper to apply KV lines through ingest_user_message
+        def _apply_kv(lines: list[str]) -> None:
+            if lines:
+                kv_text = "\n".join(lines)
+                self.ingest_user_message(kv_text)
+
+        # Helper to safely set a direct field
+        def _set_direct(field_path: str, value: Any) -> None:
+            if value is None:
+                return
+            self._orchestrator.apply_answers({field_path: value})
+
+        try:
+            if ctype == "command_expansion":
+                # Apply only recommended_kv
+                _apply_kv(kv_lines)
+                applied.extend([line.split(":", 1)[0].strip() for line in kv_lines if ":" in line])
+
+            elif ctype == "unit_identity":
+                # Safe: set unit_identity dict only if it has expected keys
+                uid = resolved.get("unit_identity") or resolved
+                if uid and isinstance(uid, dict):
+                    expected = {"letterhead_family", "UNIT_OR_ACTIVITY_NAME"}
+                    if expected & set(uid.keys()):
+                        _set_direct("unit_identity", uid)
+                        applied.append("unit_identity")
+                _apply_kv(kv_lines)
+                for line in kv_lines:
+                    if ":" in line:
+                        applied.append(line.split(":", 1)[0].strip())
+
+            elif ctype == "ssic_candidate":
+                ssic = resolved.get("ssic")
+                if ssic:
+                    _set_direct("ssic", ssic)
+                    applied.append("ssic")
+                _apply_kv(kv_lines)
+
+            elif ctype == "routing_interpretation":
+                _apply_kv(kv_lines)
+                for line in kv_lines:
+                    if ":" in line:
+                        applied.append(line.split(":", 1)[0].strip())
+
+            elif ctype == "signature_block":
+                sig = resolved.get("signature") or resolved
+                if sig and isinstance(sig, dict):
+                    # Merge with existing signature
+                    payload = self.build_payload()
+                    existing = payload.get("signature") or {}
+                    if not isinstance(existing, dict):
+                        existing = {}
+                    merged = {**existing, **sig}
+                    # Only safe keys
+                    safe_sig = {k: v for k, v in merged.items() if k in {"name", "role", "title", "authority", "activity_head_title", "affects_pay_or_allowances"}}
+                    if safe_sig:
+                        _set_direct("signature", safe_sig)
+                        applied.append("signature")
+                _apply_kv(kv_lines)
+                for line in kv_lines:
+                    if ":" in line and line.startswith("signature."):
+                        applied.append(line.split(":", 1)[0].strip())
+
+            elif ctype == "date_confirmation":
+                date_val = resolved.get("date")
+                if date_val:
+                    _set_direct("date", date_val)
+                    applied.append("date")
+                _apply_kv(kv_lines)
+                for line in kv_lines:
+                    if ":" in line:
+                        applied.append(line.split(":", 1)[0].strip())
+
+            elif ctype == "subject_draft":
+                subj = resolved.get("subj") or resolved.get("subject")
+                if subj:
+                    _set_direct("subj", subj)
+                    applied.append("subj")
+                _apply_kv(kv_lines)
+                for line in kv_lines:
+                    if ":" in line and (line.startswith("subj:") or line.startswith("subject:")):
+                        applied.append("subj")
+
+            elif ctype == "body_draft":
+                body = resolved.get("body")
+                if body:
+                    if isinstance(body, str):
+                        body = [body]
+                    if isinstance(body, list):
+                        _set_direct("body", body)
+                        applied.append("body")
+                _apply_kv(kv_lines)
+                for line in kv_lines:
+                    if ":" in line and line.startswith("body:"):
+                        applied.append("body")
+
+            else:
+                errors.append(f"Unknown candidate_type: {ctype}")
+        except Exception as exc:
+            errors.append(f"Application error: {exc}")
+
+        if errors:
+            # Put back into pending on error
+            self._candidates["pending"][candidate_id] = cand
+            return {"success": False, "error": "; ".join(errors), "candidate_id": candidate_id}
+
+        cand["applied_fields"] = applied
+        self._candidates["confirmed"][candidate_id] = cand
+        return {"success": True, "candidate_id": candidate_id, "applied_fields": applied}
+
+    def reject_candidate(self, candidate_id: str, reason: str = "") -> dict[str, Any]:
+        """Move a candidate from pending to rejected. Does not apply."""
+        if not hasattr(self, "_candidates"):
+            return {"success": False, "error": "No candidates tracked."}
+        pending = self._candidates["pending"]
+        if candidate_id not in pending:
+            return {"success": False, "error": f"Candidate {candidate_id} not found in pending."}
+        cand = pending.pop(candidate_id)
+        cand["rejected_at"] = datetime.now().isoformat()
+        if reason:
+            cand["rejection_reason"] = reason
+        self._candidates["rejected"][candidate_id] = cand
+        return {"success": True, "candidate_id": candidate_id}
+
+    # -- direct field setters (L.29C) ----------------------------------------
+
+    def set_unit_identity(self, unit_identity: dict[str, Any]) -> None:
+        """Directly set the unit_identity dict on the orchestrator payload."""
+        self._orchestrator.apply_answers({"unit_identity": unit_identity})
+
+    def set_originator_code(self, code: str) -> None:
+        """Directly set the originator_code field."""
+        self._orchestrator.apply_answers({"originator_code": code})
+
+    def set_ssic(self, ssic: str) -> None:
+        """Directly set the ssic field."""
+        self._orchestrator.apply_answers({"ssic": ssic})
+
 
 # ---------------------------------------------------------------------------
 # CLI
