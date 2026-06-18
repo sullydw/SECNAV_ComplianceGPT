@@ -118,7 +118,9 @@
 
 ||||||||**Phase L.29C Candidate Confirmation Infrastructure and Hermes Operating Model:** `docs/checkpoints/phase_l29c_candidate_confirmation_infrastructure_checkpoint.md` — Candidate schema, BuilderSession candidate tracking, CLI bridge candidate commands, Hermes operating model; safe application mapping for 8 candidate types; security guards block unsafe keys; session persistence extended; 23/23 L.29C PASS; H.4/H.13/H.16/H.24 failures are pre-existing cascades unrelated to L.29C; no renderer/layout/config/validator/catalog/command changes; no live lookup; no static database; error promotion unauthorized; recommended next phase: `Phase L.29D Hermes Live Lookup Wiring`.
 
-**Next Phase:** `Phase L.29D Hermes Live Lookup Wiring`
+||||||||**Phase L.29E Live Lookup Browser Requirement:** `docs/checkpoints/phase_l29e_live_lookup_browser_requirement_checkpoint.md` — Documentation-only phase identifying browser tooling gap for official .mil/SECNAV source retrieval; raw curl blocked by WAF/CDN on `.mil` sites; CDP/browser automation unavailable; defined five source quality tiers; documented candidate creation rules and browser/tooling evaluation options; no source code changed; no renderer/layout/config/validator/catalog changes; no static database; error promotion unauthorized; recommended next phase: `Phase L.29F Browser-Capable Lookup Harness Discovery`.
+
+**Next Phase:** `Phase L.29F Browser-Capable Lookup Harness Discovery`
 
 **Burn-in clock note:**
 
