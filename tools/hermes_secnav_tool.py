@@ -177,11 +177,143 @@ def _gather_mediator_input(builder: BuilderSession, text: str) -> dict[str, Any]
 
 
 # ---------------------------------------------------------------------------
+# Next-action selection helper
+# ---------------------------------------------------------------------------
+
+def select_next_action(
+    unresolved_facts: dict[str, Any],
+    validation_summary: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Select the next recommended action from unresolved facts.
+
+    Deterministic, testable, read-only helper.
+    Returns a dict matching the NEXT_ACTION_V1 shape.
+    """
+    summary = unresolved_facts.get("summary", {})
+    facts = unresolved_facts.get("facts", [])
+    val_summary = validation_summary or {}
+
+    blocking = summary.get("blocking", 0)
+    recommended = summary.get("recommended", 0)
+    optional = summary.get("optional", 0)
+
+    finalize_allowed = val_summary.get("finalize_allowed", True)
+    validator_errors = val_summary.get("errors", 0)
+
+    pri_map = {"blocking": 0, "recommended": 1, "optional": 2}
+
+    def _sort(facts_list: list[dict]) -> list[dict]:
+        return sorted(facts_list, key=lambda f: (pri_map.get(f.get("priority", ""), 9), f.get("fact_id", "")))
+
+    if blocking > 0:
+        blocking_facts = [f for f in facts if f.get("priority") == "blocking"]
+        if not blocking_facts:
+            return {
+                "action": "blocked_by_validation",
+                "priority": "ready",
+                "field": None,
+                "question": None,
+                "rule_id": None,
+                "source_file": None,
+                "recommended_action": None,
+                "candidate_type": None,
+                "reason": f"Blocking count is {blocking} but no blocking facts found in list",
+            }
+        blocking_facts = _sort(blocking_facts)
+        chosen = blocking_facts[0]
+        action = chosen.get("recommended_action", "ask_user") or "ask_user"
+        return {
+            "action": action,
+            "priority": "blocking",
+            "field": chosen.get("field"),
+            "question": chosen.get("question"),
+            "rule_id": chosen.get("rule_id"),
+            "source_file": chosen.get("source_file"),
+            "recommended_action": action,
+            "candidate_type": chosen.get("candidate_type"),
+            "reason": f"blocking fact {chosen.get('fact_id')}: {chosen.get('field')}",
+        }
+
+    if validator_errors > 0:
+        return {
+            "action": "blocked_by_validation",
+            "priority": "ready",
+            "field": None,
+            "question": None,
+            "rule_id": None,
+            "source_file": None,
+            "recommended_action": None,
+            "candidate_type": None,
+            "reason": f"{validator_errors} validation error(s) present; cannot render",
+        }
+
+    if not finalize_allowed:
+        return {
+            "action": "blocked_by_validation",
+            "priority": "ready",
+            "field": None,
+            "question": None,
+            "rule_id": None,
+            "source_file": None,
+            "recommended_action": None,
+            "candidate_type": None,
+            "reason": "finalize not allowed by validation gate",
+        }
+
+    if recommended > 0:
+        rec_facts = [f for f in facts if f.get("priority") == "recommended"]
+        rec_facts = _sort(rec_facts)
+        chosen = rec_facts[0] if rec_facts else None
+        if chosen:
+            action = chosen.get("recommended_action", "ask_user") or "ask_user"
+            return {
+                "action": action,
+                "priority": "recommended",
+                "field": chosen.get("field"),
+                "question": chosen.get("question"),
+                "rule_id": chosen.get("rule_id"),
+                "source_file": chosen.get("source_file"),
+                "recommended_action": action,
+                "candidate_type": chosen.get("candidate_type"),
+                "reason": f"recommended fact {chosen.get('fact_id')}: {chosen.get('field')}",
+            }
+
+    if optional > 0:
+        opt_facts = [f for f in facts if f.get("priority") == "optional"]
+        opt_facts = _sort(opt_facts)
+        chosen = opt_facts[0] if opt_facts else None
+        if chosen:
+            return {
+                "action": chosen.get("recommended_action", "leave_blank") or "leave_blank",
+                "priority": "optional",
+                "field": chosen.get("field"),
+                "question": chosen.get("question"),
+                "rule_id": chosen.get("rule_id"),
+                "source_file": chosen.get("source_file"),
+                "recommended_action": chosen.get("recommended_action", "leave_blank") or "leave_blank",
+                "candidate_type": chosen.get("candidate_type"),
+                "reason": f"optional fact {chosen.get('fact_id')}: {chosen.get('field')}",
+            }
+
+    return {
+        "action": "render_ready",
+        "priority": "ready",
+        "field": None,
+        "question": None,
+        "rule_id": None,
+        "source_file": None,
+        "recommended_action": None,
+        "candidate_type": None,
+        "reason": "blocking facts resolved and validation gate passed",
+    }
+
+
+# ---------------------------------------------------------------------------
 # Command handlers
 # ---------------------------------------------------------------------------
 
 
-def cmd_start(_args: argparse.Namespace) -> None:
+def cmd_start(args: argparse.Namespace) -> None:
     builder = BuilderSession()
     result = builder.start()
     _save_session(builder)
@@ -660,6 +792,65 @@ def cmd_detect_facts(args: argparse.Namespace) -> None:
     })
 
 
+def cmd_next_action(args: argparse.Namespace) -> None:
+    """
+    Tell Hermes the next recommended action for the current session.
+    Read-only: does not mutate the session, create candidates, or apply anything.
+    """
+    builder = _load_session(args.session)
+    payload = builder.build_payload()
+    user_text = args.text if args.text else None
+    doc_type = args.doc_type if args.doc_type else None
+
+    unresolved_facts = detect_unresolved_facts(
+        payload=payload,
+        user_text=user_text,
+        doc_type=doc_type,
+    )
+
+    val_summary = builder.validation_summary()
+    next_action = select_next_action(unresolved_facts, val_summary)
+
+    # Build render gate from val_summary
+    blocking = unresolved_facts.get("summary", {}).get("blocking", 0)
+    recommended = unresolved_facts.get("summary", {}).get("recommended", 0)
+    optional = unresolved_facts.get("summary", {}).get("optional", 0)
+    errors = val_summary.get("errors", 0)
+    finalize_allowed = val_summary.get("finalize_allowed", True)
+    blocking_resolved = blocking == 0
+    can_render = blocking_resolved and errors == 0 and finalize_allowed
+
+    if not blocking_resolved:
+        rg_reason = f"{blocking} blocking fact(s) remain unresolved"
+    elif errors > 0:
+        rg_reason = f"{errors} validation error(s) present"
+    elif not finalize_allowed:
+        rg_reason = "finalize not allowed by validation gate"
+    else:
+        rg_reason = "blocking facts resolved and validation gate passed"
+
+    render_gate = {
+        "blocking_resolved": blocking_resolved,
+        "recommended_remaining": recommended,
+        "optional_remaining": optional,
+        "validator_errors": errors,
+        "finalize_allowed": finalize_allowed,
+        "can_render": can_render,
+        "reason": rg_reason,
+    }
+
+    _emit({
+        "success": True,
+        "command": "next-action",
+        "session_id": args.session,
+        "payload": payload,
+        "unresolved_summary": unresolved_facts.get("summary", {}),
+        "next_action": next_action,
+        "render_gate": render_gate,
+        "error": None,
+    })
+
+
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
@@ -727,6 +918,11 @@ def main(argv: list[str] | None = None) -> int:
     detect_p.add_argument("--text", default=None, help="Optional user text for assisted detection")
     detect_p.add_argument("--doc-type", default=None, help="Override doc_type for detection")
 
+    next_p = subparsers.add_parser("next-action", help="Tell Hermes the next recommended action")
+    next_p.add_argument("--session", required=True)
+    next_p.add_argument("--text", default=None, help="Optional user text for assisted detection")
+    next_p.add_argument("--doc-type", default=None, help="Override doc_type for detection")
+
     args = parser.parse_args(argv)
 
     handlers: dict[str, Any] = {
@@ -745,6 +941,7 @@ def main(argv: list[str] | None = None) -> int:
         "candidate-reject": cmd_candidate_reject,
         "apply-resolved": cmd_apply_resolved,
         "detect-facts": cmd_detect_facts,
+        "next-action": cmd_next_action,
     }
 
     try:

@@ -136,7 +136,9 @@
 
 ||||||||**Phase L.29O Hermes Agent Integration Prototype:** `docs/checkpoints/phase_l29o_hermes_loop_prototype_checkpoint.md` — Created `tools/hermes_loop_prototype.py`, a narrow deterministic prototype proving the real CLI can support the Hermes question loop; three scenarios (standard_letter_minimal, mfr_minimal, endorsement_minimal) all reach blocking==0; reuses existing BuilderSession, MockLLMBuilderMediator, and detect_unresolved_facts() code paths; no duplicated detector logic, no candidate creation, no live lookup, no render; regression runner 26/26 PASS; L.29M/L.29L/L.29K/L.29C/L.28 regressions all PASS; no renderer/layout/config/validator/catalog changes; no static database; error promotion unauthorized; recommended next phase: `Phase L.29P Hermes Agent Integration with Real LLM`.
 
-**Next Phase:** `Phase L.29P Hermes Agent Integration with Real LLM`
+||||||||**Phase L.29P Next-Action CLI Command:** `docs/checkpoints/phase_l29p_next_action_cli_checkpoint.md` — Added read-only `next-action` CLI command to `tools/hermes_secnav_tool.py`; deterministic `select_next_action()` helper selects next fact by priority (blocking > recommended > optional) then stable fact_id order; returns `NEXT_ACTION_V1` JSON with action, priority, field, question, rule_id, source_file, recommended_action, candidate_type, reason, plus render_gate summary; does not mutate session, create candidates, perform live lookup, or render; regression runner 27/27 PASS; L.29O/L.29M/L.29L/L.29K/L.29C/L.28 regressions all PASS; no renderer/layout/config/validator/catalog changes; no static database; error promotion unauthorized; recommended next phase: `Phase L.29Q Hermes Agent Session Manager`.
+
+**Next Phase:** `Phase L.29Q Hermes Agent Session Manager`
 
 **Burn-in clock note:**
 
