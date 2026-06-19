@@ -132,7 +132,9 @@
 
 ||||||||**Phase L.29M Detector-to-Tool Wiring:** `docs/checkpoints/phase_l29m_detector_to_tool_wiring_checkpoint.md` — Wired `detect_unresolved_facts()` into `tools/hermes_secnav_tool.py` as `detect-facts` command; loads existing session, builds payload, calls detector, returns `UNRESOLVED_FACTS_V1` JSON; does not mutate session, create candidates, or apply anything; regression runner 37/37 PASS; L.29L/L.29K/L.29C/L.28 regressions all PASS; no renderer/layout/config/validator/catalog changes; no static database; error promotion unauthorized; recommended next phase: `Phase L.29N Hermes Agent Integration`.
 
-**Next Phase:** `Phase L.29N Hermes Agent Integration`
+||||||||**Phase L.29N Hermes Agent Integration Loop Design:** `docs/checkpoints/phase_l29n_hermes_agent_integration_loop_checkpoint.md` — Design specification `docs/hermes_agent_integration_loop.md` created; defines how Hermes should use `detect-facts` after ingest to drive the builder loop; action handling by `recommended_action` (ask_user, live_lookup, candidate_low_confidence, safe_infer, leave_blank, refuse_to_infer); priority order; question selection rules; candidate rules; render gate with four conditions; three example workflows; safety boundaries; no source code/renderer/validator/CCI/detector/candidate changes; no static database; error promotion unauthorized; recommended next phase: `Phase L.29O Hermes Agent Integration Prototype`.
+
+**Next Phase:** `Phase L.29O Hermes Agent Integration Prototype`
 
 **Burn-in clock note:**
 
