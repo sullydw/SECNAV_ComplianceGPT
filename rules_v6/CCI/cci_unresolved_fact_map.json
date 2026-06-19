@@ -1,0 +1,761 @@
+{
+  "mapping_version": "RULE_FACT_MAP_V1",
+  "description": "Machine-readable mapping from mined SECNAV rules and field policies to unresolved-fact detection. Consumed by the UnresolvedFactDetector to emit missing facts with traceable rule IDs.",
+  "sources": [
+    "rules_v6/CCI/cci_intake_field_policy.json",
+    "rules_v6/CCI/cci_intake_questions.json",
+    "rules_v6/CCI/cci_ch7_subject_rules.json",
+    "rules_v6/CCI/cci_ch2_routing_rules.json",
+    "rules_v6/V-series.json"
+  ],
+  "mappings": [
+    {
+      "mapping_id": "map_001",
+      "rule_id": "POLICY-blocking-basic_letter_id",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "endorsement"
+      ],
+      "field": "basic_letter_id",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": null,
+      "question_template": "What is the basic letter identifier that this endorsement continues? (e.g., CO USS NEVERSAIL ltr ser 123/26)",
+      "applies_when": {
+        "payload.basic_letter_id": null
+      },
+      "evidence": {
+        "policy_path": "policies.endorsement.blocking_fields",
+        "rule_summary": "basic_letter_id is blocking for endorsement"
+      }
+    },
+    {
+      "mapping_id": "map_002",
+      "rule_id": "POLICY-blocking-body",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "decision_memo",
+        "endorsement",
+        "from_to_memo",
+        "joint_letter",
+        "memorandum_for_record",
+        "multiple_address_letter",
+        "plain_paper_memo",
+        "standard_letter"
+      ],
+      "field": "body",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": "body_draft",
+      "question_template": "Enter the body text. Provide numbered paragraphs as a list of strings.",
+      "applies_when": {
+        "payload.body": null
+      },
+      "evidence": {
+        "policy_path": "policies.decision_memo.blocking_fields",
+        "rule_summary": "body is blocking for decision_memo, endorsement, from_to_memo, joint_letter, memorandum_for_record, multiple_address_letter, plain_paper_memo, standard_letter"
+      }
+    },
+    {
+      "mapping_id": "map_003",
+      "rule_id": "POLICY-blocking-commands",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "joint_letter"
+      ],
+      "field": "commands",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": "routing_interpretation",
+      "question_template": "List the commands participating in this joint letter. Each entry should include command name, from line, and sender symbol.",
+      "applies_when": {
+        "payload.commands": null
+      },
+      "evidence": {
+        "policy_path": "policies.joint_letter.blocking_fields",
+        "rule_summary": "commands is blocking for joint_letter"
+      }
+    },
+    {
+      "mapping_id": "map_004",
+      "rule_id": "POLICY-blocking-date",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "decision_memo",
+        "from_to_memo",
+        "memorandum_for_record",
+        "plain_paper_memo",
+        "standard_letter"
+      ],
+      "field": "date",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": "date_confirmation",
+      "question_template": "What is the correspondence date? (Military format: day Month year, e.g., '15 May 2026')",
+      "applies_when": {
+        "payload.date": null
+      },
+      "evidence": {
+        "policy_path": "policies.decision_memo.blocking_fields",
+        "rule_summary": "date is blocking for decision_memo, from_to_memo, memorandum_for_record, plain_paper_memo, standard_letter"
+      }
+    },
+    {
+      "mapping_id": "map_005",
+      "rule_id": "POLICY-blocking-distribution_mode",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "multiple_address_letter"
+      ],
+      "field": "distribution_mode",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": "routing_interpretation",
+      "question_template": "Select the distribution mode. (to_only, distribution_only, to_plus_distribution)",
+      "applies_when": {
+        "payload.distribution_mode": null
+      },
+      "evidence": {
+        "policy_path": "policies.multiple_address_letter.blocking_fields",
+        "rule_summary": "distribution_mode is blocking for multiple_address_letter"
+      }
+    },
+    {
+      "mapping_id": "map_006",
+      "rule_id": "POLICY-blocking-endorsement_ordinal",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "endorsement"
+      ],
+      "field": "endorsement_ordinal",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": null,
+      "question_template": "What is the endorsement number? (e.g., First, Second, Third)",
+      "applies_when": {
+        "payload.endorsement_ordinal": null
+      },
+      "evidence": {
+        "policy_path": "policies.endorsement.blocking_fields",
+        "rule_summary": "endorsement_ordinal is blocking for endorsement"
+      }
+    },
+    {
+      "mapping_id": "map_007",
+      "rule_id": "POLICY-blocking-from",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "decision_memo",
+        "endorsement",
+        "from_to_memo",
+        "joint_letter",
+        "multiple_address_letter",
+        "plain_paper_memo",
+        "standard_letter"
+      ],
+      "field": "from",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "live_lookup_or_ask_user",
+      "candidate_type": "command_expansion",
+      "question_template": "Who is this correspondence from? (Use activity head title, e.g., 'Commanding Officer, USS NEVERSAIL')",
+      "applies_when": {
+        "payload.from": null
+      },
+      "evidence": {
+        "policy_path": "policies.decision_memo.blocking_fields",
+        "rule_summary": "from is blocking for decision_memo, endorsement, from_to_memo, joint_letter, multiple_address_letter, plain_paper_memo, standard_letter"
+      }
+    },
+    {
+      "mapping_id": "map_008",
+      "rule_id": "POLICY-blocking-joint_heading",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "joint_letter"
+      ],
+      "field": "joint_heading",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": "subject_draft",
+      "question_template": "Provide the JOINT LETTER heading text that lists both commands.",
+      "applies_when": {
+        "payload.joint_heading": null
+      },
+      "evidence": {
+        "policy_path": "policies.joint_letter.blocking_fields",
+        "rule_summary": "joint_heading is blocking for joint_letter"
+      }
+    },
+    {
+      "mapping_id": "map_009",
+      "rule_id": "POLICY-blocking-signature",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "decision_memo",
+        "endorsement",
+        "from_to_memo",
+        "joint_letter",
+        "multiple_address_letter",
+        "plain_paper_memo",
+        "standard_letter"
+      ],
+      "field": "signature",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": "signature_block",
+      "question_template": "Provide the signature block. List of strings: typed name, followed by authority line if needed (e.g., ['J. DOE', 'By direction']).",
+      "applies_when": {
+        "payload.signature": null
+      },
+      "evidence": {
+        "policy_path": "policies.decision_memo.blocking_fields",
+        "rule_summary": "signature is blocking for decision_memo, endorsement, from_to_memo, joint_letter, multiple_address_letter, plain_paper_memo, standard_letter"
+      }
+    },
+    {
+      "mapping_id": "map_010",
+      "rule_id": "POLICY-blocking-subj",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "decision_memo",
+        "from_to_memo",
+        "joint_letter",
+        "plain_paper_memo",
+        "standard_letter"
+      ],
+      "field": "subj",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": "subject_draft",
+      "question_template": "What is the subject line? (ALL CAPS for letters; no terminal punctuation)",
+      "applies_when": {
+        "payload.subj": null
+      },
+      "evidence": {
+        "policy_path": "policies.decision_memo.blocking_fields",
+        "rule_summary": "subj is blocking for decision_memo, from_to_memo, joint_letter, plain_paper_memo, standard_letter"
+      }
+    },
+    {
+      "mapping_id": "map_011",
+      "rule_id": "POLICY-blocking-to",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "decision_memo",
+        "endorsement",
+        "from_to_memo",
+        "joint_letter",
+        "plain_paper_memo",
+        "standard_letter"
+      ],
+      "field": "to",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "live_lookup_or_ask_user",
+      "candidate_type": "unit_identity",
+      "question_template": "Who is this correspondence addressed to?",
+      "applies_when": {
+        "payload.to": null
+      },
+      "evidence": {
+        "policy_path": "policies.decision_memo.blocking_fields",
+        "rule_summary": "to is blocking for decision_memo, endorsement, from_to_memo, joint_letter, plain_paper_memo, standard_letter"
+      }
+    },
+    {
+      "mapping_id": "map_012",
+      "rule_id": "POLICY-recommended-copy_to",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "endorsement",
+        "multiple_address_letter"
+      ],
+      "field": "copy_to",
+      "condition": "field absent or blank",
+      "fact_category": "missing_recommended_field",
+      "priority": "recommended",
+      "recommended_action": "ask_user",
+      "candidate_type": "routing_interpretation",
+      "question_template": "Provide copy-to recipients, if any. List of strings.",
+      "applies_when": {
+        "payload.copy_to": null
+      },
+      "evidence": {
+        "policy_path": "policies.endorsement.recommended_fields",
+        "rule_summary": "copy_to is recommended for endorsement, multiple_address_letter"
+      }
+    },
+    {
+      "mapping_id": "map_013",
+      "rule_id": "POLICY-recommended-distribution",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "multiple_address_letter"
+      ],
+      "field": "distribution",
+      "condition": "field absent or blank",
+      "fact_category": "missing_recommended_field",
+      "priority": "recommended",
+      "recommended_action": "ask_user",
+      "candidate_type": "routing_interpretation",
+      "question_template": "Provide the distribution list. List of addressees.",
+      "applies_when": {
+        "payload.distribution": null
+      },
+      "evidence": {
+        "policy_path": "policies.multiple_address_letter.recommended_fields",
+        "rule_summary": "distribution is recommended for multiple_address_letter"
+      }
+    },
+    {
+      "mapping_id": "map_014",
+      "rule_id": "POLICY-recommended-encl",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "endorsement"
+      ],
+      "field": "encl",
+      "condition": "field absent or blank",
+      "fact_category": "missing_recommended_field",
+      "priority": "recommended",
+      "recommended_action": "leave_blank",
+      "candidate_type": null,
+      "question_template": "Please provide the encl.",
+      "applies_when": {
+        "payload.encl": null
+      },
+      "evidence": {
+        "policy_path": "policies.endorsement.recommended_fields",
+        "rule_summary": "encl is recommended for endorsement"
+      }
+    },
+    {
+      "mapping_id": "map_015",
+      "rule_id": "POLICY-recommended-originator_code",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "decision_memo",
+        "from_to_memo",
+        "joint_letter",
+        "plain_paper_memo",
+        "standard_letter"
+      ],
+      "field": "originator_code",
+      "condition": "field absent or blank",
+      "fact_category": "missing_recommended_field",
+      "priority": "recommended",
+      "recommended_action": "ask_user",
+      "candidate_type": null,
+      "question_template": "What is the originator code, if any? (e.g., S-1)",
+      "applies_when": {
+        "payload.originator_code": null
+      },
+      "evidence": {
+        "policy_path": "policies.decision_memo.recommended_fields",
+        "rule_summary": "originator_code is recommended for decision_memo, from_to_memo, joint_letter, plain_paper_memo, standard_letter"
+      }
+    },
+    {
+      "mapping_id": "map_016",
+      "rule_id": "POLICY-recommended-point_of_contact",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "decision_memo",
+        "from_to_memo",
+        "joint_letter",
+        "memorandum_for_record",
+        "multiple_address_letter",
+        "plain_paper_memo",
+        "standard_letter"
+      ],
+      "field": "point_of_contact",
+      "condition": "field absent or blank",
+      "fact_category": "missing_recommended_field",
+      "priority": "recommended",
+      "recommended_action": "ask_user",
+      "candidate_type": null,
+      "question_template": "Provide point-of-contact information (name, telephone, email). Supply as a JSON object if possible.",
+      "applies_when": {
+        "payload.point_of_contact": null
+      },
+      "evidence": {
+        "policy_path": "policies.decision_memo.recommended_fields",
+        "rule_summary": "point_of_contact is recommended for decision_memo, from_to_memo, joint_letter, memorandum_for_record, multiple_address_letter, plain_paper_memo, standard_letter"
+      }
+    },
+    {
+      "mapping_id": "map_017",
+      "rule_id": "POLICY-recommended-ref",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "endorsement"
+      ],
+      "field": "ref",
+      "condition": "field absent or blank",
+      "fact_category": "missing_recommended_field",
+      "priority": "recommended",
+      "recommended_action": "leave_blank",
+      "candidate_type": null,
+      "question_template": "Please provide the ref.",
+      "applies_when": {
+        "payload.ref": null
+      },
+      "evidence": {
+        "policy_path": "policies.endorsement.recommended_fields",
+        "rule_summary": "ref is recommended for endorsement"
+      }
+    },
+    {
+      "mapping_id": "map_018",
+      "rule_id": "POLICY-recommended-signer_name",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "memorandum_for_record"
+      ],
+      "field": "signer_name",
+      "condition": "field absent or blank",
+      "fact_category": "missing_recommended_field",
+      "priority": "recommended",
+      "recommended_action": "ask_user",
+      "candidate_type": "signature_block",
+      "question_template": "Who is signing this Memorandum for Record? (e.g., 'J. DOE')",
+      "applies_when": {
+        "payload.signer_name": null
+      },
+      "evidence": {
+        "policy_path": "policies.memorandum_for_record.recommended_fields",
+        "rule_summary": "signer_name is recommended for memorandum_for_record"
+      }
+    },
+    {
+      "mapping_id": "map_019",
+      "rule_id": "POLICY-recommended-ssic",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "decision_memo",
+        "from_to_memo",
+        "joint_letter",
+        "multiple_address_letter",
+        "plain_paper_memo",
+        "standard_letter"
+      ],
+      "field": "ssic",
+      "condition": "field absent or blank",
+      "fact_category": "missing_recommended_field",
+      "priority": "recommended",
+      "recommended_action": "ask_user",
+      "candidate_type": "ssic_candidate",
+      "question_template": "What is the SSIC (Subject Standard Identification Code), if any? (e.g., 5216)",
+      "applies_when": {
+        "payload.ssic": null
+      },
+      "evidence": {
+        "policy_path": "policies.decision_memo.recommended_fields",
+        "rule_summary": "ssic is recommended for decision_memo, from_to_memo, joint_letter, multiple_address_letter, plain_paper_memo, standard_letter"
+      }
+    },
+    {
+      "mapping_id": "map_020",
+      "rule_id": "POLICY-recommended-subj",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "memorandum_for_record"
+      ],
+      "field": "subj",
+      "condition": "field absent or blank",
+      "fact_category": "missing_recommended_field",
+      "priority": "recommended",
+      "recommended_action": "ask_user",
+      "candidate_type": "subject_draft",
+      "question_template": "What is the subject line? (ALL CAPS for letters; no terminal punctuation)",
+      "applies_when": {
+        "payload.subj": null
+      },
+      "evidence": {
+        "policy_path": "policies.memorandum_for_record.recommended_fields",
+        "rule_summary": "subj is recommended for memorandum_for_record"
+      }
+    },
+    {
+      "mapping_id": "map_021",
+      "rule_id": "POLICY-recommended-title",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "memorandum_for_record"
+      ],
+      "field": "title",
+      "condition": "field absent or blank",
+      "fact_category": "missing_recommended_field",
+      "priority": "recommended",
+      "recommended_action": "ask_user",
+      "candidate_type": "subject_draft",
+      "question_template": "What is the title of this Memorandum for Record? (e.g., 'Exercise Participation Log')",
+      "applies_when": {
+        "payload.title": null
+      },
+      "evidence": {
+        "policy_path": "policies.memorandum_for_record.recommended_fields",
+        "rule_summary": "title is recommended for memorandum_for_record"
+      }
+    },
+    {
+      "mapping_id": "map_022",
+      "rule_id": "POLICY-recommended-to",
+      "source_file": "rules_v6/CCI/cci_intake_field_policy.json",
+      "doc_types": [
+        "multiple_address_letter"
+      ],
+      "field": "to",
+      "condition": "field absent or blank",
+      "fact_category": "missing_recommended_field",
+      "priority": "recommended",
+      "recommended_action": "live_lookup_or_ask_user",
+      "candidate_type": "unit_identity",
+      "question_template": "Who is this correspondence addressed to?",
+      "applies_when": {
+        "payload.to": null
+      },
+      "evidence": {
+        "policy_path": "policies.multiple_address_letter.recommended_fields",
+        "rule_summary": "to is recommended for multiple_address_letter"
+      }
+    },
+    {
+      "mapping_id": "map_023",
+      "rule_id": "CCI-CH7-SUBJ-001",
+      "source_file": "rules_v6/CCI/cci_ch7_subject_rules.json",
+      "doc_types": [
+        "standard_letter",
+        "multiple_address_letter",
+        "endorsement",
+        "joint_letter"
+      ],
+      "field": "subj",
+      "condition": "field absent or blank",
+      "fact_category": "missing_required_field",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": "subject_draft",
+      "question_template": "What is the subject line? (ALL CAPS for letters; no terminal punctuation)",
+      "applies_when": {
+        "payload.subj": null
+      },
+      "evidence": {
+        "policy_path": null,
+        "rule_summary": "CCI-CH7-SUBJ-001: Subject line uses normal word order, all letters capitalized after the colon, and no acronyms."
+      }
+    },
+    {
+      "mapping_id": "map_024",
+      "rule_id": "CCI-CH7-SUBJ-006",
+      "source_file": "rules_v6/CCI/cci_ch7_subject_rules.json",
+      "doc_types": [
+        "standard_letter",
+        "multiple_address_letter",
+        "endorsement",
+        "joint_letter",
+        "memorandum_for_record",
+        "from_to_memo",
+        "plain_paper_memo",
+        "letterhead_memo"
+      ],
+      "field": "subj",
+      "condition": "subject text contains acronyms not on approved list",
+      "fact_category": "format_violation",
+      "priority": "recommended",
+      "recommended_action": "ask_user",
+      "candidate_type": "subject_draft",
+      "question_template": "The subject line contains acronyms. Please spell out abbreviations or confirm the approved acronym list.",
+      "applies_when": {
+        "subject_contains_acronyms": true
+      },
+      "evidence": {
+        "policy_path": null,
+        "rule_summary": "CCI-CH7-SUBJ-006: In correspondence, do not use acronyms in the subject line."
+      }
+    },
+    {
+      "mapping_id": "map_025",
+      "rule_id": "CCI-CH7-SUBJ-002",
+      "source_file": "rules_v6/CCI/cci_ch7_subject_rules.json",
+      "doc_types": [
+        "standard_letter",
+        "multiple_address_letter",
+        "endorsement",
+        "joint_letter",
+        "memorandum_for_record",
+        "from_to_memo",
+        "plain_paper_memo",
+        "letterhead_memo"
+      ],
+      "field": "subj",
+      "condition": "subject ends with period, question mark, or exclamation mark",
+      "fact_category": "format_violation",
+      "priority": "recommended",
+      "recommended_action": "safe_infer",
+      "candidate_type": "subject_draft",
+      "question_template": "Remove terminal punctuation from the subject line.",
+      "applies_when": {
+        "subject_has_terminal_punctuation": true
+      },
+      "evidence": {
+        "policy_path": null,
+        "rule_summary": "CCI-CH7-SUBJ-002: Subject line has no terminal punctuation."
+      }
+    },
+    {
+      "mapping_id": "map_026",
+      "rule_id": "CCI-CH7-SUBJ-005",
+      "source_file": "rules_v6/CCI/cci_ch7_subject_rules.json",
+      "doc_types": [
+        "standard_letter",
+        "multiple_address_letter",
+        "endorsement",
+        "joint_letter",
+        "memorandum_for_record",
+        "from_to_memo",
+        "plain_paper_memo",
+        "letterhead_memo"
+      ],
+      "field": "subj",
+      "condition": "subject is very short or vague (fewer than 5 words or lacks topic detail)",
+      "fact_category": "quality_concern",
+      "priority": "recommended",
+      "recommended_action": "ask_user",
+      "candidate_type": "subject_draft",
+      "question_template": "The subject line seems very short or vague. Please expand to include enough detail to identify the topic.",
+      "applies_when": {
+        "subject_is_vague": true
+      },
+      "evidence": {
+        "policy_path": null,
+        "rule_summary": "CCI-CH7-SUBJ-005: Subject line should be a clear sentence fragment with enough detail to identify the topic."
+      }
+    },
+    {
+      "mapping_id": "map_027",
+      "rule_id": "CCI-ROUTE-011",
+      "source_file": "rules_v6/CCI/cci_ch2_routing_rules.json",
+      "doc_types": [
+        "standard_letter"
+      ],
+      "field": "from",
+      "condition": "payload.window_envelope != true AND field absent",
+      "fact_category": "missing_required_field_per_rule",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": null,
+      "question_template": "Every standard letter must have a From line. Who is this from? (Use activity head title)",
+      "applies_when": {
+        "payload.doc_type": "standard_letter",
+        "payload.window_envelope": null
+      },
+      "evidence": {
+        "policy_path": null,
+        "rule_summary": "CCI-ROUTE-011: Every standard letter must have a From line, except a letter used with a window envelope."
+      }
+    },
+    {
+      "mapping_id": "map_028",
+      "rule_id": "CCI-ROUTE-010",
+      "source_file": "rules_v6/CCI/cci_ch2_routing_rules.json",
+      "doc_types": [
+        "standard_letter",
+        "multiple_address_letter",
+        "endorsement",
+        "joint_letter",
+        "memorandum_for_record",
+        "from_to_memo",
+        "plain_paper_memo",
+        "letterhead_memo"
+      ],
+      "field": "from",
+      "condition": "from line contains numeric-only office code without 'Code' prefix",
+      "fact_category": "format_violation",
+      "priority": "recommended",
+      "recommended_action": "safe_infer",
+      "candidate_type": null,
+      "question_template": "If the office code is numbers only, add the word 'Code' before the numbers. Confirm the corrected From line.",
+      "applies_when": {
+        "from_has_numeric_office_code": true
+      },
+      "evidence": {
+        "policy_path": null,
+        "rule_summary": "CCI-ROUTE-010: If office code is only numbers, add 'Code' before them; do not add 'Code' before letter-starting codes."
+      }
+    },
+    {
+      "mapping_id": "map_029",
+      "rule_id": "V-014",
+      "source_file": "rules_v6/V-series.json",
+      "doc_types": [
+        "standard_letter",
+        "multiple_address_letter",
+        "endorsement",
+        "joint_letter"
+      ],
+      "field": "to",
+      "condition": "distribution_mode == to_plus_distribution AND to absent",
+      "fact_category": "conditional_missing_field",
+      "priority": "blocking",
+      "recommended_action": "ask_user",
+      "candidate_type": "routing_interpretation",
+      "question_template": "To-plus-distribution requires a To line. Who is the group title addressee?",
+      "applies_when": {
+        "payload.distribution_mode": "to_plus_distribution",
+        "payload.to": null
+      },
+      "evidence": {
+        "policy_path": null,
+        "rule_summary": "V-014: When distribution_mode is to_plus_distribution, To field must be present."
+      }
+    },
+    {
+      "mapping_id": "map_030",
+      "rule_id": "V-015",
+      "source_file": "rules_v6/V-series.json",
+      "doc_types": [
+        "standard_letter",
+        "multiple_address_letter",
+        "endorsement",
+        "joint_letter"
+      ],
+      "field": "to",
+      "condition": "distribution_mode == distribution_only AND to present",
+      "fact_category": "redundant_field",
+      "priority": "optional",
+      "recommended_action": "leave_blank",
+      "candidate_type": null,
+      "question_template": "Distribution-only mode ignores the To line. Remove it or switch to to_plus_distribution if needed.",
+      "applies_when": {
+        "payload.distribution_mode": "distribution_only",
+        "payload.to": "present"
+      },
+      "evidence": {
+        "policy_path": null,
+        "rule_summary": "V-015: When distribution_mode is distribution_only, To field is ignored if present."
+      }
+    }
+  ]
+}
