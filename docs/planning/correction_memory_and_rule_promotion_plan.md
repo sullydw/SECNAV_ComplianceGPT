@@ -120,7 +120,9 @@
 
 ||||||||**Phase L.29E Live Lookup Browser Requirement:** `docs/checkpoints/phase_l29e_live_lookup_browser_requirement_checkpoint.md` — Documentation-only phase identifying browser tooling gap for official .mil/SECNAV source retrieval; raw curl blocked by WAF/CDN on `.mil` sites; CDP/browser automation unavailable; defined five source quality tiers; documented candidate creation rules and browser/tooling evaluation options; no source code changed; no renderer/layout/config/validator/catalog changes; no static database; error promotion unauthorized; recommended next phase: `Phase L.29F Browser-Capable Lookup Harness Discovery`.
 
-**Next Phase:** `Phase L.29F Browser-Capable Lookup Harness Discovery`
+||||||||**Phase L.29H General Live Lookup Candidate Workflow Design:** `docs/checkpoints/phase_l29h_general_live_lookup_candidate_workflow_checkpoint.md` — Reusable general workflow for dynamic per-letter live lookup candidate creation; defines unresolved fact detection, lookup decision table, source tiering, candidate creation rules for 8 types, user confirmation flow, letterhead/SSIC/routing rules; corrects prior one-off hardcoded candidate approach; sample request used only as fixture illustration, not hardcoded; browser-agent runtime prerequisites documented; no source code changed; no renderer/layout/config/validator/catalog changes; no static database; no hardcoded MISSA/MCAS behavior; error promotion unauthorized; recommended next phase: `Phase L.29I General Live Lookup Candidate Workflow Verification`.
+
+**Next Phase:** `Phase L.29I General Live Lookup Candidate Workflow Verification`
 
 **Burn-in clock note:**
 
