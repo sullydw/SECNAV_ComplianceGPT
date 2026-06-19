@@ -128,9 +128,11 @@
 
 ||||||||**Phase L.29K Rule-to-Fact Mapping File Creation:** `docs/checkpoints/phase_l29k_rule_fact_mapping_checkpoint.md` — ... [same content]
 
-||||||||**Phase L.29L Unresolved Fact Detector Prototype Implementation:** `docs/checkpoints/phase_l29l_unresolved_fact_detector_checkpoint.md` — Created `src/unresolved_fact_detector.py`, a deterministic unresolved-fact detector that reads `rules_v6/CCI/cci_unresolved_fact_map.json` and emits `UNRESOLVED_FACTS_V1` JSON; core API `detect_unresolved_facts(payload, user_text, doc_type, mapping_path)`; respects doc_type field policies; subject formatting detection emits recommended facts; user-text assisted detection; no network/LLM/candidate/file side effects; regression runner 38/38 PASS; no source/renderer/layout/config/validator/catalog changes; error promotion unauthorized; recommended next phase: `Phase L.29M Detector-to-Tool Wiring`.
+||||||||**Phase L.29L Unresolved Fact Detector Prototype Implementation:** `docs/checkpoints/phase_l29l_unresolved_fact_detector_checkpoint.md` — ... [same content]
 
-**Next Phase:** `Phase L.29M Detector-to-Tool Wiring`
+||||||||**Phase L.29M Detector-to-Tool Wiring:** `docs/checkpoints/phase_l29m_detector_to_tool_wiring_checkpoint.md` — Wired `detect_unresolved_facts()` into `tools/hermes_secnav_tool.py` as `detect-facts` command; loads existing session, builds payload, calls detector, returns `UNRESOLVED_FACTS_V1` JSON; does not mutate session, create candidates, or apply anything; regression runner 37/37 PASS; L.29L/L.29K/L.29C/L.28 regressions all PASS; no renderer/layout/config/validator/catalog changes; no static database; error promotion unauthorized; recommended next phase: `Phase L.29N Hermes Agent Integration`.
+
+**Next Phase:** `Phase L.29N Hermes Agent Integration`
 
 **Burn-in clock note:**
 

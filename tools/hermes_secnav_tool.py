@@ -35,6 +35,7 @@ if str(_SRC_DIR) not in sys.path:
 from conversational_builder import BuilderSession
 from intake_orchestrator import IntakeOrchestrator
 from llm_builder_mediator import MediatorInput, create_mock_mediator
+from unresolved_fact_detector import detect_unresolved_facts
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -631,6 +632,34 @@ def cmd_apply_resolved(args: argparse.Namespace) -> None:
     })
 
 
+def cmd_detect_facts(args: argparse.Namespace) -> None:
+    """
+    Run the unresolved-fact detector on the current session payload.
+    Does not mutate the session, create candidates, or apply anything.
+    """
+    builder = _load_session(args.session)
+    payload = builder.build_payload()
+    user_text = args.text if args.text else None
+    doc_type = args.doc_type if args.doc_type else None
+
+    unresolved_facts = detect_unresolved_facts(
+        payload=payload,
+        user_text=user_text,
+        doc_type=doc_type,
+    )
+
+    _emit({
+        "success": True,
+        "command": "detect-facts",
+        "session_id": args.session,
+        "payload": payload,
+        "unresolved_facts": unresolved_facts,
+        "validation_summary": builder.validation_summary(),
+        "warning_summary": builder.warning_summary(),
+        "error": None,
+    })
+
+
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
@@ -693,6 +722,11 @@ def main(argv: list[str] | None = None) -> int:
     apply_resolved_p.add_argument("--confirm", action="store_true", help="Apply immediately after recording")
     apply_resolved_p.add_argument("--dry-run", action="store_true", help="Preview only, do not store or apply")
 
+    detect_p = subparsers.add_parser("detect-facts", help="Detect unresolved facts from current payload")
+    detect_p.add_argument("--session", required=True)
+    detect_p.add_argument("--text", default=None, help="Optional user text for assisted detection")
+    detect_p.add_argument("--doc-type", default=None, help="Override doc_type for detection")
+
     args = parser.parse_args(argv)
 
     handlers: dict[str, Any] = {
@@ -710,6 +744,7 @@ def main(argv: list[str] | None = None) -> int:
         "candidate-confirm": cmd_candidate_confirm,
         "candidate-reject": cmd_candidate_reject,
         "apply-resolved": cmd_apply_resolved,
+        "detect-facts": cmd_detect_facts,
     }
 
     try:
