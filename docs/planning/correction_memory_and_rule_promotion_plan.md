@@ -126,9 +126,11 @@
 
 ||||||||**Phase L.29J Rule-Driven Unresolved Fact Detector Design:** `docs/checkpoints/phase_l29j_rule_driven_unresolved_fact_detector_design_report.md` — Inventoried all existing rule sources (field policy, questions, context schema, H/S/P/V series, CCI routing/subject/candidate rules); classified each by usability for unresolved-fact detection; designed RULE_FACT_MAP_V1 schema and UNRESOLVED_FACTS_V1 output schema; compared standard_letter/endorsement/memorandum_for_record coverage; identified gaps (letterhead_memo/memo_of_agreement/memo_of_understanding lack field policy); recommended hybrid architecture consuming existing rules; no source code changed; no renderer/layout/config/validator/catalog changes; error promotion unauthorized; recommended next phase: `Phase L.29K Rule-to-Fact Mapping File Creation`.
 
-||||||||**Phase L.29K Rule-to-Fact Mapping File Creation:** `docs/checkpoints/phase_l29k_rule_fact_mapping_checkpoint.md` — Created `rules_v6/CCI/cci_unresolved_fact_map.json` (RULE_FACT_MAP_V1, 30 mappings, 14 blocking, 15 recommended, 1 optional, 9 doc types covered); consumed `cci_intake_field_policy.json`, `cci_intake_questions.json`, `cci_ch7_subject_rules.json`, `cci_ch2_routing_rules.json`, `V-series.json`; regression runner `tools/run_phase_l29k_rule_fact_map_regression.py` (23 checks, all PASS); L.29C/L.28/K.3 regressions all PASS; no static command/unit names in structural mapping data; no source/renderer/layout/config/validator/catalog changes; error promotion unauthorized; recommended next phase: `Phase L.29L Unresolved Fact Detector Prototype Implementation`.
+||||||||**Phase L.29K Rule-to-Fact Mapping File Creation:** `docs/checkpoints/phase_l29k_rule_fact_mapping_checkpoint.md` — ... [same content]
 
-**Next Phase:** `Phase L.29L Unresolved Fact Detector Prototype Implementation`
+||||||||**Phase L.29L Unresolved Fact Detector Prototype Implementation:** `docs/checkpoints/phase_l29l_unresolved_fact_detector_checkpoint.md` — Created `src/unresolved_fact_detector.py`, a deterministic unresolved-fact detector that reads `rules_v6/CCI/cci_unresolved_fact_map.json` and emits `UNRESOLVED_FACTS_V1` JSON; core API `detect_unresolved_facts(payload, user_text, doc_type, mapping_path)`; respects doc_type field policies; subject formatting detection emits recommended facts; user-text assisted detection; no network/LLM/candidate/file side effects; regression runner 38/38 PASS; no source/renderer/layout/config/validator/catalog changes; error promotion unauthorized; recommended next phase: `Phase L.29M Detector-to-Tool Wiring`.
+
+**Next Phase:** `Phase L.29M Detector-to-Tool Wiring`
 
 **Burn-in clock note:**
 
