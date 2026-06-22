@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 Hermes Session Manager — Phase L.29Q
 
 Thin deterministic coordinator that drives the existing hermes_secnav_tool.py
