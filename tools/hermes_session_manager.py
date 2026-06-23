@@ -209,6 +209,51 @@ def cmd_ready(args: argparse.Namespace) -> None:
     })
 
 
+def cmd_finalize(args: argparse.Namespace) -> None:
+    """Finalize a session via hermes_secnav_tool.py finalize."""
+    sid = _session_id_from_args(args)
+    if not sid:
+        _emit({"success": False, "command": "finalize", "error": "--session required"})
+        return
+    tool_args = ["finalize", "--session", sid]
+    if getattr(args, "accept_warnings", False):
+        tool_args.append("--accept-warnings")
+    r = _run_tool(tool_args)
+    _emit({
+        "success": r.get("success", False),
+        "command": "finalize",
+        "session_id": sid,
+        "payload": r.get("payload"),
+        "validation_summary": r.get("validation_summary"),
+        "warning_summary": r.get("warning_summary"),
+        "findings": r.get("findings"),
+        "message": f"Finalized session {sid}" if r.get("success") else r.get("error"),
+        "error": r.get("error"),
+    })
+
+
+def cmd_render(args: argparse.Namespace) -> None:
+    """Render a session via hermes_secnav_tool.py render."""
+    sid = _session_id_from_args(args)
+    if not sid:
+        _emit({"success": False, "command": "render", "error": "--session required"})
+        return
+    r = _run_tool(["render", "--session", sid, "--out", args.out])
+    _emit({
+        "success": r.get("success", False),
+        "command": "render",
+        "session_id": sid,
+        "payload": r.get("payload"),
+        "validation_summary": r.get("validation_summary"),
+        "warning_summary": r.get("warning_summary"),
+        "findings": r.get("findings"),
+        "pdf_path": r.get("pdf_path"),
+        "payload_json_path": r.get("payload_json_path"),
+        "message": f"Rendered session {sid} to {r.get('pdf_path')}" if r.get("success") else r.get("error"),
+        "error": r.get("error"),
+    })
+
+
 def cmd_summary(args: argparse.Namespace) -> None:
     """Produce a compact user-facing session summary."""
     sid = _session_id_from_args(args)
@@ -280,6 +325,14 @@ def main(argv: list[str] | None = None) -> int:
     ready_p.add_argument("--session", required=True)
     ready_p.add_argument("--doc-type", default=None)
 
+    finalize_p = subparsers.add_parser("finalize", help="Finalize a session")
+    finalize_p.add_argument("--session", required=True)
+    finalize_p.add_argument("--accept-warnings", action="store_true")
+
+    render_p = subparsers.add_parser("render", help="Render a finalized session")
+    render_p.add_argument("--session", required=True)
+    render_p.add_argument("--out", required=True)
+
     summary_p = subparsers.add_parser("summary", help="Produce a compact session summary")
     summary_p.add_argument("--session", required=True)
 
@@ -292,6 +345,8 @@ def main(argv: list[str] | None = None) -> int:
         "next": cmd_next,
         "answer": cmd_answer,
         "ready": cmd_ready,
+        "finalize": cmd_finalize,
+        "render": cmd_render,
         "summary": cmd_summary,
     }
 
