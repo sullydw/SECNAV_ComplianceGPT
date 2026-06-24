@@ -133,6 +133,14 @@ class MockLLMBuilderMediator:
         (re.compile(r"via\s+(?:is\s+)?(.+?)(?:\.|$)", re.IGNORECASE), "via"),
         # Window envelope
         (re.compile(r"window\s+envelope\s+(?:is\s+)?(true|yes|1|false|no|0)", re.IGNORECASE), "window_envelope"),
+        # Colon-labeled fields (stop before next capitalized label or end of string)
+        (re.compile(r"subject:\s*(.+?)(?=\.\s+[A-Z][\w\s]+:|$)", re.IGNORECASE), "subj"),
+        (re.compile(r"body:\s*(.+?)(?=\.\s+[A-Z][\w\s]+:|$)", re.IGNORECASE), "body"),
+        (re.compile(r"date:\s*(.+?)(?=\.\s+[A-Z][\w\s]+:|$)", re.IGNORECASE), "date"),
+        (re.compile(r"ssic:\s*(\d{4}[A-Z]?)", re.IGNORECASE), "ssic"),
+        (re.compile(r"originator\s+code:\s*(.+?)(?=\.\s+[A-Z][\w\s]+:|$)", re.IGNORECASE), "originator_code"),
+        (re.compile(r"point\s+of\s+contact:\s*(.+?)(?=\.\s+[A-Z][\w\s]+:|$)", re.IGNORECASE), "point_of_contact"),
+        (re.compile(r"signature:\s*(.+?)(?=\.\s+[A-Z][\w\s]+:|$)", re.IGNORECASE), "signature.name"),
     ]
 
     # Signature patterns
