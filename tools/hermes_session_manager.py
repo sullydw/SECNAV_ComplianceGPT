@@ -41,7 +41,7 @@ if str(_SRC_DIR) not in sys.path:
 # Constants
 # ---------------------------------------------------------------------------
 
-_VERSION = "L.29Q"
+_VERSION = "L.30B"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -254,6 +254,100 @@ def cmd_render(args: argparse.Namespace) -> None:
     })
 
 
+def cmd_candidate_add(args: argparse.Namespace) -> None:
+    """Record a candidate via candidate-add."""
+    sid = _session_id_from_args(args)
+    if not sid:
+        _emit({"success": False, "command": "candidate-add", "error": "--session required"})
+        return
+    r = _run_tool(["candidate-add", "--session", sid, "--json", args.json])
+    _emit({
+        "success": r.get("success", False),
+        "command": "candidate-add",
+        "session_id": sid,
+        "candidate_id": r.get("candidate_id"),
+        "message": f"Candidate recorded in {sid}" if r.get("success") else r.get("error"),
+        "error": r.get("error"),
+    })
+
+
+def cmd_candidates(args: argparse.Namespace) -> None:
+    """List all candidates via candidates."""
+    sid = _session_id_from_args(args)
+    if not sid:
+        _emit({"success": False, "command": "candidates", "error": "--session required"})
+        return
+    r = _run_tool(["candidates", "--session", sid])
+    _emit({
+        "success": r.get("success", False),
+        "command": "candidates",
+        "session_id": sid,
+        "candidates": r.get("candidates", []),
+        "message": f"Listed candidates for {sid}" if r.get("success") else r.get("error"),
+        "error": r.get("error"),
+    })
+
+
+def cmd_candidate_confirm(args: argparse.Namespace) -> None:
+    """Confirm and apply a candidate via candidate-confirm."""
+    sid = _session_id_from_args(args)
+    if not sid:
+        _emit({"success": False, "command": "candidate-confirm", "error": "--session required"})
+        return
+    r = _run_tool(["candidate-confirm", "--session", sid, "--candidate-id", args.candidate_id])
+    _emit({
+        "success": r.get("success", False),
+        "command": "candidate-confirm",
+        "session_id": sid,
+        "candidate_id": args.candidate_id,
+        "message": f"Confirmed candidate {args.candidate_id} in {sid}" if r.get("success") else r.get("error"),
+        "error": r.get("error"),
+    })
+
+
+def cmd_candidate_reject(args: argparse.Namespace) -> None:
+    """Reject a candidate via candidate-reject."""
+    sid = _session_id_from_args(args)
+    if not sid:
+        _emit({"success": False, "command": "candidate-reject", "error": "--session required"})
+        return
+    tool_args = ["candidate-reject", "--session", sid, "--candidate-id", args.candidate_id]
+    if getattr(args, "reason", None):
+        tool_args += ["--reason", args.reason]
+    r = _run_tool(tool_args)
+    _emit({
+        "success": r.get("success", False),
+        "command": "candidate-reject",
+        "session_id": sid,
+        "candidate_id": args.candidate_id,
+        "message": f"Rejected candidate {args.candidate_id} in {sid}" if r.get("success") else r.get("error"),
+        "error": r.get("error"),
+    })
+
+
+def cmd_apply_resolved(args: argparse.Namespace) -> None:
+    """Record/confirm a resolved candidate via apply-resolved."""
+    sid = _session_id_from_args(args)
+    if not sid:
+        _emit({"success": False, "command": "apply-resolved", "error": "--session required"})
+        return
+    tool_args = ["apply-resolved", "--session", sid, "--json", args.json]
+    if getattr(args, "confirm", False):
+        tool_args.append("--confirm")
+    if getattr(args, "dry_run", False):
+        tool_args.append("--dry-run")
+    r = _run_tool(tool_args)
+    _emit({
+        "success": r.get("success", False),
+        "command": "apply-resolved",
+        "session_id": sid,
+        "candidate_id": r.get("candidate_id"),
+        "payload": r.get("payload"),
+        "message": f"Resolved candidate applied in {sid}" if r.get("success") else r.get("error"),
+        "error": r.get("error"),
+    })
+
+
 def cmd_summary(args: argparse.Namespace) -> None:
     """Produce a compact user-facing session summary."""
     sid = _session_id_from_args(args)
@@ -336,6 +430,28 @@ def main(argv: list[str] | None = None) -> int:
     summary_p = subparsers.add_parser("summary", help="Produce a compact session summary")
     summary_p.add_argument("--session", required=True)
 
+    candidate_add_p = subparsers.add_parser("candidate-add", help="Record a candidate (pending)")
+    candidate_add_p.add_argument("--session", required=True)
+    candidate_add_p.add_argument("--json", required=True, help="Path to candidate JSON file")
+
+    candidates_p = subparsers.add_parser("candidates", help="List all candidates")
+    candidates_p.add_argument("--session", required=True)
+
+    candidate_confirm_p = subparsers.add_parser("candidate-confirm", help="Confirm and apply a candidate")
+    candidate_confirm_p.add_argument("--session", required=True)
+    candidate_confirm_p.add_argument("--candidate-id", required=True)
+
+    candidate_reject_p = subparsers.add_parser("candidate-reject", help="Reject a candidate")
+    candidate_reject_p.add_argument("--session", required=True)
+    candidate_reject_p.add_argument("--candidate-id", required=True)
+    candidate_reject_p.add_argument("--reason", default=None)
+
+    apply_resolved_p = subparsers.add_parser("apply-resolved", help="Record/confirm a resolved candidate")
+    apply_resolved_p.add_argument("--session", required=True)
+    apply_resolved_p.add_argument("--json", required=True, help="Path to candidate JSON file")
+    apply_resolved_p.add_argument("--confirm", action="store_true")
+    apply_resolved_p.add_argument("--dry-run", action="store_true")
+
     args = parser.parse_args(argv)
 
     handlers: dict[str, Any] = {
@@ -348,6 +464,11 @@ def main(argv: list[str] | None = None) -> int:
         "finalize": cmd_finalize,
         "render": cmd_render,
         "summary": cmd_summary,
+        "candidate-add": cmd_candidate_add,
+        "candidates": cmd_candidates,
+        "candidate-confirm": cmd_candidate_confirm,
+        "candidate-reject": cmd_candidate_reject,
+        "apply-resolved": cmd_apply_resolved,
     }
 
     try:
