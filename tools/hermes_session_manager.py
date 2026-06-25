@@ -337,13 +337,19 @@ def cmd_apply_resolved(args: argparse.Namespace) -> None:
     if getattr(args, "dry_run", False):
         tool_args.append("--dry-run")
     r = _run_tool(tool_args)
+    msg = f"Resolved candidate applied in {sid}" if r.get("applied") else (
+        f"Dry-run preview for {sid}" if getattr(args, "dry_run", False) else r.get("error")
+    )
     _emit({
         "success": r.get("success", False),
         "command": "apply-resolved",
         "session_id": sid,
         "candidate_id": r.get("candidate_id"),
         "payload": r.get("payload"),
-        "message": f"Resolved candidate applied in {sid}" if r.get("success") else r.get("error"),
+        "preview": r.get("preview"),
+        "applied": r.get("applied"),
+        "applied_fields": r.get("applied_fields"),
+        "message": msg,
         "error": r.get("error"),
     })
 
