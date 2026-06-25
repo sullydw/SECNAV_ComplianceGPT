@@ -241,6 +241,9 @@ class MockLLMBuilderMediator:
                 # Normalize window_envelope boolean
                 if field_path == "window_envelope":
                     value = value.lower() in ("true", "yes", "1")
+                # Normalize subject casing to SECNAV-compliant all caps
+                if field_path == "subj":
+                    value = value.strip().rstrip('.').upper()
                 updates[field_path] = value
                 kv_lines.append(f"{field_path}: {value}")
 
@@ -266,6 +269,7 @@ class MockLLMBuilderMediator:
         if "subj" not in updates:
             inferred_subj = self._infer_subject(normalized)
             if inferred_subj:
+                inferred_subj = inferred_subj.upper()
                 updates["subj"] = inferred_subj
                 kv_lines.append(f"subj: {inferred_subj}")
                 requires_confirmation = True
