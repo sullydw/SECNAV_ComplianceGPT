@@ -227,6 +227,8 @@ def cmd_finalize(args: argparse.Namespace) -> None:
         "validation_summary": r.get("validation_summary"),
         "warning_summary": r.get("warning_summary"),
         "findings": r.get("findings"),
+        "approval": r.get("approval"),
+        "approval_gate": r.get("approval_gate"),
         "message": f"Finalized session {sid}" if r.get("success") else r.get("error"),
         "error": r.get("error"),
     })
@@ -249,6 +251,8 @@ def cmd_render(args: argparse.Namespace) -> None:
         "findings": r.get("findings"),
         "pdf_path": r.get("pdf_path"),
         "payload_json_path": r.get("payload_json_path"),
+        "approval": r.get("approval"),
+        "approval_gate": r.get("approval_gate"),
         "message": f"Rendered session {sid} to {r.get('pdf_path')}" if r.get("success") else r.get("error"),
         "error": r.get("error"),
     })

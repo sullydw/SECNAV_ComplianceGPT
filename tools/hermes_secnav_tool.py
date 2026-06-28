@@ -429,8 +429,38 @@ def cmd_validate(args: argparse.Namespace) -> None:
     })
 
 
+def _check_approval_gate(builder) -> tuple[bool, dict[str, Any], str | None]:
+    """Return (ok, approval_state, error_message)."""
+    state = builder.approval_state()
+    if not state["approved_for_finalize"]:
+        return False, state, "Draft preview not approved. Run 'approve' first."
+    if not state["approval_current"]:
+        return False, state, "Draft changed after approval. Re-run 'approve' after reviewing changes."
+    return True, state, None
+
+
 def cmd_finalize(args: argparse.Namespace) -> None:
     builder = _load_session(args.session)
+    ok, astate, err = _check_approval_gate(builder)
+    if not ok:
+        _emit({
+            "success": False,
+            "command": "finalize",
+            "session_id": args.session,
+            "payload": builder.build_payload(),
+            "validation_summary": builder.validation_summary(),
+            "warning_summary": builder.warning_summary(),
+            "next_question": None,
+            "proposed_kv": None,
+            "findings": None,
+            "pdf_path": None,
+            "payload_json_path": None,
+            "approval": astate,
+            "approval_gate": {"passed": False, "reason": err},
+            "error": err,
+        })
+        return
+
     result = builder.finalize(accept_warnings=args.accept_warnings)
     _save_session(builder)
     _emit({
@@ -445,6 +475,8 @@ def cmd_finalize(args: argparse.Namespace) -> None:
         "findings": result.get("validation_summary", {}).get("findings"),
         "pdf_path": None,
         "payload_json_path": None,
+        "approval": astate,
+        "approval_gate": {"passed": True, "reason": None},
         "error": None,
     })
 
@@ -466,7 +498,30 @@ def cmd_render(args: argparse.Namespace) -> None:
             "findings": v_summary.get("findings"),
             "pdf_path": None,
             "payload_json_path": None,
+            "approval": builder.approval_state(),
+            "approval_gate": {"passed": False, "reason": f"Cannot render: {v_summary.get('block_reason', ['validation blocked'])}"},
             "error": f"Cannot render: {v_summary.get('block_reason', ['validation blocked'])}",
+        })
+        return
+
+    # Approval gate (L.30K-4)
+    ok, astate, err = _check_approval_gate(builder)
+    if not ok:
+        _emit({
+            "success": False,
+            "command": "render",
+            "session_id": args.session,
+            "payload": builder.build_payload(),
+            "validation_summary": v_summary,
+            "warning_summary": builder.warning_summary(),
+            "next_question": builder.next_question(),
+            "proposed_kv": None,
+            "findings": v_summary.get("findings"),
+            "pdf_path": None,
+            "payload_json_path": None,
+            "approval": astate,
+            "approval_gate": {"passed": False, "reason": err},
+            "error": err,
         })
         return
 
@@ -501,6 +556,8 @@ def cmd_render(args: argparse.Namespace) -> None:
             "findings": result.get("validation_summary", {}).get("findings"),
             "pdf_path": None,
             "payload_json_path": str(tmp_json),
+            "approval": astate,
+            "approval_gate": {"passed": True, "reason": None},
             "error": f"PDF render failed: {proc.stderr}",
         })
         return
@@ -518,6 +575,8 @@ def cmd_render(args: argparse.Namespace) -> None:
         "findings": result.get("validation_summary", {}).get("findings"),
         "pdf_path": str(out_path),
         "payload_json_path": str(tmp_json),
+        "approval": astate,
+        "approval_gate": {"passed": True, "reason": None},
         "error": None,
     })
 
