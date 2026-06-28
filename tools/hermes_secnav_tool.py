@@ -100,6 +100,11 @@ def _load_session(session_id: str) -> BuilderSession:
 
     builder.set_draft_final_status(data.get("draft_final_status", "draft"))
 
+    # Restore approval state (L.30K-2)
+    builder._approved_for_finalize = data.get("approved_for_finalize", False)
+    builder._approved_at = data.get("approved_at")
+    builder._approved_preview_hash = data.get("approved_preview_hash")
+
     # Restore candidates (L.29C)
     candidates_data = data.get("candidates")
     if candidates_data:
@@ -135,6 +140,10 @@ def _save_session(builder: BuilderSession) -> None:
         "draft_final_status": builder._draft_final_status,
         "user_decisions": getattr(builder, "_user_decisions", {}),
         "candidates": candidates_data,
+        # Approval state (L.30K-2)
+        "approved_for_finalize": getattr(builder, "_approved_for_finalize", False),
+        "approved_at": getattr(builder, "_approved_at", None),
+        "approved_preview_hash": getattr(builder, "_approved_preview_hash", None),
     }
     path = _session_path(builder._session_id)
     path.write_text(json.dumps(data, indent=2, default=str), encoding="utf-8")
@@ -814,7 +823,8 @@ def _preview_gate_met(payload: dict[str, Any]) -> bool:
 
 
 def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str, Any],
-                        candidates: dict[str, Any], next_action: dict[str, Any]) -> str:
+                        candidates: dict[str, Any], next_action: dict[str, Any],
+                        approval_state: dict[str, Any] | None = None) -> str:
     lines: list[str] = []
     if mode == "build_status":
         lines.append("=" * 50)
@@ -838,9 +848,15 @@ def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str,
             lines.append(f"Next action: {na}")
         lines.append("=" * 50)
     else:
-        lines.append("=" * 50)
-        lines.append("DRAFT PREVIEW  NOT FINAL")
-        lines.append("=" * 50)
+        ap = approval_state or {}
+        if ap.get("approval_current"):
+            lines.append("=" * 50)
+            lines.append("DRAFT PREVIEW  APPROVED FOR FINALIZE")
+            lines.append("=" * 50)
+        else:
+            lines.append("=" * 50)
+            lines.append("DRAFT PREVIEW  NOT FINAL")
+            lines.append("=" * 50)
         lines.append("")
         ssic = payload.get("ssic")
         lines.append(f"SSIC: {ssic if ssic else '[SSIC NEEDED]'}")
@@ -878,9 +894,14 @@ def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str,
         else:
             lines.append("Signature: [SIGNATURE NEEDED]")
         lines.append("")
-        lines.append("=" * 50)
-        lines.append("END DRAFT PREVIEW  NOT FINAL")
-        lines.append("=" * 50)
+        if ap.get("approval_current"):
+            lines.append("=" * 50)
+            lines.append("END DRAFT PREVIEW  APPROVED FOR FINALIZE")
+            lines.append("=" * 50)
+        else:
+            lines.append("=" * 50)
+            lines.append("END DRAFT PREVIEW  NOT FINAL")
+            lines.append("=" * 50)
     return "\n".join(lines)
 
 
@@ -942,12 +963,16 @@ def cmd_preview(args: argparse.Namespace) -> None:
     gate_met = _preview_gate_met(payload)
 
     if gate_met:
-        preview_text = _build_preview_text(payload, "draft_preview", v_summary, candidates, next_action)
+        approval_state = builder.approval_state()
+        preview_text = _build_preview_text(payload, "draft_preview", v_summary, candidates, next_action, approval_state)
         # Recommended next action for draft_preview
         if not can_render:
             rec_next = "Fix validation errors or missing fields before proceeding."
         else:
-            rec_next = "Review the draft preview. Approval workflow will be available in a future step."
+            if approval_state.get("approval_current"):
+                rec_next = "Draft preview is approved for finalize. Use finalize when ready."
+            else:
+                rec_next = "Review the draft preview. Use the approve command when satisfied."
         _emit({
             "success": True,
             "command": "preview",
@@ -963,10 +988,12 @@ def cmd_preview(args: argparse.Namespace) -> None:
             "validation_summary": v_summary,
             "render_gate": render_gate,
             "next_action": rec_next,
+            "approval": approval_state,
             "error": None,
         })
     else:
-        preview_text = _build_preview_text(payload, "build_status", v_summary, candidates, next_action)
+        approval_state = builder.approval_state()
+        preview_text = _build_preview_text(payload, "build_status", v_summary, candidates, next_action, approval_state)
         if missing_preview:
             rec_next = f"Provide the next missing field: {missing_preview[0]}"
         elif next_action.get("question"):
@@ -988,9 +1015,35 @@ def cmd_preview(args: argparse.Namespace) -> None:
             "validation_summary": v_summary,
             "render_gate": render_gate,
             "next_action": rec_next,
+            "approval": approval_state,
             "preview_text": preview_text,
             "error": None,
         })
+
+
+def cmd_approve(args: argparse.Namespace) -> None:
+    """
+    Record explicit user approval of the current draft preview.
+    Saves session but does NOT finalize, render, or change candidates.
+    """
+    builder = _load_session(args.session)
+    result = builder.record_approval()
+    _save_session(builder)
+    payload = builder.build_payload()
+    _emit({
+        "success": True,
+        "command": "approve",
+        "session_id": args.session,
+        "approved_for_finalize": result["approved_for_finalize"],
+        "approved_at": result["approved_at"],
+        "approved_preview_hash": result["approved_preview_hash"],
+        "current_preview_hash": result["current_preview_hash"],
+        "approval_current": result["approval_current"],
+        "payload": payload,
+        "validation_summary": builder.validation_summary(),
+        "warning_summary": builder.warning_summary(),
+        "error": None,
+    })
 
 
 def cmd_next_action(args: argparse.Namespace) -> None:
@@ -1127,6 +1180,9 @@ def main(argv: list[str] | None = None) -> int:
     preview_p = subparsers.add_parser("preview", help="Read-only preview of current session state")
     preview_p.add_argument("--session", required=True)
 
+    approve_p = subparsers.add_parser("approve", help="Approve current draft preview for finalize")
+    approve_p.add_argument("--session", required=True)
+
     args = parser.parse_args(argv)
 
     handlers: dict[str, Any] = {
@@ -1147,6 +1203,7 @@ def main(argv: list[str] | None = None) -> int:
         "detect-facts": cmd_detect_facts,
         "next-action": cmd_next_action,
         "preview": cmd_preview,
+        "approve": cmd_approve,
     }
 
     try:

@@ -302,6 +302,10 @@ class BuilderSession:
         self._user_decisions: dict[str, Any] = {}
         self._draft_final_status = "draft"
         self._last_question: dict[str, Any] | None = None
+        # Approval state (L.30K-2)
+        self._approved_for_finalize = False
+        self._approved_at: str | None = None
+        self._approved_preview_hash: str | None = None
 
     # -- public API -----------------------------------------------------------
 
@@ -586,6 +590,62 @@ class BuilderSession:
         """Set draft or final status."""
         if status in ("draft", "final"):
             self._draft_final_status = status
+
+    def compute_preview_hash(self) -> str:
+        """Compute a stable preview hash from draft-relevant payload content."""
+        import hashlib
+        payload = self.build_payload()
+        keys = [
+            "doc_type",
+            "ssic",
+            "originator_code",
+            "date",
+            "from",
+            "to",
+            "via",
+            "subj",
+            "body",
+            "signature",
+            "ref",
+            "encl",
+            "copy_to",
+            "distribution",
+            "unit_identity",
+        ]
+        canonical: dict[str, Any] = {}
+        for k in keys:
+            v = payload.get(k)
+            if v is not None:
+                canonical[k] = v
+        json_bytes = json.dumps(canonical, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+        return hashlib.sha256(json_bytes).hexdigest()
+
+    def record_approval(self) -> dict[str, Any]:
+        """Record explicit user approval of the current draft preview."""
+        h = self.compute_preview_hash()
+        self._approved_for_finalize = True
+        self._approved_at = datetime.now().isoformat()
+        self._approved_preview_hash = h
+        return {
+            "approved_for_finalize": True,
+            "approved_at": self._approved_at,
+            "approved_preview_hash": h,
+            "current_preview_hash": h,
+            "approval_current": True,
+        }
+
+    def approval_state(self) -> dict[str, Any]:
+        """Return current approval state with hash comparison."""
+        current = self.compute_preview_hash()
+        approved = self._approved_for_finalize
+        approved_hash = self._approved_preview_hash
+        return {
+            "approved_for_finalize": approved,
+            "approved_at": self._approved_at,
+            "approved_preview_hash": approved_hash,
+            "current_preview_hash": current,
+            "approval_current": approved and (approved_hash == current) if approved else False,
+        }
 
     # -- candidate tracking (L.29C) -------------------------------------------
 

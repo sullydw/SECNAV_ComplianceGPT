@@ -414,6 +414,30 @@ def cmd_preview(args: argparse.Namespace) -> None:
         "validation_summary": r.get("validation_summary"),
         "render_gate": r.get("render_gate"),
         "next_action": r.get("next_action"),
+        "approval": r.get("approval"),
+        "error": r.get("error"),
+    })
+
+
+def cmd_approve(args: argparse.Namespace) -> None:
+    """Record approval for current draft preview via hermes_secnav_tool.py approve."""
+    sid = _session_id_from_args(args)
+    if not sid:
+        _emit({"success": False, "command": "approve", "error": "--session required"})
+        return
+    r = _run_tool(["approve", "--session", sid])
+    _emit({
+        "success": r.get("success", False),
+        "command": "approve",
+        "session_id": sid,
+        "approved_for_finalize": r.get("approved_for_finalize"),
+        "approved_at": r.get("approved_at"),
+        "approved_preview_hash": r.get("approved_preview_hash"),
+        "current_preview_hash": r.get("current_preview_hash"),
+        "approval_current": r.get("approval_current"),
+        "payload": r.get("payload"),
+        "validation_summary": r.get("validation_summary"),
+        "warning_summary": r.get("warning_summary"),
         "error": r.get("error"),
     })
 
@@ -488,6 +512,9 @@ def main(argv: list[str] | None = None) -> int:
     preview_p = subparsers.add_parser("preview", help="Read-only preview of session state")
     preview_p.add_argument("--session", required=True)
 
+    approve_p = subparsers.add_parser("approve", help="Approve current draft preview for finalize")
+    approve_p.add_argument("--session", required=True)
+
     args = parser.parse_args(argv)
 
     handlers: dict[str, Any] = {
@@ -501,6 +528,7 @@ def main(argv: list[str] | None = None) -> int:
         "render": cmd_render,
         "summary": cmd_summary,
         "preview": cmd_preview,
+        "approve": cmd_approve,
         "candidate-add": cmd_candidate_add,
         "candidates": cmd_candidates,
         "candidate-confirm": cmd_candidate_confirm,
