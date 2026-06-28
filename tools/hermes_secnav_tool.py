@@ -792,6 +792,207 @@ def cmd_detect_facts(args: argparse.Namespace) -> None:
     })
 
 
+def _has_usable_signature(payload: dict[str, Any]) -> bool:
+    sig = payload.get("signature")
+    if isinstance(sig, dict):
+        return bool(sig.get("name"))
+    if isinstance(sig, list) and sig:
+        return bool(str(sig[0]).strip())
+    if isinstance(sig, str):
+        return bool(sig.strip())
+    return False
+
+
+def _preview_gate_met(payload: dict[str, Any]) -> bool:
+    """Check if minimum fields exist for draft_preview mode."""
+    required_for_preview = {"from", "to", "subj", "body", "date"}
+    for field in required_for_preview:
+        val = payload.get(field)
+        if val in (None, "", [], {}):
+            return False
+    return _has_usable_signature(payload)
+
+
+def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str, Any],
+                        candidates: dict[str, Any], next_action: dict[str, Any]) -> str:
+    lines: list[str] = []
+    if mode == "build_status":
+        lines.append("=" * 50)
+        lines.append("BUILD STATUS")
+        lines.append("=" * 50)
+        lines.append("")
+        lines.append(f"Session: {payload.get('session_id', 'N/A')}")
+        lines.append(f"Status:  Incomplete — more information needed")
+        lines.append("")
+        known = [k for k, v in payload.items() if v not in (None, "", [], {})]
+        lines.append(f"Known fields ({len(known)}): {', '.join(known) if known else 'none'}")
+        missing = v_summary.get("missing_required", [])
+        lines.append(f"Missing required fields ({len(missing)}): {', '.join(missing) if missing else 'none'}")
+        p_count = candidates.get("counts", {}).get("pending", 0)
+        c_count = candidates.get("counts", {}).get("confirmed", 0)
+        lines.append(f"Pending candidates: {p_count}")
+        lines.append(f"Confirmed candidates: {c_count}")
+        lines.append("")
+        na = next_action.get("recommended_action") or next_action.get("action")
+        if na:
+            lines.append(f"Next action: {na}")
+        lines.append("=" * 50)
+    else:
+        lines.append("=" * 50)
+        lines.append("DRAFT PREVIEW  NOT FINAL")
+        lines.append("=" * 50)
+        lines.append("")
+        ssic = payload.get("ssic")
+        lines.append(f"SSIC: {ssic if ssic else '[SSIC NEEDED]'}")
+        oc = payload.get("originator_code")
+        lines.append(f"Originator Code: {oc if oc else '[ORIGINATOR CODE NEEDED]'}")
+        lines.append(f"Date: {payload.get('date', '[DATE NEEDED]')}")
+        lines.append("")
+        lines.append(f"From: {payload.get('from', '[FROM NEEDED]')}")
+        lines.append(f"To:   {payload.get('to', '[TO NEEDED]')}")
+        lines.append("")
+        lines.append(f"Subj: {payload.get('subj', '[SUBJ NEEDED]')}")
+        lines.append("")
+        lines.append("-" * 50)
+        lines.append("[AI-DRAFTED OR USER-PROVIDED BODY  REVIEW REQUIRED]")
+        lines.append("-" * 50)
+        body = payload.get("body", [])
+        if isinstance(body, list):
+            for para in body:
+                lines.append(str(para))
+                lines.append("")
+        elif body:
+            lines.append(str(body))
+            lines.append("")
+        lines.append("-" * 50)
+        lines.append("")
+        sig = payload.get("signature")
+        if isinstance(sig, dict):
+            lines.append(f"Signature: {sig.get('name', '[NAME NEEDED]')}")
+            if sig.get("title"):
+                lines.append(f"  Title: {sig['title']}")
+            if sig.get("role"):
+                lines.append(f"  Role: {sig['role']}")
+        elif isinstance(sig, (list, str)):
+            lines.append(f"Signature: {sig}")
+        else:
+            lines.append("Signature: [SIGNATURE NEEDED]")
+        lines.append("")
+        lines.append("=" * 50)
+        lines.append("END DRAFT PREVIEW  NOT FINAL")
+        lines.append("=" * 50)
+    return "\n".join(lines)
+
+
+def cmd_preview(args: argparse.Namespace) -> None:
+    """
+    Read-only preview: shows BUILD STATUS when incomplete, DRAFT PREVIEW when ready.
+    Does NOT save, mutate, finalize, render, or change candidates.
+    """
+    builder = _load_session(args.session)
+    payload = builder.build_payload()
+    v_summary = builder.validation_summary()
+    w_summary = builder.warning_summary()
+    candidates = builder.get_candidates()
+
+    unresolved_facts = detect_unresolved_facts(
+        payload=payload,
+        user_text=None,
+        doc_type=payload.get("doc_type"),
+    )
+    next_action = select_next_action(unresolved_facts, v_summary)
+
+    # Build render gate
+    blocking = unresolved_facts.get("summary", {}).get("blocking", 0)
+    recommended = unresolved_facts.get("summary", {}).get("recommended", 0)
+    optional = unresolved_facts.get("summary", {}).get("optional", 0)
+    errors = v_summary.get("errors", 0)
+    finalize_allowed = v_summary.get("finalize_allowed", True)
+    blocking_resolved = blocking == 0
+    can_render = blocking_resolved and errors == 0 and finalize_allowed
+
+    if not blocking_resolved:
+        rg_reason = f"{blocking} blocking fact(s) remain unresolved"
+    elif errors > 0:
+        rg_reason = f"{errors} validation error(s) present"
+    elif not finalize_allowed:
+        rg_reason = "finalize not allowed by validation gate"
+    else:
+        rg_reason = "blocking facts resolved and validation gate passed"
+
+    render_gate = {
+        "blocking_resolved": blocking_resolved,
+        "recommended_remaining": recommended,
+        "optional_remaining": optional,
+        "validator_errors": errors,
+        "finalize_allowed": finalize_allowed,
+        "can_render": can_render,
+        "reason": rg_reason,
+    }
+
+    # Determine next action recommendation
+    known_fields = [k for k, v in payload.items() if v not in (None, "", [], {})]
+    missing_preview = []
+    for f in ("from", "to", "subj", "body", "date"):
+        if payload.get(f) in (None, "", [], {}):
+            missing_preview.append(f)
+    if not _has_usable_signature(payload):
+        missing_preview.append("signature")
+
+    gate_met = _preview_gate_met(payload)
+
+    if gate_met:
+        preview_text = _build_preview_text(payload, "draft_preview", v_summary, candidates, next_action)
+        # Recommended next action for draft_preview
+        if not can_render:
+            rec_next = "Fix validation errors or missing fields before proceeding."
+        else:
+            rec_next = "Review the draft preview. Approval workflow will be available in a future step."
+        _emit({
+            "success": True,
+            "command": "preview",
+            "session_id": args.session,
+            "mode": "draft_preview",
+            "preview_gate_met": True,
+            "preview_text": preview_text,
+            "body_review_required": True,
+            "pending_candidates": candidates.get("counts", {}).get("pending", 0),
+            "confirmed_candidates": candidates.get("counts", {}).get("confirmed", 0),
+            "pending_candidates_list": candidates.get("pending", []),
+            "confirmed_candidates_list": candidates.get("confirmed", []),
+            "validation_summary": v_summary,
+            "render_gate": render_gate,
+            "next_action": rec_next,
+            "error": None,
+        })
+    else:
+        preview_text = _build_preview_text(payload, "build_status", v_summary, candidates, next_action)
+        if missing_preview:
+            rec_next = f"Provide the next missing field: {missing_preview[0]}"
+        elif next_action.get("question"):
+            rec_next = next_action["question"]
+        else:
+            rec_next = next_action.get("recommended_action") or next_action.get("action") or "Continue providing missing information."
+        _emit({
+            "success": True,
+            "command": "preview",
+            "session_id": args.session,
+            "mode": "build_status",
+            "known_fields": known_fields,
+            "missing_for_preview": missing_preview,
+            "missing_required": v_summary.get("missing_required", []),
+            "pending_candidates": candidates.get("counts", {}).get("pending", 0),
+            "confirmed_candidates": candidates.get("counts", {}).get("confirmed", 0),
+            "pending_candidates_list": candidates.get("pending", []),
+            "confirmed_candidates_list": candidates.get("confirmed", []),
+            "validation_summary": v_summary,
+            "render_gate": render_gate,
+            "next_action": rec_next,
+            "preview_text": preview_text,
+            "error": None,
+        })
+
+
 def cmd_next_action(args: argparse.Namespace) -> None:
     """
     Tell Hermes the next recommended action for the current session.
@@ -923,6 +1124,9 @@ def main(argv: list[str] | None = None) -> int:
     next_p.add_argument("--text", default=None, help="Optional user text for assisted detection")
     next_p.add_argument("--doc-type", default=None, help="Override doc_type for detection")
 
+    preview_p = subparsers.add_parser("preview", help="Read-only preview of current session state")
+    preview_p.add_argument("--session", required=True)
+
     args = parser.parse_args(argv)
 
     handlers: dict[str, Any] = {
@@ -942,6 +1146,7 @@ def main(argv: list[str] | None = None) -> int:
         "apply-resolved": cmd_apply_resolved,
         "detect-facts": cmd_detect_facts,
         "next-action": cmd_next_action,
+        "preview": cmd_preview,
     }
 
     try:

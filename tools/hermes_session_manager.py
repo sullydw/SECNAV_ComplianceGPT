@@ -394,6 +394,30 @@ def cmd_summary(args: argparse.Namespace) -> None:
     })
 
 
+def cmd_preview(args: argparse.Namespace) -> None:
+    """Show read-only preview (build_status or draft_preview) via hermes_secnav_tool.py preview."""
+    sid = _session_id_from_args(args)
+    if not sid:
+        _emit({"success": False, "command": "preview", "error": "--session required"})
+        return
+    r = _run_tool(["preview", "--session", sid])
+    _emit({
+        "success": r.get("success", False),
+        "command": "preview",
+        "session_id": sid,
+        "mode": r.get("mode"),
+        "preview_gate_met": r.get("preview_gate_met"),
+        "preview_text": r.get("preview_text"),
+        "body_review_required": r.get("body_review_required"),
+        "pending_candidates": r.get("pending_candidates"),
+        "confirmed_candidates": r.get("confirmed_candidates"),
+        "validation_summary": r.get("validation_summary"),
+        "render_gate": r.get("render_gate"),
+        "next_action": r.get("next_action"),
+        "error": r.get("error"),
+    })
+
+
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
@@ -458,6 +482,12 @@ def main(argv: list[str] | None = None) -> int:
     apply_resolved_p.add_argument("--confirm", action="store_true")
     apply_resolved_p.add_argument("--dry-run", action="store_true")
 
+    summary_p = subparsers.add_parser("summary", help="Produce a compact session summary")
+    summary_p.add_argument("--session", required=True)
+
+    preview_p = subparsers.add_parser("preview", help="Read-only preview of session state")
+    preview_p.add_argument("--session", required=True)
+
     args = parser.parse_args(argv)
 
     handlers: dict[str, Any] = {
@@ -470,6 +500,7 @@ def main(argv: list[str] | None = None) -> int:
         "finalize": cmd_finalize,
         "render": cmd_render,
         "summary": cmd_summary,
+        "preview": cmd_preview,
         "candidate-add": cmd_candidate_add,
         "candidates": cmd_candidates,
         "candidate-confirm": cmd_candidate_confirm,
