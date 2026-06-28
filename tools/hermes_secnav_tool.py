@@ -1046,6 +1046,85 @@ def cmd_approve(args: argparse.Namespace) -> None:
     })
 
 
+def _is_allowed_revise_target(field: str) -> bool:
+    allowed = {
+        "subj", "body", "date", "from", "to", "via",
+        "signature", "signature.name", "signature.role", "signature.title",
+        "ssic", "originator_code", "ref", "encl", "copy_to", "distribution",
+    }
+    return field in allowed
+
+
+def _proposed_kv_from_text(text: str) -> dict[str, str] | None:
+    """
+    Simple key-value extraction for controlled revision text.
+    Supports lines like: body: New text here.
+    """
+    text = text.strip()
+    if ":" not in text:
+        return None
+    # Take first colon as field separator
+    field, _, value = text.partition(":")
+    field = field.strip()
+    value = value.strip()
+    if not field or not value:
+        return None
+    if not _is_allowed_revise_target(field):
+        return None
+    return {field: value}
+
+
+def cmd_revise(args: argparse.Namespace) -> None:
+    """
+    Controlled revise command for final-review edits.
+    Applies draft-relevant changes and clears approval if payload hash changes.
+    """
+    builder = _load_session(args.session)
+    payload_before = builder.build_payload()
+    hash_before = builder.compute_preview_hash()
+
+    text = args.text if hasattr(args, "text") else ""
+    proposed_kv = _proposed_kv_from_text(text)
+    applied_answers: list[dict[str, Any]] = []
+
+    if proposed_kv:
+        # Apply through existing safe mediator path
+        kv_raw = text.replace("\\n", "\n")
+        result = builder.ingest_user_message(kv_raw)
+        applied_answers = result.get("applied_answers", [])
+    else:
+        # No direct KV match; still record the revision text as user_message
+        result = builder.ingest_user_message(text)
+        applied_answers = result.get("applied_answers", [])
+
+    payload_after = builder.build_payload()
+    hash_after = builder.compute_preview_hash()
+    payload_changed = hash_before != hash_after
+    approval_cleared: dict[str, Any] | None = None
+
+    if payload_changed:
+        approval_cleared = builder.clear_approval(reason="Draft-relevant revision applied")
+
+    _save_session(builder)
+
+    _emit({
+        "success": True,
+        "command": "revise",
+        "session_id": args.session,
+        "proposed_kv": proposed_kv,
+        "applied_answers": applied_answers,
+        "preview_hash_before": hash_before,
+        "preview_hash_after": hash_after,
+        "payload_changed": payload_changed,
+        "approval_cleared": payload_changed,
+        "approval": builder.approval_state(),
+        "payload": payload_after,
+        "validation_summary": builder.validation_summary(),
+        "warning_summary": builder.warning_summary(),
+        "error": None,
+    })
+
+
 def cmd_next_action(args: argparse.Namespace) -> None:
     """
     Tell Hermes the next recommended action for the current session.
@@ -1183,6 +1262,10 @@ def main(argv: list[str] | None = None) -> int:
     approve_p = subparsers.add_parser("approve", help="Approve current draft preview for finalize")
     approve_p.add_argument("--session", required=True)
 
+    revise_p = subparsers.add_parser("revise", help="Controlled revision of draft content")
+    revise_p.add_argument("--session", required=True)
+    revise_p.add_argument("--text", required=True, help="Revision text (e.g. body: New text)")
+
     args = parser.parse_args(argv)
 
     handlers: dict[str, Any] = {
@@ -1204,6 +1287,7 @@ def main(argv: list[str] | None = None) -> int:
         "next-action": cmd_next_action,
         "preview": cmd_preview,
         "approve": cmd_approve,
+        "revise": cmd_revise,
     }
 
     try:

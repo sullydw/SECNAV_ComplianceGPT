@@ -647,6 +647,20 @@ class BuilderSession:
             "approval_current": approved and (approved_hash == current) if approved else False,
         }
 
+    def clear_approval(self, reason: str | None = None) -> dict[str, Any]:
+        """Clear prior approval state after a draft-relevant change."""
+        self._approved_for_finalize = False
+        self._approved_at = None
+        self._approved_preview_hash = None
+        return {
+            "approved_for_finalize": False,
+            "approved_at": None,
+            "approved_preview_hash": None,
+            "current_preview_hash": self.compute_preview_hash(),
+            "approval_current": False,
+            "approval_cleared_reason": reason,
+        }
+
     # -- candidate tracking (L.29C) -------------------------------------------
 
     def record_candidate(self, candidate: dict[str, Any]) -> dict[str, Any]:

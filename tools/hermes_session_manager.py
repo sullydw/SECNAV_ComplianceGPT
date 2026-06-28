@@ -442,6 +442,32 @@ def cmd_approve(args: argparse.Namespace) -> None:
     })
 
 
+def cmd_revise(args: argparse.Namespace) -> None:
+    """Controlled revision of draft content via hermes_secnav_tool.py revise."""
+    sid = _session_id_from_args(args)
+    if not sid:
+        _emit({"success": False, "command": "revise", "error": "--session required"})
+        return
+    text = getattr(args, "text", "")
+    r = _run_tool(["revise", "--session", sid, "--text", text])
+    _emit({
+        "success": r.get("success", False),
+        "command": "revise",
+        "session_id": sid,
+        "proposed_kv": r.get("proposed_kv"),
+        "applied_answers": r.get("applied_answers"),
+        "preview_hash_before": r.get("preview_hash_before"),
+        "preview_hash_after": r.get("preview_hash_after"),
+        "payload_changed": r.get("payload_changed"),
+        "approval_cleared": r.get("approval_cleared"),
+        "approval": r.get("approval"),
+        "payload": r.get("payload"),
+        "validation_summary": r.get("validation_summary"),
+        "warning_summary": r.get("warning_summary"),
+        "error": r.get("error"),
+    })
+
+
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
@@ -515,6 +541,10 @@ def main(argv: list[str] | None = None) -> int:
     approve_p = subparsers.add_parser("approve", help="Approve current draft preview for finalize")
     approve_p.add_argument("--session", required=True)
 
+    revise_p = subparsers.add_parser("revise", help="Controlled revision of draft content")
+    revise_p.add_argument("--session", required=True)
+    revise_p.add_argument("--text", required=True, help="Revision text (e.g. body: New text)")
+
     args = parser.parse_args(argv)
 
     handlers: dict[str, Any] = {
@@ -529,6 +559,7 @@ def main(argv: list[str] | None = None) -> int:
         "summary": cmd_summary,
         "preview": cmd_preview,
         "approve": cmd_approve,
+        "revise": cmd_revise,
         "candidate-add": cmd_candidate_add,
         "candidates": cmd_candidates,
         "candidate-confirm": cmd_candidate_confirm,
