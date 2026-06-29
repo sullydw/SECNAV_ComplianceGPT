@@ -928,14 +928,56 @@ def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str,
             lines.append("  END DRAFT PREVIEW  NOT FINAL")
             lines.append("=" * 54)
 
+    def _source_label(tier: str | None) -> str:
+        if tier == "official_live":
+            return "  [OFFICIAL SOURCE]"
+        elif tier == "official_archived":
+            return "  [OFFICIAL ARCHIVED SOURCE — verify currency]"
+        elif tier == "secondary_credible":
+            return "  [SOURCE WARNING — not official; verify before confirming]"
+        elif tier == "user_provided":
+            return "  [USER-PROVIDED SOURCE — verify before confirming]"
+        elif not tier:
+            return "  [SOURCE WARNING — source quality unresolved]"
+        else:
+            return f"  [SOURCE WARNING — unknown tier: {tier}]"
+
+    def _candidate_detail(c: dict[str, Any]) -> None:
+        cid = c.get("candidate_id", "unknown")
+        ctype = c.get("candidate_type", "unknown")
+        lines.append(f"  - {cid} ({ctype})")
+        tier = c.get("source_tier")
+        lines.append(_source_label(tier))
+        it = c.get("input_text")
+        if it:
+            short = (it[:60] + "...") if len(it) > 60 else it
+            lines.append(f"    input_text: {short}")
+        resolved = c.get("resolved_value")
+        if isinstance(resolved, dict):
+            short = "; ".join(f"{k}={v}" for k, v in list(resolved.items())[:3])
+            if len(resolved) > 3:
+                short += " ..."
+            lines.append(f"    resolved: {short}")
+        conf = c.get("confidence")
+        if conf is not None:
+            lines.append(f"    confidence: {conf}")
+        url = c.get("source_url")
+        if url:
+            lines.append(f"    source_url: {url}")
+        title = c.get("source_title")
+        if title:
+            lines.append(f"    source_title: {title}")
+        limit = c.get("source_limitation")
+        if limit:
+            lines.append(f"    source_limitation: {limit}")
+        lines.append("")
+
     def _pending_section() -> None:
         p_count = candidates.get("counts", {}).get("pending", 0)
         _header(f"PENDING CANDIDATES ({p_count})")
         if p_count:
             for c in candidates.get("pending", []):
-                cid = c.get("candidate_id", "unknown")
-                ctype = c.get("candidate_type", "unknown")
-                lines.append(f"  - {cid} ({ctype}) — awaiting confirmation")
+                _candidate_detail(c)
         else:
             lines.append("  (none)")
 
@@ -944,9 +986,7 @@ def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str,
         _header(f"CONFIRMED SOURCE-BACKED FACTS ({c_count})")
         if c_count:
             for c in candidates.get("confirmed", []):
-                cid = c.get("candidate_id", "unknown")
-                ctype = c.get("candidate_type", "unknown")
-                lines.append(f"  - {cid} ({ctype})")
+                _candidate_detail(c)
         else:
             lines.append("  (none)")
 
