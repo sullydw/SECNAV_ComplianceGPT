@@ -883,84 +883,187 @@ def _preview_gate_met(payload: dict[str, Any]) -> bool:
 
 def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str, Any],
                         candidates: dict[str, Any], next_action: dict[str, Any],
-                        approval_state: dict[str, Any] | None = None) -> str:
+                        approval_state: dict[str, Any] | None = None,
+                        missing_for_preview: list[str] | None = None) -> str:
     lines: list[str] = []
-    if mode == "build_status":
-        lines.append("=" * 50)
-        lines.append("BUILD STATUS")
-        lines.append("=" * 50)
+    ap = approval_state or {}
+    missing_for_preview = missing_for_preview or []
+
+    def _sep(title: str, width: int = 54) -> None:
         lines.append("")
-        lines.append(f"Session: {payload.get('session_id', 'N/A')}")
-        lines.append(f"Status:  Incomplete — more information needed")
+        lines.append("=" * width)
+        lines.append(f"  {title}")
+        lines.append("=" * width)
         lines.append("")
-        known = [k for k, v in payload.items() if v not in (None, "", [], {})]
-        lines.append(f"Known fields ({len(known)}): {', '.join(known) if known else 'none'}")
-        missing = v_summary.get("missing_required", [])
-        lines.append(f"Missing required fields ({len(missing)}): {', '.join(missing) if missing else 'none'}")
-        p_count = candidates.get("counts", {}).get("pending", 0)
-        c_count = candidates.get("counts", {}).get("confirmed", 0)
-        lines.append(f"Pending candidates: {p_count}")
-        lines.append(f"Confirmed candidates: {c_count}")
+
+    def _header(title: str, width: int = 54) -> None:
         lines.append("")
-        na = next_action.get("recommended_action") or next_action.get("action")
-        if na:
-            lines.append(f"Next action: {na}")
-        lines.append("=" * 50)
-    else:
-        ap = approval_state or {}
-        if ap.get("approval_current"):
-            lines.append("=" * 50)
-            lines.append("DRAFT PREVIEW  APPROVED FOR FINALIZE")
-            lines.append("=" * 50)
+        lines.append("-" * width)
+        lines.append(f"  {title}")
+        lines.append("-" * width)
+        lines.append("")
+
+    def _item(label: str, value: Any, placeholder: str = "[NEEDED]") -> None:
+        if value in (None, "", [], {}):
+            lines.append(f"{label}: {placeholder}")
         else:
-            lines.append("=" * 50)
-            lines.append("DRAFT PREVIEW  NOT FINAL")
-            lines.append("=" * 50)
-        lines.append("")
-        ssic = payload.get("ssic")
-        lines.append(f"SSIC: {ssic if ssic else '[SSIC NEEDED]'}")
-        oc = payload.get("originator_code")
-        lines.append(f"Originator Code: {oc if oc else '[ORIGINATOR CODE NEEDED]'}")
-        lines.append(f"Date: {payload.get('date', '[DATE NEEDED]')}")
-        lines.append("")
-        lines.append(f"From: {payload.get('from', '[FROM NEEDED]')}")
-        lines.append(f"To:   {payload.get('to', '[TO NEEDED]')}")
-        lines.append("")
-        lines.append(f"Subj: {payload.get('subj', '[SUBJ NEEDED]')}")
-        lines.append("")
-        lines.append("-" * 50)
-        lines.append("[AI-DRAFTED OR USER-PROVIDED BODY  REVIEW REQUIRED]")
-        lines.append("-" * 50)
+            lines.append(f"{label}: {value}")
+
+    def _approval_banner() -> None:
+        if ap.get("approval_current"):
+            _sep("DRAFT PREVIEW  APPROVED FOR FINALIZE")
+        else:
+            _sep("DRAFT PREVIEW  NOT FINAL")
+
+    def _approval_footer() -> None:
+        if ap.get("approval_current"):
+            lines.append("")
+            lines.append("=" * 54)
+            lines.append("  END DRAFT PREVIEW  APPROVED FOR FINALIZE")
+            lines.append("=" * 54)
+        else:
+            lines.append("")
+            lines.append("=" * 54)
+            lines.append("  END DRAFT PREVIEW  NOT FINAL")
+            lines.append("=" * 54)
+
+    def _pending_section() -> None:
+        p_count = candidates.get("counts", {}).get("pending", 0)
+        _header(f"PENDING CANDIDATES ({p_count})")
+        if p_count:
+            for c in candidates.get("pending", []):
+                cid = c.get("candidate_id", "unknown")
+                ctype = c.get("candidate_type", "unknown")
+                lines.append(f"  - {cid} ({ctype}) — awaiting confirmation")
+        else:
+            lines.append("  (none)")
+
+    def _confirmed_section() -> None:
+        c_count = candidates.get("counts", {}).get("confirmed", 0)
+        _header(f"CONFIRMED SOURCE-BACKED FACTS ({c_count})")
+        if c_count:
+            for c in candidates.get("confirmed", []):
+                cid = c.get("candidate_id", "unknown")
+                ctype = c.get("candidate_type", "unknown")
+                lines.append(f"  - {cid} ({ctype})")
+        else:
+            lines.append("  (none)")
+
+    def _approval_status_section() -> None:
+        _header("APPROVAL STATUS")
+        if ap.get("approval_current"):
+            approved_at = ap.get("approved_at") or "unknown"
+            lines.append(f"  Approved for finalize at: {approved_at}")
+            lines.append("  Hash matches current draft.")
+        elif ap.get("approved_for_finalize"):
+            lines.append("  Previously approved, but draft has changed.")
+            lines.append("  Run 'approve' again after reviewing.")
+        else:
+            lines.append("  Not approved.")
+            if mode == "draft_preview":
+                lines.append("  Run 'approve' when satisfied with the draft.")
+            else:
+                lines.append("  Draft is incomplete — approval unavailable.")
+
+    def _next_action_section() -> None:
+        _header("NEXT ACTION")
+        na = next_action.get("recommended_action") or next_action.get("action")
+        question = next_action.get("question")
+        if question:
+            lines.append(f"  {question}")
+        elif na:
+            lines.append(f"  {na}")
+        else:
+            lines.append("  Continue providing missing information.")
+
+    if mode == "build_status":
+        _sep("BUILD STATUS")
+        lines.append(f"Session ID: {payload.get('session_id', 'N/A')}")
+        lines.append("Status:     Incomplete — more information needed")
+
+        known = [k for k, v in payload.items() if v not in (None, "", [], {})]
+        _header(f"KNOWN FIELDS ({len(known)})")
+        if known:
+            lines.append("  " + ", ".join(known))
+        else:
+            lines.append("  (none)")
+
+        _header("MISSING / BLOCKING ITEMS")
+        shown = set()
+        for f in missing_for_preview:
+            lines.append(f"  - {f}  [required for preview]")
+            shown.add(f)
+        for f in v_summary.get("missing_required", []):
+            if f not in shown:
+                lines.append(f"  - {f}  [required]")
+                shown.add(f)
+        if not shown:
+            lines.append("  (none)")
+
+        _pending_section()
+        _confirmed_section()
+        _approval_status_section()
+        _next_action_section()
+
+    else:
+        _approval_banner()
+
+        _header("DOCUMENT HEADER")
+        _item("SSIC", payload.get("ssic"), "[SSIC NEEDED]")
+        _item("Originator Code", payload.get("originator_code"), "[ORIGINATOR CODE NEEDED]")
+        _item("Date", payload.get("date"), "[DATE NEEDED]")
+
+        _header("ADDRESSES")
+        _item("From", payload.get("from"), "[FROM NEEDED]")
+        _item("To", payload.get("to"), "[TO NEEDED]")
+        if payload.get("via"):
+            lines.append(f"Via:  {payload['via']}")
+
+        _header("SUBJECT")
+        subj = payload.get("subj", "[SUBJ NEEDED]")
+        lines.append(f"  {subj}")
+
+        _header("BODY  [AI-DRAFTED OR USER-PROVIDED — REVIEW REQUIRED]")
         body = payload.get("body", [])
         if isinstance(body, list):
             for para in body:
-                lines.append(str(para))
+                lines.append(f"  {para}")
                 lines.append("")
         elif body:
-            lines.append(str(body))
+            lines.append(f"  {body}")
             lines.append("")
-        lines.append("-" * 50)
-        lines.append("")
+        else:
+            lines.append("  [BODY NEEDED]")
+
+        _header("SIGNATURE")
         sig = payload.get("signature")
         if isinstance(sig, dict):
-            lines.append(f"Signature: {sig.get('name', '[NAME NEEDED]')}")
+            lines.append(f"  Name:  {sig.get('name', '[NAME NEEDED]')}")
             if sig.get("title"):
                 lines.append(f"  Title: {sig['title']}")
             if sig.get("role"):
-                lines.append(f"  Role: {sig['role']}")
+                lines.append(f"  Role:  {sig['role']}")
         elif isinstance(sig, (list, str)):
-            lines.append(f"Signature: {sig}")
+            lines.append(f"  {sig}")
         else:
-            lines.append("Signature: [SIGNATURE NEEDED]")
-        lines.append("")
-        if ap.get("approval_current"):
-            lines.append("=" * 50)
-            lines.append("END DRAFT PREVIEW  APPROVED FOR FINALIZE")
-            lines.append("=" * 50)
-        else:
-            lines.append("=" * 50)
-            lines.append("END DRAFT PREVIEW  NOT FINAL")
-            lines.append("=" * 50)
+            lines.append("  [SIGNATURE NEEDED]")
+
+        _pending_section()
+        _confirmed_section()
+
+        # Validation summary
+        errors = v_summary.get("errors", 0)
+        warnings = v_summary.get("warnings", 0)
+        _header("VALIDATION SUMMARY")
+        lines.append(f"  Errors:   {errors}")
+        lines.append(f"  Warnings: {warnings}")
+        if v_summary.get("block_reason"):
+            lines.append(f"  Block:    {v_summary['block_reason']}")
+
+        _approval_status_section()
+        _next_action_section()
+        _approval_footer()
+
     return "\n".join(lines)
 
 
@@ -1023,7 +1126,7 @@ def cmd_preview(args: argparse.Namespace) -> None:
 
     if gate_met:
         approval_state = builder.approval_state()
-        preview_text = _build_preview_text(payload, "draft_preview", v_summary, candidates, next_action, approval_state)
+        preview_text = _build_preview_text(payload, "draft_preview", v_summary, candidates, next_action, approval_state, missing_for_preview=missing_preview)
         # Recommended next action for draft_preview
         if not can_render:
             rec_next = "Fix validation errors or missing fields before proceeding."
@@ -1052,7 +1155,7 @@ def cmd_preview(args: argparse.Namespace) -> None:
         })
     else:
         approval_state = builder.approval_state()
-        preview_text = _build_preview_text(payload, "build_status", v_summary, candidates, next_action, approval_state)
+        preview_text = _build_preview_text(payload, "build_status", v_summary, candidates, next_action, approval_state, missing_for_preview=missing_preview)
         if missing_preview:
             rec_next = f"Provide the next missing field: {missing_preview[0]}"
         elif next_action.get("question"):
