@@ -20,6 +20,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+import re
 
 # ---------------------------------------------------------------------------
 # Path setup
@@ -1217,6 +1218,147 @@ def _is_allowed_revise_target(field: str) -> bool:
     return field in allowed
 
 
+# Natural-language revision patterns ------------------------------------------------
+
+_REMOVE_ATTACHMENT_PATTERNS = [
+    re.compile(r"remove\s+(?:the\s+)?attachment\s+sentence", re.IGNORECASE),
+    re.compile(r"remove\s+(?:the\s+)?sentence\s+about\s+(?:the\s+)?attachment", re.IGNORECASE),
+]
+
+_CHANGE_SUBJ_PATTERN = re.compile(
+    r"change\s+(?:the\s+)?subject\s+(?:to\s+)?(.+)", re.IGNORECASE
+)
+_CHANGE_SIGNER_PATTERN = re.compile(
+    r"change\s+(?:the\s+)?signer\s+(?:to\s+)?(.+)", re.IGNORECASE
+)
+_CHANGE_DATE_PATTERN = re.compile(
+    r"change\s+(?:the\s+)?date\s+(?:to\s+)?(.+)", re.IGNORECASE
+)
+_CHANGE_TO_PATTERN = re.compile(
+    r"change\s+(?:the\s+)?to\s+(?:line\s+)?(?:to\s+)?(.+)", re.IGNORECASE
+)
+_CHANGE_FROM_PATTERN = re.compile(
+    r"change\s+(?:the\s+)?from\s+(?:line\s+)?(?:to\s+)?(.+)", re.IGNORECASE
+)
+
+_MORE_DIRECT_PATTERN = re.compile(
+    r"make\s+(?:the\s+)?body\s+more\s+direct", re.IGNORECASE
+)
+_MORE_FORMAL_PATTERN = re.compile(
+    r"make\s+(?:the\s+)?body\s+more\s+formal", re.IGNORECASE
+)
+_SHORTEN_BODY_PATTERN = re.compile(
+    r"shorten\s+(?:the\s+)?body", re.IGNORECASE
+)
+
+
+def _apply_natural_revision(
+    text: str, payload: dict[str, Any]
+) -> dict[str, str] | None:
+    """
+    Try to interpret a natural-language revision as a deterministic KV change.
+    Returns the kv dict to apply, or None if no pattern matched.
+    """
+    # 1. Remove attachment sentence
+    for pat in _REMOVE_ATTACHMENT_PATTERNS:
+        if pat.search(text):
+            body = payload.get("body", [])
+            if isinstance(body, list):
+                filtered = [
+                    para for para in body
+                    if "attachment" not in para.lower()
+                ]
+                if len(filtered) < len(body):
+                    return {"body": "\n".join(filtered)}
+            elif isinstance(body, str):
+                if "attachment" in body.lower():
+                    lines = [ln for ln in body.splitlines() if "attachment" not in ln.lower()]
+                    return {"body": "\n".join(lines)}
+            return {"body": body}  # no-op if no attachment found
+
+    # 2. Change subject to ...
+    m = _CHANGE_SUBJ_PATTERN.search(text)
+    if m:
+        return {"subj": m.group(1).strip()}
+
+    # 3. Change signer to ...
+    m = _CHANGE_SIGNER_PATTERN.search(text)
+    if m:
+        return {"signature.name": m.group(1).strip()}
+
+    # 4. Change date to ...
+    m = _CHANGE_DATE_PATTERN.search(text)
+    if m:
+        return {"date": m.group(1).strip()}
+
+    # 5. Change to line to ...
+    m = _CHANGE_TO_PATTERN.search(text)
+    if m:
+        return {"to": m.group(1).strip()}
+
+    # 6. Change from line to ...
+    m = _CHANGE_FROM_PATTERN.search(text)
+    if m:
+        return {"from": m.group(1).strip()}
+
+    # 7. Make body more direct  (remove hedging phrases)
+    if _MORE_DIRECT_PATTERN.search(text):
+        body = payload.get("body", [])
+        if isinstance(body, list):
+            cleaned = []
+            for para in body:
+                para = re.sub(r"\bI believe that\b", "", para, flags=re.IGNORECASE).strip()
+                para = re.sub(r"\bIt is suggested that\b", "", para, flags=re.IGNORECASE).strip()
+                para = re.sub(r"\bIn my opinion,?\b", "", para, flags=re.IGNORECASE).strip()
+                para = re.sub(r"\b{2,}", " ", para)
+                cleaned.append(para)
+            return {"body": "\n".join(cleaned)}
+        elif isinstance(body, str):
+            body = re.sub(r"\bI believe that\b", "", body, flags=re.IGNORECASE).strip()
+            body = re.sub(r"\bIt is suggested that\b", "", body, flags=re.IGNORECASE).strip()
+            body = re.sub(r"\bIn my opinion,?\b", "", body, flags=re.IGNORECASE).strip()
+            body = re.sub(r"\s{2,}", " ", body)
+            return {"body": body}
+
+    # 8. Make body more formal  (simple replacements)
+    if _MORE_FORMAL_PATTERN.search(text):
+        body = payload.get("body", [])
+        if isinstance(body, list):
+            formalized = []
+            for para in body:
+                para = re.sub(r"\bcan't\b", "cannot", para, flags=re.IGNORECASE)
+                para = re.sub(r"\bwon't\b", "will not", para, flags=re.IGNORECASE)
+                para = re.sub(r"\bdon't\b", "do not", para, flags=re.IGNORECASE)
+                para = re.sub(r"\bi'm\b", "I am", para, flags=re.IGNORECASE)
+                para = re.sub(r"\bwe're\b", "we are", para, flags=re.IGNORECASE)
+                formalized.append(para)
+            return {"body": "\n".join(formalized)}
+        elif isinstance(body, str):
+            body = re.sub(r"\bcan't\b", "cannot", body, flags=re.IGNORECASE)
+            body = re.sub(r"\bwon't\b", "will not", body, flags=re.IGNORECASE)
+            body = re.sub(r"\bdon't\b", "do not", body, flags=re.IGNORECASE)
+            body = re.sub(r"\bi'm\b", "I am", body, flags=re.IGNORECASE)
+            body = re.sub(r"\bwe're\b", "we are", body, flags=re.IGNORECASE)
+            return {"body": body}
+
+    # 9. Shorten body  (keep first sentence of each paragraph)
+    if _SHORTEN_BODY_PATTERN.search(text):
+        body = payload.get("body", [])
+        if isinstance(body, list):
+            shortened = []
+            for para in body:
+                sentences = re.split(r'(?<=[.!?])\s+', para.strip())
+                if sentences:
+                    shortened.append(sentences[0])
+            return {"body": "\n".join(shortened)}
+        elif isinstance(body, str):
+            sentences = re.split(r'(?<=[.!?])\s+', body.strip())
+            if sentences:
+                return {"body": sentences[0]}
+
+    return None
+
+
 def _proposed_kv_from_text(text: str) -> dict[str, str] | None:
     """
     Simple key-value extraction for controlled revision text.
@@ -1255,9 +1397,26 @@ def cmd_revise(args: argparse.Namespace) -> None:
         result = builder.ingest_user_message(kv_raw)
         applied_answers = result.get("applied_answers", [])
     else:
-        # No direct KV match; still record the revision text as user_message
-        result = builder.ingest_user_message(text)
-        applied_answers = result.get("applied_answers", [])
+        # Try natural-language revision patterns
+        natural_kv = _apply_natural_revision(text, payload_before)
+        if natural_kv:
+            # Build safe kv line(s) and route through mediator
+            kv_lines = []
+            for k, v in natural_kv.items():
+                kv_lines.append(f"{k}: {v}")
+            kv_raw = "\n".join(kv_lines)
+            result = builder.ingest_user_message(kv_raw)
+            applied_answers = result.get("applied_answers", [])
+            proposed_kv = natural_kv
+        else:
+            # Unsupported instruction
+            _emit({
+                "success": False,
+                "command": "revise",
+                "session_id": args.session,
+                "error": "Unsupported revision instruction. Use key:value format or a supported revision phrase.",
+            })
+            return
 
     payload_after = builder.build_payload()
     hash_after = builder.compute_preview_hash()
