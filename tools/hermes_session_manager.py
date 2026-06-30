@@ -185,26 +185,42 @@ def cmd_answer(args: argparse.Namespace) -> None:
 
 
 def cmd_ready(args: argparse.Namespace) -> None:
-    """Show whether the session is ready for validate/finalize/render."""
+    """Show whether the session is ready for validate/finalize/render.
+    Surfaces approval-gated readiness separately from validation readiness."""
     sid = _session_id_from_args(args)
     if not sid:
         _emit({"success": False, "command": "ready", "error": "--session required"})
         return
+    # Validation readiness from next-action
     doc_type = getattr(args, "doc_type", None)
     tool_args = ["next-action", "--session", sid]
     if doc_type:
         tool_args += ["--doc-type", doc_type]
     r = _run_tool(tool_args)
     rg = r.get("render_gate", {})
-    ready = rg.get("can_render", False)
+    validation_ready = rg.get("can_render", False)
+    # Approval state from status
+    s = _run_tool(["status", "--session", sid])
+    approval = s.get("approval") or {}
+    approval_current = approval.get("approval_current", False)
+    approved_ready = validation_ready and approval_current
     _emit({
         "success": r.get("success", False),
         "command": "ready",
         "session_id": sid,
-        "ready": ready,
+        "ready": approved_ready,
+        "approved_ready": approved_ready,
+        "validation_ready": validation_ready,
+        "approval": approval,
+        "approval_gate": {"approval_current": approval_current, "passed": approval_current},
+        "approval_required": True,
         "render_gate": rg,
         "next_action": r.get("next_action"),
-        "message": rg.get("reason", "") if ready else f"Not ready: {rg.get('reason', '')}",
+        "message": (
+            "Validation and approval both ready." if approved_ready
+            else ("Validation ready, but draft is not approved yet." if validation_ready
+            else f"Not ready: {rg.get('reason', '')}")
+        ),
         "error": r.get("error"),
     })
 

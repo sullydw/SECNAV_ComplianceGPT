@@ -407,6 +407,7 @@ def cmd_status(args: argparse.Namespace) -> None:
         "findings": None,
         "pdf_path": None,
         "payload_json_path": None,
+        "approval": builder.approval_state(),
         "error": None,
     })
 
@@ -442,6 +443,26 @@ def _check_approval_gate(builder) -> tuple[bool, dict[str, Any], str | None]:
 
 def cmd_finalize(args: argparse.Namespace) -> None:
     builder = _load_session(args.session)
+    v_summary = builder.validation_summary()
+    if not v_summary.get("finalize_allowed", False):
+        astate = builder.approval_state()
+        _emit({
+            "success": False,
+            "command": "finalize",
+            "session_id": args.session,
+            "payload": builder.build_payload(),
+            "validation_summary": v_summary,
+            "warning_summary": builder.warning_summary(),
+            "next_question": None,
+            "proposed_kv": None,
+            "findings": v_summary.get("findings"),
+            "pdf_path": None,
+            "payload_json_path": None,
+            "approval": astate,
+            "approval_gate": {"passed": astate.get("approval_current", False), "reason": None},
+            "error": f"Cannot finalize: validation/finalize_allowed is false — {v_summary.get('block_reason', ['validation blocked'])}",
+        })
+        return
     ok, astate, err = _check_approval_gate(builder)
     if not ok:
         _emit({
@@ -449,11 +470,11 @@ def cmd_finalize(args: argparse.Namespace) -> None:
             "command": "finalize",
             "session_id": args.session,
             "payload": builder.build_payload(),
-            "validation_summary": builder.validation_summary(),
+            "validation_summary": v_summary,
             "warning_summary": builder.warning_summary(),
             "next_question": None,
             "proposed_kv": None,
-            "findings": None,
+            "findings": v_summary.get("findings"),
             "pdf_path": None,
             "payload_json_path": None,
             "approval": astate,
@@ -872,14 +893,22 @@ def _has_usable_signature(payload: dict[str, Any]) -> bool:
     return False
 
 
-def _preview_gate_met(payload: dict[str, Any]) -> bool:
-    """Check if minimum fields exist for draft_preview mode."""
+def _missing_for_preview(payload: dict[str, Any]) -> list[str]:
+    """Return list of field names missing for draft_preview mode."""
+    missing: list[str] = []
     required_for_preview = {"from", "to", "subj", "body", "date"}
     for field in required_for_preview:
         val = payload.get(field)
         if val in (None, "", [], {}):
-            return False
-    return _has_usable_signature(payload)
+            missing.append(field)
+    if not _has_usable_signature(payload):
+        missing.append("signature")
+    return missing
+
+
+def _preview_gate_met(payload: dict[str, Any]) -> bool:
+    """Check if minimum fields exist for draft_preview mode."""
+    return len(_missing_for_preview(payload)) == 0
 
 
 def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str, Any],
@@ -946,13 +975,19 @@ def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str,
         cid = c.get("candidate_id", "unknown")
         ctype = c.get("candidate_type", "unknown")
         lines.append(f"  - {cid} ({ctype})")
-        tier = c.get("source_tier")
+        resolved = c.get("resolved_value")
+        if not isinstance(resolved, dict):
+            resolved = {}
+        # Source provenance: top-level first, then fallback to resolved_value
+        tier = c.get("source_tier") if c.get("source_tier") is not None else resolved.get("source_tier")
+        url = c.get("source_url") if c.get("source_url") is not None else resolved.get("source_url")
+        title = c.get("source_title") if c.get("source_title") is not None else resolved.get("source_title")
+        limit = c.get("source_limitation") if c.get("source_limitation") is not None else resolved.get("source_limitation")
         lines.append(_source_label(tier))
         it = c.get("input_text")
         if it:
             short = (it[:60] + "...") if len(it) > 60 else it
             lines.append(f"    input_text: {short}")
-        resolved = c.get("resolved_value")
         if isinstance(resolved, dict):
             short = "; ".join(f"{k}={v}" for k, v in list(resolved.items())[:3])
             if len(resolved) > 3:
@@ -961,13 +996,10 @@ def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str,
         conf = c.get("confidence")
         if conf is not None:
             lines.append(f"    confidence: {conf}")
-        url = c.get("source_url")
         if url:
             lines.append(f"    source_url: {url}")
-        title = c.get("source_title")
         if title:
             lines.append(f"    source_title: {title}")
-        limit = c.get("source_limitation")
         if limit:
             lines.append(f"    source_limitation: {limit}")
         lines.append("")
@@ -1230,9 +1262,21 @@ def cmd_approve(args: argparse.Namespace) -> None:
     Saves session but does NOT finalize, render, or change candidates.
     """
     builder = _load_session(args.session)
+    payload = builder.build_payload()
+    v_summary = builder.validation_summary()
+    missing = _missing_for_preview(payload)
+    if not _preview_gate_met(payload):
+        _emit({
+            "success": False,
+            "command": "approve",
+            "session_id": args.session,
+            "mode": "build_status",
+            "missing_for_preview": missing,
+            "error": "Cannot approve: draft preview is not available yet. Provide required fields first.",
+        })
+        return
     result = builder.record_approval()
     _save_session(builder)
-    payload = builder.build_payload()
     _emit({
         "success": True,
         "command": "approve",
@@ -1243,7 +1287,7 @@ def cmd_approve(args: argparse.Namespace) -> None:
         "current_preview_hash": result["current_preview_hash"],
         "approval_current": result["approval_current"],
         "payload": payload,
-        "validation_summary": builder.validation_summary(),
+        "validation_summary": v_summary,
         "warning_summary": builder.warning_summary(),
         "error": None,
     })
