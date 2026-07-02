@@ -421,11 +421,16 @@ def cmd_preview(args: argparse.Namespace) -> None:
         _emit({"success": False, "command": "preview", "error": "--session required"})
         return
     r = _run_tool(["preview", "--session", sid])
+    mode = r.get("mode")
+    msg = (
+        f"Preview mode: {mode}" if r.get("success")
+        else r.get("error", "Preview failed")
+    )
     _emit({
         "success": r.get("success", False),
         "command": "preview",
         "session_id": sid,
-        "mode": r.get("mode"),
+        "mode": mode,
         "preview_gate_met": r.get("preview_gate_met"),
         "preview_text": r.get("preview_text"),
         "body_review_required": r.get("body_review_required"),
@@ -435,6 +440,7 @@ def cmd_preview(args: argparse.Namespace) -> None:
         "render_gate": r.get("render_gate"),
         "next_action": r.get("next_action"),
         "approval": r.get("approval"),
+        "message": msg,
         "error": r.get("error"),
     })
 
@@ -446,18 +452,25 @@ def cmd_approve(args: argparse.Namespace) -> None:
         _emit({"success": False, "command": "approve", "error": "--session required"})
         return
     r = _run_tool(["approve", "--session", sid])
+    approved = r.get("approved_for_finalize")
+    current_hash = r.get("current_preview_hash")
+    msg = (
+        f"Draft approved (hash: {current_hash})" if approved
+        else r.get("error", "Approval failed or draft changed since preview")
+    )
     _emit({
         "success": r.get("success", False),
         "command": "approve",
         "session_id": sid,
-        "approved_for_finalize": r.get("approved_for_finalize"),
+        "approved_for_finalize": approved,
         "approved_at": r.get("approved_at"),
         "approved_preview_hash": r.get("approved_preview_hash"),
-        "current_preview_hash": r.get("current_preview_hash"),
+        "current_preview_hash": current_hash,
         "approval_current": r.get("approval_current"),
         "payload": r.get("payload"),
         "validation_summary": r.get("validation_summary"),
         "warning_summary": r.get("warning_summary"),
+        "message": msg,
         "error": r.get("error"),
     })
 
@@ -470,6 +483,13 @@ def cmd_revise(args: argparse.Namespace) -> None:
         return
     text = getattr(args, "text", "")
     r = _run_tool(["revise", "--session", sid, "--text", text])
+    cleared = r.get("approval_cleared")
+    changed = r.get("payload_changed")
+    msg = (
+        f"Revised draft. Payload changed: {changed}. Approval cleared: {cleared}."
+        if r.get("success")
+        else r.get("error", "Revise failed")
+    )
     _emit({
         "success": r.get("success", False),
         "command": "revise",
@@ -478,12 +498,13 @@ def cmd_revise(args: argparse.Namespace) -> None:
         "applied_answers": r.get("applied_answers"),
         "preview_hash_before": r.get("preview_hash_before"),
         "preview_hash_after": r.get("preview_hash_after"),
-        "payload_changed": r.get("payload_changed"),
-        "approval_cleared": r.get("approval_cleared"),
+        "payload_changed": changed,
+        "approval_cleared": cleared,
         "approval": r.get("approval"),
         "payload": r.get("payload"),
         "validation_summary": r.get("validation_summary"),
         "warning_summary": r.get("warning_summary"),
+        "message": msg,
         "error": r.get("error"),
     })
 
