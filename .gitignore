@@ -63,3 +63,9 @@ corrections/evidence/
 
 # H.13 local config override (must be gitignored; tracked default is in config/)
 config/cci_enforcement_config.local.json
+
+# Generated local artifacts (Phase L.30Q)
+tmp/
+*_payload.json
+NUL
+
