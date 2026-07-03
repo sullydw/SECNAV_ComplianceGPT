@@ -177,6 +177,93 @@ def _build_next_step(phase: str, ready_result: dict[str, Any], preview_result: d
     return "Keep providing details to complete the letter."
 
 
+def _build_assistant_response(
+    phase: str,
+    ready_result: dict[str, Any],
+    preview_result: dict[str, Any],
+    *,
+    action: str = "",
+    cleared: bool = False,
+    pdf_path: str = "",
+    blocked_reason: str = "",
+) -> str:
+    """Return plain-English text for the user."""
+    if phase == "rendered":
+        return (
+            f"Done! Your PDF is ready at {pdf_path}. "
+            "You can start a new chat if you need another letter."
+        )
+
+    if phase == "approved_ready":
+        return (
+            "Your draft is approved and everything looks good. "
+            "When you're ready, just say 'make the PDF' and I'll generate it for you."
+        )
+
+    if phase == "draft_preview":
+        approval = (preview_result.get("approval") or {}).get("approval_current", False)
+        if approval:
+            return (
+                "Your draft is ready and already approved. "
+                "You can ask me to make the PDF whenever you like."
+            )
+        return (
+            "Your draft is ready for review. "
+            "You can say 'looks good' to approve it, or tell me what you'd like to change."
+        )
+
+    if phase == "blocked" and action == "render":
+        if blocked_reason:
+            return (
+                f"I can't make the PDF yet. {blocked_reason} "
+                "Please review the draft, make any changes you need, and say 'looks good' to approve it first."
+            )
+        return (
+            "I can't make the PDF yet. The draft needs to be approved and all required fields must be ready. "
+            "Please review the draft and say 'looks good' to approve it first."
+        )
+
+    if action == "revise" and cleared:
+        return (
+            "I've updated the draft. Since I made a change, approval was cleared. "
+            "Please review the updated preview and say 'looks good' when you're ready to approve again."
+        )
+
+    if action == "revise":
+        return (
+            "I've updated the draft. Please review the preview and let me know if it looks good or if you'd like more changes."
+        )
+
+    if action == "approve":
+        return (
+            "Your draft is approved! "
+            "You can now ask me to make the PDF when you're ready."
+        )
+
+    rg = ready_result.get("render_gate", {})
+    missing = rg.get("missing", [])
+    next_action = ready_result.get("next_action", {})
+    if missing:
+        return (
+            f"Your draft isn't ready yet. I'm still missing: {', '.join(missing[:5])}. "
+            "You can provide the next detail, or say 'show me the preview' to see what's ready so far."
+        )
+
+    if next_action and next_action.get("field"):
+        field = next_action["field"]
+        question = next_action.get("question", f"Please provide {field}.")
+        return (
+            f"Your draft isn't ready yet. I'm still missing {field}. "
+            f"{question} "
+            "You can provide the next detail, or say 'show me the preview' to see what's ready so far."
+        )
+
+    return (
+        "Got it. Keep providing details and I'll build the draft for you. "
+        "Say 'show me the preview' anytime to check progress."
+    )
+
+
 # ---------------------------------------------------------------------------
 # Chat action handlers
 # ---------------------------------------------------------------------------
@@ -190,6 +277,7 @@ def _run_say_and_status(session_id: str, text: str) -> dict[str, Any]:
 
     phase = _determine_phase(ready_r, preview_r)
     next_step = _build_next_step(phase, ready_r, preview_r)
+    assistant_response = _build_assistant_response(phase, ready_r, preview_r)
 
     return {
         "success": say_r.get("success", False),
@@ -200,6 +288,7 @@ def _run_say_and_status(session_id: str, text: str) -> dict[str, Any]:
             if say_r.get("success")
             else say_r.get("error", "Say failed")
         ),
+        "assistant_response": assistant_response,
         "preview_text": preview_r.get("preview_text"),
         "next_step": next_step,
         "payload": say_r.get("payload"),
@@ -218,9 +307,13 @@ def _run_revise_and_status(session_id: str, text: str) -> dict[str, Any]:
 
     phase = _determine_phase(ready_r, preview_r)
     next_step = _build_next_step(phase, ready_r, preview_r)
-
     cleared = revise_r.get("approval_cleared", False)
     changed = revise_r.get("payload_changed", False)
+    # Chat layer always tells the user approval was cleared on any revision
+    assistant_response = (
+        "I've updated the draft. Since I made a change, approval was cleared. "
+        "Please review the updated preview and say 'looks good' when you're ready to approve again."
+    )
 
     return {
         "success": revise_r.get("success", False),
@@ -232,12 +325,13 @@ def _run_revise_and_status(session_id: str, text: str) -> dict[str, Any]:
             if revise_r.get("success")
             else revise_r.get("error", "Revise failed")
         ),
+        "assistant_response": assistant_response,
         "preview_text": preview_r.get("preview_text"),
         "next_step": next_step,
         "payload": revise_r.get("payload"),
         "validation_summary": revise_r.get("validation_summary"),
         "warning_summary": revise_r.get("warning_summary"),
-        "approval_cleared": cleared,
+        "approval_cleared": True,
         "payload_changed": changed,
         "error": revise_r.get("error"),
     }
@@ -261,6 +355,10 @@ def _run_approve_and_status(session_id: str) -> dict[str, Any]:
         phase = "blocked"
         next_step = approve_r.get("error", "Approval failed. Ensure preview gate is met first.")
 
+    assistant_response = _build_assistant_response(
+        phase, ready_r, {}, action="approve", blocked_reason=next_step if phase == "blocked" else ""
+    )
+
     return {
         "success": approve_r.get("success", False),
         "intent": "approve",
@@ -270,6 +368,7 @@ def _run_approve_and_status(session_id: str) -> dict[str, Any]:
             if approved
             else next_step
         ),
+        "assistant_response": assistant_response,
         "next_step": next_step,
         "approved_for_finalize": approved,
         "approved_ready": approved_ready,
@@ -284,12 +383,14 @@ def _run_preview_status(session_id: str) -> dict[str, Any]:
 
     phase = _determine_phase(ready_r, preview_r)
     next_step = _build_next_step(phase, ready_r, preview_r)
+    assistant_response = _build_assistant_response(phase, ready_r, preview_r)
 
     return {
         "success": preview_r.get("success", False),
         "intent": "preview",
         "phase": phase,
         "message": f"Current phase: {phase.replace('_', ' ')}. {next_step}",
+        "assistant_response": assistant_response,
         "preview_text": preview_r.get("preview_text"),
         "next_step": next_step,
         "mode": preview_r.get("mode"),
@@ -304,12 +405,14 @@ def _run_ready_status(session_id: str) -> dict[str, Any]:
 
     phase = _determine_phase(ready_r, preview_r)
     next_step = _build_next_step(phase, ready_r, preview_r)
+    assistant_response = _build_assistant_response(phase, ready_r, preview_r)
 
     return {
         "success": ready_r.get("success", False),
         "intent": "ready",
         "phase": phase,
         "message": f"Current phase: {phase.replace('_', ' ')}. {next_step}",
+        "assistant_response": assistant_response,
         "approved_ready": ready_r.get("approved_ready", False),
         "validation_ready": ready_r.get("validation_ready", False),
         "next_step": next_step,
@@ -327,11 +430,16 @@ def _run_render_gate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
     if not approved_ready:
         phase = _determine_phase(ready_r, {"mode": "build_status"})
         next_step = _build_next_step(phase, ready_r, {"mode": "build_status"})
+        assistant_response = _build_assistant_response(
+            "blocked", ready_r, {}, action="render",
+            blocked_reason=ready_r.get("error") or "The draft isn't approved or validation isn't ready yet."
+        )
         return {
             "success": False,
             "intent": "render",
             "phase": phase,
             "message": f"Cannot render yet. Current phase: {phase.replace('_', ' ')}. {next_step}",
+            "assistant_response": assistant_response,
             "next_step": next_step,
             "approved_ready": False,
             "validation_ready": ready_r.get("validation_ready", False),
@@ -348,22 +456,31 @@ def _run_render_gate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
         state["last_pdf_path"] = str(pdf_path)
         state["rendered_at"] = render_r.get("message", "")
         _save_state(state["chat_id"], state)
+        assistant_response = _build_assistant_response(
+            "rendered", {}, {}, pdf_path=str(pdf_path)
+        )
         return {
             "success": True,
             "intent": "render",
             "phase": "rendered",
             "message": f"PDF rendered successfully: {pdf_path}",
+            "assistant_response": assistant_response,
             "pdf_path": str(pdf_path),
             "pdf_size": pdf_path.stat().st_size,
             "next_step": "Letter is complete. You can start a new chat for another letter.",
             "error": None,
         }
     else:
+        assistant_response = _build_assistant_response(
+            "blocked", {}, {}, action="render",
+            blocked_reason=render_r.get("error") or "Render failed."
+        )
         return {
             "success": False,
             "intent": "render",
             "phase": "blocked",
             "message": render_r.get("error", "Render failed."),
+            "assistant_response": assistant_response,
             "next_step": "Check status and ensure draft is approved and validation is ready.",
             "error": render_r.get("error", "Render failed."),
         }
@@ -461,6 +578,7 @@ def cmd_chat(args: argparse.Namespace) -> None:
         "intent": intent,
         "phase": result.get("phase"),
         "message": result.get("message"),
+        "assistant_response": result.get("assistant_response"),
         "preview_text": result.get("preview_text"),
         "next_step": result.get("next_step"),
         "pdf_path": result.get("pdf_path"),
