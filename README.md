@@ -15,7 +15,15 @@ Figure 9-1 same-page endorsements and additional C10 memorandum types are deferr
 
 ## Quick Start
 
-Render a sample PDF:
+The easiest way to draft and render a letter is the interactive chat builder:
+
+```
+C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py interactive
+```
+
+See [docs/USER_QUICKSTART.md](docs/USER_QUICKSTART.md) for a full sample conversation.
+
+You can also render a sample PDF directly from a JSON file:
 
 ```bash
 python src/pdf_v6_render.py examples/v6_sample_letter.json output/v6_test_letter.pdf
@@ -32,6 +40,7 @@ python tools/run_c10_regression.py
 
 ## Documentation
 
+- [docs/USER_QUICKSTART.md](docs/USER_QUICKSTART.md) — fastest way to draft and render a letter with the interactive chat builder
 - [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) — detailed status, audit results, and deferred work
 - [docs/PROJECT_VISION.md](docs/PROJECT_VISION.md) — system philosophy and interaction model
 - [docs/checkpoints/](docs/checkpoints/) — per-figure layout checkpoint notes
