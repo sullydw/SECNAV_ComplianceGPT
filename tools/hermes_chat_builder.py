@@ -309,20 +309,38 @@ def _run_revise_and_status(session_id: str, text: str) -> dict[str, Any]:
     next_step = _build_next_step(phase, ready_r, preview_r)
     cleared = revise_r.get("approval_cleared", False)
     changed = revise_r.get("payload_changed", False)
-    # Chat layer always tells the user approval was cleared on any revision
-    assistant_response = (
-        "I've updated the draft. Since I made a change, approval was cleared. "
-        "Please review the updated preview and say 'looks good' when you're ready to approve again."
-    )
+    success = revise_r.get("success", False)
+
+    if not success:
+        assistant_response = (
+            "I wasn't able to apply that change to the draft. "
+            "Try supported changes such as 'make the body more formal', 'shorten the body', "
+            "'change the signer to ...', or 'change the subject to ...'."
+        )
+    elif not changed:
+        assistant_response = (
+            "I understood the request, but nothing in the draft was changed. "
+            "Try supported changes such as 'make the body more formal', 'shorten the body', "
+            "'change the signer to ...', or 'change the subject to ...'."
+        )
+    elif cleared:
+        assistant_response = (
+            "I've updated the draft. Since I made a change, approval was cleared. "
+            "Please review the updated preview and say 'looks good' when you're ready to approve again."
+        )
+    else:
+        assistant_response = (
+            "I've updated the draft. Please review the preview and let me know if it looks good or if you'd like more changes."
+        )
 
     return {
-        "success": revise_r.get("success", False),
+        "success": success,
         "intent": "revise",
         "phase": phase,
         "message": (
             f"Revised draft. Payload changed: {changed}. Approval cleared: {cleared}. "
             f"Current phase: {phase.replace('_', ' ')}. {next_step}"
-            if revise_r.get("success")
+            if success
             else revise_r.get("error", "Revise failed")
         ),
         "assistant_response": assistant_response,
@@ -331,7 +349,7 @@ def _run_revise_and_status(session_id: str, text: str) -> dict[str, Any]:
         "payload": revise_r.get("payload"),
         "validation_summary": revise_r.get("validation_summary"),
         "warning_summary": revise_r.get("warning_summary"),
-        "approval_cleared": True,
+        "approval_cleared": cleared,
         "payload_changed": changed,
         "error": revise_r.get("error"),
     }
@@ -613,6 +631,7 @@ def cmd_status(args: argparse.Namespace) -> None:
 
     phase = _determine_phase(ready_r, preview_r)
     next_step = _build_next_step(phase, ready_r, preview_r)
+    assistant_response = _build_assistant_response(phase, ready_r, preview_r)
 
     _emit({
         "success": True,
@@ -621,6 +640,7 @@ def cmd_status(args: argparse.Namespace) -> None:
         "session_id": session_id,
         "phase": phase,
         "message": f"Current phase: {phase.replace('_', ' ')}. {next_step}",
+        "assistant_response": assistant_response,
         "preview_text": preview_r.get("preview_text"),
         "next_step": next_step,
         "approved_ready": ready_r.get("approved_ready", False),
@@ -667,6 +687,7 @@ def cmd_reset(args: argparse.Namespace) -> None:
         "chat_id": chat_id,
         "session_id": new_session_id,
         "message": f"Chat reset with new session {new_session_id}.",
+        "assistant_response": "I've reset the chat. You can start a new letter request whenever you're ready.",
         "next_step": "Tell me what letter you need.",
         "error": None,
     })

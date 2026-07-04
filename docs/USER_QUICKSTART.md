@@ -10,7 +10,15 @@ Open a terminal and run:
 C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py interactive
 ```
 
-This starts a live chat session. Hermes will print a `chat_id` and wait for your first message.
+This starts a live chat session. Hermes prints a JSON object with the `chat_id` and session details, then waits for your first message with a plain-English prompt.
+
+## Optional: JSON-lines mode for UI integration
+
+If you are building a UI or automation on top of the chat builder, use `--json-lines` so each turn emits a single JSON object:
+
+```
+C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py interactive --json-lines
+```
 
 ## Optional: specify an output file
 
@@ -23,7 +31,8 @@ If you omit `--out`, Hermes uses a default path in the `tmp/` folder.
 ## Sample conversation
 
 ```
-Hermes: Welcome! Chat ID: chat-ab12...
+Hermes: {"success": true, "command": "interactive", "chat_id": "chat-ab12...", "message": "Chat started..."}
+Then a plain prompt appears.
 
 You: I need a standard letter to II MEF about reviewing correspondence procedures.
 Hermes: Got it. I still need a few fields... (e.g., from, date, signature)
@@ -41,7 +50,7 @@ You: Looks good.
 Hermes: Approved. Ready to render when you say "Make the PDF."
 
 You: Make the PDF.
-Hermes: PDF rendered to tmp\... .pdf
+Hermes: {"success": true, "intent": "render", "phase": "rendered", "assistant_response": "Done! Your PDF is ready at tmp\chat_...pdf", "pdf_path": "tmp\chat_...pdf", ...}
 
 You: exit
 Hermes: Goodbye.
