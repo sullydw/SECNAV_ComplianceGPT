@@ -449,7 +449,8 @@ def _run_render_gate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
     # Determine output path
     out_dir = _REPO_ROOT / "tmp"
     out_dir.mkdir(parents=True, exist_ok=True)
-    pdf_path = out_dir / f"chat_{session_id}.pdf"
+    user_out = state.get("out_path")
+    pdf_path = Path(user_out) if user_out else out_dir / f"chat_{session_id}.pdf"
 
     render_r = _run_manager(["render", "--session", session_id, "--out", str(pdf_path)])
     if render_r.get("success") and pdf_path.exists() and pdf_path.stat().st_size > 0:
@@ -526,24 +527,11 @@ def cmd_start(_args: argparse.Namespace) -> None:
     })
 
 
-def cmd_chat(args: argparse.Namespace) -> None:
-    """Process a natural-language chat turn."""
-    chat_id = getattr(args, "chat_id", None)
-    if not chat_id:
-        _emit({"success": False, "command": "chat", "error": "--chat-id required"})
-        return
-
-    try:
-        state = _load_state(chat_id)
-    except FileNotFoundError as exc:
-        _emit({"success": False, "command": "chat", "error": str(exc)})
-        return
-
-    text = getattr(args, "text", "")
+def _process_turn(chat_id: str, text: str, state: dict[str, Any]) -> dict[str, Any]:
+    """Process one chat turn and return the result dict."""
     session_id = state["session_id"]
     intent = _classify_intent(text)
 
-    # Append to lightweight history
     state["history"].append({"role": "user", "text": text, "intent": intent})
     if len(state["history"]) > 20:
         state["history"] = state["history"][-20:]
@@ -560,7 +548,6 @@ def cmd_chat(args: argparse.Namespace) -> None:
     elif intent == "render":
         result = _run_render_gate(session_id, state)
     else:
-        # "say" and "new" both map to ingest
         result = _run_say_and_status(session_id, text)
 
     state["history"].append({
@@ -569,13 +556,31 @@ def cmd_chat(args: argparse.Namespace) -> None:
         "message": result.get("message"),
     })
     _save_state(chat_id, state)
+    return result
+
+
+def cmd_chat(args: argparse.Namespace) -> None:
+    """Process a natural-language chat turn."""
+    chat_id = getattr(args, "chat_id", None)
+    if not chat_id:
+        _emit({"success": False, "command": "chat", "error": "--chat-id required"})
+        return
+
+    try:
+        state = _load_state(chat_id)
+    except FileNotFoundError as exc:
+        _emit({"success": False, "command": "chat", "error": str(exc)})
+        return
+
+    text = getattr(args, "text", "")
+    result = _process_turn(chat_id, text, state)
 
     _emit({
         "success": result.get("success", False),
         "command": "chat",
         "chat_id": chat_id,
-        "session_id": session_id,
-        "intent": intent,
+        "session_id": state["session_id"],
+        "intent": result.get("intent"),
         "phase": result.get("phase"),
         "message": result.get("message"),
         "assistant_response": result.get("assistant_response"),
@@ -668,6 +673,68 @@ def cmd_reset(args: argparse.Namespace) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Interactive mode
+# ---------------------------------------------------------------------------
+
+
+_EXIT_COMMANDS = {"exit", "quit", "/exit", "/quit"}
+
+
+def cmd_interactive(args: argparse.Namespace) -> None:
+    """Run an interactive chat loop. Creates a session if --chat-id is omitted."""
+    chat_id = getattr(args, "chat_id", None)
+    out_path = getattr(args, "out", "")
+    json_lines = getattr(args, "json_lines", False)
+
+    if chat_id:
+        try:
+            state = _load_state(chat_id)
+        except FileNotFoundError:
+            _emit({"success": False, "command": "interactive", "error": f"Chat not found: {chat_id}"})
+            return
+    else:
+        # auto-create
+        r = _run_manager(["new"])
+        if not r.get("success"):
+            _emit({"success": False, "command": "interactive", "error": f"Failed to create session: {r.get('error')}"})
+            return
+        session_id = r["session_id"]
+        chat_id = f"chat-{uuid.uuid4().hex[:12]}"
+        state = {
+            "chat_id": chat_id,
+            "session_id": session_id,
+            "created_at": r.get("message", ""),
+            "history": [],
+            "last_pdf_path": None,
+            "rendered_at": None,
+        }
+        if out_path:
+            state["out_path"] = str(out_path)
+        _save_state(chat_id, state)
+        _emit({"success": True, "command": "interactive", "chat_id": chat_id, "session_id": session_id,
+               "message": "Chat started. Type your message (or 'exit' to quit).", "error": None})
+        print("\n" + _build_assistant_response("build_status", {}, {}), flush=True)
+
+    state = _load_state(chat_id)
+
+    for line in sys.stdin:
+        text = line.strip()
+        if not text:
+            continue
+        if text.lower() in _EXIT_COMMANDS:
+            _emit({"success": True, "command": "interactive", "chat_id": chat_id,
+                   "message": "Goodbye.", "error": None})
+            break
+
+        result = _process_turn(chat_id, text, state)
+
+        if json_lines:
+            print(json.dumps(result, indent=2, default=str), flush=True)
+        else:
+            print(result.get("assistant_response", result.get("message", "")), flush=True)
+
+
+# ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
 
@@ -688,6 +755,11 @@ def main(argv: list[str] | None = None) -> int:
     reset_p = subparsers.add_parser("reset", help="Reset chat and start a new session")
     reset_p.add_argument("--chat-id", required=True)
 
+    interactive_p = subparsers.add_parser("interactive", help="Start an interactive chat loop")
+    interactive_p.add_argument("--chat-id", default=None, help="Existing chat ID (auto-creates if omitted)")
+    interactive_p.add_argument("--out", default=None, help="Optional output PDF path")
+    interactive_p.add_argument("--json-lines", action="store_true", help="Emit JSON per turn instead of plain text")
+
     args = parser.parse_args(argv)
 
     handlers: dict[str, Any] = {
@@ -695,6 +767,7 @@ def main(argv: list[str] | None = None) -> int:
         "chat": cmd_chat,
         "status": cmd_status,
         "reset": cmd_reset,
+        "interactive": cmd_interactive,
     }
 
     try:
