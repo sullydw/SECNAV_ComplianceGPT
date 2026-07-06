@@ -4,13 +4,13 @@ This guide shows the fastest way to draft and render a SECNAV-compliant letter u
 
 ## Recommended command
 
-Open a terminal and run:
+Open a terminal in the project folder and run:
 
 ```
 C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py interactive
 ```
 
-This starts a live chat session. Hermes prints a JSON object with the `chat_id` and session details, then waits for your first message with a plain-English prompt.
+This starts a live chat session. The first line printed is technical session information (including a `chat_id`). Normal users can ignore it—just wait for the plain-English prompt below it.
 
 ## Optional: JSON-lines mode for UI integration
 
@@ -26,13 +26,23 @@ C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py int
 C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py interactive --out tmp\my_letter.pdf
 ```
 
-If you omit `--out`, Hermes uses a default path in the `tmp/` folder.
+If you omit `--out`, Hermes uses a default path in the `tmp/` folder and prints the PDF path after a successful render.
+
+## Minimal complete example
+
+You can provide most fields in a single prompt instead of chatting back and forth:
+
+```
+You: I need a standard letter from Commanding Officer, Marine Corps Air Station New River to Commanding General, II Marine Expeditionary Force about correspondence procedures. Use the date 1 July 2026, signer A. B. SAMPLE, subject Correspondence Procedures, and make the body about implementing local correspondence review procedures.
+```
+
+Hermes extracts the fields and builds the draft. You can then review, revise, approve, and render as shown below.
 
 ## Sample conversation
 
 ```
 Hermes: {"success": true, "command": "interactive", "chat_id": "chat-ab12...", "message": "Chat started..."}
-Then a plain prompt appears.
+(You can ignore the line above—just wait for the prompt below.)
 
 You: I need a standard letter to II MEF about reviewing correspondence procedures.
 Hermes: Got it. I still need a few fields... (e.g., from, date, signature)
@@ -42,6 +52,9 @@ Hermes: Fields updated. Current phase: build_status.
 
 You: Show me the draft.
 Hermes: (shows draft preview)
+
+You: Make the PDF.
+Hermes: I cannot make the PDF yet because the draft has not been approved. Review the draft and say "looks good" when ready.
 
 You: Make the body more formal.
 Hermes: Body revised. Approval was cleared because the draft changed. Please review and re-approve.
@@ -77,7 +90,7 @@ Hermes: Goodbye.
 
 ## Safety gates (what Hermes will not do)
 
-- **No PDF until approved.** Hermes will not render unless you explicitly approve the current draft.
+- **No PDF until approved.** Hermes will not render unless you explicitly approve the current draft. If you say "Make the PDF" too early, Hermes will tell you what is still needed.
 - **Approval clears on change.** If you revise the draft after approving, approval is reset and you must re-approve.
 - **No render until validation is ready.** Hermes checks that the letter has all required fields before rendering.
 
