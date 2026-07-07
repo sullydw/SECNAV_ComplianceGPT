@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 r"""
-Hermes Chat Builder — Phase L.30S
+Hermes Chat Builder — Phase L.31A
 
-Conversational orchestration layer over hermes_session_manager.py.
-User chats naturally; the chat builder routes to safe wrapper commands
-behind the scenes.
+Callable backend tool for Hermes to drive SECNAV letter drafting.
 
-Run under the project venv:
-    venv\Scripts\python tools\hermes_chat_builder.py <command>
+Normal use: Hermes calls the functions below behind the scenes.
+Interactive mode remains for local test/debug only.
 """
 
 from __future__ import annotations
@@ -265,7 +263,7 @@ def _build_assistant_response(
 
 
 # ---------------------------------------------------------------------------
-# Chat action handlers
+# Chat action handlers (pure — no stdout)
 # ---------------------------------------------------------------------------
 
 
@@ -505,46 +503,6 @@ def _run_render_gate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
         }
 
 
-# ---------------------------------------------------------------------------
-# CLI command handlers
-# ---------------------------------------------------------------------------
-
-
-def cmd_start(_args: argparse.Namespace) -> None:
-    """Create a new chat and a new underlying session."""
-    r = _run_manager(["new"])
-    if not r.get("success"):
-        _emit({
-            "success": False,
-            "command": "start",
-            "message": f"Failed to create session: {r.get('error')}",
-            "error": r.get("error"),
-        })
-        return
-
-    session_id = r["session_id"]
-    chat_id = f"chat-{uuid.uuid4().hex[:12]}"
-    state = {
-        "chat_id": chat_id,
-        "session_id": session_id,
-        "created_at": r.get("message", ""),
-        "history": [],
-        "last_pdf_path": None,
-        "rendered_at": None,
-    }
-    _save_state(chat_id, state)
-
-    _emit({
-        "success": True,
-        "command": "start",
-        "chat_id": chat_id,
-        "session_id": session_id,
-        "message": f"Chat started. Use --chat-id {chat_id} for follow-up messages.",
-        "next_step": "Tell me what letter you need.",
-        "error": None,
-    })
-
-
 def _process_turn(chat_id: str, text: str, state: dict[str, Any]) -> dict[str, Any]:
     """Process one chat turn and return the result dict."""
     session_id = state["session_id"]
@@ -577,23 +535,56 @@ def _process_turn(chat_id: str, text: str, state: dict[str, Any]) -> dict[str, A
     return result
 
 
-def cmd_chat(args: argparse.Namespace) -> None:
-    """Process a natural-language chat turn."""
-    chat_id = getattr(args, "chat_id", None)
-    if not chat_id:
-        _emit({"success": False, "command": "chat", "error": "--chat-id required"})
-        return
+# ---------------------------------------------------------------------------
+# Pure internal backends (return dict, no print)
+# ---------------------------------------------------------------------------
 
+
+def _start_chat(out: str | None = None) -> dict[str, Any]:
+    """Create a new chat/session and return a result dict."""
+    r = _run_manager(["new"])
+    if not r.get("success"):
+        return {
+            "success": False,
+            "command": "start",
+            "message": f"Failed to create session: {r.get('error')}",
+            "error": r.get("error"),
+        }
+
+    session_id = r["session_id"]
+    chat_id = f"chat-{uuid.uuid4().hex[:12]}"
+    state: dict[str, Any] = {
+        "chat_id": chat_id,
+        "session_id": session_id,
+        "created_at": r.get("message", ""),
+        "history": [],
+        "last_pdf_path": None,
+        "rendered_at": None,
+    }
+    if out:
+        state["out_path"] = str(out)
+    _save_state(chat_id, state)
+
+    return {
+        "success": True,
+        "command": "start",
+        "chat_id": chat_id,
+        "session_id": session_id,
+        "message": "Chat started.",
+        "next_step": "Tell me what letter you need.",
+        "error": None,
+    }
+
+
+def _send_chat_turn(chat_id: str, text: str) -> dict[str, Any]:
+    """Send a chat turn and return a result dict."""
     try:
         state = _load_state(chat_id)
     except FileNotFoundError as exc:
-        _emit({"success": False, "command": "chat", "error": str(exc)})
-        return
+        return {"success": False, "command": "chat", "error": str(exc)}
 
-    text = getattr(args, "text", "")
     result = _process_turn(chat_id, text, state)
-
-    _emit({
+    return {
         "success": result.get("success", False),
         "command": "chat",
         "chat_id": chat_id,
@@ -609,21 +600,15 @@ def cmd_chat(args: argparse.Namespace) -> None:
         "payload_changed": result.get("payload_changed"),
         "approval_cleared": result.get("approval_cleared"),
         "error": result.get("error"),
-    })
+    }
 
 
-def cmd_status(args: argparse.Namespace) -> None:
-    """Show current chat phase, session status, and next step."""
-    chat_id = getattr(args, "chat_id", None)
-    if not chat_id:
-        _emit({"success": False, "command": "status", "error": "--chat-id required"})
-        return
-
+def _get_chat_status(chat_id: str) -> dict[str, Any]:
+    """Get current chat status and return a result dict."""
     try:
         state = _load_state(chat_id)
     except FileNotFoundError as exc:
-        _emit({"success": False, "command": "status", "error": str(exc)})
-        return
+        return {"success": False, "command": "status", "error": str(exc)}
 
     session_id = state["session_id"]
     ready_r = _run_manager(["ready", "--session", session_id])
@@ -633,7 +618,7 @@ def cmd_status(args: argparse.Namespace) -> None:
     next_step = _build_next_step(phase, ready_r, preview_r)
     assistant_response = _build_assistant_response(phase, ready_r, preview_r)
 
-    _emit({
+    return {
         "success": True,
         "command": "status",
         "chat_id": chat_id,
@@ -648,31 +633,23 @@ def cmd_status(args: argparse.Namespace) -> None:
         "last_pdf_path": state.get("last_pdf_path"),
         "history_count": len(state.get("history", [])),
         "error": None,
-    })
+    }
 
 
-def cmd_reset(args: argparse.Namespace) -> None:
-    """Reset chat state and start a fresh session for the same chat_id."""
-    chat_id = getattr(args, "chat_id", None)
-    if not chat_id:
-        _emit({"success": False, "command": "reset", "error": "--chat-id required"})
-        return
-
+def _reset_chat(chat_id: str) -> dict[str, Any]:
+    """Reset chat state and return a result dict."""
     try:
         state = _load_state(chat_id)
     except FileNotFoundError as exc:
-        _emit({"success": False, "command": "reset", "error": str(exc)})
-        return
+        return {"success": False, "command": "reset", "error": str(exc)}
 
-    # Create new session
     r = _run_manager(["new"])
     if not r.get("success"):
-        _emit({
+        return {
             "success": False,
             "command": "reset",
             "error": f"Failed to create new session: {r.get('error')}",
-        })
-        return
+        }
 
     new_session_id = r["session_id"]
     state["session_id"] = new_session_id
@@ -681,7 +658,7 @@ def cmd_reset(args: argparse.Namespace) -> None:
     state["rendered_at"] = None
     _save_state(chat_id, state)
 
-    _emit({
+    return {
         "success": True,
         "command": "reset",
         "chat_id": chat_id,
@@ -690,11 +667,125 @@ def cmd_reset(args: argparse.Namespace) -> None:
         "assistant_response": "I've reset the chat. You can start a new letter request whenever you're ready.",
         "next_step": "Tell me what letter you need.",
         "error": None,
-    })
+    }
 
 
 # ---------------------------------------------------------------------------
-# Interactive mode
+# Public callable functions for Hermes
+# ---------------------------------------------------------------------------
+
+
+def start_secnav_chat(chat_id: str | None = None, out: str | None = None) -> dict[str, Any]:
+    """
+    Start a new SECNAV chat session.
+    If chat_id is provided and exists, resume it.
+    If chat_id is omitted, auto-create one.
+    Returns a dict; never prints.
+    """
+    if chat_id:
+        try:
+            _load_state(chat_id)
+            return _get_chat_status(chat_id)
+        except FileNotFoundError:
+            pass
+    return _start_chat(out=out)
+
+
+def send_secnav_chat_turn(chat_id: str, text: str, out: str | None = None) -> dict[str, Any]:
+    """
+    Send a natural-language turn in an existing chat.
+    Returns a dict; never prints.
+    """
+    return _send_chat_turn(chat_id, text)
+
+
+def get_secnav_chat_status(chat_id: str) -> dict[str, Any]:
+    """
+    Get the current status of a chat.
+    Returns a dict; never prints.
+    """
+    return _get_chat_status(chat_id)
+
+
+def reset_secnav_chat(chat_id: str) -> dict[str, Any]:
+    """
+    Reset a chat, keeping the chat_id but starting a fresh underlying session.
+    Returns a dict; never prints.
+    """
+    return _reset_chat(chat_id)
+
+
+def format_tool_response_for_hermes(result: dict[str, Any]) -> str:
+    """
+    Convert a tool result dict into a concise plain-English string
+    suitable for Hermes to show the user.
+    """
+    if not result.get("success"):
+        err = result.get("error") or "Something went wrong."
+        return f"I couldn't complete that. {err}"
+
+    lines: list[str] = []
+
+    ar = result.get("assistant_response")
+    if ar:
+        lines.append(ar)
+
+    phase = result.get("phase")
+    if phase == "rendered":
+        pdf_path = result.get("pdf_path", "")
+        pdf_size = result.get("pdf_size")
+        if pdf_path:
+            size_str = f" ({pdf_size} bytes)" if pdf_size else ""
+            lines.append(f"PDF: {pdf_path}{size_str}")
+        return "\n".join(lines)
+
+    preview = result.get("preview_text")
+    if preview:
+        lines.append(f"Preview:\n{preview}")
+
+    next_step = result.get("next_step")
+    if next_step and not lines:
+        lines.append(next_step)
+
+    return "\n".join(lines) if lines else result.get("message", "Done.")
+
+
+# ---------------------------------------------------------------------------
+# CLI command handlers (thin wrappers over pure backends + _emit)
+# ---------------------------------------------------------------------------
+
+
+def cmd_start(_args: argparse.Namespace) -> None:
+    _emit(_start_chat())
+
+
+def cmd_chat(args: argparse.Namespace) -> None:
+    chat_id = getattr(args, "chat_id", None)
+    text = getattr(args, "text", "")
+    if not chat_id:
+        _emit({"success": False, "command": "chat", "error": "--chat-id required"})
+        return
+    _emit(_send_chat_turn(chat_id, text))
+
+
+def cmd_status(args: argparse.Namespace) -> None:
+    chat_id = getattr(args, "chat_id", None)
+    if not chat_id:
+        _emit({"success": False, "command": "status", "error": "--chat-id required"})
+        return
+    _emit(_get_chat_status(chat_id))
+
+
+def cmd_reset(args: argparse.Namespace) -> None:
+    chat_id = getattr(args, "chat_id", None)
+    if not chat_id:
+        _emit({"success": False, "command": "reset", "error": "--chat-id required"})
+        return
+    _emit(_reset_chat(chat_id))
+
+
+# ---------------------------------------------------------------------------
+# Interactive mode (local test/debug only)
 # ---------------------------------------------------------------------------
 
 
@@ -715,25 +806,12 @@ def cmd_interactive(args: argparse.Namespace) -> None:
             return
     else:
         # auto-create
-        r = _run_manager(["new"])
-        if not r.get("success"):
-            _emit({"success": False, "command": "interactive", "error": f"Failed to create session: {r.get('error')}"})
+        result = _start_chat(out=str(out_path) if out_path else None)
+        if not result.get("success"):
+            _emit({"success": False, "command": "interactive", "error": result.get("error", "Start failed.")})
             return
-        session_id = r["session_id"]
-        chat_id = f"chat-{uuid.uuid4().hex[:12]}"
-        state = {
-            "chat_id": chat_id,
-            "session_id": session_id,
-            "created_at": r.get("message", ""),
-            "history": [],
-            "last_pdf_path": None,
-            "rendered_at": None,
-        }
-        if out_path:
-            state["out_path"] = str(out_path)
-        _save_state(chat_id, state)
-        _emit({"success": True, "command": "interactive", "chat_id": chat_id, "session_id": session_id,
-               "message": "Chat started. Type your message (or 'exit' to quit).", "error": None})
+        chat_id = result["chat_id"]
+        _emit(result)
         print("\n" + _build_assistant_response("build_status", {}, {}), flush=True)
 
     state = _load_state(chat_id)
@@ -776,7 +854,7 @@ def main(argv: list[str] | None = None) -> int:
     reset_p = subparsers.add_parser("reset", help="Reset chat and start a new session")
     reset_p.add_argument("--chat-id", required=True)
 
-    interactive_p = subparsers.add_parser("interactive", help="Start an interactive chat loop")
+    interactive_p = subparsers.add_parser("interactive", help="Start an interactive chat loop (local test/debug only)")
     interactive_p.add_argument("--chat-id", default=None, help="Existing chat ID (auto-creates if omitted)")
     interactive_p.add_argument("--out", default=None, help="Optional output PDF path")
     interactive_p.add_argument("--json-lines", action="store_true", help="Emit JSON per turn instead of plain text")

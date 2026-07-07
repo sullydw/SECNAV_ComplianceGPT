@@ -1,75 +1,21 @@
 # Hermes User Quickstart
 
-This guide shows the fastest way to draft and render a SECNAV-compliant letter using the interactive chat builder.
+Normal use is chatting with Hermes. Hermes calls the SECNAV builder tool behind the scenes so you don't have to run anything separately.
 
-## Recommended command
+## How to use it
 
-Open a terminal in the project folder and run:
-
-```
-C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py interactive
-```
-
-This starts a live chat session. The first line printed is technical session information (including a `chat_id`). Normal users can ignore it—just wait for the plain-English prompt below it.
-
-## Optional: JSON-lines mode for UI integration
-
-If you are building a UI or automation on top of the chat builder, use `--json-lines` so each turn emits a single JSON object:
+Just talk to Hermes like you would to a person. For example:
 
 ```
-C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py interactive --json-lines
+I need a standard letter from Commanding Officer, Marine Corps Air Station New River
+  to Commanding General, II Marine Expeditionary Force about correspondence procedures.
+  Use the date 1 July 2026, signer A. B. SAMPLE, subject Correspondence Procedures,
+  and make the body about implementing local correspondence review procedures.
 ```
 
-## Optional: specify an output file
+Hermes extracts the fields, builds the draft, and walks you through review, approval, and rendering.
 
-```
-C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py interactive --out tmp\my_letter.pdf
-```
-
-If you omit `--out`, Hermes uses a default path in the `tmp/` folder and prints the PDF path after a successful render.
-
-## Minimal complete example
-
-You can provide most fields in a single prompt instead of chatting back and forth:
-
-```
-You: I need a standard letter from Commanding Officer, Marine Corps Air Station New River to Commanding General, II Marine Expeditionary Force about correspondence procedures. Use the date 1 July 2026, signer A. B. SAMPLE, subject Correspondence Procedures, and make the body about implementing local correspondence review procedures.
-```
-
-Hermes extracts the fields and builds the draft. You can then review, revise, approve, and render as shown below.
-
-## Sample conversation
-
-```
-Hermes: {"success": true, "command": "interactive", "chat_id": "chat-ab12...", "message": "Chat started..."}
-(You can ignore the line above—just wait for the prompt below.)
-
-You: I need a standard letter to II MEF about reviewing correspondence procedures.
-Hermes: Got it. I still need a few fields... (e.g., from, date, signature)
-
-You: Use A. B. SAMPLE and 1 July 2026.
-Hermes: Fields updated. Current phase: build_status.
-
-You: Show me the draft.
-Hermes: (shows draft preview)
-
-You: Make the PDF.
-Hermes: I cannot make the PDF yet because the draft has not been approved. Review the draft and say "looks good" when ready.
-
-You: Make the body more formal.
-Hermes: Body revised. Approval was cleared because the draft changed. Please review and re-approve.
-
-You: Looks good.
-Hermes: Approved. Ready to render when you say "Make the PDF."
-
-You: Make the PDF.
-Hermes: {"success": true, "intent": "render", "phase": "rendered", "assistant_response": "Done! Your PDF is ready at tmp\chat_...pdf", "pdf_path": "tmp\chat_...pdf", ...}
-
-You: exit
-Hermes: Goodbye.
-```
-
-## Plain-English commands you can use
+## What you can ask
 
 - **Draft / change:**
   - `I need a letter to ...`
@@ -85,8 +31,8 @@ Hermes: Goodbye.
 - **Render:**
   - `Make the PDF`
 
-- **Exit:**
-  - `exit` or `quit` (also `/exit` or `/quit`)
+- **Check status:**
+  - `What's the status?`
 
 ## Safety gates (what Hermes will not do)
 
@@ -94,6 +40,34 @@ Hermes: Goodbye.
 - **Approval clears on change.** If you revise the draft after approving, approval is reset and you must re-approve.
 - **No render until validation is ready.** Hermes checks that the letter has all required fields before rendering.
 
-## Developer commands (not required for normal use)
+## Developer / local testing
 
-The chat builder is a thin layer over lower-level session commands. Users should stick to `interactive`. Developers who need direct control can still use `tools/hermes_session_manager.py` commands (`new`, `say`, `answer`, `preview`, `approve`, `ready`, `revise`, `render`, etc.), but those are not part of the normal user workflow.
+If you need to run the builder directly for local testing or debugging, you can use the interactive mode:
+
+```
+C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py interactive
+```
+
+This is a local test/debug harness. Normal users should not need it.
+
+For UI integration or automation scripts, you can also call the builder in `--json-lines` mode:
+
+```
+C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py interactive --json-lines
+```
+
+And optionally specify an output PDF path:
+
+```
+C:\Users\drryl\pinokio\bin\miniconda\python.exe tools\hermes_chat_builder.py interactive --out tmp\my_letter.pdf
+```
+
+## What happens behind the scenes
+
+Hermes uses callable functions inside `tools/hermes_chat_builder.py`:
+- `start_secnav_chat()` — begins a session
+- `send_secnav_chat_turn()` — sends your message
+- `get_secnav_chat_status()` — checks current phase
+- `reset_secnav_chat()` — starts fresh while keeping the same chat ID
+
+These functions return plain dictionaries, which Hermes turns into the responses you see.
