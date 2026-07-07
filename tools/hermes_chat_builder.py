@@ -576,12 +576,16 @@ def _start_chat(out: str | None = None) -> dict[str, Any]:
     }
 
 
-def _send_chat_turn(chat_id: str, text: str) -> dict[str, Any]:
+def _send_chat_turn(chat_id: str, text: str, out: str | None = None) -> dict[str, Any]:
     """Send a chat turn and return a result dict."""
     try:
         state = _load_state(chat_id)
     except FileNotFoundError as exc:
         return {"success": False, "command": "chat", "error": str(exc)}
+
+    if out is not None:
+        state["out_path"] = str(out)
+        _save_state(chat_id, state)
 
     result = _process_turn(chat_id, text, state)
     return {
@@ -694,9 +698,10 @@ def start_secnav_chat(chat_id: str | None = None, out: str | None = None) -> dic
 def send_secnav_chat_turn(chat_id: str, text: str, out: str | None = None) -> dict[str, Any]:
     """
     Send a natural-language turn in an existing chat.
+    If out is provided, it is stored in chat state for later render.
     Returns a dict; never prints.
     """
-    return _send_chat_turn(chat_id, text)
+    return _send_chat_turn(chat_id, text, out=out)
 
 
 def get_secnav_chat_status(chat_id: str) -> dict[str, Any]:
