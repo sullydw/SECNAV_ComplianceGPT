@@ -345,6 +345,25 @@ def cmd_candidate_reject(args: argparse.Namespace) -> None:
     })
 
 
+def cmd_apply(args: argparse.Namespace) -> None:
+    """Apply a key:value field directly to a session."""
+    sid = _session_id_from_args(args)
+    if not sid:
+        _emit({"success": False, "command": "apply", "error": "--session required"})
+        return
+    r = _run_tool(["apply", "--session", sid, "--kv", args.kv])
+    _emit({
+        "success": r.get("success", False),
+        "command": "apply",
+        "session_id": sid,
+        "payload": r.get("payload"),
+        "validation_summary": r.get("validation_summary"),
+        "warning_summary": r.get("warning_summary"),
+        "message": f"Applied in {sid}" if r.get("success") else r.get("error"),
+        "error": r.get("error"),
+    })
+
+
 def cmd_apply_resolved(args: argparse.Namespace) -> None:
     """Record/confirm a resolved candidate via apply-resolved."""
     sid = _session_id_from_args(args)
@@ -567,6 +586,10 @@ def main(argv: list[str] | None = None) -> int:
     candidate_reject_p.add_argument("--candidate-id", required=True)
     candidate_reject_p.add_argument("--reason", default=None)
 
+    apply_p = subparsers.add_parser("apply", help="Apply a key:value field directly to a session")
+    apply_p.add_argument("--session", required=True)
+    apply_p.add_argument("--kv", required=True, help="Key:value text (e.g. from: CO, USS NEVERSAIL)")
+
     apply_resolved_p = subparsers.add_parser("apply-resolved", help="Record/confirm a resolved candidate")
     apply_resolved_p.add_argument("--session", required=True)
     apply_resolved_p.add_argument("--json", required=True, help="Path to candidate JSON file")
@@ -592,6 +615,7 @@ def main(argv: list[str] | None = None) -> int:
         "new": cmd_new,
         "resume": cmd_resume,
         "say": cmd_say,
+        "apply": cmd_apply,
         "next": cmd_next,
         "answer": cmd_answer,
         "ready": cmd_ready,

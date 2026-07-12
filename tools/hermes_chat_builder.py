@@ -124,15 +124,22 @@ _STATUS_INTENTS = {
 
 def _classify_intent(text: str) -> str:
     t = text.lower().strip()
+
+    # If a message contains both new-creation patterns AND revise keywords,
+    # treat it as a natural-language intake (say), not a revision.
+    new_match = any(re.search(r'\b' + re.escape(k) + r'\b', t) for k in _NEW_INTENTS)
+    revise_match = any(re.search(r'\b' + re.escape(k) + r'\b', t) for k in _REVISE_INTENTS)
+    if new_match and revise_match:
+        return "say"
+
     # Check render first (it may overlap with approve)
     if any(re.search(r'\b' + re.escape(k) + r'\b', t) for k in _RENDER_INTENTS):
         return "render"
     if any(re.search(r'\b' + re.escape(k) + r'\b', t) for k in _APPROVE_INTENTS):
         return "approve"
-    if any(re.search(r'\b' + re.escape(k) + r'\b', t) for k in _REVISE_INTENTS):
+    if revise_match:
         return "revise"
-    # New creation patterns should win over preview/status
-    if any(re.search(r'\b' + re.escape(k) + r'\b', t) for k in _NEW_INTENTS):
+    if new_match:
         return "new"
     if any(re.search(r'\b' + re.escape(k) + r'\b', t) for k in _PREVIEW_INTENTS):
         return "preview"
@@ -263,13 +270,34 @@ def _build_assistant_response(
 
 
 # ---------------------------------------------------------------------------
+# Key:value detection
+# ---------------------------------------------------------------------------
+
+_KEY_VALUE_RE = re.compile(
+    r"^[a-zA-Z][a-zA-Z0-9_.]*\s*:\s*",
+    re.MULTILINE,
+)
+
+
+def _looks_like_key_value(text: str) -> bool:
+    """True if the text starts with or contains a key:value line."""
+    stripped = text.strip()
+    if stripped.startswith("(") or stripped.startswith("["):
+        return False
+    return bool(_KEY_VALUE_RE.search(stripped))
+
+
+# ---------------------------------------------------------------------------
 # Chat action handlers (pure — no stdout)
 # ---------------------------------------------------------------------------
 
 
 def _run_say_and_status(session_id: str, text: str) -> dict[str, Any]:
-    """Run say, then preview + ready to build a user-facing response."""
-    say_r = _run_manager(["say", "--session", session_id, "--text", text])
+    """Run say (or apply for key:value), then preview + ready to build a user-facing response."""
+    if _looks_like_key_value(text):
+        say_r = _run_manager(["apply", "--session", session_id, "--kv", text])
+    else:
+        say_r = _run_manager(["say", "--session", session_id, "--text", text])
     preview_r = _run_manager(["preview", "--session", session_id])
     ready_r = _run_manager(["ready", "--session", session_id])
 
