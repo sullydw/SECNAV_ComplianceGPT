@@ -23,76 +23,88 @@ def resolve_letterhead(payload):
     """
     Resolve letterhead lines from payload.
     Returns dict with 'lines' (list) and 'gap_below' (str).
+
+    Priority:
+      1. unit_identity with letterhead_family (existing behavior)
+      2. Fallback letterhead fields:
+         - letterhead_top_line
+         - letterhead_activity
+         - letterhead_address
     """
-    # Get unit identity
+    # Priority 1: unit identity
     unit_identity = payload.get("unit_identity", {})
     family = unit_identity.get("letterhead_family", "")
-    
-    if not family:
-        return {"lines": [], "gap_below": "one_blank_line"}
-    
-    # Resolve lines based on family
-    raw_lines = []
-    
-    if family == "LH_USMC_ACTIVITY":
-        # Line 1: UNITED STATES MARINE CORPS (branch line)
-        raw_lines.append("UNITED STATES MARINE CORPS")
-        
-        # Line 2: UNIT_OR_ACTIVITY_NAME
-        line2 = unit_identity.get("UNIT_OR_ACTIVITY_NAME", "")
-        if line2:
-            raw_lines.append(line2)
-        
-        # Check for parent line suppression
-        suppress_parent = unit_identity.get("SUPPRESS_PARENT_LINE", False)
-        
-        # Line 3: NEXT_ECHELON_OR_PARENT (only if present and not suppressed)
-        if not suppress_parent:
-            line3 = unit_identity.get("NEXT_ECHELON_OR_PARENT", "")
-            if line3:
-                raw_lines.append(line3)
-        
-        # Location line: INSTALLATION_OR_LOCATION + STATE + ZIP9
-        location = unit_identity.get("INSTALLATION_OR_LOCATION", "")
-        state = unit_identity.get("STATE", "")
-        zip9 = unit_identity.get("ZIP9", "")
-        if location or state or zip9:
-            parts = [location, state, zip9]
-            raw_lines.append(" ".join(p for p in parts if p))
-        
-        # Gap below letterhead
-        gap_below = "one_blank_line"
-    
-    elif family == "LH_HQMC":
-        # HQMC uses static top lines
-        raw_lines.append("DEPARTMENT OF THE NAVY")
-        raw_lines.append("HEADQUARTERS UNITED STATES MARINE CORPS")
-        gap_below = "one_blank_line"
-    
-    elif family == "LH_NAVY_ACTIVITY":
-        # Navy activity: DEPARTMENT OF THE NAVY as top line
-        raw_lines.append("DEPARTMENT OF THE NAVY")
-        
-        # Line 2: UNIT_OR_ACTIVITY_NAME
-        line2 = unit_identity.get("UNIT_OR_ACTIVITY_NAME", "")
-        if line2:
-            raw_lines.append(line2)
-        
-        # Line 3: INSTALLATION_OR_LOCATION + " " + STATE
-        location = unit_identity.get("INSTALLATION_OR_LOCATION", "")
-        state = unit_identity.get("STATE", "")
-        if location or state:
-            raw_lines.append(f"{location} {state}".strip())
-        
-        gap_below = "one_blank_line"
-    
-    else:
-        gap_below = "one_blank_line"
-    
-    return {"lines": raw_lines, "gap_below": gap_below}
+
+    if family:
+        raw_lines = []
+        if family == "LH_USMC_ACTIVITY":
+            raw_lines.append("UNITED STATES MARINE CORPS")
+            line2 = unit_identity.get("UNIT_OR_ACTIVITY_NAME", "")
+            if line2:
+                raw_lines.append(line2)
+            suppress_parent = unit_identity.get("SUPPRESS_PARENT_LINE", False)
+            if not suppress_parent:
+                line3 = unit_identity.get("NEXT_ECHELON_OR_PARENT", "")
+                if line3:
+                    raw_lines.append(line3)
+            location = unit_identity.get("INSTALLATION_OR_LOCATION", "")
+            state = unit_identity.get("STATE", "")
+            zip9 = unit_identity.get("ZIP9", "")
+            if location or state or zip9:
+                parts = [location, state, zip9]
+                raw_lines.append(" ".join(p for p in parts if p))
+            return {"lines": raw_lines, "gap_below": "one_blank_line"}
+
+        elif family == "LH_HQMC":
+            raw_lines.append("DEPARTMENT OF THE NAVY")
+            raw_lines.append("HEADQUARTERS UNITED STATES MARINE CORPS")
+            return {"lines": raw_lines, "gap_below": "one_blank_line"}
+
+        elif family == "LH_NAVY_ACTIVITY":
+            raw_lines.append("DEPARTMENT OF THE NAVY")
+            line2 = unit_identity.get("UNIT_OR_ACTIVITY_NAME", "")
+            if line2:
+                raw_lines.append(line2)
+            location = unit_identity.get("INSTALLATION_OR_LOCATION", "")
+            state = unit_identity.get("STATE", "")
+            if location or state:
+                raw_lines.append(f"{location} {state}".strip())
+            return {"lines": raw_lines, "gap_below": "one_blank_line"}
+
+        else:
+            return {"lines": raw_lines, "gap_below": "one_blank_line"}
+
+    # Priority 2: fallback fields
+    top = payload.get("letterhead_top_line", "")
+    activity = payload.get("letterhead_activity", "")
+    address = payload.get("letterhead_address", "")
+
+    if top or activity or address:
+        raw_lines = []
+        if top:
+            raw_lines.append(top)
+        if activity:
+            raw_lines.append(activity)
+        if address:
+            raw_lines.append(address)
+        return {"lines": raw_lines, "gap_below": "one_blank_line"}
+
+    # No letterhead data available
+    return {"lines": [], "gap_below": "one_blank_line"}
 
 
-def main():
+def has_letterhead_data(payload) -> bool:
+    """Return True if payload has sufficient letterhead data for a standard letter."""
+    unit_identity = payload.get("unit_identity", {})
+    if unit_identity.get("letterhead_family"):
+        return True
+    top = payload.get("letterhead_top_line", "")
+    activity = payload.get("letterhead_activity", "")
+    address = payload.get("letterhead_address", "")
+    return bool(top and activity and address)
+
+
+def resolve_letterhead_old(payload):
     # Paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
     base_dir = os.path.dirname(script_dir)

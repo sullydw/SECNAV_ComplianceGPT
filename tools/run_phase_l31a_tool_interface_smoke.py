@@ -78,6 +78,10 @@ def _fill_session(session_id: str) -> None:
         ("body", "1. Review procedures. 2. Coordinate updates."),
         ("signature.name", "A. B. SAMPLE"),
         ("signature.title", "Commanding Officer"),
+        # L.31I: letterhead required for standard letters
+        ("letterhead_top_line", "UNITED STATES MARINE CORPS"),
+        ("letterhead_activity", "MARINE CORPS AIR STATION NEW RIVER"),
+        ("letterhead_address", "JACKSONVILLE NC 28545-0000"),
     ]:
         _run_manager(["answer", "--session", session_id, "--field", field, "--value", value])
 

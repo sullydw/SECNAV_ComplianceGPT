@@ -37,6 +37,7 @@ from conversational_builder import BuilderSession
 from intake_orchestrator import IntakeOrchestrator
 from llm_builder_mediator import MediatorInput, create_mock_mediator
 from unresolved_fact_detector import detect_unresolved_facts
+from letterhead_v6_resolve import has_letterhead_data, resolve_letterhead
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -903,7 +904,28 @@ def _missing_for_preview(payload: dict[str, Any]) -> list[str]:
             missing.append(field)
     if not _has_usable_signature(payload):
         missing.append("signature")
+    # Standard letters require letterhead data
+    if _looks_like_standard_letter(payload) and not has_letterhead_data(payload):
+        missing.append("letterhead")
     return missing
+
+
+def _looks_like_standard_letter(payload: dict[str, Any]) -> bool:
+    """Return True if payload appears to be a standard letter (has to + subj)."""
+    return _is_field_present(payload.get("to")) and _is_field_present(payload.get("subj"))
+
+
+def _is_field_present(value: Any) -> bool:
+    """Treat None, '', [], {} as missing. Non-empty strings, lists, dicts are present."""
+    if value is None:
+        return False
+    if isinstance(value, str) and not value.strip():
+        return False
+    if isinstance(value, list) and not value:
+        return False
+    if isinstance(value, dict) and not value:
+        return False
+    return True
 
 
 def _preview_gate_met(payload: dict[str, Any]) -> bool:
@@ -1081,6 +1103,13 @@ def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str,
     else:
         _approval_banner()
 
+        # Show letterhead block if available
+        lh = resolve_letterhead(payload)
+        if lh.get("lines"):
+            _header("LETTERHEAD")
+            for line in lh["lines"]:
+                lines.append(f"  {line}")
+
         _header("DOCUMENT HEADER")
         _item("SSIC", payload.get("ssic"), "[SSIC NEEDED]")
         _item("Originator Code", payload.get("originator_code"), "[ORIGINATOR CODE NEEDED]")
@@ -1185,6 +1214,9 @@ def cmd_preview(args: argparse.Namespace) -> None:
         "can_render": can_render,
         "reason": rg_reason,
     }
+
+    # Apply standard-letter letterhead gate (orchestration, not CCI rule)
+    render_gate, next_action = _apply_standard_letterhead_gate(payload, render_gate, next_action)
 
     # Determine next action recommendation
     known_fields = [k for k, v in payload.items() if v not in (None, "", [], {})]
@@ -1530,6 +1562,53 @@ def cmd_revise(args: argparse.Namespace) -> None:
     })
 
 
+def _apply_standard_letterhead_gate(
+    payload: dict[str, Any],
+    render_gate: dict[str, Any],
+    next_action: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """
+    If payload looks like a standard letter but lacks letterhead data,
+    override render_gate to block rendering and update next_action to ask
+    for letterhead fields.  This is orchestration readiness logic, not a
+    CCI validator rule.
+    """
+    if not _looks_like_standard_letter(payload):
+        return render_gate, next_action
+    if has_letterhead_data(payload):
+        return render_gate, next_action
+
+    # Block render
+    render_gate = {
+        **render_gate,
+        "can_render": False,
+        "blocking_resolved": False,
+        "reason": (
+            "Standard letters require command/activity letterhead data. "
+            "Provide letterhead_top_line, letterhead_activity, and letterhead_address."
+        ),
+    }
+
+    # Override next_action to ask for letterhead
+    next_action = {
+        "action": "ask_user",
+        "priority": "blocking",
+        "field": "letterhead",
+        "question": (
+            "Please provide command letterhead information, for example:\n"
+            "letterhead_top_line: UNITED STATES MARINE CORPS\n"
+            "letterhead_activity: MARINE CORPS AIR STATION NEW RIVER\n"
+            "letterhead_address: JACKSONVILLE NC 28545-0000"
+        ),
+        "rule_id": "L31I-LETTERHEAD-001",
+        "source_file": "hermes_secnav_tool.py",
+        "recommended_action": "ask_user",
+        "candidate_type": None,
+        "reason": "Standard letter missing letterhead data",
+    }
+    return render_gate, next_action
+
+
 def cmd_next_action(args: argparse.Namespace) -> None:
     """
     Tell Hermes the next recommended action for the current session.
@@ -1576,6 +1655,9 @@ def cmd_next_action(args: argparse.Namespace) -> None:
         "can_render": can_render,
         "reason": rg_reason,
     }
+
+    # Apply standard-letter letterhead gate (orchestration, not CCI rule)
+    render_gate, next_action = _apply_standard_letterhead_gate(payload, render_gate, next_action)
 
     _emit({
         "success": True,

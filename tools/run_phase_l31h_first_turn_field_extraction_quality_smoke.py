@@ -66,6 +66,18 @@ def main() -> int:
 
     status = get_secnav_chat_status(chat_id)
     require(status.get("success") is True, f"status failed: {status}")
+    # Before L.31I, first-turn alone reached validation_ready. Now letterhead is required.
+    # The L.31H test is about extraction quality, not letterhead readiness.
+    # Add letterhead fields so we can verify validation_ready still works end-to-end.
+    for kv in (
+        "letterhead_top_line: UNITED STATES MARINE CORPS",
+        "letterhead_activity: MARINE CORPS AIR STATION NEW RIVER",
+        "letterhead_address: JACKSONVILLE NC 28545-0000",
+    ):
+        r = send_secnav_chat_turn(chat_id, kv)
+        require(r.get("success") is True, f"letterhead field failed: {r}")
+    status = get_secnav_chat_status(chat_id)
+    require(status.get("success") is True, f"status after letterhead failed: {status}")
     require(status.get("validation_ready") is True, f"validation not ready: {status}")
     require(status.get("approved_ready") is False, "approved_ready should remain false before explicit approval")
     checks.append("validation ready before approval")

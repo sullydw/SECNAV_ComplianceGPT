@@ -76,6 +76,16 @@ def main() -> int:
             _fail(f"Key:value turn '{key}' failed: {ar.get('error')}")
     print("[PASS] All key:value turns succeed")
 
+    # L.31I: letterhead now required for standard letters
+    for kv in (
+        "letterhead_top_line: UNITED STATES MARINE CORPS",
+        "letterhead_activity: MARINE CORPS AIR STATION NEW RIVER",
+        "letterhead_address: JACKSONVILLE NC 28545-0000",
+    ):
+        r = send_secnav_chat_turn(chat_id, kv)
+        if not r.get("success"):
+            _fail(f"Letterhead field failed: {r.get('error')}")
+
     # ------------------------------------------------------------------
     # 3. Preview reaches draft_preview
     # ------------------------------------------------------------------

@@ -138,6 +138,13 @@ def _ensure_fields_filled(session_id: str) -> None:
         _run_manager(["answer", "--session", session_id, "--field", "signature.name", "--value", "A. B. SAMPLE"])
     if not sig.get("title"):
         _run_manager(["answer", "--session", session_id, "--field", "signature.title", "--value", "Commanding Officer"])
+    # L.31I: letterhead required for standard letters
+    if not payload.get("letterhead_top_line"):
+        _run_manager(["answer", "--session", session_id, "--field", "letterhead_top_line", "--value", "UNITED STATES MARINE CORPS"])
+    if not payload.get("letterhead_activity"):
+        _run_manager(["answer", "--session", session_id, "--field", "letterhead_activity", "--value", "MARINE CORPS AIR STATION NEW RIVER"])
+    if not payload.get("letterhead_address"):
+        _run_manager(["answer", "--session", session_id, "--field", "letterhead_address", "--value", "JACKSONVILLE NC 28545-0000"])
 
 
 def main() -> int:
