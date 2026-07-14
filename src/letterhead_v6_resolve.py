@@ -19,6 +19,37 @@ def load_csv_rules(csv_path):
     return rows
 
 
+_VALID_AUTHORITY_LINES = {
+    "department of the navy",
+    "united states marine corps",
+}
+
+
+def _normalize_letterhead_top_line(raw: str) -> str:
+    """
+    Normalize a raw letterhead_top_line value.
+    Returns the canonical form if recognized, otherwise returns the original raw value.
+    """
+    cleaned = raw.strip().lower()
+    for canonical in _VALID_AUTHORITY_LINES:
+        if cleaned == canonical:
+            return canonical.upper()
+    # Attempt loose match: collapse multiple spaces and strip punctuation
+    cleaned = " ".join(cleaned.split())
+    for canonical in _VALID_AUTHORITY_LINES:
+        if cleaned == canonical:
+            return canonical.upper()
+    return raw.strip()
+
+
+def _is_valid_letterhead_authority(raw: str) -> bool:
+    """Return True if the raw value is a recognized authority line."""
+    return _normalize_letterhead_top_line(raw) in {
+        "DEPARTMENT OF THE NAVY",
+        "UNITED STATES MARINE CORPS",
+    }
+
+
 def resolve_letterhead(payload):
     """
     Resolve letterhead lines from payload.
@@ -27,7 +58,7 @@ def resolve_letterhead(payload):
     Priority:
       1. unit_identity with letterhead_family (existing behavior)
       2. Fallback letterhead fields:
-         - letterhead_top_line
+         - letterhead_top_line  (validated as authority line)
          - letterhead_activity
          - letterhead_address
     """
@@ -82,7 +113,7 @@ def resolve_letterhead(payload):
     if top or activity or address:
         raw_lines = []
         if top:
-            raw_lines.append(top)
+            raw_lines.append(_normalize_letterhead_top_line(top))
         if activity:
             raw_lines.append(activity)
         if address:
@@ -101,7 +132,9 @@ def has_letterhead_data(payload) -> bool:
     top = payload.get("letterhead_top_line", "")
     activity = payload.get("letterhead_activity", "")
     address = payload.get("letterhead_address", "")
-    return bool(top and activity and address)
+    if not (top and activity and address):
+        return False
+    return _is_valid_letterhead_authority(top)
 
 
 def resolve_letterhead_old(payload):

@@ -1568,25 +1568,71 @@ def _apply_standard_letterhead_gate(
     next_action: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """
-    If payload looks like a standard letter but lacks letterhead data,
+    If payload looks like a standard letter but lacks valid letterhead data,
     override render_gate to block rendering and update next_action to ask
-    for letterhead fields.  This is orchestration readiness logic, not a
-    CCI validator rule.
+    for correct letterhead fields.  This is orchestration readiness logic,
+    not a CCI validator rule.
     """
     if not _looks_like_standard_letter(payload):
         return render_gate, next_action
-    if has_letterhead_data(payload):
+
+    unit_identity = payload.get("unit_identity", {})
+    if unit_identity.get("letterhead_family"):
         return render_gate, next_action
+
+    top = payload.get("letterhead_top_line", "")
+    activity = payload.get("letterhead_activity", "")
+    address = payload.get("letterhead_address", "")
+
+    # Check if any fallback fields are present
+    has_fallback = bool(top or activity or address)
+
+    # Check if authority is valid
+    from letterhead_v6_resolve import _is_valid_letterhead_authority
+    authority_valid = _is_valid_letterhead_authority(top) if top else False
+
+    if has_fallback and authority_valid and activity and address:
+        # All fallback letterhead fields present and authority valid
+        return render_gate, next_action
+
+    if has_fallback and not authority_valid:
+        # Authority line present but invalid
+        reason = (
+            "Invalid letterhead authority line. "
+            "Use DEPARTMENT OF THE NAVY for Navy activities or "
+            "UNITED STATES MARINE CORPS for Marine Corps activities."
+        )
+        question = (
+            "The provided letterhead authority line is not recognized. "
+            "Use one of the following:\n"
+            "letterhead_top_line: DEPARTMENT OF THE NAVY\n"
+            "or\n"
+            "letterhead_top_line: UNITED STATES MARINE CORPS\n"
+            "Also provide:\n"
+            "letterhead_activity: [activity name]\n"
+            "letterhead_address: [city state zip]"
+        )
+    else:
+        # Missing letterhead entirely
+        reason = (
+            "Standard letters require command/activity letterhead data. "
+            "Provide letterhead_top_line, letterhead_activity, and letterhead_address."
+        )
+        question = (
+            "Please provide command letterhead information, for example:\n"
+            "letterhead_top_line: UNITED STATES MARINE CORPS\n"
+            "letterhead_activity: MARINE CORPS AIR STATION NEW RIVER\n"
+            "letterhead_address: JACKSONVILLE NC 28545-0000\n\n"
+            "For Navy activities use:\n"
+            "letterhead_top_line: DEPARTMENT OF THE NAVY"
+        )
 
     # Block render
     render_gate = {
         **render_gate,
         "can_render": False,
         "blocking_resolved": False,
-        "reason": (
-            "Standard letters require command/activity letterhead data. "
-            "Provide letterhead_top_line, letterhead_activity, and letterhead_address."
-        ),
+        "reason": reason,
     }
 
     # Override next_action to ask for letterhead
@@ -1594,17 +1640,12 @@ def _apply_standard_letterhead_gate(
         "action": "ask_user",
         "priority": "blocking",
         "field": "letterhead",
-        "question": (
-            "Please provide command letterhead information, for example:\n"
-            "letterhead_top_line: UNITED STATES MARINE CORPS\n"
-            "letterhead_activity: MARINE CORPS AIR STATION NEW RIVER\n"
-            "letterhead_address: JACKSONVILLE NC 28545-0000"
-        ),
-        "rule_id": "L31I-LETTERHEAD-001",
+        "question": question,
+        "rule_id": "L31J-LETTERHEAD-001",
         "source_file": "hermes_secnav_tool.py",
         "recommended_action": "ask_user",
         "candidate_type": None,
-        "reason": "Standard letter missing letterhead data",
+        "reason": reason,
     }
     return render_gate, next_action
 
