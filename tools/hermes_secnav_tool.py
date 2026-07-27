@@ -1111,8 +1111,8 @@ def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str,
                 lines.append(f"  {line}")
 
         _header("DOCUMENT HEADER")
-        _item("SSIC", payload.get("ssic"), "[SSIC NEEDED]")
-        _item("Originator Code", payload.get("originator_code"), "[ORIGINATOR CODE NEEDED]")
+        _item("SSIC", payload.get("ssic"), "[OPTIONAL / IF USED]")
+        _item("Originator Code", payload.get("originator_code"), "[OPTIONAL / IF USED]")
         _item("Date", payload.get("date"), "[DATE NEEDED]")
 
         _header("ADDRESSES")
