@@ -1062,14 +1062,20 @@ def _build_preview_text(payload: dict[str, Any], mode: str, v_summary: dict[str,
 
     def _next_action_section() -> None:
         _header("NEXT ACTION")
-        na = next_action.get("recommended_action") or next_action.get("action")
-        question = next_action.get("question")
-        if question:
-            lines.append(f"  {question}")
-        elif na:
-            lines.append(f"  {na}")
+        if mode == "draft_preview" and not missing_for_preview:
+            if ap.get("approval_current"):
+                lines.append("  Draft is approved. Say 'make the PDF' to render.")
+            else:
+                lines.append("  Review the draft. If it looks good, say 'looks good' to approve it.")
         else:
-            lines.append("  Continue providing missing information.")
+            na = next_action.get("recommended_action") or next_action.get("action")
+            question = next_action.get("question")
+            if question:
+                lines.append(f"  {question}")
+            elif na:
+                lines.append(f"  {na}")
+            else:
+                lines.append("  Continue providing missing information.")
 
     if mode == "build_status":
         _sep("BUILD STATUS")
