@@ -698,7 +698,10 @@ def draw_body_block(c, left_margin_pt, y, leading, body_font_size, normalized, p
 
         # First-line text start: use fixed column per level for consistent alignment
         # Continuation lines will return to left_margin_pt
-        text_x = text_start_column.get(level, left_margin_pt)
+        if marker:
+            text_x = text_start_column.get(level, left_margin_pt)
+        else:
+            text_x = left_margin_pt
 
         # Check if we need a new page before drawing this body record
         # Estimate space needed: at least one line for marker+text
