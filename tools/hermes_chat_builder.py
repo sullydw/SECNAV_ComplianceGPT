@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 r"""
-Hermes Chat Builder — Phase L.31K
+Hermes Chat Builder — callable backend tool for Hermes.
 
-Callable backend tool for Hermes to drive SECNAV letter drafting.
-
-Normal use: Hermes calls the functions below behind the scenes.
-Interactive mode remains for local test/debug only.
+This module is intentionally thin: it keeps chat state, classifies natural
+turns, delegates all SECNAV session work to hermes_session_manager.py, and
+returns user-facing responses for Hermes to show.
 """
 
 from __future__ import annotations
@@ -18,6 +17,13 @@ import sys
 import uuid
 from pathlib import Path
 from typing import Any
+
+try:
+    from ssic_resolver import resolve_ssic
+except ModuleNotFoundError:  # pragma: no cover - defensive local fallback
+    def resolve_ssic(subject: str, body_text: str = "") -> dict[str, str] | None:
+        return None
+
 
 # ---------------------------------------------------------------------------
 # Path setup
@@ -33,8 +39,9 @@ _MANAGER = _TOOL_ROOT / "hermes_session_manager.py"
 _STATE_DIR = Path.home() / ".hermes" / "secnav_sessions" / "chat_builder_state"
 _STATE_DIR.mkdir(parents=True, exist_ok=True)
 
+
 # ---------------------------------------------------------------------------
-# Helpers
+# State and manager helpers
 # ---------------------------------------------------------------------------
 
 
@@ -55,7 +62,6 @@ def _save_state(chat_id: str, data: dict[str, Any]) -> None:
 
 
 def _run_manager(args: list[str]) -> dict[str, Any]:
-    """Run hermes_session_manager.py via subprocess and parse JSON stdout."""
     proc = subprocess.run(
         [str(_PYTHON), str(_MANAGER)] + args,
         capture_output=True,
@@ -84,70 +90,62 @@ _NEW_INTENTS = {
     "need a letter", "i need a", "start a letter", "write a letter",
     "generate a letter", "prepare a letter", "compose a letter",
 }
-
 _REVISE_INTENTS = {
     "revise", "edit", "change the", "change signer", "change subject",
     "make the body", "make body", "shorten", "remove", "add paragraph",
     "update the", "rewrite", "reword", "fix the", "correct the",
     "more formal", "less formal", "change date", "change to",
 }
-
 _APPROVE_INTENTS = {
     "approve", "looks good", "looks great", "approved", "good to go",
     "i approve", "sign off", "signed off", "confirm draft", "accept draft",
     "it is good", "it's good", "that works", "this works", "proceed",
 }
-
 _RENDER_INTENTS = {
     "make pdf", "make the pdf", "render", "finalize", "export",
     "create pdf", "generate pdf", "output pdf", "produce pdf",
     "pdf please", "pdf now", "export pdf", "save pdf",
 }
+_PREVIEW_INTENTS = {"show me", "view draft", "what does it look like", "current draft", "show draft", "preview"}
+_STATUS_INTENTS = {"status", "where are we", "what is the status", "current status", "are we ready", "check status", "progress"}
 
-_PREVIEW_INTENTS = {
-    "show me", "view draft", "what does it look like", "current draft",
-    "show draft", "preview",
-}
 
-_STATUS_INTENTS = {
-    "status", "where are we", "what is the status",
-    "current status", "are we ready", "check status", "progress",
-}
+def _contains_any(text: str, needles: set[str]) -> bool:
+    return any(re.search(r"\b" + re.escape(k) + r"\b", text) for k in needles)
 
 
 def _classify_intent(text: str) -> str:
     t = text.lower().strip()
-    new_match = any(re.search(r"\b" + re.escape(k) + r"\b", t) for k in _NEW_INTENTS)
-    revise_match = any(re.search(r"\b" + re.escape(k) + r"\b", t) for k in _REVISE_INTENTS)
+    new_match = _contains_any(t, _NEW_INTENTS)
+    revise_match = _contains_any(t, _REVISE_INTENTS)
     if new_match and revise_match:
         return "say"
-    if any(re.search(r"\b" + re.escape(k) + r"\b", t) for k in _RENDER_INTENTS):
+    if _contains_any(t, _RENDER_INTENTS):
         return "render"
-    if any(re.search(r"\b" + re.escape(k) + r"\b", t) for k in _APPROVE_INTENTS):
+    if _contains_any(t, _APPROVE_INTENTS):
         return "approve"
     if revise_match:
         return "revise"
     if new_match:
         return "new"
-    if any(re.search(r"\b" + re.escape(k) + r"\b", t) for k in _PREVIEW_INTENTS):
+    if _contains_any(t, _PREVIEW_INTENTS):
         return "preview"
-    if any(re.search(r"\b" + re.escape(k) + r"\b", t) for k in _STATUS_INTENTS):
+    if _contains_any(t, _STATUS_INTENTS):
         return "status"
     return "say"
 
 
 # ---------------------------------------------------------------------------
-# Phase / response helpers
+# Response helpers
 # ---------------------------------------------------------------------------
 
 
 def _determine_phase(ready_result: dict[str, Any], preview_result: dict[str, Any]) -> str:
     if ready_result.get("approved_ready"):
         return "approved_ready"
-    mode = preview_result.get("mode")
-    if mode == "draft_preview":
+    if preview_result.get("mode") == "draft_preview":
         return "draft_preview"
-    if mode == "build_status":
+    if preview_result.get("mode") == "build_status":
         return "build_status"
     if ready_result.get("validation_ready") and not ready_result.get("approved_ready"):
         return "draft_preview"
@@ -160,11 +158,14 @@ def _build_next_step(phase: str, ready_result: dict[str, Any], preview_result: d
     if phase == "draft_preview":
         approval = preview_result.get("approval") or {}
         if approval.get("approval_current"):
-            return "Draft preview is ready and approved. Running ready now will show approved_ready."
+            return "Draft is approved. Say 'make the PDF' to render."
         return "Draft preview is ready. Review it and say 'looks good' to approve."
     missing = (ready_result.get("render_gate") or {}).get("missing", [])
     if missing:
         return f"Still building. Missing: {', '.join(missing[:5])}. Provide the missing details."
+    next_action = ready_result.get("next_action") or {}
+    if next_action.get("question"):
+        return str(next_action["question"])
     return "Keep providing details to complete the letter."
 
 
@@ -174,45 +175,39 @@ def _build_assistant_response(
     preview_result: dict[str, Any],
     *,
     action: str = "",
-    cleared: bool = False,
     pdf_path: str = "",
     blocked_reason: str = "",
 ) -> str:
     if phase == "rendered":
         return f"Done! Your PDF is ready at {pdf_path}. You can start a new chat if you need another letter."
     if phase == "approved_ready":
-        return "Your draft is approved and everything looks good. When you're ready, just say 'make the PDF' and I'll generate it for you."
+        return "Your draft is approved and everything looks good. Say 'make the PDF' and I'll generate it."
     if phase == "draft_preview":
         approval = (preview_result.get("approval") or {}).get("approval_current", False)
         if approval:
-            return "Your draft is ready and already approved. You can ask me to make the PDF whenever you like."
+            return "Your draft is approved. Say 'make the PDF' and I'll generate it."
         return "Your draft is ready for review. You can say 'looks good' to approve it, or tell me what you'd like to change."
-    if phase == "blocked" and action == "render":
-        if blocked_reason:
-            return f"I can't make the PDF yet. {blocked_reason} Please review the draft, make any changes you need, and say 'looks good' to approve it first."
-        return "I can't make the PDF yet. The draft needs to be approved and all required fields must be ready. Please review the draft and say 'looks good' to approve it first."
-    if action == "revise" and cleared:
-        return "I've updated the draft. Since I made a change, approval was cleared. Please review the updated preview and say 'looks good' when you're ready to approve again."
-    if action == "revise":
-        return "I've updated the draft. Please review the preview and let me know if it looks good or if you'd like more changes."
     if action == "approve":
-        return "Your draft is approved! You can now ask me to make the PDF when you're ready."
+        return "Your draft is approved! You can now say 'make the PDF' and I'll generate it."
+    if action == "render" and phase == "blocked":
+        reason = blocked_reason or "The draft needs approval and all required fields must be ready."
+        return f"I can't make the PDF yet. {reason} Review the draft and say 'looks good' to approve it first."
+    if action == "revise":
+        return "I've updated the draft. Please review the preview and say 'looks good' when you're ready to approve it."
     missing = (ready_result.get("render_gate") or {}).get("missing", [])
     if missing:
-        return f"Your draft isn't ready yet. I'm still missing: {', '.join(missing[:5])}. You can provide the next detail, or say 'show me the preview' to see what's ready so far."
-    next_action = ready_result.get("next_action", {})
-    if next_action and next_action.get("field"):
-        field = next_action["field"]
-        question = next_action.get("question", f"Please provide {field}.")
-        return f"Your draft isn't ready yet. I'm still missing {field}. {question} You can provide the next detail, or say 'show me the preview' to see what's ready so far."
-    return "Got it. Keep providing details and I'll build the draft for you. Say 'show me the preview' anytime to check progress."
+        return f"Your draft isn't ready yet. I'm still missing: {', '.join(missing[:5])}."
+    next_action = ready_result.get("next_action") or {}
+    if next_action.get("field"):
+        return f"Your draft isn't ready yet. I'm still missing {next_action['field']}. {next_action.get('question', '')}".strip()
+    return "Got it. Keep providing details and I'll build the draft for you."
 
 
 # ---------------------------------------------------------------------------
-# Key:value and deterministic first-turn extraction
+# Intake parsing and SSIC inference
 # ---------------------------------------------------------------------------
 
-_KEY_VALUE_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9_.]*\s*:\s*", re.MULTILINE)
+_KEY_VALUE_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9_. -]*\s*:\s*", re.MULTILINE)
 _DATE_RE = re.compile(r"\b(?:use\s+the\s+date|date)\s*:?\s*(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b", re.IGNORECASE)
 _KEY_ALIASES = {
     "subject": "subj",
@@ -233,7 +228,7 @@ def _looks_like_key_value(text: str) -> bool:
 
 
 def _clean_extracted_value(value: str) -> str:
-    return re.sub(r"\s+", " ", value.strip(" \t\r\n,.;\"'"))
+    return re.sub(r"\s+", " ", str(value).strip(" \t\r\n,.;\"'"))
 
 
 def _normalize_subject(value: str) -> str:
@@ -250,7 +245,7 @@ def _normalize_body(value: str) -> str:
         value = f"This letter addresses {value}"
     else:
         value = value[0].upper() + value[1:]
-    if value and value[-1] not in ".!?":
+    if value[-1] not in ".!?":
         value += "."
     return value
 
@@ -265,18 +260,21 @@ def _parse_explicit_key_values(text: str) -> tuple[dict[str, str], str]:
     fields: dict[str, str] = {}
     prose_lines: list[str] = []
     for line in text.splitlines():
-        m = re.match(r"^\s*([A-Za-z][A-Za-z0-9_. -]*)\s*:\s*(.*?)\s*$", line)
-        if not m:
+        match = re.match(r"^\s*([A-Za-z][A-Za-z0-9_. -]*)\s*:\s*(.*?)\s*$", line)
+        if not match:
             prose_lines.append(line)
             continue
-        key = _canonical_key(m.group(1))
-        value = _clean_extracted_value(m.group(2))
-        if value:
-            if key == "subj":
-                value = _normalize_subject(value)
-            elif key == "body":
-                value = _normalize_body(value)
-            fields[key] = value
+        key = _canonical_key(match.group(1))
+        value = _clean_extracted_value(match.group(2))
+        if not value:
+            continue
+        if key == "subj":
+            value = _normalize_subject(value)
+        elif key == "body":
+            value = _normalize_body(value)
+        elif key in {"ssic", "originator_code"}:
+            value = value.upper()
+        fields[key] = value
     return fields, "\n".join(prose_lines).strip()
 
 
@@ -284,8 +282,7 @@ def _extract_first_turn_key_values(text: str) -> dict[str, str]:
     fields: dict[str, str] = {}
     raw = text.strip()
     lower = raw.lower()
-    has_creation = any(k in lower for k in _NEW_INTENTS)
-    if not has_creation:
+    if not any(k in lower for k in _NEW_INTENTS):
         return fields
 
     from_to = re.search(
@@ -334,15 +331,14 @@ def _extract_first_turn_key_values(text: str) -> dict[str, str]:
         body = _normalize_body(body_match.group(1))
         if body:
             fields["body"] = body
-
-    return {k: v for k, v in fields.items() if v}
+    return {key: value for key, value in fields.items() if value}
 
 
 def _merge_mixed_intake_fields(text: str) -> dict[str, str]:
     explicit_fields, prose_text = _parse_explicit_key_values(text)
     prose_fields = _extract_first_turn_key_values(prose_text or text)
     merged = {**prose_fields, **explicit_fields}
-    return {k: v for k, v in merged.items() if v}
+    return {key: value for key, value in merged.items() if value}
 
 
 def _key_values_to_text(fields: dict[str, str]) -> str:
@@ -364,8 +360,30 @@ def _key_values_to_text(fields: dict[str, str]) -> str:
     return "\n".join(lines)
 
 
+def _payload_body_text(payload: dict[str, Any]) -> str:
+    body = payload.get("body") or payload.get("body_paragraphs") or ""
+    if isinstance(body, list):
+        return "\n".join(str(item) for item in body)
+    return str(body or "")
+
+
+def _maybe_infer_and_apply_ssic(session_id: str, payload: dict[str, Any] | None) -> tuple[dict[str, str] | None, dict[str, Any] | None]:
+    if not isinstance(payload, dict) or payload.get("ssic"):
+        return None, None
+    subject = str(payload.get("subj") or payload.get("subject") or "")
+    body_text = _payload_body_text(payload)
+    resolved = resolve_ssic(subject, body_text)
+    if not resolved or not resolved.get("code"):
+        return None, None
+    code = str(resolved["code"]).strip()
+    if not code:
+        return None, None
+    apply_r = _run_manager(["apply", "--session", session_id, "--kv", f"ssic: {code}"])
+    return resolved, apply_r
+
+
 # ---------------------------------------------------------------------------
-# Chat action handlers (pure — no stdout)
+# Chat action handlers
 # ---------------------------------------------------------------------------
 
 
@@ -377,6 +395,10 @@ def _run_say_and_status(session_id: str, text: str) -> dict[str, Any]:
         say_r = _run_manager(["apply", "--session", session_id, "--kv", text])
     else:
         say_r = _run_manager(["say", "--session", session_id, "--text", text])
+
+    ssic_inference, ssic_apply_r = _maybe_infer_and_apply_ssic(session_id, say_r.get("payload"))
+    if ssic_apply_r and ssic_apply_r.get("success"):
+        say_r = ssic_apply_r
 
     preview_r = _run_manager(["preview", "--session", session_id])
     ready_r = _run_manager(["ready", "--session", session_id])
@@ -396,6 +418,7 @@ def _run_say_and_status(session_id: str, text: str) -> dict[str, Any]:
         "warning_summary": say_r.get("warning_summary"),
         "proposed_kv": say_r.get("proposed_kv"),
         "extracted_kv": extracted_fields or None,
+        "ssic_inference": ssic_inference,
         "validation_ready": ready_r.get("validation_ready", False),
         "approved_ready": ready_r.get("approved_ready", False),
         "render_gate": ready_r.get("render_gate"),
@@ -409,22 +432,19 @@ def _run_revise_and_status(session_id: str, text: str) -> dict[str, Any]:
     ready_r = _run_manager(["ready", "--session", session_id])
     phase = _determine_phase(ready_r, preview_r)
     next_step = _build_next_step(phase, ready_r, preview_r)
-    cleared = revise_r.get("approval_cleared", False)
     changed = revise_r.get("payload_changed", False)
-    success = revise_r.get("success", False)
-    if not success:
-        assistant_response = "I wasn't able to apply that change to the draft. Try supported changes such as 'make the body more formal', 'shorten the body', 'change the signer to ...', or 'change the subject to ...'."
+    cleared = revise_r.get("approval_cleared", False)
+    if not revise_r.get("success"):
+        assistant_response = "I wasn't able to apply that change to the draft. Try a supported change such as changing the body, subject, signer, or date."
     elif not changed:
-        assistant_response = "I understood the request, but nothing in the draft was changed. Try supported changes such as 'make the body more formal', 'shorten the body', 'change the signer to ...', or 'change the subject to ...'."
-    elif cleared:
-        assistant_response = "I've updated the draft. Since I made a change, approval was cleared. Please review the updated preview and say 'looks good' when you're ready to approve again."
+        assistant_response = "I understood the request, but nothing in the draft was changed. Try changing the body, subject, signer, or date."
     else:
-        assistant_response = "I've updated the draft. Please review the preview and let me know if it looks good or if you'd like more changes."
+        assistant_response = _build_assistant_response(phase, ready_r, preview_r, action="revise")
     return {
-        "success": success,
+        "success": revise_r.get("success", False),
         "intent": "revise",
         "phase": phase,
-        "message": f"Revised draft. Payload changed: {changed}. Approval cleared: {cleared}. Current phase: {phase.replace('_', ' ')}. {next_step}" if success else revise_r.get("error", "Revise failed"),
+        "message": f"Revised draft. Payload changed: {changed}. Approval cleared: {cleared}. Current phase: {phase.replace('_', ' ')}. {next_step}" if revise_r.get("success") else revise_r.get("error", "Revise failed"),
         "assistant_response": assistant_response,
         "preview_text": preview_r.get("preview_text"),
         "next_step": next_step,
@@ -453,13 +473,12 @@ def _run_approve_and_status(session_id: str) -> dict[str, Any]:
     else:
         phase = "blocked"
         next_step = approve_r.get("error", "Approval failed. Ensure preview gate is met first.")
-    assistant_response = _build_assistant_response(phase, ready_r, {}, action="approve", blocked_reason=next_step if phase == "blocked" else "")
     return {
         "success": approve_r.get("success", False),
         "intent": "approve",
         "phase": phase,
         "message": f"Draft approved. Current phase: {phase.replace('_', ' ')}. {next_step}" if approved else next_step,
-        "assistant_response": assistant_response,
+        "assistant_response": _build_assistant_response(phase, ready_r, {}, action="approve", blocked_reason=next_step if phase == "blocked" else ""),
         "next_step": next_step,
         "approved_for_finalize": approved,
         "approved_ready": approved_ready,
@@ -474,13 +493,12 @@ def _run_preview_status(session_id: str) -> dict[str, Any]:
     ready_r = _run_manager(["ready", "--session", session_id])
     phase = _determine_phase(ready_r, preview_r)
     next_step = _build_next_step(phase, ready_r, preview_r)
-    assistant_response = _build_assistant_response(phase, ready_r, preview_r)
     return {
         "success": preview_r.get("success", False),
         "intent": "preview",
         "phase": phase,
         "message": f"Current phase: {phase.replace('_', ' ')}. {next_step}",
-        "assistant_response": assistant_response,
+        "assistant_response": _build_assistant_response(phase, ready_r, preview_r),
         "preview_text": preview_r.get("preview_text"),
         "next_step": next_step,
         "mode": preview_r.get("mode"),
@@ -496,13 +514,12 @@ def _run_ready_status(session_id: str) -> dict[str, Any]:
     preview_r = _run_manager(["preview", "--session", session_id])
     phase = _determine_phase(ready_r, preview_r)
     next_step = _build_next_step(phase, ready_r, preview_r)
-    assistant_response = _build_assistant_response(phase, ready_r, preview_r)
     return {
         "success": ready_r.get("success", False),
         "intent": "ready",
         "phase": phase,
         "message": f"Current phase: {phase.replace('_', ' ')}. {next_step}",
-        "assistant_response": assistant_response,
+        "assistant_response": _build_assistant_response(phase, ready_r, preview_r),
         "approved_ready": ready_r.get("approved_ready", False),
         "validation_ready": ready_r.get("validation_ready", False),
         "next_step": next_step,
@@ -514,17 +531,15 @@ def _run_ready_status(session_id: str) -> dict[str, Any]:
 
 def _run_render_gate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
     ready_r = _run_manager(["ready", "--session", session_id])
-    approved_ready = ready_r.get("approved_ready", False)
-    if not approved_ready:
+    if not ready_r.get("approved_ready", False):
         phase = _determine_phase(ready_r, {"mode": "build_status"})
         next_step = _build_next_step(phase, ready_r, {"mode": "build_status"})
-        assistant_response = _build_assistant_response("blocked", ready_r, {}, action="render", blocked_reason=ready_r.get("error") or "The draft isn't approved or validation isn't ready yet.")
         return {
             "success": False,
             "intent": "render",
             "phase": phase,
             "message": f"Cannot render yet. Current phase: {phase.replace('_', ' ')}. {next_step}",
-            "assistant_response": assistant_response,
+            "assistant_response": _build_assistant_response("blocked", ready_r, {}, action="render", blocked_reason=ready_r.get("error") or "The draft isn't approved or validation isn't ready yet."),
             "next_step": next_step,
             "approved_ready": False,
             "validation_ready": ready_r.get("validation_ready", False),
@@ -538,25 +553,23 @@ def _run_render_gate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
         state["last_pdf_path"] = str(pdf_path)
         state["rendered_at"] = render_r.get("message", "")
         _save_state(state["chat_id"], state)
-        assistant_response = _build_assistant_response("rendered", {}, {}, pdf_path=str(pdf_path))
         return {
             "success": True,
             "intent": "render",
             "phase": "rendered",
             "message": f"PDF rendered successfully: {pdf_path}",
-            "assistant_response": assistant_response,
+            "assistant_response": _build_assistant_response("rendered", {}, {}, pdf_path=str(pdf_path)),
             "pdf_path": str(pdf_path),
             "pdf_size": pdf_path.stat().st_size,
             "next_step": "Letter is complete. You can start a new chat for another letter.",
             "error": None,
         }
-    assistant_response = _build_assistant_response("blocked", {}, {}, action="render", blocked_reason=render_r.get("error") or "Render failed.")
     return {
         "success": False,
         "intent": "render",
         "phase": "blocked",
         "message": render_r.get("error", "Render failed."),
-        "assistant_response": assistant_response,
+        "assistant_response": _build_assistant_response("blocked", {}, {}, action="render", blocked_reason=render_r.get("error") or "Render failed."),
         "next_step": "Check status and ensure draft is approved and validation is ready.",
         "error": render_r.get("error", "Render failed."),
     }
@@ -586,17 +599,24 @@ def _process_turn(chat_id: str, text: str, state: dict[str, Any]) -> dict[str, A
 
 
 # ---------------------------------------------------------------------------
-# Pure internal backends (return dict, no print)
+# Pure internal backends
 # ---------------------------------------------------------------------------
 
 
 def _start_chat(out: str | None = None) -> dict[str, Any]:
-    r = _run_manager(["new"])
-    if not r.get("success"):
-        return {"success": False, "command": "start", "message": f"Failed to create session: {r.get('error')}", "error": r.get("error")}
-    session_id = r["session_id"]
+    result = _run_manager(["new"])
+    if not result.get("success"):
+        return {"success": False, "command": "start", "message": f"Failed to create session: {result.get('error')}", "error": result.get("error")}
+    session_id = result["session_id"]
     chat_id = f"chat-{uuid.uuid4().hex[:12]}"
-    state: dict[str, Any] = {"chat_id": chat_id, "session_id": session_id, "created_at": r.get("message", ""), "history": [], "last_pdf_path": None, "rendered_at": None}
+    state: dict[str, Any] = {
+        "chat_id": chat_id,
+        "session_id": session_id,
+        "created_at": result.get("message", ""),
+        "history": [],
+        "last_pdf_path": None,
+        "rendered_at": None,
+    }
     if out:
         state["out_path"] = str(out)
     _save_state(chat_id, state)
@@ -631,6 +651,7 @@ def _send_chat_turn(chat_id: str, text: str, out: str | None = None) -> dict[str
         "approved_ready": result.get("approved_ready"),
         "payload": result.get("payload"),
         "extracted_kv": result.get("extracted_kv"),
+        "ssic_inference": result.get("ssic_inference"),
         "error": result.get("error"),
     }
 
@@ -645,7 +666,6 @@ def _get_chat_status(chat_id: str) -> dict[str, Any]:
     preview_r = _run_manager(["preview", "--session", session_id])
     phase = _determine_phase(ready_r, preview_r)
     next_step = _build_next_step(phase, ready_r, preview_r)
-    assistant_response = _build_assistant_response(phase, ready_r, preview_r)
     return {
         "success": True,
         "command": "status",
@@ -653,7 +673,7 @@ def _get_chat_status(chat_id: str) -> dict[str, Any]:
         "session_id": session_id,
         "phase": phase,
         "message": f"Current phase: {phase.replace('_', ' ')}. {next_step}",
-        "assistant_response": assistant_response,
+        "assistant_response": _build_assistant_response(phase, ready_r, preview_r),
         "preview_text": preview_r.get("preview_text"),
         "next_step": next_step,
         "approved_ready": ready_r.get("approved_ready", False),
@@ -669,15 +689,24 @@ def _reset_chat(chat_id: str) -> dict[str, Any]:
         state = _load_state(chat_id)
     except FileNotFoundError as exc:
         return {"success": False, "command": "reset", "error": str(exc)}
-    r = _run_manager(["new"])
-    if not r.get("success"):
-        return {"success": False, "command": "reset", "error": f"Failed to create new session: {r.get('error')}"}
-    state["session_id"] = r["session_id"]
+    result = _run_manager(["new"])
+    if not result.get("success"):
+        return {"success": False, "command": "reset", "error": f"Failed to create new session: {result.get('error')}"}
+    state["session_id"] = result["session_id"]
     state["history"] = []
     state["last_pdf_path"] = None
     state["rendered_at"] = None
     _save_state(chat_id, state)
-    return {"success": True, "command": "reset", "chat_id": chat_id, "session_id": r["session_id"], "message": f"Chat reset with new session {r['session_id']}.", "assistant_response": "I've reset the chat. You can start a new letter request whenever you're ready.", "next_step": "Tell me what letter you need.", "error": None}
+    return {
+        "success": True,
+        "command": "reset",
+        "chat_id": chat_id,
+        "session_id": result["session_id"],
+        "message": f"Chat reset with new session {result['session_id']}.",
+        "assistant_response": "I've reset the chat. You can start a new letter request whenever you're ready.",
+        "next_step": "Tell me what letter you need.",
+        "error": None,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -712,9 +741,8 @@ def format_tool_response_for_hermes(result: dict[str, Any]) -> str:
         err = result.get("error") or "Something went wrong."
         return f"I couldn't complete that. {err}"
     lines: list[str] = []
-    ar = result.get("assistant_response")
-    if ar:
-        lines.append(ar)
+    if result.get("assistant_response"):
+        lines.append(result["assistant_response"])
     if result.get("phase") == "rendered":
         pdf_path = result.get("pdf_path", "")
         pdf_size = result.get("pdf_size")
@@ -722,12 +750,10 @@ def format_tool_response_for_hermes(result: dict[str, Any]) -> str:
             size_str = f" ({pdf_size} bytes)" if pdf_size else ""
             lines.append(f"PDF: {pdf_path}{size_str}")
         return "\n".join(lines)
-    preview = result.get("preview_text")
-    if preview:
-        lines.append(f"Preview:\n{preview}")
-    next_step = result.get("next_step")
-    if next_step and not lines:
-        lines.append(next_step)
+    if result.get("preview_text"):
+        lines.append(f"Preview:\n{result['preview_text']}")
+    if result.get("next_step") and not lines:
+        lines.append(result["next_step"])
     return "\n".join(lines) if lines else result.get("message", "Done.")
 
 
@@ -818,7 +844,7 @@ def main(argv: list[str] | None = None) -> int:
     reset_p = subparsers.add_parser("reset", help="Reset chat and start a new session")
     reset_p.add_argument("--chat-id", required=True)
     interactive_p = subparsers.add_parser("interactive", help="Start an interactive chat loop (local test/debug only)")
-    interactive_p.add_argument("--chat-id", default=None, help="Existing chat ID (auto-creates if omitted)")
+    interactive_p.add_argument("--chat-id", default=None, help="Existing chat ID, auto-creates if omitted")
     interactive_p.add_argument("--out", default=None, help="Optional output PDF path")
     interactive_p.add_argument("--json-lines", action="store_true", help="Emit JSON per turn instead of plain text")
     args = parser.parse_args(argv)
