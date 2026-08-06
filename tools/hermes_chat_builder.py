@@ -139,6 +139,42 @@ def _classify_intent(text: str) -> str:
 # Response helpers
 # ---------------------------------------------------------------------------
 
+_PLAIN_MISSING = {
+    "letterhead_top_line": "command letterhead",
+    "letterhead_activity": "command letterhead",
+    "letterhead_address": "command letterhead",
+    "letterhead": "command letterhead",
+    "unit_identity": "command letterhead",
+    "from": "who the letter is from",
+    "to": "who the letter is to",
+    "subj": "subject",
+    "subject": "subject",
+    "body": "body text",
+    "signature": "who will sign it",
+    "date": "date",
+}
+
+
+def _plain_missing_items(missing: list[Any]) -> list[str]:
+    seen: list[str] = []
+    for item in missing:
+        raw = str(item)
+        if raw.lower() in {"ssic", "originator_code", "originator code", "office_code", "office code"}:
+            continue
+        plain = _PLAIN_MISSING.get(raw, raw.replace("_", " "))
+        if plain not in seen:
+            seen.append(plain)
+    return seen
+
+
+def _missing_prompt(missing: list[Any]) -> str:
+    plain = _plain_missing_items(missing)
+    if not plain:
+        return "I have the optional routing details handled. Provide any remaining required details in plain English."
+    if plain == ["date", "who will sign it", "body text"] or set(plain) == {"date", "who will sign it", "body text"}:
+        return "I have the routing basics. What date should I use, who will sign it, and what should the body say?"
+    return f"I have part of the letter. I still need: {', '.join(plain[:5])}."
+
 
 def _determine_phase(ready_result: dict[str, Any], preview_result: dict[str, Any]) -> str:
     if ready_result.get("approved_ready"):
@@ -162,10 +198,13 @@ def _build_next_step(phase: str, ready_result: dict[str, Any], preview_result: d
         return "Draft preview is ready. Review it and say 'looks good' to approve."
     missing = (ready_result.get("render_gate") or {}).get("missing", [])
     if missing:
-        return f"Still building. Missing: {', '.join(missing[:5])}. Provide the missing details."
+        return _missing_prompt(missing)
     next_action = ready_result.get("next_action") or {}
     if next_action.get("question"):
-        return str(next_action["question"])
+        question = str(next_action["question"])
+        if "ssic" in question.lower() or "originator" in question.lower():
+            return "I have the optional routing details handled. Provide any remaining required details in plain English."
+        return question
     return "Keep providing details to complete the letter."
 
 
@@ -196,19 +235,23 @@ def _build_assistant_response(
         return "I've updated the draft. Please review the preview and say 'looks good' when you're ready to approve it."
     missing = (ready_result.get("render_gate") or {}).get("missing", [])
     if missing:
-        return f"Your draft isn't ready yet. I'm still missing: {', '.join(missing[:5])}."
+        return _missing_prompt(missing)
     next_action = ready_result.get("next_action") or {}
     if next_action.get("field"):
-        return f"Your draft isn't ready yet. I'm still missing {next_action['field']}. {next_action.get('question', '')}".strip()
+        field = str(next_action.get("field", ""))
+        if field.lower() in {"ssic", "originator_code", "originator code", "office_code", "office code"}:
+            return "I have the optional routing details handled. Provide any remaining required details in plain English."
+        return f"I still need { _PLAIN_MISSING.get(field, field.replace('_', ' ')) }. {next_action.get('question', '')}".strip()
     return "Got it. Keep providing details and I'll build the draft for you."
 
 
 # ---------------------------------------------------------------------------
-# Intake parsing and SSIC inference
+# Intake parsing, natural assisted resolution, and SSIC inference
 # ---------------------------------------------------------------------------
 
 _KEY_VALUE_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9_. -]*\s*:\s*", re.MULTILINE)
 _DATE_RE = re.compile(r"\b(?:use\s+the\s+date|date)\s*:?\s*(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b", re.IGNORECASE)
+_USE_DATE_RE = re.compile(r"\buse\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b", re.IGNORECASE)
 _KEY_ALIASES = {
     "subject": "subj",
     "signer": "signature",
@@ -216,7 +259,30 @@ _KEY_ALIASES = {
     "originator": "originator_code",
     "originator_code": "originator_code",
     "originator code": "originator_code",
+    "office code": "originator_code",
+    "office_code": "originator_code",
     "orig": "originator_code",
+}
+
+_UNIT_ALIASES = {
+    "mcas new river": "Commanding Officer, Marine Corps Air Station New River",
+    "marine corps air station new river": "Commanding Officer, Marine Corps Air Station New River",
+    "ii mef": "Commanding General, II Marine Expeditionary Force",
+    "2d mef": "Commanding General, II Marine Expeditionary Force",
+    "second marine expeditionary force": "Commanding General, II Marine Expeditionary Force",
+}
+
+_LETTERHEAD_ALIASES = {
+    "mcas new river": {
+        "letterhead_top_line": "UNITED STATES MARINE CORPS",
+        "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER",
+        "letterhead_address": "JACKSONVILLE NC 28545-0000",
+    },
+    "marine corps air station new river": {
+        "letterhead_top_line": "UNITED STATES MARINE CORPS",
+        "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER",
+        "letterhead_address": "JACKSONVILLE NC 28545-0000",
+    },
 }
 
 
@@ -256,6 +322,30 @@ def _canonical_key(key: str) -> str:
     return _KEY_ALIASES.get(compact, _KEY_ALIASES.get(underscored, underscored))
 
 
+def _expand_unit(value: str) -> str:
+    clean = _clean_extracted_value(value)
+    key = clean.lower()
+    return _UNIT_ALIASES.get(key, clean)
+
+
+def _infer_letterhead_from_from_line(from_line: str) -> dict[str, str]:
+    low = from_line.lower()
+    for key, fields in _LETTERHEAD_ALIASES.items():
+        if key in low:
+            return dict(fields)
+    return {}
+
+
+def _subject_from_topic(topic: str) -> str:
+    clean = _clean_extracted_value(topic).lower()
+    clean = re.sub(r"^(reviewing|review|implementing|implementation of|about)\s+", "", clean).strip()
+    if "correspondence" in clean and ("procedure" in clean or "review" in clean):
+        return "REVIEW OF CORRESPONDENCE PROCEDURES"
+    if clean:
+        return _normalize_subject(clean)
+    return ""
+
+
 def _parse_explicit_key_values(text: str) -> tuple[dict[str, str], str]:
     fields: dict[str, str] = {}
     prose_lines: list[str] = []
@@ -291,10 +381,17 @@ def _extract_first_turn_key_values(text: str) -> dict[str, str]:
         re.IGNORECASE | re.DOTALL,
     )
     if from_to:
-        fields["from"] = _clean_extracted_value(from_to.group(1))
-        fields["to"] = _clean_extracted_value(from_to.group(2))
+        fields["from"] = _expand_unit(from_to.group(1))
+        fields["to"] = _expand_unit(from_to.group(2))
+        fields.update({k: v for k, v in _infer_letterhead_from_from_line(fields["from"]).items() if k not in fields})
 
-    date_match = _DATE_RE.search(raw)
+    topic_match = re.search(r"\b(?:about|regarding|concerning)\s+(.+?)(?=(?:[,.;]\s*(?:use|signer|signature|subject|ssic|originator|make|body)\b|$))", raw, re.IGNORECASE | re.DOTALL)
+    if topic_match and "subj" not in fields:
+        subject = _subject_from_topic(topic_match.group(1))
+        if subject:
+            fields["subj"] = subject
+
+    date_match = _DATE_RE.search(raw) or _USE_DATE_RE.search(raw)
     if date_match:
         fields["date"] = _clean_extracted_value(date_match.group(1))
 
@@ -302,7 +399,7 @@ def _extract_first_turn_key_values(text: str) -> dict[str, str]:
     if ssic_match:
         fields["ssic"] = _clean_extracted_value(ssic_match.group(1)).upper()
 
-    originator_match = re.search(r"\boriginator\s+code\s*:?\s*([A-Za-z0-9-]+)\b", raw, re.IGNORECASE)
+    originator_match = re.search(r"\b(?:originator|office)\s+code\s*:?\s*([A-Za-z0-9-]+)\b", raw, re.IGNORECASE)
     if originator_match:
         fields["originator_code"] = _clean_extracted_value(originator_match.group(1)).upper()
 
@@ -334,10 +431,26 @@ def _extract_first_turn_key_values(text: str) -> dict[str, str]:
     return {key: value for key, value in fields.items() if value}
 
 
+def _extract_followup_fields(text: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    raw = text.strip()
+    date_match = _DATE_RE.search(raw) or _USE_DATE_RE.search(raw)
+    if date_match:
+        fields["date"] = _clean_extracted_value(date_match.group(1))
+    signer_match = re.search(r"\b([A-Z](?:\.\s*)?(?:[A-Z](?:\.\s*)?)*[A-Z][A-Z .'-]*)\s+will\s+sign\s+it\b", raw, re.IGNORECASE)
+    if signer_match:
+        fields["signature"] = _clean_extracted_value(signer_match.group(1)).upper()
+    body_match = re.search(r"\b(?:the\s+)?body\s+(?:should\s+)?(?:say|state|read)\s+(.+?)(?=(?:$|[.;]\s*$))", raw, re.IGNORECASE | re.DOTALL)
+    if body_match:
+        fields["body"] = _normalize_body(body_match.group(1))
+    return {key: value for key, value in fields.items() if value}
+
+
 def _merge_mixed_intake_fields(text: str) -> dict[str, str]:
     explicit_fields, prose_text = _parse_explicit_key_values(text)
     prose_fields = _extract_first_turn_key_values(prose_text or text)
-    merged = {**prose_fields, **explicit_fields}
+    followup_fields = _extract_followup_fields(prose_text or text)
+    merged = {**followup_fields, **prose_fields, **explicit_fields}
     return {key: value for key, value in merged.items() if value}
 
 
@@ -367,12 +480,25 @@ def _payload_body_text(payload: dict[str, Any]) -> str:
     return str(body or "")
 
 
+def _coerce_ssic_result(resolved: Any) -> dict[str, str] | None:
+    if isinstance(resolved, dict):
+        code = str(resolved.get("code") or "").strip()
+        if code:
+            return {"code": code, "description": str(resolved.get("description") or "")}
+    if isinstance(resolved, tuple) and resolved:
+        code = str(resolved[0] or "").strip()
+        if code:
+            desc = str(resolved[1]) if len(resolved) > 1 else ""
+            return {"code": code, "description": desc}
+    return None
+
+
 def _maybe_infer_and_apply_ssic(session_id: str, payload: dict[str, Any] | None) -> tuple[dict[str, str] | None, dict[str, Any] | None]:
     if not isinstance(payload, dict) or payload.get("ssic"):
         return None, None
     subject = str(payload.get("subj") or payload.get("subject") or "")
     body_text = _payload_body_text(payload)
-    resolved = resolve_ssic(subject, body_text)
+    resolved = _coerce_ssic_result(resolve_ssic(subject, body_text))
     if not resolved or not resolved.get("code"):
         return None, None
     code = str(resolved["code"]).strip()
