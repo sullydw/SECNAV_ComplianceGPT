@@ -84,7 +84,7 @@ def main() -> int:
     checks.append(_check("approved_ready=False before approval", not bool(second.get("approved_ready") or second_status.get("approved_ready"))))
     checks.append(_check("Date captured", _contains("1 July 2026", second_payload, second_text) or _contains("1 Jul 26", second_text)))
     checks.append(_check("Signer captured", _contains("A. B. SAMPLE", second_payload, second_text)))
-    checks.append(_check("Body captured", _contains("This letter addresses", second_payload, second_text)))
+    checks.append(_check("Body captured", _contains("implementing local correspondence review procedures", second_payload, second_text)))
     checks.append(_check("SSIC remains present", _contains("5216", second_payload, second_text)))
     checks.append(_check("Preview/next action says review or approve", any(token in str(second).lower() for token in ["review", "approve", "looks good"])))
 
@@ -103,7 +103,7 @@ def main() -> int:
     checks.append(_check("PDF contains From", "Commanding Officer, Marine Corps Air Station New River" in text))
     checks.append(_check("PDF contains To", "Commanding General, II Marine Expeditionary Force" in text))
     checks.append(_check("PDF contains subject", "REVIEW OF CORRESPONDENCE PROCEDURES" in text))
-    checks.append(_check("PDF contains body", "This letter addresses" in text))
+    checks.append(_check("PDF contains body", "implementing local correspondence review procedures" in text))
     checks.append(_check("PDF contains signature", "A. B. SAMPLE" in text))
 
     passed = sum(1 for item in checks if item)
