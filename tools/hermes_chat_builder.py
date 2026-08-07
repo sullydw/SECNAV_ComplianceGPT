@@ -2,9 +2,9 @@
 r"""
 Hermes Chat Builder — callable backend tool for Hermes.
 
-This module is intentionally thin: it keeps chat state, classifies natural
-turns, delegates all SECNAV session work to hermes_session_manager.py, and
-returns user-facing responses for Hermes to show.
+This module keeps lightweight chat state, classifies natural turns, performs
+controlled natural-language field extraction, delegates SECNAV session work to
+hermes_session_manager.py, and returns user-facing responses for Hermes.
 """
 
 from __future__ import annotations
@@ -88,7 +88,8 @@ def _emit(result: dict[str, Any]) -> None:
 _NEW_INTENTS = {
     "new letter", "create a", "create letter", "draft a", "draft letter",
     "need a letter", "i need a", "start a letter", "write a letter",
-    "generate a letter", "prepare a letter", "compose a letter",
+    "generate a letter", "prepare a letter", "prepare a standard letter",
+    "compose a letter", "standard letter",
 }
 _REVISE_INTENTS = {
     "revise", "edit", "change the", "change signer", "change subject",
@@ -153,13 +154,14 @@ _PLAIN_MISSING = {
     "signature": "who will sign it",
     "date": "date",
 }
+_OPTIONAL_FIELDS = {"ssic", "originator_code", "originator code", "office_code", "office code"}
 
 
 def _plain_missing_items(missing: list[Any]) -> list[str]:
     seen: list[str] = []
     for item in missing:
         raw = str(item)
-        if raw.lower() in {"ssic", "originator_code", "originator code", "office_code", "office code"}:
+        if raw.lower() in _OPTIONAL_FIELDS:
             continue
         plain = _PLAIN_MISSING.get(raw, raw.replace("_", " "))
         if plain not in seen:
@@ -171,7 +173,7 @@ def _missing_prompt(missing: list[Any]) -> str:
     plain = _plain_missing_items(missing)
     if not plain:
         return "I have the optional routing details handled. Provide any remaining required details in plain English."
-    if plain == ["date", "who will sign it", "body text"] or set(plain) == {"date", "who will sign it", "body text"}:
+    if set(plain) == {"date", "who will sign it", "body text"}:
         return "I have the routing basics. What date should I use, who will sign it, and what should the body say?"
     return f"I have part of the letter. I still need: {', '.join(plain[:5])}."
 
@@ -239,9 +241,9 @@ def _build_assistant_response(
     next_action = ready_result.get("next_action") or {}
     if next_action.get("field"):
         field = str(next_action.get("field", ""))
-        if field.lower() in {"ssic", "originator_code", "originator code", "office_code", "office code"}:
+        if field.lower() in _OPTIONAL_FIELDS:
             return "I have the optional routing details handled. Provide any remaining required details in plain English."
-        return f"I still need { _PLAIN_MISSING.get(field, field.replace('_', ' ')) }. {next_action.get('question', '')}".strip()
+        return f"I still need {_PLAIN_MISSING.get(field, field.replace('_', ' '))}. {next_action.get('question', '')}".strip()
     return "Got it. Keep providing details and I'll build the draft for you."
 
 
@@ -266,14 +268,26 @@ _KEY_ALIASES = {
 
 _UNIT_ALIASES = {
     "mcas new river": "Commanding Officer, Marine Corps Air Station New River",
+    "new river air station": "Commanding Officer, Marine Corps Air Station New River",
     "marine corps air station new river": "Commanding Officer, Marine Corps Air Station New River",
+    "commanding officer mcas new river": "Commanding Officer, Marine Corps Air Station New River",
+    "commanding officer marine corps air station new river": "Commanding Officer, Marine Corps Air Station New River",
     "ii mef": "Commanding General, II Marine Expeditionary Force",
     "2d mef": "Commanding General, II Marine Expeditionary Force",
+    "second mef": "Commanding General, II Marine Expeditionary Force",
     "second marine expeditionary force": "Commanding General, II Marine Expeditionary Force",
+    "cg ii mef": "Commanding General, II Marine Expeditionary Force",
+    "commanding general ii mef": "Commanding General, II Marine Expeditionary Force",
+    "commanding general, ii mef": "Commanding General, II Marine Expeditionary Force",
 }
 
 _LETTERHEAD_ALIASES = {
     "mcas new river": {
+        "letterhead_top_line": "UNITED STATES MARINE CORPS",
+        "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER",
+        "letterhead_address": "JACKSONVILLE NC 28545-0000",
+    },
+    "new river air station": {
         "letterhead_top_line": "UNITED STATES MARINE CORPS",
         "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER",
         "letterhead_address": "JACKSONVILLE NC 28545-0000",
@@ -324,7 +338,7 @@ def _canonical_key(key: str) -> str:
 
 def _expand_unit(value: str) -> str:
     clean = _clean_extracted_value(value)
-    key = clean.lower()
+    key = re.sub(r"\s+", " ", clean.lower().replace("c.g.", "cg")).strip()
     return _UNIT_ALIASES.get(key, clean)
 
 
