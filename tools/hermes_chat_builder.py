@@ -460,6 +460,21 @@ def _extract_followup_fields(text: str) -> dict[str, str]:
     return {key: value for key, value in fields.items() if value}
 
 
+def _extract_revision_fields(text: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    raw = text.strip()
+    body_match = re.search(
+        r"\b(?:change|update|revise|rewrite|make)\s+(?:the\s+)?body\s+(?:to\s+)?(?:say|state|read)?\s*(.+?)(?=(?:$|[.;]\s*$))",
+        raw,
+        re.IGNORECASE | re.DOTALL,
+    )
+    if body_match:
+        body = _normalize_body(body_match.group(1))
+        if body:
+            fields["body"] = body
+    return fields
+
+
 def _merge_mixed_intake_fields(text: str) -> dict[str, str]:
     explicit_fields, prose_text = _parse_explicit_key_values(text)
     prose_fields = _extract_first_turn_key_values(prose_text or text)
@@ -522,6 +537,13 @@ def _maybe_infer_and_apply_ssic(session_id: str, payload: dict[str, Any] | None)
     return resolved, apply_r
 
 
+def _body_from_result(result: dict[str, Any]) -> str:
+    payload = result.get("payload") if isinstance(result, dict) else {}
+    if isinstance(payload, dict):
+        return _payload_body_text(payload)
+    return ""
+
+
 # ---------------------------------------------------------------------------
 # Chat action handlers
 # ---------------------------------------------------------------------------
@@ -567,6 +589,40 @@ def _run_say_and_status(session_id: str, text: str) -> dict[str, Any]:
 
 
 def _run_revise_and_status(session_id: str, text: str) -> dict[str, Any]:
+    revision_fields = _extract_revision_fields(text)
+    if revision_fields:
+        before_r = _run_manager(["resume", "--session", session_id])
+        before_ready = _run_manager(["ready", "--session", session_id])
+        before_body = _body_from_result(before_r)
+        apply_r = _run_manager(["apply", "--session", session_id, "--kv", _key_values_to_text(revision_fields)])
+        preview_r = _run_manager(["preview", "--session", session_id])
+        ready_r = _run_manager(["ready", "--session", session_id])
+        phase = _determine_phase(ready_r, preview_r)
+        next_step = _build_next_step(phase, ready_r, preview_r)
+        after_body = _body_from_result(apply_r)
+        changed = bool(apply_r.get("success") and after_body and after_body != before_body)
+        was_approved = bool(before_ready.get("approved_ready") or (before_ready.get("approval") or {}).get("approval_current"))
+        cleared = bool(changed and was_approved and not ready_r.get("approved_ready", False))
+        assistant_response = _build_assistant_response(phase, ready_r, preview_r, action="revise") if changed else "I understood the request, but nothing in the draft was changed. Try changing the body, subject, signer, or date."
+        return {
+            "success": apply_r.get("success", False),
+            "intent": "revise",
+            "phase": phase,
+            "message": f"Revised draft. Payload changed: {changed}. Approval cleared: {cleared}. Current phase: {phase.replace('_', ' ')}. {next_step}" if apply_r.get("success") else apply_r.get("error", "Revise failed"),
+            "assistant_response": assistant_response,
+            "preview_text": preview_r.get("preview_text"),
+            "next_step": next_step,
+            "payload": apply_r.get("payload"),
+            "validation_summary": apply_r.get("validation_summary"),
+            "warning_summary": apply_r.get("warning_summary"),
+            "approval_cleared": cleared,
+            "payload_changed": changed,
+            "applied_revision_kv": revision_fields,
+            "validation_ready": ready_r.get("validation_ready", False),
+            "approved_ready": ready_r.get("approved_ready", False),
+            "error": apply_r.get("error"),
+        }
+
     revise_r = _run_manager(["revise", "--session", session_id, "--text", text])
     preview_r = _run_manager(["preview", "--session", session_id])
     ready_r = _run_manager(["ready", "--session", session_id])
