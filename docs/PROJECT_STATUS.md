@@ -1,7 +1,35 @@
 |# SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-08-07
-**Accepted Baseline HEAD:** `2a774a0` — Tools: Add body revision approval clear smoke
+**Last Updated:** 2026-08-08
+**Accepted Baseline HEAD:** `7c1d899` — Docs: Lock accepted Hermes baseline
+
+---
+
+## L.31S — Controlled Command/Unit Resolver Expansion
+
+Added controlled deterministic aliases for common Navy/Marine Corps command shorthand. No live lookup. Letterhead inferred only from From command, never from To line. Unknown commands remain literal.
+
+### New Aliases
+
+| Shorthand | Expands To | Letterhead |
+|-----------|-----------|------------|
+| MCAS Cherry Point | Commanding Officer, Marine Corps Air Station Cherry Point | MCAS Cherry Point / CHERRY POINT NC 28533-0000 |
+| Camp Lejeune | Commanding Officer, Marine Corps Base Camp Lejeune | MCB Camp Lejeune / CAMP LEJEUNE NC 28542-0000 |
+| MCB Camp Lejeune | Commanding Officer, Marine Corps Base Camp Lejeune | MCB Camp Lejeune / CAMP LEJEUNE NC 28542-0000 |
+| MARFORCOM | Commander, Marine Forces Command | (none — To line) |
+| HQMC | Commandant of the Marine Corps | (none — To line) |
+| Headquarters Marine Corps | Commandant of the Marine Corps | (none — To line) |
+| CMC | Commandant of the Marine Corps | (none — To line) |
+
+### Proof Tests
+
+| Test | Checks | Result |
+|------|--------|--------|
+| L.31S controlled unit resolver expansion | 37/37 | PASS |
+
+### Regression
+
+All 8 regression suites PASS (L.31Q-1, L.31Q, L.31P, L.31O-3, L.31O-2, L.31N, L.31M, L.31K).
 
 ---
 

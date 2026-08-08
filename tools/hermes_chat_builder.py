@@ -267,11 +267,14 @@ _KEY_ALIASES = {
 }
 
 _UNIT_ALIASES = {
+    # MCAS New River (existing)
     "mcas new river": "Commanding Officer, Marine Corps Air Station New River",
     "new river air station": "Commanding Officer, Marine Corps Air Station New River",
     "marine corps air station new river": "Commanding Officer, Marine Corps Air Station New River",
     "commanding officer mcas new river": "Commanding Officer, Marine Corps Air Station New River",
     "commanding officer marine corps air station new river": "Commanding Officer, Marine Corps Air Station New River",
+    "co mcas new river": "Commanding Officer, Marine Corps Air Station New River",
+    # II MEF (existing)
     "ii mef": "Commanding General, II Marine Expeditionary Force",
     "2d mef": "Commanding General, II Marine Expeditionary Force",
     "second mef": "Commanding General, II Marine Expeditionary Force",
@@ -279,9 +282,34 @@ _UNIT_ALIASES = {
     "cg ii mef": "Commanding General, II Marine Expeditionary Force",
     "commanding general ii mef": "Commanding General, II Marine Expeditionary Force",
     "commanding general, ii mef": "Commanding General, II Marine Expeditionary Force",
+    # MCAS Cherry Point (L.31S)
+    "mcas cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
+    "cherry point air station": "Commanding Officer, Marine Corps Air Station Cherry Point",
+    "marine corps air station cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
+    "commanding officer mcas cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
+    "co mcas cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
+    # Camp Lejeune / MCB Camp Lejeune (L.31S)
+    "camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "mcb camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "marine corps base camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "commanding officer camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "commanding officer mcb camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "co camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "co mcb camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    # MARFORCOM (L.31S)
+    "marforcom": "Commander, Marine Forces Command",
+    "marine forces command": "Commander, Marine Forces Command",
+    "commander marine forces command": "Commander, Marine Forces Command",
+    "commander, marine forces command": "Commander, Marine Forces Command",
+    # HQMC / Headquarters Marine Corps (L.31S)
+    "hqmc": "Commandant of the Marine Corps",
+    "headquarters marine corps": "Commandant of the Marine Corps",
+    "commandant of the marine corps": "Commandant of the Marine Corps",
+    "cmc": "Commandant of the Marine Corps",
 }
 
 _LETTERHEAD_ALIASES = {
+    # MCAS New River (existing)
     "mcas new river": {
         "letterhead_top_line": "UNITED STATES MARINE CORPS",
         "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER",
@@ -296,6 +324,38 @@ _LETTERHEAD_ALIASES = {
         "letterhead_top_line": "UNITED STATES MARINE CORPS",
         "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER",
         "letterhead_address": "JACKSONVILLE NC 28545-0000",
+    },
+    # MCAS Cherry Point (L.31S)
+    "mcas cherry point": {
+        "letterhead_top_line": "UNITED STATES MARINE CORPS",
+        "letterhead_activity": "MARINE CORPS AIR STATION CHERRY POINT",
+        "letterhead_address": "CHERRY POINT NC 28533-0000",
+    },
+    "cherry point air station": {
+        "letterhead_top_line": "UNITED STATES MARINE CORPS",
+        "letterhead_activity": "MARINE CORPS AIR STATION CHERRY POINT",
+        "letterhead_address": "CHERRY POINT NC 28533-0000",
+    },
+    "marine corps air station cherry point": {
+        "letterhead_top_line": "UNITED STATES MARINE CORPS",
+        "letterhead_activity": "MARINE CORPS AIR STATION CHERRY POINT",
+        "letterhead_address": "CHERRY POINT NC 28533-0000",
+    },
+    # Camp Lejeune / MCB Camp Lejeune (L.31S)
+    "camp lejeune": {
+        "letterhead_top_line": "UNITED STATES MARINE CORPS",
+        "letterhead_activity": "MARINE CORPS BASE CAMP LEJEUNE",
+        "letterhead_address": "CAMP LEJEUNE NC 28542-0000",
+    },
+    "mcb camp lejeune": {
+        "letterhead_top_line": "UNITED STATES MARINE CORPS",
+        "letterhead_activity": "MARINE CORPS BASE CAMP LEJEUNE",
+        "letterhead_address": "CAMP LEJEUNE NC 28542-0000",
+    },
+    "marine corps base camp lejeune": {
+        "letterhead_top_line": "UNITED STATES MARINE CORPS",
+        "letterhead_activity": "MARINE CORPS BASE CAMP LEJEUNE",
+        "letterhead_address": "CAMP LEJEUNE NC 28542-0000",
     },
 }
 
