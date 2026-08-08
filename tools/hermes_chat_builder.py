@@ -2,32 +2,27 @@
 r"""
 Hermes Chat Builder — callable backend tool for Hermes.
 
-This module keeps lightweight chat state, classifies natural turns, performs
-controlled natural-language field extraction, delegates SECNAV session work to
-hermes_session_manager.py, and returns user-facing responses for Hermes.
+Thin chat wrapper for Hermes/SECNAV sessions.  It performs controlled natural
+field extraction, delegates session work to hermes_session_manager.py, and keeps
+source-backed command resolution candidate-only.
 """
-
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
 import sys
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 try:
     from ssic_resolver import resolve_ssic
-except ModuleNotFoundError:  # pragma: no cover - defensive local fallback
+except ModuleNotFoundError:  # pragma: no cover
     def resolve_ssic(subject: str, body_text: str = "") -> dict[str, str] | None:
         return None
-
-
-# ---------------------------------------------------------------------------
-# Path setup
-# ---------------------------------------------------------------------------
 
 _TOOL_ROOT = Path(__file__).resolve().parent
 _REPO_ROOT = _TOOL_ROOT.parent
@@ -35,55 +30,8 @@ _VENV_PYTHON = _REPO_ROOT / "venv" / "Scripts" / "python.exe"
 _FALLBACK_PYTHON = Path(r"C:\Users\drryl\pinokio\bin\miniconda\python.exe")
 _PYTHON = _VENV_PYTHON if _VENV_PYTHON.exists() else _FALLBACK_PYTHON
 _MANAGER = _TOOL_ROOT / "hermes_session_manager.py"
-
 _STATE_DIR = Path.home() / ".hermes" / "secnav_sessions" / "chat_builder_state"
 _STATE_DIR.mkdir(parents=True, exist_ok=True)
-
-
-# ---------------------------------------------------------------------------
-# State and manager helpers
-# ---------------------------------------------------------------------------
-
-
-def _state_path(chat_id: str) -> Path:
-    safe = "".join(c for c in chat_id if c.isalnum() or c in "-_")
-    return _STATE_DIR / f"{safe}.json"
-
-
-def _load_state(chat_id: str) -> dict[str, Any]:
-    path = _state_path(chat_id)
-    if not path.exists():
-        raise FileNotFoundError(f"Chat not found: {chat_id}")
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _save_state(chat_id: str, data: dict[str, Any]) -> None:
-    _state_path(chat_id).write_text(json.dumps(data, indent=2, default=str), encoding="utf-8")
-
-
-def _run_manager(args: list[str]) -> dict[str, Any]:
-    proc = subprocess.run(
-        [str(_PYTHON), str(_MANAGER)] + args,
-        capture_output=True,
-        text=True,
-        timeout=120,
-        cwd=str(_REPO_ROOT),
-    )
-    if proc.returncode != 0 and not proc.stdout.strip():
-        return {"success": False, "error": proc.stderr or f"exit code {proc.returncode}"}
-    try:
-        return json.loads(proc.stdout)
-    except json.JSONDecodeError:
-        return {"success": False, "error": f"Invalid JSON: {proc.stdout[:200]}"}
-
-
-def _emit(result: dict[str, Any]) -> None:
-    print(json.dumps(result, indent=2, default=str))
-
-
-# ---------------------------------------------------------------------------
-# Intent classification
-# ---------------------------------------------------------------------------
 
 _NEW_INTENTS = {
     "new letter", "create a", "create letter", "draft a", "draft letter",
@@ -109,6 +57,107 @@ _RENDER_INTENTS = {
 }
 _PREVIEW_INTENTS = {"show me", "view draft", "what does it look like", "current draft", "show draft", "preview"}
 _STATUS_INTENTS = {"status", "where are we", "what is the status", "current status", "are we ready", "check status", "progress"}
+_CONFIRM_CANDIDATE_INTENTS = {"confirm candidate", "apply candidate", "use candidate", "yes use it", "yes apply it", "confirm it"}
+_REJECT_CANDIDATE_INTENTS = {"reject candidate", "do not use", "don't use", "no don't", "reject it"}
+
+_OPTIONAL_FIELDS = {"ssic", "originator_code", "originator code", "office_code", "office code"}
+_PLAIN_MISSING = {
+    "letterhead_top_line": "command letterhead", "letterhead_activity": "command letterhead",
+    "letterhead_address": "command letterhead", "letterhead": "command letterhead",
+    "unit_identity": "command letterhead", "from": "who the letter is from", "to": "who the letter is to",
+    "subj": "subject", "subject": "subject", "body": "body text", "signature": "who will sign it", "date": "date",
+}
+
+_UNIT_ALIASES = {
+    "mcas new river": "Commanding Officer, Marine Corps Air Station New River",
+    "new river air station": "Commanding Officer, Marine Corps Air Station New River",
+    "marine corps air station new river": "Commanding Officer, Marine Corps Air Station New River",
+    "commanding officer mcas new river": "Commanding Officer, Marine Corps Air Station New River",
+    "co mcas new river": "Commanding Officer, Marine Corps Air Station New River",
+    "ii mef": "Commanding General, II Marine Expeditionary Force",
+    "2d mef": "Commanding General, II Marine Expeditionary Force",
+    "second mef": "Commanding General, II Marine Expeditionary Force",
+    "second marine expeditionary force": "Commanding General, II Marine Expeditionary Force",
+    "cg ii mef": "Commanding General, II Marine Expeditionary Force",
+    "commanding general ii mef": "Commanding General, II Marine Expeditionary Force",
+    "commanding general, ii mef": "Commanding General, II Marine Expeditionary Force",
+    "mcas cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
+    "cherry point air station": "Commanding Officer, Marine Corps Air Station Cherry Point",
+    "marine corps air station cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
+    "commanding officer mcas cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
+    "co mcas cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
+    "camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "mcb camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "marine corps base camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "commanding officer camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "co camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "co mcb camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
+    "marforcom": "Commander, Marine Forces Command",
+    "marine forces command": "Commander, Marine Forces Command",
+    "commander marine forces command": "Commander, Marine Forces Command",
+    "hqmc": "Commandant of the Marine Corps",
+    "headquarters marine corps": "Commandant of the Marine Corps",
+    "commandant of the marine corps": "Commandant of the Marine Corps",
+    "cmc": "Commandant of the Marine Corps",
+}
+_LETTERHEAD_ALIASES = {
+    "mcas new river": {"letterhead_top_line": "UNITED STATES MARINE CORPS", "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER", "letterhead_address": "JACKSONVILLE NC 28545-0000"},
+    "new river air station": {"letterhead_top_line": "UNITED STATES MARINE CORPS", "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER", "letterhead_address": "JACKSONVILLE NC 28545-0000"},
+    "marine corps air station new river": {"letterhead_top_line": "UNITED STATES MARINE CORPS", "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER", "letterhead_address": "JACKSONVILLE NC 28545-0000"},
+    "mcas cherry point": {"letterhead_top_line": "UNITED STATES MARINE CORPS", "letterhead_activity": "MARINE CORPS AIR STATION CHERRY POINT", "letterhead_address": "CHERRY POINT NC 28533-0000"},
+    "cherry point air station": {"letterhead_top_line": "UNITED STATES MARINE CORPS", "letterhead_activity": "MARINE CORPS AIR STATION CHERRY POINT", "letterhead_address": "CHERRY POINT NC 28533-0000"},
+    "marine corps air station cherry point": {"letterhead_top_line": "UNITED STATES MARINE CORPS", "letterhead_activity": "MARINE CORPS AIR STATION CHERRY POINT", "letterhead_address": "CHERRY POINT NC 28533-0000"},
+    "camp lejeune": {"letterhead_top_line": "UNITED STATES MARINE CORPS", "letterhead_activity": "MARINE CORPS BASE CAMP LEJEUNE", "letterhead_address": "CAMP LEJEUNE NC 28542-0000"},
+    "mcb camp lejeune": {"letterhead_top_line": "UNITED STATES MARINE CORPS", "letterhead_activity": "MARINE CORPS BASE CAMP LEJEUNE", "letterhead_address": "CAMP LEJEUNE NC 28542-0000"},
+    "marine corps base camp lejeune": {"letterhead_top_line": "UNITED STATES MARINE CORPS", "letterhead_activity": "MARINE CORPS BASE CAMP LEJEUNE", "letterhead_address": "CAMP LEJEUNE NC 28542-0000"},
+}
+_LETTERHEAD_BY_FROM = {
+    "Commanding Officer, Marine Corps Air Station New River": _LETTERHEAD_ALIASES["mcas new river"],
+    "Commanding Officer, Marine Corps Air Station Cherry Point": _LETTERHEAD_ALIASES["mcas cherry point"],
+    "Commanding Officer, Marine Corps Base Camp Lejeune": _LETTERHEAD_ALIASES["camp lejeune"],
+}
+_KEY_ALIASES = {"subject": "subj", "signer": "signature", "signature_name": "signature", "originator": "originator_code", "originator_code": "originator_code", "originator code": "originator_code", "office code": "originator_code", "office_code": "originator_code", "orig": "originator_code"}
+_KEY_VALUE_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9_. -]*\s*:\s*", re.MULTILINE)
+_DATE_RE = re.compile(r"\b(?:use\s+the\s+date|date)\s*:?\s*(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b", re.IGNORECASE)
+_USE_DATE_RE = re.compile(r"\buse\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b", re.IGNORECASE)
+
+_CommandLookupAdapter = Callable[[str, str, dict[str, Any]], dict[str, Any] | None]
+_SOURCE_BACKED_LOOKUP_ADAPTER: _CommandLookupAdapter | None = None
+
+
+def set_source_backed_command_lookup_adapter(adapter: _CommandLookupAdapter | None) -> None:
+    """Inject a deterministic source-backed lookup adapter. Production default is no live lookup."""
+    global _SOURCE_BACKED_LOOKUP_ADAPTER
+    _SOURCE_BACKED_LOOKUP_ADAPTER = adapter
+
+
+def _state_path(chat_id: str) -> Path:
+    return _STATE_DIR / ("".join(c for c in chat_id if c.isalnum() or c in "-_") + ".json")
+
+
+def _load_state(chat_id: str) -> dict[str, Any]:
+    p = _state_path(chat_id)
+    if not p.exists():
+        raise FileNotFoundError(f"Chat not found: {chat_id}")
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def _save_state(chat_id: str, data: dict[str, Any]) -> None:
+    _state_path(chat_id).write_text(json.dumps(data, indent=2, default=str), encoding="utf-8")
+
+
+def _run_manager(args: list[str]) -> dict[str, Any]:
+    proc = subprocess.run([str(_PYTHON), str(_MANAGER)] + args, capture_output=True, text=True, timeout=120, cwd=str(_REPO_ROOT))
+    if proc.returncode != 0 and not proc.stdout.strip():
+        return {"success": False, "error": proc.stderr or f"exit code {proc.returncode}"}
+    try:
+        return json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return {"success": False, "error": f"Invalid JSON: {proc.stdout[:200]}"}
+
+
+def _emit(result: dict[str, Any]) -> None:
+    print(json.dumps(result, indent=2, default=str))
 
 
 def _contains_any(text: str, needles: set[str]) -> bool:
@@ -117,6 +166,10 @@ def _contains_any(text: str, needles: set[str]) -> bool:
 
 def _classify_intent(text: str) -> str:
     t = text.lower().strip()
+    if _contains_any(t, _CONFIRM_CANDIDATE_INTENTS):
+        return "confirm_candidate"
+    if _contains_any(t, _REJECT_CANDIDATE_INTENTS):
+        return "reject_candidate"
     new_match = _contains_any(t, _NEW_INTENTS)
     revise_match = _contains_any(t, _REVISE_INTENTS)
     if new_match and revise_match:
@@ -136,41 +189,263 @@ def _classify_intent(text: str) -> str:
     return "say"
 
 
-# ---------------------------------------------------------------------------
-# Response helpers
-# ---------------------------------------------------------------------------
-
-_PLAIN_MISSING = {
-    "letterhead_top_line": "command letterhead",
-    "letterhead_activity": "command letterhead",
-    "letterhead_address": "command letterhead",
-    "letterhead": "command letterhead",
-    "unit_identity": "command letterhead",
-    "from": "who the letter is from",
-    "to": "who the letter is to",
-    "subj": "subject",
-    "subject": "subject",
-    "body": "body text",
-    "signature": "who will sign it",
-    "date": "date",
-}
-_OPTIONAL_FIELDS = {"ssic", "originator_code", "originator code", "office_code", "office code"}
+def _clean(v: Any) -> str:
+    return re.sub(r"\s+", " ", str(v).strip(" \t\r\n,.;\"'"))
 
 
-def _plain_missing_items(missing: list[Any]) -> list[str]:
-    seen: list[str] = []
+def _unit_key(v: str) -> str:
+    return re.sub(r"\s+", " ", _clean(v).lower().replace("c.g.", "cg")).strip()
+
+
+def _is_controlled_alias(v: str) -> bool:
+    return _unit_key(v) in _UNIT_ALIASES
+
+
+def _expand_unit(v: str) -> str:
+    return _UNIT_ALIASES.get(_unit_key(v), _clean(v))
+
+
+def _infer_letterhead(from_line: str) -> dict[str, str]:
+    clean = _clean(from_line)
+    if clean in _LETTERHEAD_BY_FROM:
+        return dict(_LETTERHEAD_BY_FROM[clean])
+    low = clean.lower()
+    for k, fields in _LETTERHEAD_ALIASES.items():
+        if k in low:
+            return dict(fields)
+    return {}
+
+
+def _normalize_subject(v: str) -> str:
+    v = _clean(v)
+    return v if v.isupper() else v.upper()
+
+
+def _normalize_body(v: str) -> str:
+    v = re.sub(r"^(?:about|that)\s+", "", _clean(v), flags=re.IGNORECASE).strip()
+    if not v:
+        return v
+    if re.match(r"^(implementing|reviewing|updating|establishing|creating)\b", v, re.IGNORECASE):
+        v = f"This letter addresses {v}"
+    else:
+        v = v[0].upper() + v[1:]
+    return v if v[-1] in ".!?" else v + "."
+
+
+def _subject_from_topic(topic: str) -> str:
+    clean = re.sub(r"^(reviewing|review|implementing|implementation of|about)\s+", "", _clean(topic).lower()).strip()
+    if "correspondence" in clean and ("procedure" in clean or "review" in clean):
+        return "REVIEW OF CORRESPONDENCE PROCEDURES"
+    return _normalize_subject(clean) if clean else ""
+
+
+def _canonical_key(k: str) -> str:
+    compact = re.sub(r"\s+", " ", k.strip().lower().replace("-", "_"))
+    return _KEY_ALIASES.get(compact, _KEY_ALIASES.get(compact.replace(" ", "_"), compact.replace(" ", "_")))
+
+
+def _looks_like_key_value(text: str) -> bool:
+    s = text.strip()
+    return not (s.startswith("(") or s.startswith("[")) and bool(_KEY_VALUE_RE.search(s))
+
+
+def _parse_explicit_key_values(text: str) -> tuple[dict[str, str], str]:
+    fields: dict[str, str] = {}
+    prose: list[str] = []
+    for line in text.splitlines():
+        m = re.match(r"^\s*([A-Za-z][A-Za-z0-9_. -]*)\s*:\s*(.*?)\s*$", line)
+        if not m:
+            prose.append(line)
+            continue
+        key, val = _canonical_key(m.group(1)), _clean(m.group(2))
+        if not val:
+            continue
+        if key == "subj":
+            val = _normalize_subject(val)
+        elif key == "body":
+            val = _normalize_body(val)
+        elif key in {"ssic", "originator_code"}:
+            val = val.upper()
+        fields[key] = val
+    return fields, "\n".join(prose).strip()
+
+
+def _extract_first_turn_key_values(text: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    raw = text.strip()
+    if not any(k in raw.lower() for k in _NEW_INTENTS):
+        return fields
+    m = re.search(r"\bfrom\s+(.+?)\s+to\s+(.+?)(?=(?:\s+about\b|\s+regarding\b|\s+concerning\b|[,.;]\s*(?:use|signer|signature|subject|ssic|originator|make|body)\b|$))", raw, re.I | re.S)
+    if m:
+        fields["from"] = _expand_unit(m.group(1))
+        fields["to"] = _expand_unit(m.group(2))
+        fields.update({k: v for k, v in _infer_letterhead(fields["from"]).items() if k not in fields})
+    m = re.search(r"\b(?:about|regarding|concerning)\s+(.+?)(?=(?:[,.;]\s*(?:use|signer|signature|subject|ssic|originator|make|body)\b|$))", raw, re.I | re.S)
+    if m and "subj" not in fields:
+        subj = _subject_from_topic(m.group(1))
+        if subj:
+            fields["subj"] = subj
+    m = _DATE_RE.search(raw) or _USE_DATE_RE.search(raw)
+    if m:
+        fields["date"] = _clean(m.group(1))
+    m = re.search(r"\bSSIC\s*:?\s*([A-Za-z0-9.-]+)\b", raw, re.I)
+    if m:
+        fields["ssic"] = _clean(m.group(1)).upper()
+    m = re.search(r"\b(?:originator|office)\s+code\s*:?\s*([A-Za-z0-9-]+)\b", raw, re.I)
+    if m:
+        fields["originator_code"] = _clean(m.group(1)).upper()
+    m = re.search(r"\b(?:signer|signature)\s*:?\s*(.+?)(?=(?:,\s*(?:and\s+)?(?:subject|ssic|originator|date|make|body|use)\b|[.;]\s*$|$))", raw, re.I | re.S)
+    if m:
+        fields["signature"] = _clean(m.group(1))
+    m = re.search(r"\bsubject\s*:?\s+(.+?)(?=(?:,\s*(?:and\s+)?(?:make|body|use|signer|signature|ssic|originator|date)\b|[.;]\s*$|$))", raw, re.I | re.S)
+    if m:
+        fields["subj"] = _normalize_subject(m.group(1))
+    m = re.search(r"\b(?:make\s+the\s+body\s+about|body\s+about|body\s*:)\s+(.+?)(?=(?:\n\s*[A-Za-z][A-Za-z0-9_. -]*\s*:|[.;]\s*$|$))", raw, re.I | re.S)
+    if m:
+        fields["body"] = _normalize_body(m.group(1))
+    return {k: v for k, v in fields.items() if v}
+
+
+def _extract_followup_fields(text: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    raw = text.strip()
+    m = _DATE_RE.search(raw) or _USE_DATE_RE.search(raw)
+    if m:
+        fields["date"] = _clean(m.group(1))
+    m = re.search(r"\b([A-Z](?:\.\s*)?(?:[A-Z](?:\.\s*)?)*[A-Z][A-Z .'-]*)\s+will\s+sign\s+it\b", raw, re.I)
+    if m:
+        fields["signature"] = _clean(m.group(1)).upper()
+    m = re.search(r"\b(?:the\s+)?body\s+(?:should\s+)?(?:say|state|read)\s+(.+?)(?=(?:$|[.;]\s*$))", raw, re.I | re.S)
+    if m:
+        fields["body"] = _normalize_body(m.group(1))
+    return {k: v for k, v in fields.items() if v}
+
+
+def _extract_revision_fields(text: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    raw = text.strip()
+    m = re.search(r"\b(?:change|update|revise|rewrite|make)\s+(?:the\s+)?body\s+(?:to\s+)?(?:say|state|read|be)?\s*(.+?)(?=(?:$|[.;]\s*$))", raw, re.I | re.S) or re.search(r"\bbody\s*:\s*(.+)$", raw, re.I | re.S)
+    if m:
+        fields["body"] = _normalize_body(m.group(1))
+    m = re.search(r"\b(?:change|update|revise)\s+(?:the\s+)?subject\s+(?:to\s+)?(.+?)(?=(?:$|[.;]\s*$))", raw, re.I | re.S)
+    if m:
+        fields["subj"] = _normalize_subject(m.group(1))
+    m = re.search(r"\b(?:change|update)\s+(?:the\s+)?date\s+(?:to\s+)?(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b", raw, re.I)
+    if m:
+        fields["date"] = _clean(m.group(1))
+    m = re.search(r"\b(?:change|update)\s+(?:the\s+)?(?:signer|signature)\s+(?:to\s+)?(.+?)(?=(?:$|[.;]\s*$))", raw, re.I | re.S)
+    if m:
+        fields["signature"] = _clean(m.group(1))
+    return {k: v for k, v in fields.items() if v}
+
+
+def _merge_mixed_intake_fields(text: str) -> dict[str, str]:
+    explicit, prose = _parse_explicit_key_values(text)
+    base = prose or text
+    return {k: v for k, v in {**_extract_followup_fields(base), **_extract_first_turn_key_values(base), **explicit}.items() if v}
+
+
+def _key_values_to_text(fields: dict[str, str]) -> str:
+    order = ["letterhead_top_line", "letterhead_activity", "letterhead_address", "ssic", "originator_code", "from", "to", "date", "subj", "body", "signature"]
+    lines = [f"{k}: {fields[k]}" for k in order if k in fields]
+    lines.extend(f"{k}: {v}" for k, v in fields.items() if k not in order)
+    return "\n".join(lines)
+
+
+def _payload_body_text(payload: dict[str, Any]) -> str:
+    body = payload.get("body") or payload.get("body_paragraphs") or ""
+    return "\n".join(str(x) for x in body) if isinstance(body, list) else str(body or "")
+
+
+def _maybe_infer_and_apply_ssic(session_id: str, payload: dict[str, Any] | None) -> tuple[dict[str, str] | None, dict[str, Any] | None]:
+    if not isinstance(payload, dict) or payload.get("ssic"):
+        return None, None
+    resolved = resolve_ssic(str(payload.get("subj") or payload.get("subject") or ""), _payload_body_text(payload))
+    code = str((resolved or {}).get("code") or "").strip() if isinstance(resolved, dict) else ""
+    if not code:
+        return None, None
+    return {"code": code, "description": str((resolved or {}).get("description") or "")}, _run_manager(["apply", "--session", session_id, "--kv", f"ssic: {code}"])
+
+
+def _ensure_cands(state: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    c = state.setdefault("source_backed_candidates", {})
+    for k in ("pending", "confirmed", "rejected"):
+        c.setdefault(k, [])
+    return c
+
+
+def _candidate_id(role: str, text: str, url: str = "") -> str:
+    return "src-" + hashlib.sha1(f"{role}|{_clean(text).lower()}|{url}".encode()).hexdigest()[:12]
+
+
+def _maybe_add_source_candidate(state: dict[str, Any], fields: dict[str, str]) -> dict[str, Any] | None:
+    text = fields.get("from")
+    if not text or _is_controlled_alias(text) or _SOURCE_BACKED_LOOKUP_ADAPTER is None:
+        return None
+    try:
+        res = _SOURCE_BACKED_LOOKUP_ADAPTER(text, "from", state)
+    except Exception:
+        return None
+    if not isinstance(res, dict) or not isinstance(res.get("resolved_value"), dict):
+        return None
+    cand = {
+        "candidate_id": res.get("candidate_id") or _candidate_id("from", text, str(res.get("source_url") or "")),
+        "candidate_type": res.get("candidate_type") or "command_expansion",
+        "input_text": _clean(text), "field": "from", "resolved_value": dict(res.get("resolved_value") or {}),
+        "source_title": res.get("source_title") or "Source-backed command result", "source_url": str(res.get("source_url") or ""),
+        "source_tier": res.get("source_tier") or "unresolved", "source_limitation": res.get("source_limitation") or "Candidate requires user confirmation before applying.",
+        "confidence": res.get("confidence", 0), "requires_user_confirmation": True, "status": "pending",
+    }
+    cands = _ensure_cands(state)
+    if any(c.get("candidate_id") == cand["candidate_id"] for c in cands["rejected"]):
+        return None
+    if not any(c.get("candidate_id") == cand["candidate_id"] for c in cands["pending"]):
+        cands["pending"].append(cand)
+    return cand
+
+
+def _pending(state: dict[str, Any]) -> dict[str, Any] | None:
+    p = _ensure_cands(state).get("pending", [])
+    return p[-1] if p else None
+
+
+def _apply_candidate(session_id: str, state: dict[str, Any], cand: dict[str, Any]) -> dict[str, Any]:
+    resolved = dict(cand.get("resolved_value") or {})
+    if cand.get("field") != "from" or cand.get("source_tier") != "official_live":
+        for k in ("letterhead_top_line", "letterhead_activity", "letterhead_address"):
+            resolved.pop(k, None)
+    r = _run_manager(["apply", "--session", session_id, "--kv", _key_values_to_text({k: str(v) for k, v in resolved.items() if v})])
+    if r.get("success"):
+        cands = _ensure_cands(state)
+        cands["pending"] = [c for c in cands["pending"] if c.get("candidate_id") != cand.get("candidate_id")]
+        cand = dict(cand); cand["status"] = "confirmed"
+        if not any(c.get("candidate_id") == cand["candidate_id"] for c in cands["confirmed"]):
+            cands["confirmed"].append(cand)
+    return r
+
+
+def _reject_candidate(state: dict[str, Any], cand: dict[str, Any]) -> None:
+    cands = _ensure_cands(state)
+    cands["pending"] = [c for c in cands["pending"] if c.get("candidate_id") != cand.get("candidate_id")]
+    rej = dict(cand); rej["status"] = "rejected"
+    if not any(c.get("candidate_id") == rej["candidate_id"] for c in cands["rejected"]):
+        cands["rejected"].append(rej)
+
+
+def _plain_missing(missing: list[Any]) -> list[str]:
+    out: list[str] = []
     for item in missing:
         raw = str(item)
         if raw.lower() in _OPTIONAL_FIELDS:
             continue
-        plain = _PLAIN_MISSING.get(raw, raw.replace("_", " "))
-        if plain not in seen:
-            seen.append(plain)
-    return seen
+        val = _PLAIN_MISSING.get(raw, raw.replace("_", " "))
+        if val not in out:
+            out.append(val)
+    return out
 
 
 def _missing_prompt(missing: list[Any]) -> str:
-    plain = _plain_missing_items(missing)
+    plain = _plain_missing(missing)
     if not plain:
         return "I have the optional routing details handled. Provide any remaining required details in plain English."
     if set(plain) == {"date", "who will sign it", "body text"}:
@@ -178,805 +453,220 @@ def _missing_prompt(missing: list[Any]) -> str:
     return f"I have part of the letter. I still need: {', '.join(plain[:5])}."
 
 
-def _determine_phase(ready_result: dict[str, Any], preview_result: dict[str, Any]) -> str:
-    if ready_result.get("approved_ready"):
+def _phase(ready: dict[str, Any], preview: dict[str, Any]) -> str:
+    if ready.get("approved_ready"):
         return "approved_ready"
-    if preview_result.get("mode") == "draft_preview":
+    if preview.get("mode") == "draft_preview" or (ready.get("validation_ready") and not ready.get("approved_ready")):
         return "draft_preview"
-    if preview_result.get("mode") == "build_status":
+    if preview.get("mode") == "build_status":
         return "build_status"
-    if ready_result.get("validation_ready") and not ready_result.get("approved_ready"):
-        return "draft_preview"
     return "build_status"
 
 
-def _build_next_step(phase: str, ready_result: dict[str, Any], preview_result: dict[str, Any]) -> str:
+def _next_step(phase: str, ready: dict[str, Any], preview: dict[str, Any]) -> str:
     if phase == "approved_ready":
         return "Draft is approved and ready. Say 'make the PDF' to render."
     if phase == "draft_preview":
-        approval = preview_result.get("approval") or {}
-        if approval.get("approval_current"):
-            return "Draft is approved. Say 'make the PDF' to render."
-        return "Draft preview is ready. Review it and say 'looks good' to approve."
-    missing = (ready_result.get("render_gate") or {}).get("missing", [])
+        return "Draft is approved. Say 'make the PDF' to render." if (preview.get("approval") or {}).get("approval_current") else "Draft preview is ready. Review it and say 'looks good' to approve."
+    missing = (ready.get("render_gate") or {}).get("missing", [])
     if missing:
         return _missing_prompt(missing)
-    next_action = ready_result.get("next_action") or {}
-    if next_action.get("question"):
-        question = str(next_action["question"])
-        if "ssic" in question.lower() or "originator" in question.lower():
+    q = (ready.get("next_action") or {}).get("question")
+    if q:
+        if "ssic" in str(q).lower() or "originator" in str(q).lower():
             return "I have the optional routing details handled. Provide any remaining required details in plain English."
-        return question
+        return str(q)
     return "Keep providing details to complete the letter."
 
 
-def _build_assistant_response(
-    phase: str,
-    ready_result: dict[str, Any],
-    preview_result: dict[str, Any],
-    *,
-    action: str = "",
-    pdf_path: str = "",
-    blocked_reason: str = "",
-) -> str:
+def _assistant_response(phase: str, ready: dict[str, Any], preview: dict[str, Any], *, action: str = "", pdf_path: str = "", blocked_reason: str = "", pending_candidate: dict[str, Any] | None = None) -> str:
+    if pending_candidate:
+        title = pending_candidate.get("source_title") or "source-backed result"
+        res = pending_candidate.get("resolved_value") or {}
+        val = res.get("from") or res.get("to") or res.get("unit_identity") or "the command"
+        return f"I found a source-backed candidate from {title}: {val}. Confirm before I apply it, or reject it and provide the full command name or letterhead."
     if phase == "rendered":
         return f"Done! Your PDF is ready at {pdf_path}. You can start a new chat if you need another letter."
     if phase == "approved_ready":
         return "Your draft is approved and everything looks good. Say 'make the PDF' and I'll generate it."
     if phase == "draft_preview":
-        approval = (preview_result.get("approval") or {}).get("approval_current", False)
-        if approval:
-            return "Your draft is approved. Say 'make the PDF' and I'll generate it."
-        return "Your draft is ready for review. You can say 'looks good' to approve it, or tell me what you'd like to change."
+        return "Your draft is approved. Say 'make the PDF' and I'll generate it." if (preview.get("approval") or {}).get("approval_current") else "Your draft is ready for review. You can say 'looks good' to approve it, or tell me what you'd like to change."
     if action == "approve":
         return "Your draft is approved! You can now say 'make the PDF' and I'll generate it."
-    if action == "render" and phase == "blocked":
-        reason = blocked_reason or "The draft needs approval and all required fields must be ready."
-        return f"I can't make the PDF yet. {reason} Review the draft and say 'looks good' to approve it first."
+    if action == "render":
+        return f"I can't make the PDF yet. {blocked_reason or 'The draft needs approval and all required fields must be ready.'} Review the draft and say 'looks good' to approve it first."
     if action == "revise":
         return "I've updated the draft. Please review the preview and say 'looks good' when you're ready to approve it."
-    missing = (ready_result.get("render_gate") or {}).get("missing", [])
+    missing = (ready.get("render_gate") or {}).get("missing", [])
     if missing:
         return _missing_prompt(missing)
-    next_action = ready_result.get("next_action") or {}
-    if next_action.get("field"):
-        field = str(next_action.get("field", ""))
-        if field.lower() in _OPTIONAL_FIELDS:
-            return "I have the optional routing details handled. Provide any remaining required details in plain English."
-        return f"I still need {_PLAIN_MISSING.get(field, field.replace('_', ' '))}. {next_action.get('question', '')}".strip()
     return "Got it. Keep providing details and I'll build the draft for you."
 
 
-# ---------------------------------------------------------------------------
-# Intake parsing, natural assisted resolution, and SSIC inference
-# ---------------------------------------------------------------------------
-
-_KEY_VALUE_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9_. -]*\s*:\s*", re.MULTILINE)
-_DATE_RE = re.compile(r"\b(?:use\s+the\s+date|date)\s*:?\s*(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b", re.IGNORECASE)
-_USE_DATE_RE = re.compile(r"\buse\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b", re.IGNORECASE)
-_KEY_ALIASES = {
-    "subject": "subj",
-    "signer": "signature",
-    "signature_name": "signature",
-    "originator": "originator_code",
-    "originator_code": "originator_code",
-    "originator code": "originator_code",
-    "office code": "originator_code",
-    "office_code": "originator_code",
-    "orig": "originator_code",
-}
-
-_UNIT_ALIASES = {
-    # MCAS New River (existing)
-    "mcas new river": "Commanding Officer, Marine Corps Air Station New River",
-    "new river air station": "Commanding Officer, Marine Corps Air Station New River",
-    "marine corps air station new river": "Commanding Officer, Marine Corps Air Station New River",
-    "commanding officer mcas new river": "Commanding Officer, Marine Corps Air Station New River",
-    "commanding officer marine corps air station new river": "Commanding Officer, Marine Corps Air Station New River",
-    "co mcas new river": "Commanding Officer, Marine Corps Air Station New River",
-    # II MEF (existing)
-    "ii mef": "Commanding General, II Marine Expeditionary Force",
-    "2d mef": "Commanding General, II Marine Expeditionary Force",
-    "second mef": "Commanding General, II Marine Expeditionary Force",
-    "second marine expeditionary force": "Commanding General, II Marine Expeditionary Force",
-    "cg ii mef": "Commanding General, II Marine Expeditionary Force",
-    "commanding general ii mef": "Commanding General, II Marine Expeditionary Force",
-    "commanding general, ii mef": "Commanding General, II Marine Expeditionary Force",
-    # MCAS Cherry Point (L.31S)
-    "mcas cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
-    "cherry point air station": "Commanding Officer, Marine Corps Air Station Cherry Point",
-    "marine corps air station cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
-    "commanding officer mcas cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
-    "co mcas cherry point": "Commanding Officer, Marine Corps Air Station Cherry Point",
-    # Camp Lejeune / MCB Camp Lejeune (L.31S)
-    "camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
-    "mcb camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
-    "marine corps base camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
-    "commanding officer camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
-    "commanding officer mcb camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
-    "co camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
-    "co mcb camp lejeune": "Commanding Officer, Marine Corps Base Camp Lejeune",
-    # MARFORCOM (L.31S)
-    "marforcom": "Commander, Marine Forces Command",
-    "marine forces command": "Commander, Marine Forces Command",
-    "commander marine forces command": "Commander, Marine Forces Command",
-    "commander, marine forces command": "Commander, Marine Forces Command",
-    # HQMC / Headquarters Marine Corps (L.31S)
-    "hqmc": "Commandant of the Marine Corps",
-    "headquarters marine corps": "Commandant of the Marine Corps",
-    "commandant of the marine corps": "Commandant of the Marine Corps",
-    "cmc": "Commandant of the Marine Corps",
-}
-
-_LETTERHEAD_ALIASES = {
-    # MCAS New River (existing)
-    "mcas new river": {
-        "letterhead_top_line": "UNITED STATES MARINE CORPS",
-        "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER",
-        "letterhead_address": "JACKSONVILLE NC 28545-0000",
-    },
-    "new river air station": {
-        "letterhead_top_line": "UNITED STATES MARINE CORPS",
-        "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER",
-        "letterhead_address": "JACKSONVILLE NC 28545-0000",
-    },
-    "marine corps air station new river": {
-        "letterhead_top_line": "UNITED STATES MARINE CORPS",
-        "letterhead_activity": "MARINE CORPS AIR STATION NEW RIVER",
-        "letterhead_address": "JACKSONVILLE NC 28545-0000",
-    },
-    # MCAS Cherry Point (L.31S)
-    "mcas cherry point": {
-        "letterhead_top_line": "UNITED STATES MARINE CORPS",
-        "letterhead_activity": "MARINE CORPS AIR STATION CHERRY POINT",
-        "letterhead_address": "CHERRY POINT NC 28533-0000",
-    },
-    "cherry point air station": {
-        "letterhead_top_line": "UNITED STATES MARINE CORPS",
-        "letterhead_activity": "MARINE CORPS AIR STATION CHERRY POINT",
-        "letterhead_address": "CHERRY POINT NC 28533-0000",
-    },
-    "marine corps air station cherry point": {
-        "letterhead_top_line": "UNITED STATES MARINE CORPS",
-        "letterhead_activity": "MARINE CORPS AIR STATION CHERRY POINT",
-        "letterhead_address": "CHERRY POINT NC 28533-0000",
-    },
-    # Camp Lejeune / MCB Camp Lejeune (L.31S)
-    "camp lejeune": {
-        "letterhead_top_line": "UNITED STATES MARINE CORPS",
-        "letterhead_activity": "MARINE CORPS BASE CAMP LEJEUNE",
-        "letterhead_address": "CAMP LEJEUNE NC 28542-0000",
-    },
-    "mcb camp lejeune": {
-        "letterhead_top_line": "UNITED STATES MARINE CORPS",
-        "letterhead_activity": "MARINE CORPS BASE CAMP LEJEUNE",
-        "letterhead_address": "CAMP LEJEUNE NC 28542-0000",
-    },
-    "marine corps base camp lejeune": {
-        "letterhead_top_line": "UNITED STATES MARINE CORPS",
-        "letterhead_activity": "MARINE CORPS BASE CAMP LEJEUNE",
-        "letterhead_address": "CAMP LEJEUNE NC 28542-0000",
-    },
-}
+def _status(session_id: str) -> tuple[dict[str, Any], dict[str, Any], str, str]:
+    preview = _run_manager(["preview", "--session", session_id])
+    ready = _run_manager(["ready", "--session", session_id])
+    ph = _phase(ready, preview)
+    return preview, ready, ph, _next_step(ph, ready, preview)
 
 
-def _looks_like_key_value(text: str) -> bool:
-    stripped = text.strip()
-    if stripped.startswith("(") or stripped.startswith("["):
-        return False
-    return bool(_KEY_VALUE_RE.search(stripped))
+def _digest(payload: Any) -> str:
+    return hashlib.sha1(json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()
 
 
-def _clean_extracted_value(value: str) -> str:
-    return re.sub(r"\s+", " ", str(value).strip(" \t\r\n,.;\"'"))
-
-
-def _normalize_subject(value: str) -> str:
-    value = _clean_extracted_value(value)
-    return value if value.isupper() else value.upper()
-
-
-def _normalize_body(value: str) -> str:
-    value = _clean_extracted_value(value)
-    value = re.sub(r"^(?:about|that)\s+", "", value, flags=re.IGNORECASE).strip()
-    if not value:
-        return value
-    if re.match(r"^(implementing|reviewing|updating|establishing|creating)\b", value, re.IGNORECASE):
-        value = f"This letter addresses {value}"
-    else:
-        value = value[0].upper() + value[1:]
-    if value[-1] not in ".!?":
-        value += "."
-    return value
-
-
-def _canonical_key(key: str) -> str:
-    compact = re.sub(r"\s+", " ", key.strip().lower().replace("-", "_"))
-    underscored = compact.replace(" ", "_")
-    return _KEY_ALIASES.get(compact, _KEY_ALIASES.get(underscored, underscored))
-
-
-def _expand_unit(value: str) -> str:
-    clean = _clean_extracted_value(value)
-    key = re.sub(r"\s+", " ", clean.lower().replace("c.g.", "cg")).strip()
-    return _UNIT_ALIASES.get(key, clean)
-
-
-def _infer_letterhead_from_from_line(from_line: str) -> dict[str, str]:
-    low = from_line.lower()
-    for key, fields in _LETTERHEAD_ALIASES.items():
-        if key in low:
-            return dict(fields)
-    return {}
-
-
-def _subject_from_topic(topic: str) -> str:
-    clean = _clean_extracted_value(topic).lower()
-    clean = re.sub(r"^(reviewing|review|implementing|implementation of|about)\s+", "", clean).strip()
-    if "correspondence" in clean and ("procedure" in clean or "review" in clean):
-        return "REVIEW OF CORRESPONDENCE PROCEDURES"
-    if clean:
-        return _normalize_subject(clean)
-    return ""
-
-
-def _parse_explicit_key_values(text: str) -> tuple[dict[str, str], str]:
-    fields: dict[str, str] = {}
-    prose_lines: list[str] = []
-    for line in text.splitlines():
-        match = re.match(r"^\s*([A-Za-z][A-Za-z0-9_. -]*)\s*:\s*(.*?)\s*$", line)
-        if not match:
-            prose_lines.append(line)
-            continue
-        key = _canonical_key(match.group(1))
-        value = _clean_extracted_value(match.group(2))
-        if not value:
-            continue
-        if key == "subj":
-            value = _normalize_subject(value)
-        elif key == "body":
-            value = _normalize_body(value)
-        elif key in {"ssic", "originator_code"}:
-            value = value.upper()
-        fields[key] = value
-    return fields, "\n".join(prose_lines).strip()
-
-
-def _extract_first_turn_key_values(text: str) -> dict[str, str]:
-    fields: dict[str, str] = {}
-    raw = text.strip()
-    lower = raw.lower()
-    if not any(k in lower for k in _NEW_INTENTS):
-        return fields
-
-    from_to = re.search(
-        r"\bfrom\s+(.+?)\s+to\s+(.+?)(?=(?:\s+about\b|\s+regarding\b|\s+concerning\b|[,.;]\s*(?:use|signer|signature|subject|ssic|originator|make|body)\b|$))",
-        raw,
-        re.IGNORECASE | re.DOTALL,
-    )
-    if from_to:
-        fields["from"] = _expand_unit(from_to.group(1))
-        fields["to"] = _expand_unit(from_to.group(2))
-        fields.update({k: v for k, v in _infer_letterhead_from_from_line(fields["from"]).items() if k not in fields})
-
-    topic_match = re.search(r"\b(?:about|regarding|concerning)\s+(.+?)(?=(?:[,.;]\s*(?:use|signer|signature|subject|ssic|originator|make|body)\b|$))", raw, re.IGNORECASE | re.DOTALL)
-    if topic_match and "subj" not in fields:
-        subject = _subject_from_topic(topic_match.group(1))
-        if subject:
-            fields["subj"] = subject
-
-    date_match = _DATE_RE.search(raw) or _USE_DATE_RE.search(raw)
-    if date_match:
-        fields["date"] = _clean_extracted_value(date_match.group(1))
-
-    ssic_match = re.search(r"\bSSIC\s*:?\s*([A-Za-z0-9.-]+)\b", raw, re.IGNORECASE)
-    if ssic_match:
-        fields["ssic"] = _clean_extracted_value(ssic_match.group(1)).upper()
-
-    originator_match = re.search(r"\b(?:originator|office)\s+code\s*:?\s*([A-Za-z0-9-]+)\b", raw, re.IGNORECASE)
-    if originator_match:
-        fields["originator_code"] = _clean_extracted_value(originator_match.group(1)).upper()
-
-    signer_match = re.search(
-        r"\b(?:signer|signature)\s*:?\s*(.+?)(?=(?:,\s*(?:and\s+)?(?:subject|ssic|originator|date|make|body|use)\b|[.;]\s*$|$))",
-        raw,
-        re.IGNORECASE | re.DOTALL,
-    )
-    if signer_match:
-        fields["signature"] = _clean_extracted_value(signer_match.group(1))
-
-    subject_match = re.search(
-        r"\bsubject\s*:?\s+(.+?)(?=(?:,\s*(?:and\s+)?(?:make|body|use|signer|signature|ssic|originator|date)\b|[.;]\s*$|$))",
-        raw,
-        re.IGNORECASE | re.DOTALL,
-    )
-    if subject_match:
-        fields["subj"] = _normalize_subject(subject_match.group(1))
-
-    body_match = re.search(
-        r"\b(?:make\s+the\s+body\s+about|body\s+about|body\s*:)\s+(.+?)(?=(?:\n\s*[A-Za-z][A-Za-z0-9_. -]*\s*:|[.;]\s*$|$))",
-        raw,
-        re.IGNORECASE | re.DOTALL,
-    )
-    if body_match:
-        body = _normalize_body(body_match.group(1))
-        if body:
-            fields["body"] = body
-    return {key: value for key, value in fields.items() if value}
-
-
-def _extract_followup_fields(text: str) -> dict[str, str]:
-    fields: dict[str, str] = {}
-    raw = text.strip()
-    date_match = _DATE_RE.search(raw) or _USE_DATE_RE.search(raw)
-    if date_match:
-        fields["date"] = _clean_extracted_value(date_match.group(1))
-    signer_match = re.search(r"\b([A-Z](?:\.\s*)?(?:[A-Z](?:\.\s*)?)*[A-Z][A-Z .'-]*)\s+will\s+sign\s+it\b", raw, re.IGNORECASE)
-    if signer_match:
-        fields["signature"] = _clean_extracted_value(signer_match.group(1)).upper()
-    body_match = re.search(r"\b(?:the\s+)?body\s+(?:should\s+)?(?:say|state|read)\s+(.+?)(?=(?:$|[.;]\s*$))", raw, re.IGNORECASE | re.DOTALL)
-    if body_match:
-        fields["body"] = _normalize_body(body_match.group(1))
-    return {key: value for key, value in fields.items() if value}
-
-
-def _extract_revision_fields(text: str) -> dict[str, str]:
-    fields: dict[str, str] = {}
-    raw = text.strip()
-    body_match = re.search(
-        r"\b(?:change|update|revise|rewrite|make)\s+(?:the\s+)?body\s+(?:to\s+)?(?:say|state|read)?\s*(.+?)(?=(?:$|[.;]\s*$))",
-        raw,
-        re.IGNORECASE | re.DOTALL,
-    )
-    if body_match:
-        body = _normalize_body(body_match.group(1))
-        if body:
-            fields["body"] = body
-    return fields
-
-
-def _merge_mixed_intake_fields(text: str) -> dict[str, str]:
-    explicit_fields, prose_text = _parse_explicit_key_values(text)
-    prose_fields = _extract_first_turn_key_values(prose_text or text)
-    followup_fields = _extract_followup_fields(prose_text or text)
-    merged = {**followup_fields, **prose_fields, **explicit_fields}
-    return {key: value for key, value in merged.items() if value}
-
-
-def _key_values_to_text(fields: dict[str, str]) -> str:
-    ordered = [
-        "letterhead_top_line",
-        "letterhead_activity",
-        "letterhead_address",
-        "ssic",
-        "originator_code",
-        "from",
-        "to",
-        "date",
-        "subj",
-        "body",
-        "signature",
-    ]
-    lines = [f"{key}: {fields[key]}" for key in ordered if key in fields]
-    lines.extend(f"{key}: {value}" for key, value in fields.items() if key not in ordered)
-    return "\n".join(lines)
-
-
-def _payload_body_text(payload: dict[str, Any]) -> str:
-    body = payload.get("body") or payload.get("body_paragraphs") or ""
-    if isinstance(body, list):
-        return "\n".join(str(item) for item in body)
-    return str(body or "")
-
-
-def _coerce_ssic_result(resolved: Any) -> dict[str, str] | None:
-    if isinstance(resolved, dict):
-        code = str(resolved.get("code") or "").strip()
-        if code:
-            return {"code": code, "description": str(resolved.get("description") or "")}
-    if isinstance(resolved, tuple) and resolved:
-        code = str(resolved[0] or "").strip()
-        if code:
-            desc = str(resolved[1]) if len(resolved) > 1 else ""
-            return {"code": code, "description": desc}
-    return None
-
-
-def _maybe_infer_and_apply_ssic(session_id: str, payload: dict[str, Any] | None) -> tuple[dict[str, str] | None, dict[str, Any] | None]:
-    if not isinstance(payload, dict) or payload.get("ssic"):
-        return None, None
-    subject = str(payload.get("subj") or payload.get("subject") or "")
-    body_text = _payload_body_text(payload)
-    resolved = _coerce_ssic_result(resolve_ssic(subject, body_text))
-    if not resolved or not resolved.get("code"):
-        return None, None
-    code = str(resolved["code"]).strip()
-    if not code:
-        return None, None
-    apply_r = _run_manager(["apply", "--session", session_id, "--kv", f"ssic: {code}"])
-    return resolved, apply_r
-
-
-def _body_from_result(result: dict[str, Any]) -> str:
-    payload = result.get("payload") if isinstance(result, dict) else {}
-    if isinstance(payload, dict):
-        return _payload_body_text(payload)
-    return ""
-
-
-# ---------------------------------------------------------------------------
-# Chat action handlers
-# ---------------------------------------------------------------------------
-
-
-def _run_say_and_status(session_id: str, text: str) -> dict[str, Any]:
-    extracted_fields = _merge_mixed_intake_fields(text)
-    if extracted_fields:
-        say_r = _run_manager(["apply", "--session", session_id, "--kv", _key_values_to_text(extracted_fields)])
+def _run_say(session_id: str, text: str, state: dict[str, Any]) -> dict[str, Any]:
+    fields = _merge_mixed_intake_fields(text)
+    pending = _maybe_add_source_candidate(state, fields) if fields else None
+    if fields:
+        r = _run_manager(["apply", "--session", session_id, "--kv", _key_values_to_text(fields)])
     elif _looks_like_key_value(text):
-        say_r = _run_manager(["apply", "--session", session_id, "--kv", text])
+        r = _run_manager(["apply", "--session", session_id, "--kv", text])
     else:
-        say_r = _run_manager(["say", "--session", session_id, "--text", text])
-
-    ssic_inference, ssic_apply_r = _maybe_infer_and_apply_ssic(session_id, say_r.get("payload"))
-    if ssic_apply_r and ssic_apply_r.get("success"):
-        say_r = ssic_apply_r
-
-    preview_r = _run_manager(["preview", "--session", session_id])
-    ready_r = _run_manager(["ready", "--session", session_id])
-    phase = _determine_phase(ready_r, preview_r)
-    next_step = _build_next_step(phase, ready_r, preview_r)
-    assistant_response = _build_assistant_response(phase, ready_r, preview_r)
-    return {
-        "success": say_r.get("success", False),
-        "intent": "say",
-        "phase": phase,
-        "message": f"I've noted that. Current phase: {phase.replace('_', ' ')}. {next_step}" if say_r.get("success") else say_r.get("error", "Say failed"),
-        "assistant_response": assistant_response,
-        "preview_text": preview_r.get("preview_text"),
-        "next_step": next_step,
-        "payload": say_r.get("payload"),
-        "validation_summary": say_r.get("validation_summary"),
-        "warning_summary": say_r.get("warning_summary"),
-        "proposed_kv": say_r.get("proposed_kv"),
-        "extracted_kv": extracted_fields or None,
-        "ssic_inference": ssic_inference,
-        "validation_ready": ready_r.get("validation_ready", False),
-        "approved_ready": ready_r.get("approved_ready", False),
-        "render_gate": ready_r.get("render_gate"),
-        "error": say_r.get("error"),
-    }
+        r = _run_manager(["say", "--session", session_id, "--text", text])
+    ssic, ssic_r = _maybe_infer_and_apply_ssic(session_id, r.get("payload"))
+    if ssic_r and ssic_r.get("success"):
+        r = ssic_r
+    preview, ready, ph, step = _status(session_id)
+    return {"success": r.get("success", False), "intent": "say", "phase": ph, "message": f"I've noted that. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Say failed"), "assistant_response": _assistant_response(ph, ready, preview, pending_candidate=pending), "preview_text": preview.get("preview_text"), "next_step": step, "payload": r.get("payload"), "validation_summary": r.get("validation_summary"), "warning_summary": r.get("warning_summary"), "proposed_kv": r.get("proposed_kv"), "extracted_kv": fields or None, "ssic_inference": ssic, "source_backed_candidate": pending, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "render_gate": ready.get("render_gate"), "error": r.get("error")}
 
 
-def _run_revise_and_status(session_id: str, text: str) -> dict[str, Any]:
-    revision_fields = _extract_revision_fields(text)
-    if revision_fields:
-        before_r = _run_manager(["resume", "--session", session_id])
-        before_ready = _run_manager(["ready", "--session", session_id])
-        before_body = _body_from_result(before_r)
-        apply_r = _run_manager(["apply", "--session", session_id, "--kv", _key_values_to_text(revision_fields)])
-        preview_r = _run_manager(["preview", "--session", session_id])
-        ready_r = _run_manager(["ready", "--session", session_id])
-        phase = _determine_phase(ready_r, preview_r)
-        next_step = _build_next_step(phase, ready_r, preview_r)
-        after_body = _body_from_result(apply_r)
-        changed = bool(apply_r.get("success") and after_body and after_body != before_body)
-        was_approved = bool(before_ready.get("approved_ready") or (before_ready.get("approval") or {}).get("approval_current"))
-        cleared = bool(changed and was_approved and not ready_r.get("approved_ready", False))
-        assistant_response = _build_assistant_response(phase, ready_r, preview_r, action="revise") if changed else "I understood the request, but nothing in the draft was changed. Try changing the body, subject, signer, or date."
-        return {
-            "success": apply_r.get("success", False),
-            "intent": "revise",
-            "phase": phase,
-            "message": f"Revised draft. Payload changed: {changed}. Approval cleared: {cleared}. Current phase: {phase.replace('_', ' ')}. {next_step}" if apply_r.get("success") else apply_r.get("error", "Revise failed"),
-            "assistant_response": assistant_response,
-            "preview_text": preview_r.get("preview_text"),
-            "next_step": next_step,
-            "payload": apply_r.get("payload"),
-            "validation_summary": apply_r.get("validation_summary"),
-            "warning_summary": apply_r.get("warning_summary"),
-            "approval_cleared": cleared,
-            "payload_changed": changed,
-            "applied_revision_kv": revision_fields,
-            "validation_ready": ready_r.get("validation_ready", False),
-            "approved_ready": ready_r.get("approved_ready", False),
-            "error": apply_r.get("error"),
-        }
-
-    revise_r = _run_manager(["revise", "--session", session_id, "--text", text])
-    preview_r = _run_manager(["preview", "--session", session_id])
-    ready_r = _run_manager(["ready", "--session", session_id])
-    phase = _determine_phase(ready_r, preview_r)
-    next_step = _build_next_step(phase, ready_r, preview_r)
-    changed = revise_r.get("payload_changed", False)
-    cleared = revise_r.get("approval_cleared", False)
-    if not revise_r.get("success"):
-        assistant_response = "I wasn't able to apply that change to the draft. Try a supported change such as changing the body, subject, signer, or date."
-    elif not changed:
-        assistant_response = "I understood the request, but nothing in the draft was changed. Try changing the body, subject, signer, or date."
-    else:
-        assistant_response = _build_assistant_response(phase, ready_r, preview_r, action="revise")
-    return {
-        "success": revise_r.get("success", False),
-        "intent": "revise",
-        "phase": phase,
-        "message": f"Revised draft. Payload changed: {changed}. Approval cleared: {cleared}. Current phase: {phase.replace('_', ' ')}. {next_step}" if revise_r.get("success") else revise_r.get("error", "Revise failed"),
-        "assistant_response": assistant_response,
-        "preview_text": preview_r.get("preview_text"),
-        "next_step": next_step,
-        "payload": revise_r.get("payload"),
-        "validation_summary": revise_r.get("validation_summary"),
-        "warning_summary": revise_r.get("warning_summary"),
-        "approval_cleared": cleared,
-        "payload_changed": changed,
-        "validation_ready": ready_r.get("validation_ready", False),
-        "approved_ready": ready_r.get("approved_ready", False),
-        "error": revise_r.get("error"),
-    }
+def _run_revise(session_id: str, text: str) -> dict[str, Any]:
+    before_ready = _run_manager(["ready", "--session", session_id])
+    before_preview = _run_manager(["preview", "--session", session_id])
+    before_hash = _digest(before_preview.get("payload") or {})
+    fields = _extract_revision_fields(text)
+    r = _run_manager(["apply", "--session", session_id, "--kv", _key_values_to_text(fields)]) if fields else _run_manager(["revise", "--session", session_id, "--text", text])
+    preview, ready, ph, step = _status(session_id)
+    after_payload = r.get("payload") or preview.get("payload") or {}
+    changed = r.get("payload_changed")
+    if changed is None:
+        changed = _digest(after_payload) != before_hash
+    cleared = r.get("approval_cleared")
+    if cleared is None:
+        cleared = bool(before_ready.get("approved_ready") and changed and not ready.get("approved_ready", False))
+    resp = "I wasn't able to apply that change to the draft. Try a supported change such as changing the body, subject, signer, or date." if not r.get("success") else ("I understood the request, but nothing in the draft was changed. Try changing the body, subject, signer, or date." if not changed else _assistant_response(ph, ready, preview, action="revise"))
+    return {"success": r.get("success", False), "intent": "revise", "phase": ph, "message": f"Revised draft. Payload changed: {changed}. Approval cleared: {cleared}. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Revise failed"), "assistant_response": resp, "preview_text": preview.get("preview_text"), "next_step": step, "payload": after_payload, "approval_cleared": cleared, "payload_changed": changed, "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": r.get("error")}
 
 
-def _run_approve_and_status(session_id: str) -> dict[str, Any]:
-    approve_r = _run_manager(["approve", "--session", session_id])
-    ready_r = _run_manager(["ready", "--session", session_id])
-    approved = approve_r.get("approved_for_finalize", False)
-    approved_ready = ready_r.get("approved_ready", False)
-    if approved and approved_ready:
-        phase = "approved_ready"
-        next_step = "Draft is approved and ready. Say 'make the PDF' to render."
-    elif approved:
-        phase = "draft_preview"
-        next_step = "Draft approved, but validation is not yet ready. Provide missing fields."
-    else:
-        phase = "blocked"
-        next_step = approve_r.get("error", "Approval failed. Ensure preview gate is met first.")
-    return {
-        "success": approve_r.get("success", False),
-        "intent": "approve",
-        "phase": phase,
-        "message": f"Draft approved. Current phase: {phase.replace('_', ' ')}. {next_step}" if approved else next_step,
-        "assistant_response": _build_assistant_response(phase, ready_r, {}, action="approve", blocked_reason=next_step if phase == "blocked" else ""),
-        "next_step": next_step,
-        "approved_for_finalize": approved,
-        "approved_ready": approved_ready,
-        "validation_ready": ready_r.get("validation_ready", False),
-        "approval": approve_r.get("approval"),
-        "error": approve_r.get("error"),
-    }
+def _run_confirm_candidate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
+    cand = _pending(state)
+    if not cand:
+        preview, ready, ph, step = _status(session_id)
+        return {"success": False, "intent": "confirm_candidate", "phase": ph, "message": "No pending source-backed candidate to confirm.", "assistant_response": "I don't have a pending source-backed command candidate to apply.", "next_step": step, "source_backed_candidates": _ensure_cands(state), "error": "No pending candidate."}
+    r = _apply_candidate(session_id, state, cand)
+    ssic, ssic_r = _maybe_infer_and_apply_ssic(session_id, r.get("payload"))
+    if ssic_r and ssic_r.get("success"):
+        r = ssic_r
+    preview, ready, ph, step = _status(session_id)
+    return {"success": r.get("success", False), "intent": "confirm_candidate", "phase": ph, "message": f"Confirmed source-backed candidate. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Candidate apply failed"), "assistant_response": "I've applied the confirmed source-backed command result. " + step if r.get("success") else "I couldn't apply that source-backed candidate.", "preview_text": preview.get("preview_text"), "next_step": step, "payload": r.get("payload"), "confirmed_candidate": cand, "source_backed_candidates": _ensure_cands(state), "ssic_inference": ssic, "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": r.get("error")}
 
 
-def _run_preview_status(session_id: str) -> dict[str, Any]:
-    preview_r = _run_manager(["preview", "--session", session_id])
-    ready_r = _run_manager(["ready", "--session", session_id])
-    phase = _determine_phase(ready_r, preview_r)
-    next_step = _build_next_step(phase, ready_r, preview_r)
-    return {
-        "success": preview_r.get("success", False),
-        "intent": "preview",
-        "phase": phase,
-        "message": f"Current phase: {phase.replace('_', ' ')}. {next_step}",
-        "assistant_response": _build_assistant_response(phase, ready_r, preview_r),
-        "preview_text": preview_r.get("preview_text"),
-        "next_step": next_step,
-        "mode": preview_r.get("mode"),
-        "approval": preview_r.get("approval"),
-        "approved_ready": ready_r.get("approved_ready", False),
-        "validation_ready": ready_r.get("validation_ready", False),
-        "error": preview_r.get("error"),
-    }
+def _run_reject_candidate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
+    cand = _pending(state)
+    if cand:
+        _reject_candidate(state, cand)
+    preview, ready, ph, step = _status(session_id)
+    msg = "Rejected source-backed candidate. Please provide the full command name or letterhead." if cand else "No pending source-backed candidate to reject."
+    return {"success": bool(cand), "intent": "reject_candidate", "phase": ph, "message": msg, "assistant_response": msg, "preview_text": preview.get("preview_text"), "next_step": step, "rejected_candidate": cand, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None if cand else "No pending candidate."}
 
 
-def _run_ready_status(session_id: str) -> dict[str, Any]:
-    ready_r = _run_manager(["ready", "--session", session_id])
-    preview_r = _run_manager(["preview", "--session", session_id])
-    phase = _determine_phase(ready_r, preview_r)
-    next_step = _build_next_step(phase, ready_r, preview_r)
-    return {
-        "success": ready_r.get("success", False),
-        "intent": "ready",
-        "phase": phase,
-        "message": f"Current phase: {phase.replace('_', ' ')}. {next_step}",
-        "assistant_response": _build_assistant_response(phase, ready_r, preview_r),
-        "approved_ready": ready_r.get("approved_ready", False),
-        "validation_ready": ready_r.get("validation_ready", False),
-        "next_step": next_step,
-        "approval": ready_r.get("approval"),
-        "render_gate": ready_r.get("render_gate"),
-        "error": ready_r.get("error"),
-    }
+def _run_approve(session_id: str) -> dict[str, Any]:
+    r = _run_manager(["approve", "--session", session_id])
+    ready = _run_manager(["ready", "--session", session_id])
+    approved = r.get("approved_for_finalize", False)
+    ar = ready.get("approved_ready", False)
+    ph = "approved_ready" if approved and ar else ("draft_preview" if approved else "blocked")
+    step = "Draft is approved and ready. Say 'make the PDF' to render." if ph == "approved_ready" else ("Draft approved, but validation is not yet ready. Provide missing fields." if approved else r.get("error", "Approval failed. Ensure preview gate is met first."))
+    return {"success": r.get("success", False), "intent": "approve", "phase": ph, "message": f"Draft approved. Current phase: {ph.replace('_', ' ')}. {step}" if approved else step, "assistant_response": _assistant_response(ph, ready, {}, action="approve", blocked_reason=step if ph == "blocked" else ""), "next_step": step, "approved_for_finalize": approved, "approved_ready": ar, "validation_ready": ready.get("validation_ready", False), "approval": r.get("approval"), "payload": r.get("payload"), "error": r.get("error")}
 
 
-def _run_render_gate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
-    ready_r = _run_manager(["ready", "--session", session_id])
-    if not ready_r.get("approved_ready", False):
-        phase = _determine_phase(ready_r, {"mode": "build_status"})
-        next_step = _build_next_step(phase, ready_r, {"mode": "build_status"})
-        return {
-            "success": False,
-            "intent": "render",
-            "phase": phase,
-            "message": f"Cannot render yet. Current phase: {phase.replace('_', ' ')}. {next_step}",
-            "assistant_response": _build_assistant_response("blocked", ready_r, {}, action="render", blocked_reason=ready_r.get("error") or "The draft isn't approved or validation isn't ready yet."),
-            "next_step": next_step,
-            "approved_ready": False,
-            "validation_ready": ready_r.get("validation_ready", False),
-            "error": ready_r.get("error") or "Render blocked: not approved_ready.",
-        }
-    out_dir = _REPO_ROOT / "tmp"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    pdf_path = Path(state.get("out_path")) if state.get("out_path") else out_dir / f"chat_{session_id}.pdf"
-    render_r = _run_manager(["render", "--session", session_id, "--out", str(pdf_path)])
-    if render_r.get("success") and pdf_path.exists() and pdf_path.stat().st_size > 0:
-        state["last_pdf_path"] = str(pdf_path)
-        state["rendered_at"] = render_r.get("message", "")
-        _save_state(state["chat_id"], state)
-        return {
-            "success": True,
-            "intent": "render",
-            "phase": "rendered",
-            "message": f"PDF rendered successfully: {pdf_path}",
-            "assistant_response": _build_assistant_response("rendered", {}, {}, pdf_path=str(pdf_path)),
-            "pdf_path": str(pdf_path),
-            "pdf_size": pdf_path.stat().st_size,
-            "next_step": "Letter is complete. You can start a new chat for another letter.",
-            "error": None,
-        }
-    return {
-        "success": False,
-        "intent": "render",
-        "phase": "blocked",
-        "message": render_r.get("error", "Render failed."),
-        "assistant_response": _build_assistant_response("blocked", {}, {}, action="render", blocked_reason=render_r.get("error") or "Render failed."),
-        "next_step": "Check status and ensure draft is approved and validation is ready.",
-        "error": render_r.get("error", "Render failed."),
-    }
+def _run_preview(session_id: str) -> dict[str, Any]:
+    preview, ready, ph, step = _status(session_id)
+    return {"success": preview.get("success", False), "intent": "preview", "phase": ph, "message": f"Current phase: {ph.replace('_', ' ')}. {step}", "assistant_response": _assistant_response(ph, ready, preview), "preview_text": preview.get("preview_text"), "next_step": step, "mode": preview.get("mode"), "approval": preview.get("approval"), "approved_ready": ready.get("approved_ready", False), "validation_ready": ready.get("validation_ready", False), "payload": preview.get("payload"), "error": preview.get("error")}
+
+
+def _run_ready(session_id: str) -> dict[str, Any]:
+    preview, ready, ph, step = _status(session_id)
+    return {"success": ready.get("success", False), "intent": "ready", "phase": ph, "message": f"Current phase: {ph.replace('_', ' ')}. {step}", "assistant_response": _assistant_response(ph, ready, preview), "approved_ready": ready.get("approved_ready", False), "validation_ready": ready.get("validation_ready", False), "next_step": step, "approval": ready.get("approval"), "render_gate": ready.get("render_gate"), "payload": ready.get("payload"), "error": ready.get("error")}
+
+
+def _run_render(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
+    ready = _run_manager(["ready", "--session", session_id])
+    if not ready.get("approved_ready", False):
+        ph = _phase(ready, {"mode": "build_status"}); step = _next_step(ph, ready, {"mode": "build_status"})
+        return {"success": False, "intent": "render", "phase": ph, "message": f"Cannot render yet. Current phase: {ph.replace('_', ' ')}. {step}", "assistant_response": _assistant_response("blocked", ready, {}, action="render", blocked_reason=ready.get("error") or "The draft isn't approved or validation isn't ready yet."), "next_step": step, "approved_ready": False, "validation_ready": ready.get("validation_ready", False), "error": ready.get("error") or "Render blocked: not approved_ready."}
+    out = _REPO_ROOT / "tmp"; out.mkdir(parents=True, exist_ok=True)
+    pdf = Path(state.get("out_path")) if state.get("out_path") else out / f"chat_{session_id}.pdf"
+    r = _run_manager(["render", "--session", session_id, "--out", str(pdf)])
+    if r.get("success") and pdf.exists() and pdf.stat().st_size > 0:
+        state["last_pdf_path"] = str(pdf); state["rendered_at"] = r.get("message", ""); _save_state(state["chat_id"], state)
+        return {"success": True, "intent": "render", "phase": "rendered", "message": f"PDF rendered successfully: {pdf}", "assistant_response": _assistant_response("rendered", {}, {}, pdf_path=str(pdf)), "pdf_path": str(pdf), "pdf_size": pdf.stat().st_size, "next_step": "Letter is complete. You can start a new chat for another letter.", "payload": r.get("payload"), "error": None}
+    return {"success": False, "intent": "render", "phase": "blocked", "message": r.get("error", "Render failed."), "assistant_response": _assistant_response("blocked", {}, {}, action="render", blocked_reason=r.get("error") or "Render failed."), "next_step": "Check status and ensure draft is approved and validation is ready.", "error": r.get("error", "Render failed.")}
 
 
 def _process_turn(chat_id: str, text: str, state: dict[str, Any]) -> dict[str, Any]:
-    session_id = state["session_id"]
+    sid = state["session_id"]
     intent = _classify_intent(text)
-    state["history"].append({"role": "user", "text": text, "intent": intent})
-    if len(state["history"]) > 20:
-        state["history"] = state["history"][-20:]
-    if intent == "revise":
-        result = _run_revise_and_status(session_id, text)
-    elif intent == "approve":
-        result = _run_approve_and_status(session_id)
-    elif intent == "preview":
-        result = _run_preview_status(session_id)
-    elif intent == "status":
-        result = _run_ready_status(session_id)
-    elif intent == "render":
-        result = _run_render_gate(session_id, state)
-    else:
-        result = _run_say_and_status(session_id, text)
+    state.setdefault("history", []).append({"role": "user", "text": text, "intent": intent})
+    state["history"] = state["history"][-20:]
+    if intent == "confirm_candidate": result = _run_confirm_candidate(sid, state)
+    elif intent == "reject_candidate": result = _run_reject_candidate(sid, state)
+    elif intent == "revise": result = _run_revise(sid, text)
+    elif intent == "approve": result = _run_approve(sid)
+    elif intent == "preview": result = _run_preview(sid)
+    elif intent == "status": result = _run_ready(sid)
+    elif intent == "render": result = _run_render(sid, state)
+    else: result = _run_say(sid, text, state)
+    result.setdefault("source_backed_candidates", _ensure_cands(state))
     state["history"].append({"role": "assistant", "phase": result.get("phase"), "message": result.get("message")})
     _save_state(chat_id, state)
     return result
 
 
-# ---------------------------------------------------------------------------
-# Pure internal backends
-# ---------------------------------------------------------------------------
-
-
 def _start_chat(out: str | None = None) -> dict[str, Any]:
-    result = _run_manager(["new"])
-    if not result.get("success"):
-        return {"success": False, "command": "start", "message": f"Failed to create session: {result.get('error')}", "error": result.get("error")}
-    session_id = result["session_id"]
+    r = _run_manager(["new"])
+    if not r.get("success"):
+        return {"success": False, "command": "start", "message": f"Failed to create session: {r.get('error')}", "error": r.get("error")}
     chat_id = f"chat-{uuid.uuid4().hex[:12]}"
-    state: dict[str, Any] = {
-        "chat_id": chat_id,
-        "session_id": session_id,
-        "created_at": result.get("message", ""),
-        "history": [],
-        "last_pdf_path": None,
-        "rendered_at": None,
-    }
-    if out:
-        state["out_path"] = str(out)
+    state = {"chat_id": chat_id, "session_id": r["session_id"], "created_at": r.get("message", ""), "history": [], "last_pdf_path": None, "rendered_at": None, "source_backed_candidates": {"pending": [], "confirmed": [], "rejected": []}}
+    if out: state["out_path"] = str(out)
     _save_state(chat_id, state)
-    return {"success": True, "command": "start", "chat_id": chat_id, "session_id": session_id, "message": "Chat started.", "next_step": "Tell me what letter you need.", "error": None}
+    return {"success": True, "command": "start", "chat_id": chat_id, "session_id": r["session_id"], "message": "Chat started.", "next_step": "Tell me what letter you need.", "source_backed_candidates": state["source_backed_candidates"], "error": None}
 
 
 def _send_chat_turn(chat_id: str, text: str, out: str | None = None) -> dict[str, Any]:
-    try:
-        state = _load_state(chat_id)
-    except FileNotFoundError as exc:
-        return {"success": False, "command": "chat", "error": str(exc)}
+    try: state = _load_state(chat_id)
+    except FileNotFoundError as exc: return {"success": False, "command": "chat", "error": str(exc)}
+    _ensure_cands(state)
     if out is not None:
-        state["out_path"] = str(out)
-        _save_state(chat_id, state)
-    result = _process_turn(chat_id, text, state)
-    return {
-        "success": result.get("success", False),
-        "command": "chat",
-        "chat_id": chat_id,
-        "session_id": state["session_id"],
-        "intent": result.get("intent"),
-        "phase": result.get("phase"),
-        "message": result.get("message"),
-        "assistant_response": result.get("assistant_response"),
-        "preview_text": result.get("preview_text"),
-        "next_step": result.get("next_step"),
-        "pdf_path": result.get("pdf_path"),
-        "pdf_size": result.get("pdf_size"),
-        "payload_changed": result.get("payload_changed"),
-        "approval_cleared": result.get("approval_cleared"),
-        "validation_ready": result.get("validation_ready"),
-        "approved_ready": result.get("approved_ready"),
-        "payload": result.get("payload"),
-        "extracted_kv": result.get("extracted_kv"),
-        "ssic_inference": result.get("ssic_inference"),
-        "error": result.get("error"),
-    }
+        state["out_path"] = str(out); _save_state(chat_id, state)
+    r = _process_turn(chat_id, text, state)
+    keys = ["intent", "phase", "message", "assistant_response", "preview_text", "next_step", "pdf_path", "pdf_size", "payload_changed", "approval_cleared", "validation_ready", "approved_ready", "payload", "extracted_kv", "ssic_inference", "source_backed_candidate", "confirmed_candidate", "rejected_candidate", "source_backed_candidates", "error"]
+    return {"success": r.get("success", False), "command": "chat", "chat_id": chat_id, "session_id": state["session_id"], **{k: r.get(k) for k in keys}}
 
 
 def _get_chat_status(chat_id: str) -> dict[str, Any]:
-    try:
-        state = _load_state(chat_id)
-    except FileNotFoundError as exc:
-        return {"success": False, "command": "status", "error": str(exc)}
-    session_id = state["session_id"]
-    ready_r = _run_manager(["ready", "--session", session_id])
-    preview_r = _run_manager(["preview", "--session", session_id])
-    phase = _determine_phase(ready_r, preview_r)
-    next_step = _build_next_step(phase, ready_r, preview_r)
-    return {
-        "success": True,
-        "command": "status",
-        "chat_id": chat_id,
-        "session_id": session_id,
-        "phase": phase,
-        "message": f"Current phase: {phase.replace('_', ' ')}. {next_step}",
-        "assistant_response": _build_assistant_response(phase, ready_r, preview_r),
-        "preview_text": preview_r.get("preview_text"),
-        "next_step": next_step,
-        "approved_ready": ready_r.get("approved_ready", False),
-        "validation_ready": ready_r.get("validation_ready", False),
-        "last_pdf_path": state.get("last_pdf_path"),
-        "history_count": len(state.get("history", [])),
-        "error": None,
-    }
+    try: state = _load_state(chat_id)
+    except FileNotFoundError as exc: return {"success": False, "command": "status", "error": str(exc)}
+    _ensure_cands(state)
+    preview, ready, ph, step = _status(state["session_id"])
+    return {"success": True, "command": "status", "chat_id": chat_id, "session_id": state["session_id"], "phase": ph, "message": f"Current phase: {ph.replace('_', ' ')}. {step}", "assistant_response": _assistant_response(ph, ready, preview, pending_candidate=_pending(state)), "preview_text": preview.get("preview_text"), "next_step": step, "approved_ready": ready.get("approved_ready", False), "validation_ready": ready.get("validation_ready", False), "last_pdf_path": state.get("last_pdf_path"), "history_count": len(state.get("history", [])), "source_backed_candidates": state.get("source_backed_candidates"), "error": None}
 
 
 def _reset_chat(chat_id: str) -> dict[str, Any]:
-    try:
-        state = _load_state(chat_id)
-    except FileNotFoundError as exc:
-        return {"success": False, "command": "reset", "error": str(exc)}
-    result = _run_manager(["new"])
-    if not result.get("success"):
-        return {"success": False, "command": "reset", "error": f"Failed to create new session: {result.get('error')}"}
-    state["session_id"] = result["session_id"]
-    state["history"] = []
-    state["last_pdf_path"] = None
-    state["rendered_at"] = None
+    try: state = _load_state(chat_id)
+    except FileNotFoundError as exc: return {"success": False, "command": "reset", "error": str(exc)}
+    r = _run_manager(["new"])
+    if not r.get("success"): return {"success": False, "command": "reset", "error": f"Failed to create new session: {r.get('error')}"}
+    state.update({"session_id": r["session_id"], "history": [], "last_pdf_path": None, "rendered_at": None, "source_backed_candidates": {"pending": [], "confirmed": [], "rejected": []}})
     _save_state(chat_id, state)
-    return {
-        "success": True,
-        "command": "reset",
-        "chat_id": chat_id,
-        "session_id": result["session_id"],
-        "message": f"Chat reset with new session {result['session_id']}.",
-        "assistant_response": "I've reset the chat. You can start a new letter request whenever you're ready.",
-        "next_step": "Tell me what letter you need.",
-        "error": None,
-    }
-
-
-# ---------------------------------------------------------------------------
-# Public callable functions for Hermes
-# ---------------------------------------------------------------------------
+    return {"success": True, "command": "reset", "chat_id": chat_id, "session_id": r["session_id"], "message": f"Chat reset with new session {r['session_id']}.", "assistant_response": "I've reset the chat. You can start a new letter request whenever you're ready.", "next_step": "Tell me what letter you need.", "source_backed_candidates": state["source_backed_candidates"], "error": None}
 
 
 def start_secnav_chat(chat_id: str | None = None, out: str | None = None) -> dict[str, Any]:
     if chat_id:
-        try:
-            _load_state(chat_id)
-            return _get_chat_status(chat_id)
-        except FileNotFoundError:
-            pass
+        try: _load_state(chat_id); return _get_chat_status(chat_id)
+        except FileNotFoundError: pass
     return _start_chat(out=out)
 
 
@@ -994,124 +684,61 @@ def reset_secnav_chat(chat_id: str) -> dict[str, Any]:
 
 def format_tool_response_for_hermes(result: dict[str, Any]) -> str:
     if not result.get("success"):
-        err = result.get("error") or "Something went wrong."
-        return f"I couldn't complete that. {err}"
+        return f"I couldn't complete that. {result.get('error') or 'Something went wrong.'}"
     lines: list[str] = []
-    if result.get("assistant_response"):
-        lines.append(result["assistant_response"])
+    if result.get("assistant_response"): lines.append(result["assistant_response"])
     if result.get("phase") == "rendered":
-        pdf_path = result.get("pdf_path", "")
-        pdf_size = result.get("pdf_size")
-        if pdf_path:
-            size_str = f" ({pdf_size} bytes)" if pdf_size else ""
-            lines.append(f"PDF: {pdf_path}{size_str}")
+        if result.get("pdf_path"): lines.append(f"PDF: {result['pdf_path']}" + (f" ({result['pdf_size']} bytes)" if result.get("pdf_size") else ""))
         return "\n".join(lines)
-    if result.get("preview_text"):
-        lines.append(f"Preview:\n{result['preview_text']}")
-    if result.get("next_step") and not lines:
-        lines.append(result["next_step"])
+    if result.get("preview_text"): lines.append(f"Preview:\n{result['preview_text']}")
+    if result.get("next_step") and not lines: lines.append(result["next_step"])
     return "\n".join(lines) if lines else result.get("message", "Done.")
 
 
-# ---------------------------------------------------------------------------
-# CLI command handlers and interactive mode
-# ---------------------------------------------------------------------------
-
-
-def cmd_start(_args: argparse.Namespace) -> None:
-    _emit(_start_chat())
-
+def cmd_start(_args: argparse.Namespace) -> None: _emit(_start_chat())
 
 def cmd_chat(args: argparse.Namespace) -> None:
-    chat_id = getattr(args, "chat_id", None)
-    text = getattr(args, "text", "")
-    if not chat_id:
-        _emit({"success": False, "command": "chat", "error": "--chat-id required"})
-        return
-    _emit(_send_chat_turn(chat_id, text))
-
+    if not getattr(args, "chat_id", None): _emit({"success": False, "command": "chat", "error": "--chat-id required"}); return
+    _emit(_send_chat_turn(args.chat_id, getattr(args, "text", "")))
 
 def cmd_status(args: argparse.Namespace) -> None:
-    chat_id = getattr(args, "chat_id", None)
-    if not chat_id:
-        _emit({"success": False, "command": "status", "error": "--chat-id required"})
-        return
-    _emit(_get_chat_status(chat_id))
-
+    if not getattr(args, "chat_id", None): _emit({"success": False, "command": "status", "error": "--chat-id required"}); return
+    _emit(_get_chat_status(args.chat_id))
 
 def cmd_reset(args: argparse.Namespace) -> None:
-    chat_id = getattr(args, "chat_id", None)
-    if not chat_id:
-        _emit({"success": False, "command": "reset", "error": "--chat-id required"})
-        return
-    _emit(_reset_chat(chat_id))
-
+    if not getattr(args, "chat_id", None): _emit({"success": False, "command": "reset", "error": "--chat-id required"}); return
+    _emit(_reset_chat(args.chat_id))
 
 _EXIT_COMMANDS = {"exit", "quit", "/exit", "/quit"}
 
-
 def cmd_interactive(args: argparse.Namespace) -> None:
     chat_id = getattr(args, "chat_id", None)
-    out_path = getattr(args, "out", "")
-    json_lines = getattr(args, "json_lines", False)
-    if chat_id:
-        try:
-            _load_state(chat_id)
-        except FileNotFoundError:
-            _emit({"success": False, "command": "interactive", "error": f"Chat not found: {chat_id}"})
-            return
-    else:
-        result = _start_chat(out=str(out_path) if out_path else None)
-        if not result.get("success"):
-            _emit({"success": False, "command": "interactive", "error": result.get("error", "Start failed.")})
-            return
-        chat_id = result["chat_id"]
-        _emit(result)
-        print("\n" + _build_assistant_response("build_status", {}, {}), flush=True)
+    if not chat_id:
+        r = _start_chat(out=getattr(args, "out", None)); chat_id = r.get("chat_id"); _emit(r)
     state = _load_state(chat_id)
     for line in sys.stdin:
         text = line.strip()
-        if not text:
-            continue
-        if text.lower() in _EXIT_COMMANDS:
-            _emit({"success": True, "command": "interactive", "chat_id": chat_id, "message": "Goodbye.", "error": None})
-            break
-        result = _process_turn(chat_id, text, state)
-        if json_lines:
-            print(json.dumps(result, indent=2, default=str), flush=True)
-        else:
-            print(result.get("assistant_response", result.get("message", "")), flush=True)
-
-
-# ---------------------------------------------------------------------------
-# CLI entry point
-# ---------------------------------------------------------------------------
+        if not text: continue
+        if text.lower() in _EXIT_COMMANDS: _emit({"success": True, "command": "interactive", "chat_id": chat_id, "message": "Goodbye.", "error": None}); break
+        r = _process_turn(chat_id, text, state)
+        print(json.dumps(r, indent=2, default=str) if getattr(args, "json_lines", False) else r.get("assistant_response", r.get("message", "")), flush=True)
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Hermes Chat Builder")
-    subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("start", help="Create a new chat session")
-    chat_p = subparsers.add_parser("chat", help="Send a natural-language message")
-    chat_p.add_argument("--chat-id", required=True)
-    chat_p.add_argument("--text", required=True)
-    status_p = subparsers.add_parser("status", help="Show current chat status")
-    status_p.add_argument("--chat-id", required=True)
-    reset_p = subparsers.add_parser("reset", help="Reset chat and start a new session")
-    reset_p.add_argument("--chat-id", required=True)
-    interactive_p = subparsers.add_parser("interactive", help="Start an interactive chat loop (local test/debug only)")
-    interactive_p.add_argument("--chat-id", default=None, help="Existing chat ID, auto-creates if omitted")
-    interactive_p.add_argument("--out", default=None, help="Optional output PDF path")
-    interactive_p.add_argument("--json-lines", action="store_true", help="Emit JSON per turn instead of plain text")
+    sp = parser.add_subparsers(dest="command", required=True)
+    sp.add_parser("start")
+    p = sp.add_parser("chat"); p.add_argument("--chat-id", required=True); p.add_argument("--text", required=True)
+    p = sp.add_parser("status"); p.add_argument("--chat-id", required=True)
+    p = sp.add_parser("reset"); p.add_argument("--chat-id", required=True)
+    p = sp.add_parser("interactive"); p.add_argument("--chat-id", default=None); p.add_argument("--out", default=None); p.add_argument("--json-lines", action="store_true")
     args = parser.parse_args(argv)
-    handlers: dict[str, Any] = {"start": cmd_start, "chat": cmd_chat, "status": cmd_status, "reset": cmd_reset, "interactive": cmd_interactive}
     try:
-        handlers[args.command](args)
+        {"start": cmd_start, "chat": cmd_chat, "status": cmd_status, "reset": cmd_reset, "interactive": cmd_interactive}[args.command](args)
     except Exception as exc:
         _emit({"success": False, "command": getattr(args, "command", "unknown"), "chat_id": getattr(args, "chat_id", None), "error": str(exc)})
         return 1
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
