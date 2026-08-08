@@ -1,6 +1,68 @@
 |# SECNAV ComplianceGPT - Project Status
-|
-**Last Updated:** 2026-07-03
+
+**Last Updated:** 2026-08-07
+**Accepted Baseline HEAD:** `2a774a0` — Tools: Add body revision approval clear smoke
+
+---
+
+## L.31R — Accepted Hermes/PDF Baseline Lock
+
+This section records the accepted baseline as of Phase L.31R. All capabilities and proof tests listed below are accepted and must not regress. Future phases build on this baseline.
+
+### Accepted Capabilities
+
+| Capability | Phase | Status |
+|-----------|-------|--------|
+| Standard letter PDF baseline | L.31A–L.31N | Accepted |
+| SSIC inference (nonblocking) | L.31O-2 | Accepted |
+| Optional originator/office code | L.31O-3 | Accepted |
+| Natural chat shorthand intake | L.31P | Accepted |
+| Natural chat variant aliases | L.31Q | Accepted |
+| Plain-English missing-detail prompts | L.31P | Accepted |
+| Body revision before approval | L.31Q-1 | Accepted |
+| Body revision after approval clears approval | L.31Q-1 | Accepted |
+| Render blocked until re-approval after approved draft changes | L.31Q-1 | Accepted |
+| SSIC-only PDF order (5216 < date < From) | L.31O-2 | Accepted |
+| SSIC + originator-code PDF order (5216 < S-1 < date < From) | L.31O-3 | Accepted |
+
+### Accepted Proof Tests
+
+| Test | Checks | Result |
+|------|--------|--------|
+| L.31Q-1 body revision approval clear | 14/14 | PASS |
+| L.31Q natural chat variants + guardrails | 55/55 | PASS |
+| L.31P natural chat field resolution | 30/30 | PASS |
+| L.31O-3 optional originator code render | 12/12 | PASS |
+| L.31O-2 nonblocking SSIC resolution | 10/10 | PASS |
+| L.31N unnumbered body left margin | ALL | PASS |
+| L.31M suppress nonblocking preview | ALL | PASS |
+| L.31K mixed prose keyvalue intake | ALL | PASS |
+
+### Protected Files / Areas
+
+Do not modify these unless explicitly requested in a dedicated phase:
+
+- PDF renderer/layout (`src/pdf_v6_render.py`)
+- Validator rules
+- CCI config / severity / rule files
+- `docs/BOOTSTRAP.md`
+- `docs/HERMES_INSTRUCTIONS.md`
+- Do not broaden live lookup without a dedicated phase
+
+### Known Scope Limits
+
+- Current natural resolution is controlled, not broad open-ended live lookup
+- Current accepted workflow is standard naval letter only
+- Current accepted shorthand coverage is centered on MCAS New River / II MEF examples
+- More commands, more units, and more document types should be added in separate phases
+
+### Recommended Next Phase
+
+- **L.31S** — Controlled Command/Unit Resolver Expansion
+- **L.32A** — Next Document Type Planning
+
+---
+
 **Phase L.30X Chat Response Consistency:** `tools/hermes_chat_builder.py` — `cmd_status` and `cmd_reset` now emit `assistant_response`; `_run_revise_and_status` conditionally reports draft update and approval clearing based on manager `success`, `payload_changed`, and `approval_cleared` flags; unsupported revisions no longer falsely claim the draft changed; quickstart corrected to show actual startup JSON output and mention `--json-lines`; no renderer/layout/validator/catalog/config changes.
 **Phase L.30V Usage Guide:** `docs/USER_QUICKSTART.md` — User-facing quickstart added; recommended mode is `hermes_chat_builder.py interactive`; covers plain-English commands (draft, revise, approve, render), sample conversation, optional `--out` PDF path, `--json-lines` UI mode, safety gates in plain terms, and a short developer-command note; README.md updated with quickstart link and command; no production code, renderer, layout, validator, catalog, config, or rule changes.
 **Phase L.31A Recenter as Hermes Tool:** `tools/hermes_chat_builder.py` — Added pure internal backends (`_start_chat`, `_send_chat_turn`, `_get_chat_status`, `_reset_chat`) and public callable functions (`start_secnav_chat`, `send_secnav_chat_turn`, `get_secnav_chat_status`, `reset_secnav_chat`, `format_tool_response_for_hermes`); CLI commands refactored to thin wrappers over pure backends; callable functions return dicts only, require no stdin, do not print, and preserve session state by `chat_id`; safety gates (approval, render gate, approval clearing on revision) preserved; `docs/USER_QUICKSTART.md` reframed: normal use is chatting with Hermes, interactive mode is local test/debug only; smoke test PASS; no renderer/layout/validator/catalog/config/rule changes.
