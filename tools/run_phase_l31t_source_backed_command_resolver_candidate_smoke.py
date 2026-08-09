@@ -56,7 +56,7 @@ def fake_lookup(command_text: str, role: str, _state: dict) -> dict | None:
         "candidate_type": "command_expansion",
         "resolved_value": {
             "from": "Commanding Officer, Naval Example Command",
-            "letterhead_top_line": "UNITED STATES NAVY",
+            "letterhead_top_line": "DEPARTMENT OF THE NAVY",
             "letterhead_activity": "NAVAL EXAMPLE COMMAND",
             "letterhead_address": "NORFOLK VA 23511-0000",
         },
