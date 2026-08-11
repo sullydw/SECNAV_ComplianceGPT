@@ -33,6 +33,65 @@ All 8 regression suites PASS (L.31Q-1, L.31Q, L.31P, L.31O-3, L.31O-2, L.31N, L.
 
 ---
 
+## L.31U — Source-Backed Command Resolver Candidate Baseline
+
+**Accepted Baseline HEAD:** `266201d` — Tools: Normalize confirmed candidate missing prompt
+
+### Accepted Source-Backed Command Resolver Behavior
+
+| Rule | Behavior |
+|------|----------|
+| Controlled aliases | Apply directly (no candidate step) |
+| Unknown commands | Remain literal (no invention) |
+| Source-backed lookup results | Candidate-only (not auto-applied) |
+| Candidate provenance | Includes title, URL, source tier, confidence |
+| Candidate mutation | Does not mutate From, To, or letterhead before confirmation |
+| Confirmed official_live From | May apply From and letterhead |
+| Rejected candidates | Do not apply; not immediately re-suggested |
+| Missing-detail prompts | Remain plain-English after candidate confirmation |
+
+### Accepted L.31T / L.31T-1 Proof
+
+| Test | Checks | Result |
+|------|--------|--------|
+| L.31T source-backed candidate smoke | 53/53 | PASS |
+
+| Scenario | Behavior |
+|----------|----------|
+| S1 | Controlled alias bypasses candidate |
+| S2 | Unresolved command remains literal |
+| S3 | Source-backed candidate created but not auto-applied |
+| S4 | Confirmation applies candidate; combined missing-detail prompt used |
+| S5 | Rejection does not apply candidate |
+| S6 | Confirmed source-backed path reaches draft_preview, validates, approves, renders; PDF contains expected content |
+
+### Regression Suite (All Clean)
+
+| Test | Checks | Result |
+|------|--------|--------|
+| L.31S controlled unit resolver expansion | 37/37 | PASS |
+| L.31Q-1 body revision approval clear | 14/14 | PASS |
+| L.31Q natural chat variants + guardrails | 55/55 | PASS |
+| L.31P natural chat field resolution | 30/30 | PASS |
+| L.31O-3 optional originator code render | 12/12 | PASS |
+| L.31O-2 nonblocking SSIC resolution | 10/10 | PASS |
+| L.31N unnumbered body left margin | ALL | PASS |
+| L.31M suppress nonblocking preview | ALL | PASS |
+| L.31K mixed prose keyvalue intake | ALL | PASS |
+
+### Important Limit
+
+- Real live online lookup adapter is **not yet implemented**.
+- Current source-backed behavior is adapter-ready and smoke-tested with a deterministic fake resolver.
+- Do not add live lookup without a separate phase and official-source guardrails.
+
+### Recommended Next Phase
+
+- **L.31V** — Official Live Lookup Adapter Planning
+- **L.32A** — Next Document Type Planning
+
+---
+
 ## L.31R — Accepted Hermes/PDF Baseline Lock
 
 This section records the accepted baseline as of Phase L.31R. All capabilities and proof tests listed below are accepted and must not regress. Future phases build on this baseline.
