@@ -558,7 +558,14 @@ def _run_confirm_candidate(session_id: str, state: dict[str, Any]) -> dict[str, 
     if ssic_r and ssic_r.get("success"):
         r = ssic_r
     preview, ready, ph, step = _status(session_id)
-    return {"success": r.get("success", False), "intent": "confirm_candidate", "phase": ph, "message": f"Confirmed source-backed candidate. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Candidate apply failed"), "assistant_response": "I've applied the confirmed source-backed command result. " + step if r.get("success") else "I couldn't apply that source-backed candidate.", "preview_text": preview.get("preview_text"), "next_step": step, "payload": r.get("payload"), "confirmed_candidate": cand, "source_backed_candidates": _ensure_cands(state), "ssic_inference": ssic, "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": r.get("error")}
+    # Normalize missing-detail prompt after candidate confirmation:
+    # when date, signer, and body are all still missing, use the
+    # accepted combined plain-English prompt instead of the raw
+    # next_action question (which may only mention body).
+    payload = r.get("payload") or {}
+    if ph == "build_status" and not payload.get("date") and not payload.get("signature") and not payload.get("body"):
+        step = "I have the routing basics. What date should I use, who will sign it, and what should the body say?"
+    return {"success": r.get("success", False), "intent": "confirm_candidate", "phase": ph, "message": f"Confirmed source-backed candidate. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Candidate apply failed"), "assistant_response": "I've applied the confirmed source-backed command result. " + step if r.get("success") else "I couldn't apply that source-backed candidate.", "preview_text": preview.get("preview_text"), "next_step": step, "payload": payload, "confirmed_candidate": cand, "source_backed_candidates": _ensure_cands(state), "ssic_inference": ssic, "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": r.get("error")}
 
 
 def _run_reject_candidate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
