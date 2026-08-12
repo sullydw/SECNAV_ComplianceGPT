@@ -131,6 +131,16 @@ def set_source_backed_command_lookup_adapter(adapter: _CommandLookupAdapter | No
     _SOURCE_BACKED_LOOKUP_ADAPTER = adapter
 
 
+# L.31W — wire the no-op official live lookup adapter as the default.
+# The adapter always returns None (no internet, no guessing, no mutation).
+# Future phases will replace it with a real implementation.
+try:
+    from official_command_lookup_adapter import official_command_lookup as _official_lookup  # type: ignore[import-untyped]
+    set_source_backed_command_lookup_adapter(_official_lookup)
+except ImportError:
+    pass  # adapter module not present — safe to continue without it
+
+
 def _state_path(chat_id: str) -> Path:
     return _STATE_DIR / ("".join(c for c in chat_id if c.isalnum() or c in "-_") + ".json")
 
