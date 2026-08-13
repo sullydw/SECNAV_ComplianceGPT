@@ -14,6 +14,7 @@ integrations may inject a deterministic search provider with
 
 from __future__ import annotations
 
+import inspect
 import os
 from typing import Any, Callable, Iterable
 from urllib.parse import urlparse
@@ -82,6 +83,52 @@ def official_lookup_enabled(state: dict[str, Any] | None = None) -> bool:
 # ---------------------------------------------------------------------------
 def _clean(value: Any) -> str:
     return " ".join(str(value or "").strip().split())
+
+
+def _norm(value: Any) -> str:
+    return _clean(value).lower()
+
+
+def _dict_values_match(text: str, data: Any) -> bool:
+    if not isinstance(data, dict):
+        return False
+    target = _norm(text)
+    for key, value in data.items():
+        if _norm(key) == target:
+            return True
+        if isinstance(value, str) and _norm(value) == target:
+            return True
+        if isinstance(value, dict) and any(_norm(v) == target for v in value.values()):
+            return True
+    return False
+
+
+def _matches_existing_controlled_alias(text: str, state: dict[str, Any]) -> bool:
+    """Return True when text is already a controlled alias expansion.
+
+    Hermes expands controlled aliases before this adapter sees them.  To keep
+    controlled aliases from invoking live lookup, this helper checks any alias
+    maps explicitly provided in state and, when called from Hermes, the caller's
+    existing controlled-alias globals.  This mirrors the accepted alias table;
+    it does not create or maintain a new command database.
+    """
+
+    for key in ("controlled_aliases", "unit_aliases", "letterhead_by_from"):
+        if _dict_values_match(text, state.get(key)):
+            return True
+
+    frame = inspect.currentframe()
+    frame = frame.f_back if frame is not None else None
+    depth = 0
+    while frame is not None and depth < 8:
+        globs = frame.f_globals
+        if _dict_values_match(text, globs.get("_UNIT_ALIASES")):
+            return True
+        if _dict_values_match(text, globs.get("_LETTERHEAD_BY_FROM")):
+            return True
+        frame = frame.f_back
+        depth += 1
+    return False
 
 
 def _host(url: str) -> str:
@@ -224,6 +271,8 @@ def official_command_lookup(
         return None
     ctx: dict[str, Any] = state if isinstance(state, dict) else {}
     if not official_lookup_enabled(ctx):
+        return None
+    if _matches_existing_controlled_alias(text, ctx):
         return None
 
     cache_key = (field, text.lower())
