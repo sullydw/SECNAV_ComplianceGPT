@@ -6,6 +6,10 @@ pipeline for official command lookup candidates.  Live lookup remains behind an
 explicit enable gate and all results remain candidate-only; this adapter never
 mutates a letter payload.
 
+L.31X-1 adds a narrow Hermes routing hook so unresolved To-line text can also
+produce a pending official-source candidate.  The hook keeps To candidates
+candidate-only and strips all letterhead fields before they can be applied.
+
 The default runtime is safe: when ``SECNAV_ENABLE_OFFICIAL_COMMAND_LOOKUP`` is
 not enabled, :func:`official_command_lookup` returns ``None``.  Tests and future
 integrations may inject a deterministic search provider with
@@ -16,6 +20,10 @@ from __future__ import annotations
 
 import inspect
 import os
+import sys
+import threading
+import time
+from types import ModuleType
 from typing import Any, Callable, Iterable
 from urllib.parse import urlparse
 
@@ -181,7 +189,7 @@ def _resolved_value(result: dict[str, Any], role: str) -> dict[str, Any]:
         resolved = {role: line} if line else {}
 
     if role != "from":
-        for key in ("letterhead_top_line", "letterhead_activity", "letterhead_address"):
+        for key in ("letterhead_top_line", "letterhead_activity", "letterhead_address", "unit_identity"):
             resolved.pop(key, None)
     elif not (
         resolved.get("letterhead_top_line")
@@ -248,6 +256,130 @@ def _provider_results(command_text: str, role: str, state: dict[str, Any]) -> li
         return [dict(item) for item in (_SEARCH_PROVIDER(command_text, role, state) or []) if isinstance(item, dict)]
     except Exception:
         return []
+
+
+# ---------------------------------------------------------------------------
+# Hermes To-line candidate routing hook (L.31X-1)
+# ---------------------------------------------------------------------------
+def _module_ready_for_to_patch(module: ModuleType) -> bool:
+    required = (
+        "_maybe_add_source_candidate",
+        "_SOURCE_BACKED_LOOKUP_ADAPTER",
+        "_is_controlled_alias",
+        "_UNIT_ALIASES",
+        "_candidate_id",
+        "_ensure_cands",
+        "_clean",
+    )
+    return all(hasattr(module, name) for name in required)
+
+
+def _is_controlled_in_hermes(module: ModuleType, text: str) -> bool:
+    try:
+        if module._is_controlled_alias(text):  # type: ignore[attr-defined]
+            return True
+    except Exception:
+        pass
+    aliases = getattr(module, "_UNIT_ALIASES", {})
+    return isinstance(aliases, dict) and _dict_values_match(text, aliases)
+
+
+def _strip_to_letterhead(resolved: dict[str, Any]) -> dict[str, Any]:
+    cleaned = dict(resolved)
+    for key in ("letterhead_top_line", "letterhead_activity", "letterhead_address", "unit_identity"):
+        cleaned.pop(key, None)
+    return {k: v for k, v in cleaned.items() if v}
+
+
+def install_hermes_to_line_candidate_patch(module: ModuleType | None = None) -> bool:
+    """Patch Hermes candidate routing so unresolved To fields may create candidates.
+
+    This keeps the existing From path intact.  It only adds a To candidate after
+    the original Hermes function declines to create a From candidate, and it
+    preserves the accepted rule that To candidates never carry letterhead.
+    """
+
+    candidates: list[ModuleType] = []
+    if module is not None:
+        candidates.append(module)
+    for name in ("hermes_chat_builder", "__main__"):
+        found = sys.modules.get(name)
+        if isinstance(found, ModuleType) and found not in candidates:
+            candidates.append(found)
+
+    for target in candidates:
+        if getattr(target, "_OFFICIAL_LOOKUP_TO_LINE_PATCHED", False):
+            return True
+        if not _module_ready_for_to_patch(target):
+            continue
+
+        original = target._maybe_add_source_candidate  # type: ignore[attr-defined]
+
+        def _maybe_add_source_candidate_with_to(
+            state: dict[str, Any],
+            fields: dict[str, str],
+            *,
+            _original: Callable[[dict[str, Any], dict[str, str]], dict[str, Any] | None] = original,
+            _target: ModuleType = target,
+        ) -> dict[str, Any] | None:
+            pending = _original(state, fields)
+            if pending:
+                return pending
+
+            text = fields.get("to")
+            adapter = getattr(_target, "_SOURCE_BACKED_LOOKUP_ADAPTER", None)
+            if not text or adapter is None or _is_controlled_in_hermes(_target, text):
+                return None
+
+            try:
+                res = adapter(text, "to", state)
+            except Exception:
+                return None
+            if not isinstance(res, dict) or not isinstance(res.get("resolved_value"), dict):
+                return None
+
+            resolved = _strip_to_letterhead(dict(res.get("resolved_value") or {}))
+            if not resolved.get("to"):
+                return None
+
+            cand = {
+                "candidate_id": res.get("candidate_id")
+                or _target._candidate_id("to", text, str(res.get("source_url") or "")),  # type: ignore[attr-defined]
+                "candidate_type": res.get("candidate_type") or "command_expansion",
+                "input_text": _target._clean(text),  # type: ignore[attr-defined]
+                "field": "to",
+                "resolved_value": resolved,
+                "source_title": res.get("source_title") or "Source-backed command result",
+                "source_url": str(res.get("source_url") or ""),
+                "source_tier": res.get("source_tier") or "unresolved",
+                "source_limitation": res.get("source_limitation")
+                or "Candidate requires user confirmation before applying.",
+                "confidence": res.get("confidence", 0),
+                "requires_user_confirmation": True,
+                "status": "pending",
+            }
+            cands = _target._ensure_cands(state)  # type: ignore[attr-defined]
+            if any(c.get("candidate_id") == cand["candidate_id"] for c in cands["rejected"]):
+                return None
+            if not any(c.get("candidate_id") == cand["candidate_id"] for c in cands["pending"]):
+                cands["pending"].append(cand)
+            return cand
+
+        target._maybe_add_source_candidate = _maybe_add_source_candidate_with_to  # type: ignore[attr-defined]
+        target._OFFICIAL_LOOKUP_TO_LINE_PATCHED = True  # type: ignore[attr-defined]
+        return True
+    return False
+
+
+def _install_hermes_to_line_candidate_patch_when_ready() -> None:
+    for _ in range(2000):
+        if install_hermes_to_line_candidate_patch():
+            return
+        time.sleep(0.001)
+
+
+if os.getenv("SECNAV_DISABLE_HERMES_TO_LINE_PATCH", "").strip().lower() not in {"1", "true", "yes", "on"}:
+    threading.Thread(target=_install_hermes_to_line_candidate_patch_when_ready, daemon=True).start()
 
 
 # ---------------------------------------------------------------------------
