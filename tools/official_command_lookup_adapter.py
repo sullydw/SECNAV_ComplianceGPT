@@ -71,6 +71,35 @@ def set_official_command_search_provider(provider: SearchProvider | None) -> Non
     reset_official_command_lookup_cache()
 
 
+def register_official_command_provider(provider: SearchProvider | None) -> None:
+    """Register an official command provider with the adapter.
+
+    Thin wrapper around :func:`set_official_command_search_provider` for
+    discoverability.  Accepts ``None`` to clear the provider.  Does **not**
+    enable live lookup by itself — the adapter still enforces
+    ``SECNAV_ENABLE_OFFICIAL_COMMAND_LOOKUP``.
+    """
+
+    set_official_command_search_provider(provider)
+
+
+def register_fixture_official_command_provider(
+    fixtures: list[dict[str, Any]] | None = None,
+) -> Any:
+    """Build a :class:`FixtureOfficialCommandProvider` and register it.
+
+    Returns the provider instance for test inspection.  Does **not** enable
+    live lookup, does **not** perform internet access, and does **not**
+    contain a static command database.
+    """
+
+    from official_command_provider import build_fixture_provider  # noqa: PLC0415
+
+    provider = build_fixture_provider(fixtures)
+    set_official_command_search_provider(provider)
+    return provider
+
+
 def reset_official_command_lookup_cache() -> None:
     """Clear the tiny in-memory per-process lookup cache."""
 
