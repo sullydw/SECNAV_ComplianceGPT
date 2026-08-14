@@ -206,10 +206,41 @@ def _candidate_from_result(command_text: str, role: str, result: dict[str, Any])
     confidence = _confidence(result)
     url = _clean(result.get("source_url") or result.get("url"))
     title = _clean(result.get("source_title") or result.get("title"))
+
+    # Snapshot original letterhead completeness before _resolved_value strips it
+    raw_rv = result.get("resolved_value")
+    raw_has_full_letterhead = (
+        isinstance(raw_rv, dict)
+        and bool(raw_rv.get("letterhead_top_line"))
+        and bool(raw_rv.get("letterhead_activity"))
+        and bool(raw_rv.get("letterhead_address"))
+    )
+
     resolved = _resolved_value(result, role)
 
-    if tier not in {SOURCE_TIER_OFFICIAL_LIVE, SOURCE_TIER_OFFICIAL_ARCHIVED}:
+    # Reject non-accepted tiers
+    if tier not in {SOURCE_TIER_OFFICIAL_LIVE, SOURCE_TIER_OFFICIAL_ARCHIVED, SOURCE_TIER_USER_PROVIDED}:
         return None
+
+    # ── user_provided: relaxed gates, still requires confirmation ──
+    if tier == SOURCE_TIER_USER_PROVIDED:
+        if not resolved.get(role):
+            return None
+        limitation = _clean(result.get("source_limitation")) or "User-provided source candidate; confirm before applying."
+        return {
+            "candidate_type": result.get("candidate_type") or "command_expansion",
+            "input_text": _clean(command_text),
+            "field": role,
+            "resolved_value": resolved,
+            "source_tier": tier,
+            "source_title": title or "User-provided source",
+            "source_url": url,
+            "source_limitation": limitation,
+            "confidence": confidence,
+            "requires_user_confirmation": True,
+        }
+
+    # ── official_live / official_archived: full provenance + confidence gates ──
     if confidence < CONFIDENCE_WARN_THRESHOLD:
         return None
     if confidence < CONFIDENCE_PROPOSE_THRESHOLD and tier != SOURCE_TIER_OFFICIAL_LIVE:
@@ -219,6 +250,18 @@ def _candidate_from_result(command_text: str, role: str, result: dict[str, Any])
     if tier == SOURCE_TIER_OFFICIAL_LIVE and not _is_official_url(url):
         return None
 
+    # Build source_limitation when the provider didn't supply one
+    limitation = _clean(result.get("source_limitation"))
+    if not limitation:
+        if role != "from":
+            limitation = "To-line candidates do not set letterhead; confirmation mutates only the To field."
+        elif not raw_has_full_letterhead:
+            limitation = "Official source did not provide complete letterhead address; letterhead not proposed."
+        elif tier == SOURCE_TIER_OFFICIAL_ARCHIVED:
+            limitation = "Official archived source candidate; verify current validity before applying."
+        else:
+            limitation = "Official-source candidate; user confirmation required before applying."
+
     return {
         "candidate_type": result.get("candidate_type") or "command_expansion",
         "input_text": _clean(command_text),
@@ -227,7 +270,7 @@ def _candidate_from_result(command_text: str, role: str, result: dict[str, Any])
         "source_tier": tier,
         "source_title": title,
         "source_url": url,
-        "source_limitation": _clean(result.get("source_limitation")) or "Official-source candidate; user confirmation required before applying.",
+        "source_limitation": limitation,
         "confidence": confidence,
         "requires_user_confirmation": True,
     }
@@ -238,6 +281,16 @@ def _pick_single_candidate(command_text: str, role: str, results: Iterable[dict[
     if not candidates:
         return None
 
+    # Separate official from user_provided
+    official = [c for c in candidates if c.get("source_tier") in {SOURCE_TIER_OFFICIAL_LIVE, SOURCE_TIER_OFFICIAL_ARCHIVED}]
+    user = [c for c in candidates if c.get("source_tier") == SOURCE_TIER_USER_PROVIDED]
+
+    # user_provided never outranks official_live
+    if official:
+        candidates = official
+    elif user:
+        candidates = user
+
     candidates.sort(key=lambda c: (c.get("source_tier") == SOURCE_TIER_OFFICIAL_LIVE, float(c.get("confidence", 0.0))), reverse=True)
     best = candidates[0]
     best_line = _clean((best.get("resolved_value") or {}).get(role)).lower()
@@ -245,6 +298,7 @@ def _pick_single_candidate(command_text: str, role: str, results: Iterable[dict[
     for other in candidates[1:]:
         other_line = _clean((other.get("resolved_value") or {}).get(role)).lower()
         if other_line and other_line != best_line:
+            # Conflict: return None but include conflict metadata for caller
             return None
     return best
 

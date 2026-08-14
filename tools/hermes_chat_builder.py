@@ -493,8 +493,10 @@ def _assistant_response(phase: str, ready: dict[str, Any], preview: dict[str, An
     if pending_candidate:
         title = pending_candidate.get("source_title") or "source-backed result"
         res = pending_candidate.get("resolved_value") or {}
-        val = res.get("from") or res.get("to") or res.get("unit_identity") or "the command"
-        return f"I found a source-backed candidate from {title}: {val}. Confirm before I apply it, or reject it and provide the full command name or letterhead."
+        field = pending_candidate.get("field") or "from"
+        val = res.get(field) or res.get("unit_identity") or "the command"
+        limitation = pending_candidate.get("source_limitation") or "Confirm before I apply it, or reject it and provide the full command name."
+        return f"I found a source-backed {field.capitalize()} candidate from {title}: {val}. {limitation}"
     if phase == "rendered":
         return f"Done! Your PDF is ready at {pdf_path}. You can start a new chat if you need another letter."
     if phase == "approved_ready":
