@@ -1,7 +1,56 @@
 |# SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-08-08
+**Last Updated:** 2026-08-15
 **Accepted Baseline HEAD:** `7c1d899` — Docs: Lock accepted Hermes baseline
+
+---
+
+## L.32D — Official Provider Source Filter Skeleton
+
+Added a deterministic source-filter and ranking skeleton for official provider
+results in `tools/official_command_provider.py`. This is the single safe place
+that classifies allowed/disallowed official source domains, source tiers,
+provenance completeness, confidence gates, and conflict-preserving ranking
+before any real live provider is introduced. Fixture-only and deterministic;
+no internet lookup, no filesystem access, no static command database.
+
+### Helpers
+
+| Helper | Purpose |
+|--------|---------|
+| `normalize_source_url(url)` | Lowercase, strip fragment/trailing slash |
+| `classify_source_url(url)` | Descriptor dict (host, scheme, is_official, reason) |
+| `is_allowed_official_source(url)` | `.mil` + `defense.gov` (and subdomains) only |
+| `filter_provider_results(results, role)` | Apply-ready results only |
+| `rank_provider_results(results, role, command_text)` | Deterministic tier/confidence/match/URL sort |
+
+### Behavior
+
+| Rule | Behavior |
+|------|----------|
+| Allowed official sources | `.mil` domains, navy.mil, marines.mil, usmc.mil, defense.gov, dod.mil (subdomains allowed) |
+| Disallowed as official | wikipedia, facebook, x.com/twitter, instagram, linkedin, commercial/news/unofficial, pseudo-URLs (`static://`, `localdb://`), missing URL |
+| official_live | allowed URL + confidence >= 0.85 + complete provenance |
+| official_archived | allowed URL + confidence >= 0.70 + caution limitation mentioning archived/validity |
+| secondary_credible | not apply-ready (dropped) |
+| user_provided | pass-through, never classified official |
+| unresolved | not apply-ready |
+| To stripping | letterhead + unit_identity removed from resolved_value |
+| Ranking | tier priority → confidence desc → exact command match → URL alphabetical |
+| Conflicts | preserved (never collapsed/selected) |
+
+### Proof Tests
+
+| Test | Checks | Result |
+|------|--------|--------|
+| L.32D official provider source filter smoke | 65/65 | PASS |
+
+### Regression
+
+L.32C (27/27), L.32B (40/40), L.31Z (78/78), L.31Y (77/77), L.31X-1 (44/44),
+L.31X (59/59), L.31W (37/37), L.31T (53/53), L.31S (37/37), L.31Q-1 (14/14),
+L.31Q (55/55), L.31P (30/30), L.31O-3 (12/12), L.31O-2 (10/10), L.31N, L.31M,
+L.31K — all PASS.
 
 ---
 

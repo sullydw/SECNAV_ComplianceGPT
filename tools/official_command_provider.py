@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import re
 from typing import Any, Iterable
+from urllib.parse import urlparse
 
 
 # ---------------------------------------------------------------------------
@@ -54,6 +55,275 @@ class OfficialCommandProviderError(Exception):
 def _norm(text: str) -> str:
     """Normalize text for fixture lookup: lowercase, trim, collapse whitespace."""
     return re.sub(r"\s+", " ", (text or "").strip()).lower()
+
+
+# ---------------------------------------------------------------------------
+# Source filter and ranking helpers (L.32D)
+# ---------------------------------------------------------------------------
+# These helpers are the single deterministic place that classifies allowed /
+# disallowed official source domains, source tiers, provenance completeness,
+# confidence gates, and conflict-preserving ranking.  They operate only on
+# supplied result dictionaries: no network, no filesystem, no static command
+# database.  Domain allow/disallow lists are permitted; command databases are
+# not.
+
+SOURCE_TIER_OFFICIAL_LIVE = "official_live"
+SOURCE_TIER_OFFICIAL_ARCHIVED = "official_archived"
+SOURCE_TIER_SECONDARY_CREDIBLE = "secondary_credible"
+SOURCE_TIER_USER_PROVIDED = "user_provided"
+SOURCE_TIER_UNRESOLVED = "unresolved"
+
+_VALID_SOURCE_TIERS: frozenset[str] = frozenset(
+    {
+        SOURCE_TIER_OFFICIAL_LIVE,
+        SOURCE_TIER_OFFICIAL_ARCHIVED,
+        SOURCE_TIER_SECONDARY_CREDIBLE,
+        SOURCE_TIER_USER_PROVIDED,
+        SOURCE_TIER_UNRESOLVED,
+    }
+)
+
+OFFICIAL_LIVE_CONFIDENCE_THRESHOLD = 0.85
+OFFICIAL_ARCHIVED_CONFIDENCE_THRESHOLD = 0.70
+
+_TO_STRIP_KEYS: tuple[str, ...] = (
+    "letterhead_top_line",
+    "letterhead_activity",
+    "letterhead_address",
+    "unit_identity",
+)
+
+_TIER_PRIORITY: dict[str, int] = {
+    SOURCE_TIER_OFFICIAL_LIVE: 0,
+    SOURCE_TIER_OFFICIAL_ARCHIVED: 1,
+    SOURCE_TIER_USER_PROVIDED: 2,
+    SOURCE_TIER_SECONDARY_CREDIBLE: 3,
+    SOURCE_TIER_UNRESOLVED: 4,
+}
+
+
+def _clean(value: Any) -> str:
+    return " ".join(str(value or "").strip().split())
+
+
+def _host(url: str) -> str:
+    try:
+        return urlparse(url).netloc.lower()
+    except Exception:
+        return ""
+
+
+def _scheme(url: str) -> str:
+    try:
+        return urlparse(url).scheme.lower()
+    except Exception:
+        return ""
+
+
+def normalize_source_url(url: str) -> str:
+    """Normalize a source URL for deterministic comparison.
+
+    Lowercases, strips surrounding whitespace, drops any fragment, and
+    removes trailing slashes.  Returns ``""`` for empty/missing input.
+    """
+    text = (url or "").strip().lower()
+    if not text:
+        return ""
+    text = text.split("#", 1)[0]
+    return text.rstrip("/")
+
+
+def is_allowed_official_source(url: str) -> bool:
+    """Return True when *url* is an allowed official source domain.
+
+    Allowed: any ``.mil`` host (covers navy.mil, marines.mil, usmc.mil,
+    dod.mil and their subdomains) and ``defense.gov`` (and subdomains).
+    Everything else — social media, news sites, commercial directories,
+    unofficial base guides, pseudo-URLs, and empty/missing URLs — is
+    disallowed as an official source.
+    """
+    host = _host(url)
+    if not host:
+        return False
+    host = host.split(":", 1)[0]  # strip any port
+    labels = [label for label in host.split(".") if label]
+    if not labels:
+        return False
+    if labels[-1] == "mil":
+        return True
+    if len(labels) >= 2 and labels[-2] == "defense" and labels[-1] == "gov":
+        return True
+    return False
+
+
+def classify_source_url(url: str) -> dict[str, Any]:
+    """Classify a source URL into a deterministic descriptor dict.
+
+    Returns keys: ``url`` (normalized), ``host``, ``scheme``, ``is_official``,
+    ``is_pseudo_url``, and ``reason`` (empty when official).
+    """
+    normalized = normalize_source_url(url)
+    host = _host(normalized)
+    scheme = _scheme(normalized)
+    is_pseudo = scheme in {"static", "localdb", "file", "data"} or normalized.startswith(
+        ("static://", "localdb://")
+    )
+    is_official = is_allowed_official_source(normalized)
+    if not normalized:
+        reason = "missing_source_url"
+    elif is_pseudo:
+        reason = "pseudo_url"
+    elif not is_official:
+        reason = "non_official_domain"
+    else:
+        reason = ""
+    return {
+        "url": normalized,
+        "host": host,
+        "scheme": scheme,
+        "is_official": is_official,
+        "is_pseudo_url": is_pseudo,
+        "reason": reason,
+    }
+
+
+def _result_tier(result: dict[str, Any]) -> str:
+    tier = str(result.get("source_tier") or "").strip().lower()
+    return tier if tier in _VALID_SOURCE_TIERS else SOURCE_TIER_UNRESOLVED
+
+
+def _confidence(result: dict[str, Any]) -> float:
+    try:
+        value = float(result.get("confidence", 0.0))
+    except Exception:
+        value = 0.0
+    return max(0.0, min(1.0, value))
+
+
+def _has_complete_provenance(result: dict[str, Any]) -> bool:
+    if not isinstance(result.get("resolved_value"), dict) or not result.get("resolved_value"):
+        return False
+    if not result.get("source_tier"):
+        return False
+    if not _clean(result.get("source_title")):
+        return False
+    if not _clean(result.get("source_url")):
+        return False
+    if result.get("confidence") is None:
+        return False
+    return True
+
+
+def _archived_caution(result: dict[str, Any]) -> bool:
+    limitation = _norm(result.get("source_limitation") or "")
+    return "archiv" in limitation or "valid" in limitation
+
+
+def _exact_command_match(result: dict[str, Any], norm_cmd: str) -> bool:
+    if not norm_cmd:
+        return False
+    rv = result.get("resolved_value")
+    if isinstance(rv, dict):
+        for value in rv.values():
+            if isinstance(value, str) and _norm(value) == norm_cmd:
+                return True
+    title = result.get("source_title")
+    if isinstance(title, str) and _norm(title) == norm_cmd:
+        return True
+    return False
+
+
+def _strip_for_role(result: dict[str, Any], role: str) -> dict[str, Any]:
+    cleaned = dict(result)
+    rv = cleaned.get("resolved_value")
+    if isinstance(rv, dict):
+        resolved = dict(rv)
+        if _norm(role) == "to":
+            for key in _TO_STRIP_KEYS:
+                resolved.pop(key, None)
+        resolved = {k: v for k, v in resolved.items() if v}
+        cleaned["resolved_value"] = resolved
+    return cleaned
+
+
+def filter_provider_results(
+    results: Iterable[dict[str, Any]],
+    role: str,
+) -> list[dict[str, Any]]:
+    """Return apply-ready results from *results* for *role*.
+
+    Deterministic and side-effect free.  Drops results that are not
+    apply-ready: unresolved and secondary_credible tiers, official results
+    missing provenance or confidence, disallowed source URLs, and archived
+    results without a caution limitation.  For ``to``, letterhead and
+    unit_identity fields are stripped from ``resolved_value``.
+    """
+    role_key = _norm(role)
+    if role_key not in {"from", "to"}:
+        return []
+    out: list[dict[str, Any]] = []
+    for item in results:
+        if not isinstance(item, dict):
+            continue
+        result = _strip_for_role(item, role_key)
+        rv = result.get("resolved_value")
+        if not isinstance(rv, dict) or not rv.get(role_key):
+            continue
+        tier = _result_tier(result)
+        if tier == SOURCE_TIER_OFFICIAL_LIVE:
+            if not is_allowed_official_source(result.get("source_url")):
+                continue
+            if _confidence(result) < OFFICIAL_LIVE_CONFIDENCE_THRESHOLD:
+                continue
+            if not _has_complete_provenance(result):
+                continue
+            out.append(result)
+        elif tier == SOURCE_TIER_OFFICIAL_ARCHIVED:
+            if not is_allowed_official_source(result.get("source_url")):
+                continue
+            if not _has_complete_provenance(result):
+                continue
+            if _confidence(result) < OFFICIAL_ARCHIVED_CONFIDENCE_THRESHOLD:
+                continue
+            if not _archived_caution(result):
+                continue
+            out.append(result)
+        elif tier == SOURCE_TIER_USER_PROVIDED:
+            out.append(result)
+        # secondary_credible and unresolved are not apply-ready
+    return out
+
+
+def rank_provider_results(
+    results: Iterable[dict[str, Any]],
+    role: str,
+    command_text: str = "",
+) -> list[dict[str, Any]]:
+    """Sort *results* deterministically by tier, confidence, match, then URL.
+
+    Ordering keys, in priority order:
+
+      1. source_tier priority (official_live < official_archived <
+         user_provided < secondary_credible < unresolved)
+      2. confidence descending
+      3. exact normalized *command_text* match in resolved value or title
+      4. normalized source_url alphabetical (stable tie-breaker)
+
+    Conflicts on resolved From/To values are preserved — this helper never
+    collapses or selects a single result.
+    """
+    role_key = _norm(role)
+    norm_cmd = _norm(command_text)
+    items = [_strip_for_role(item, role_key) for item in results if isinstance(item, dict)]
+
+    def key(result: dict[str, Any]) -> tuple[int, float, int, str]:
+        priority = _TIER_PRIORITY.get(_result_tier(result), 99)
+        confidence = _confidence(result)
+        match = 1 if _exact_command_match(result, norm_cmd) else 0
+        url = normalize_source_url(result.get("source_url") or "")
+        return (priority, -confidence, -match, url)
+
+    return sorted(items, key=key)
 
 
 # ---------------------------------------------------------------------------
