@@ -1,19 +1,10 @@
 #!/usr/bin/env python3
 """Official command lookup adapter — official-source candidate integration.
 
-Phase L.31X: This module implements the first source-quality and confidence
-pipeline for official command lookup candidates.  Live lookup remains behind an
-explicit enable gate and all results remain candidate-only; this adapter never
-mutates a letter payload.
-
-L.31X-1 adds a narrow Hermes routing hook so unresolved To-line text can also
-produce a pending official-source candidate.  The hook keeps To candidates
-candidate-only and strips all letterhead fields before they can be applied.
-
-The default runtime is safe: when ``SECNAV_ENABLE_OFFICIAL_COMMAND_LOOKUP`` is
-not enabled, :func:`official_command_lookup` returns ``None``.  Tests and future
-integrations may inject a deterministic search provider with
-:func:`set_official_command_search_provider`.
+Live lookup remains behind an explicit enable gate and all results remain
+candidate-only; this adapter never mutates a letter payload.  Registered
+providers are normalized through the deterministic official provider source
+filter before candidate construction.
 """
 
 from __future__ import annotations
@@ -59,12 +50,7 @@ _CACHE: dict[tuple[str, str], dict[str, Any] | None] = {}
 # Test/future-integration hooks
 # ---------------------------------------------------------------------------
 def set_official_command_search_provider(provider: SearchProvider | None) -> None:
-    """Inject a deterministic search provider for tests or future live search.
-
-    The provider must return iterable result dictionaries.  This adapter will
-    still enforce enablement, source tier rules, confidence gates, conflict
-    handling, candidate-only output, and To-line letterhead stripping.
-    """
+    """Inject a deterministic search provider for tests or future live search."""
 
     global _SEARCH_PROVIDER
     _SEARCH_PROVIDER = provider
@@ -74,10 +60,8 @@ def set_official_command_search_provider(provider: SearchProvider | None) -> Non
 def register_official_command_provider(provider: SearchProvider | None) -> None:
     """Register an official command provider with the adapter.
 
-    Thin wrapper around :func:`set_official_command_search_provider` for
-    discoverability.  Accepts ``None`` to clear the provider.  Does **not**
-    enable live lookup by itself — the adapter still enforces
-    ``SECNAV_ENABLE_OFFICIAL_COMMAND_LOOKUP``.
+    Accepts ``None`` to clear the provider.  Does **not** enable live lookup by
+    itself; the adapter still enforces ``SECNAV_ENABLE_OFFICIAL_COMMAND_LOOKUP``.
     """
 
     set_official_command_search_provider(provider)
@@ -86,12 +70,7 @@ def register_official_command_provider(provider: SearchProvider | None) -> None:
 def register_fixture_official_command_provider(
     fixtures: list[dict[str, Any]] | None = None,
 ) -> Any:
-    """Build a :class:`FixtureOfficialCommandProvider` and register it.
-
-    Returns the provider instance for test inspection.  Does **not** enable
-    live lookup, does **not** perform internet access, and does **not**
-    contain a static command database.
-    """
+    """Build a FixtureOfficialCommandProvider and register it."""
 
     from official_command_provider import build_fixture_provider  # noqa: PLC0415
 
@@ -141,14 +120,7 @@ def _dict_values_match(text: str, data: Any) -> bool:
 
 
 def _matches_existing_controlled_alias(text: str, state: dict[str, Any]) -> bool:
-    """Return True when text is already a controlled alias expansion.
-
-    Hermes expands controlled aliases before this adapter sees them.  To keep
-    controlled aliases from invoking live lookup, this helper checks any alias
-    maps explicitly provided in state and, when called from Hermes, the caller's
-    existing controlled-alias globals.  This mirrors the accepted alias table;
-    it does not create or maintain a new command database.
-    """
+    """Return True when text is already a controlled alias expansion."""
 
     for key in ("controlled_aliases", "unit_aliases", "letterhead_by_from"):
         if _dict_values_match(text, state.get(key)):
@@ -236,7 +208,6 @@ def _candidate_from_result(command_text: str, role: str, result: dict[str, Any])
     url = _clean(result.get("source_url") or result.get("url"))
     title = _clean(result.get("source_title") or result.get("title"))
 
-    # Snapshot original letterhead completeness before _resolved_value strips it
     raw_rv = result.get("resolved_value")
     raw_has_full_letterhead = (
         isinstance(raw_rv, dict)
@@ -247,11 +218,9 @@ def _candidate_from_result(command_text: str, role: str, result: dict[str, Any])
 
     resolved = _resolved_value(result, role)
 
-    # Reject non-accepted tiers
     if tier not in {SOURCE_TIER_OFFICIAL_LIVE, SOURCE_TIER_OFFICIAL_ARCHIVED, SOURCE_TIER_USER_PROVIDED}:
         return None
 
-    # ── user_provided: relaxed gates, still requires confirmation ──
     if tier == SOURCE_TIER_USER_PROVIDED:
         if not resolved.get(role):
             return None
@@ -269,7 +238,6 @@ def _candidate_from_result(command_text: str, role: str, result: dict[str, Any])
             "requires_user_confirmation": True,
         }
 
-    # ── official_live / official_archived: full provenance + confidence gates ──
     if confidence < CONFIDENCE_WARN_THRESHOLD:
         return None
     if confidence < CONFIDENCE_PROPOSE_THRESHOLD and tier != SOURCE_TIER_OFFICIAL_LIVE:
@@ -279,7 +247,6 @@ def _candidate_from_result(command_text: str, role: str, result: dict[str, Any])
     if tier == SOURCE_TIER_OFFICIAL_LIVE and not _is_official_url(url):
         return None
 
-    # Build source_limitation when the provider didn't supply one
     limitation = _clean(result.get("source_limitation"))
     if not limitation:
         if role != "from":
@@ -305,29 +272,53 @@ def _candidate_from_result(command_text: str, role: str, result: dict[str, Any])
     }
 
 
+def _filter_and_rank_provider_results(
+    command_text: str,
+    role: str,
+    raw_results: Iterable[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Apply L.32D source filtering/ranking, failing closed on any error."""
+
+    try:
+        from official_command_provider import (  # noqa: PLC0415
+            filter_provider_results,
+            rank_provider_results,
+        )
+
+        filtered = filter_provider_results(raw_results, role)
+        return rank_provider_results(filtered, role, command_text)
+    except Exception:
+        return []
+
+
 def _pick_single_candidate(command_text: str, role: str, results: Iterable[dict[str, Any]]) -> dict[str, Any] | None:
     candidates = [c for item in results if isinstance(item, dict) for c in [_candidate_from_result(command_text, role, item)] if c]
     if not candidates:
         return None
 
-    # Separate official from user_provided
     official = [c for c in candidates if c.get("source_tier") in {SOURCE_TIER_OFFICIAL_LIVE, SOURCE_TIER_OFFICIAL_ARCHIVED}]
     user = [c for c in candidates if c.get("source_tier") == SOURCE_TIER_USER_PROVIDED]
 
-    # user_provided never outranks official_live
     if official:
         candidates = official
     elif user:
         candidates = user
 
-    candidates.sort(key=lambda c: (c.get("source_tier") == SOURCE_TIER_OFFICIAL_LIVE, float(c.get("confidence", 0.0))), reverse=True)
+    candidates.sort(
+        key=lambda c: (
+            c.get("source_tier") == SOURCE_TIER_OFFICIAL_LIVE,
+            c.get("source_tier") == SOURCE_TIER_OFFICIAL_ARCHIVED,
+            float(c.get("confidence", 0.0)),
+            str(c.get("source_url") or ""),
+        ),
+        reverse=True,
+    )
     best = candidates[0]
     best_line = _clean((best.get("resolved_value") or {}).get(role)).lower()
 
     for other in candidates[1:]:
         other_line = _clean((other.get("resolved_value") or {}).get(role)).lower()
         if other_line and other_line != best_line:
-            # Conflict: return None but include conflict metadata for caller
             return None
     return best
 
@@ -336,9 +327,10 @@ def _provider_results(command_text: str, role: str, state: dict[str, Any]) -> li
     if _SEARCH_PROVIDER is None:
         return []
     try:
-        return [dict(item) for item in (_SEARCH_PROVIDER(command_text, role, state) or []) if isinstance(item, dict)]
+        raw = [dict(item) for item in (_SEARCH_PROVIDER(command_text, role, state) or []) if isinstance(item, dict)]
     except Exception:
         return []
+    return _filter_and_rank_provider_results(command_text, role, raw)
 
 
 # ---------------------------------------------------------------------------
@@ -375,12 +367,7 @@ def _strip_to_letterhead(resolved: dict[str, Any]) -> dict[str, Any]:
 
 
 def install_hermes_to_line_candidate_patch(module: ModuleType | None = None) -> bool:
-    """Patch Hermes candidate routing so unresolved To fields may create candidates.
-
-    This keeps the existing From path intact.  It only adds a To candidate after
-    the original Hermes function declines to create a From candidate, and it
-    preserves the accepted rule that To candidates never carry letterhead.
-    """
+    """Patch Hermes candidate routing so unresolved To fields may create candidates."""
 
     candidates: list[ModuleType] = []
     if module is not None:
@@ -473,12 +460,7 @@ def official_command_lookup(
     role: str,
     state: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
-    """Return an official-source command candidate or ``None``.
-
-    The adapter performs no payload mutation.  It returns a candidate only when
-    explicit enablement is present, the source is official enough, confidence
-    passes the gate, and there is no conflicting official result.
-    """
+    """Return an official-source command candidate or ``None``."""
 
     text = _clean(command_text)
     field = _clean(role).lower()
