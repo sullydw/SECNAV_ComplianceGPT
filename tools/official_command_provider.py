@@ -16,6 +16,7 @@ fields, and never bypasses the confirmation gate.
 
 from __future__ import annotations
 
+import html
 import re
 from typing import Any, Callable, Iterable
 from urllib.parse import urlparse
@@ -478,19 +479,183 @@ def discover_candidate_urls(
     return urls
 
 
+# ---------------------------------------------------------------------------
+# Page parser skeleton (L.32G)
+# ---------------------------------------------------------------------------
+def _decode_page_text(page_text: str) -> str:
+    """Return supplied page text with basic HTML entities decoded."""
+    return html.unescape(str(page_text or ""))
+
+
+def _strip_html_tags(text: str) -> str:
+    """Minimally strip HTML tags for deterministic line parsing."""
+    text = re.sub(r"(?is)<(script|style).*?>.*?</\1>", "\n", text)
+    text = re.sub(r"(?i)<\s*br\s*/?\s*>", "\n", text)
+    text = re.sub(r"(?i)</\s*(p|div|h1|h2|h3|li|tr|td|th)\s*>", "\n", text)
+    text = re.sub(r"(?s)<[^>]+>", " ", text)
+    return text
+
+
+def _page_lines(page_text: str) -> list[str]:
+    text = _strip_html_tags(_decode_page_text(page_text))
+    return [_clean(line) for line in text.splitlines() if _clean(line)]
+
+
+def _line_value(line: str, labels: tuple[str, ...]) -> str:
+    for label in labels:
+        match = re.match(rf"(?i)^\s*{re.escape(label)}\s*:\s*(.+?)\s*$", line)
+        if match:
+            return _clean(match.group(1))
+    return ""
+
+
+def extract_official_page_title(page_text: str) -> str:
+    """Extract a deterministic page title from supplied text/HTML only."""
+    raw = _decode_page_text(page_text)
+    for pattern in (
+        r"(?is)<\s*title\s*>\s*(.*?)\s*</\s*title\s*>",
+        r"(?is)<\s*h1[^>]*>\s*(.*?)\s*</\s*h1\s*>",
+    ):
+        match = re.search(pattern, raw)
+        if match:
+            value = _clean(_strip_html_tags(match.group(1)))
+            if value:
+                return value
+    for line in _page_lines(raw):
+        value = _line_value(line, ("Title",))
+        if value:
+            return value
+    return ""
+
+
+def extract_letterhead_from_page(page_text: str) -> dict[str, str]:
+    """Extract explicit letterhead fields from supplied page text only."""
+    found: dict[str, str] = {}
+    for line in _page_lines(page_text):
+        top = _line_value(line, ("Letterhead Top Line",))
+        activity = _line_value(line, ("Letterhead Activity",))
+        address = _line_value(line, ("Letterhead Address",))
+        if top:
+            found["letterhead_top_line"] = top
+        if activity:
+            found["letterhead_activity"] = activity
+        if address:
+            found["letterhead_address"] = address
+    return found
+
+
+def _candidate_values_from_page(role: str, page_text: str) -> tuple[list[str], bool]:
+    """Return explicit candidate lines and whether they came from explicit labels."""
+    role_key = _norm(role)
+    values: list[str] = []
+    explicit = False
+    for line in _page_lines(page_text):
+        if role_key == "from":
+            from_value = _line_value(line, ("From",))
+            commander = _line_value(line, ("Commander",))
+            commanding_officer = _line_value(line, ("Commanding Officer",))
+            if from_value:
+                values.append(from_value)
+                explicit = True
+            if commander:
+                values.append(f"Commander, {commander}")
+                explicit = True
+            if commanding_officer:
+                values.append(f"Commanding Officer, {commanding_officer}")
+                explicit = True
+        elif role_key == "to":
+            to_value = _line_value(line, ("To",))
+            command = _line_value(line, ("Command", "Official Command", "Unit", "Activity"))
+            if to_value:
+                values.append(to_value)
+                explicit = True
+            if command:
+                values.append(command)
+                explicit = True
+    seen: set[str] = set()
+    unique: list[str] = []
+    for value in values:
+        key = _norm(value)
+        if key and key not in seen:
+            seen.add(key)
+            unique.append(value)
+    return unique, explicit
+
+
+def extract_command_candidates_from_page(command_text: str, role: str, page_text: str) -> list[str]:
+    """Extract role-specific command candidates from supplied page text only."""
+    values, _explicit = _candidate_values_from_page(role, page_text)
+    return values
+
+
+def _source_title_for_page(url: str, page_text: str) -> str:
+    title = extract_official_page_title(page_text)
+    if title:
+        return title
+    host = _host(url)
+    path = urlparse(url).path.strip("/") if url else ""
+    label = " ".join(part for part in (host, path.replace("/", " ")) if part).strip()
+    return _clean(label) or "Official source page"
+
+
 def parse_official_source_page(
     command_text: str,
     role: str,
     url: str,
     page_text: str,
 ) -> list[dict[str, Any]]:
-    """Default parser placeholder for official source pages.
+    """Parse supplied official page text into raw provider result dicts.
 
-    The default parser intentionally returns ``[]``.  Future phases may replace
-    it with source-specific parsing, but this skeleton never invents command
-    names, sources, or letterhead from page text.
+    This parser is deterministic and source-text-only.  It performs no network
+    calls, no filesystem reads, no web search, no adapter registration, and no
+    mutation.  It never invents letterhead.  For ``to`` it never returns
+    letterhead or unit identity fields.
     """
-    return []
+    role_key = _norm(role)
+    if role_key not in {"from", "to"}:
+        return []
+    if not _clean(page_text):
+        return []
+
+    values, explicit = _candidate_values_from_page(role_key, page_text)
+    if not values:
+        return []
+
+    title = _source_title_for_page(url, page_text)
+    letterhead = extract_letterhead_from_page(page_text)
+    has_partial_letterhead = bool(letterhead) and set(letterhead) != {
+        "letterhead_top_line",
+        "letterhead_activity",
+        "letterhead_address",
+    }
+    has_complete_letterhead = set(letterhead) == {
+        "letterhead_top_line",
+        "letterhead_activity",
+        "letterhead_address",
+    }
+
+    out: list[dict[str, Any]] = []
+    for value in values:
+        resolved: dict[str, Any] = {role_key: value}
+        if role_key == "from" and has_complete_letterhead:
+            resolved.update(letterhead)
+        if role_key == "from" and has_partial_letterhead:
+            limitation = "Official source did not provide complete letterhead; letterhead not proposed."
+        elif role_key == "to":
+            limitation = "To-line candidates do not set letterhead; confirmation mutates only the To field."
+        else:
+            limitation = "Official-source candidate parsed from supplied page text; user confirmation required."
+        out.append(
+            {
+                "resolved_value": resolved,
+                "source_tier": SOURCE_TIER_OFFICIAL_LIVE,
+                "source_title": title,
+                "source_url": url,
+                "source_limitation": limitation,
+                "confidence": 0.92 if explicit else 0.85,
+            }
+        )
+    return out
 
 
 class OfficialCommandLiveRetriever(OfficialCommandProvider):
