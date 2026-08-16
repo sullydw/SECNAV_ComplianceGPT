@@ -17,7 +17,7 @@ fields, and never bypasses the confirmation gate.
 from __future__ import annotations
 
 import re
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 from urllib.parse import urlparse
 
 
@@ -418,3 +418,191 @@ def build_fixture_provider(
     (all lookups return ``[]``).
     """
     return FixtureOfficialCommandProvider(fixtures)
+
+
+# ---------------------------------------------------------------------------
+# Live retrieval skeleton (L.32F)
+# ---------------------------------------------------------------------------
+class OfficialCommandRetrievalError(OfficialCommandProviderError):
+    """Base exception for official command live retrieval failures."""
+
+
+class OfficialCommandRetrievalTimeout(OfficialCommandRetrievalError, TimeoutError):
+    """Raised by injected fetchers when a retrieval attempt times out."""
+
+
+OfficialCommandRetrievalResult = dict[str, Any]
+OfficialCommandFetcher = Callable[[str, float], str]
+OfficialCommandParser = Callable[[str, str, str, str], Iterable[dict[str, Any]]]
+
+DEFAULT_OFFICIAL_LOOKUP_TIMEOUT_SECONDS = 3.0
+MAX_OFFICIAL_LOOKUP_TIMEOUT_SECONDS = 10.0
+_STATE_FIXTURE_URLS_KEY = "_official_lookup_fixture_urls"
+
+
+def clamp_official_lookup_timeout(timeout_seconds: Any = None) -> float:
+    """Return a bounded lookup timeout.
+
+    Invalid, missing, zero, or negative values fall back to the default.
+    Values above the maximum are clamped to the maximum.
+    """
+    try:
+        value = float(timeout_seconds)
+    except Exception:
+        value = DEFAULT_OFFICIAL_LOOKUP_TIMEOUT_SECONDS
+    if value <= 0:
+        value = DEFAULT_OFFICIAL_LOOKUP_TIMEOUT_SECONDS
+    return min(value, MAX_OFFICIAL_LOOKUP_TIMEOUT_SECONDS)
+
+
+def discover_candidate_urls(
+    command_text: str,
+    role: str,
+    state: dict[str, Any] | None = None,
+    *,
+    candidate_urls: Iterable[str] | None = None,
+) -> list[str]:
+    """Return deterministic candidate URLs for the live retriever skeleton.
+
+    This placeholder performs no web search and contains no command database.
+    It returns explicit constructor-supplied URLs first; when none are supplied,
+    tests may provide URLs in ``state['_official_lookup_fixture_urls']``.
+    """
+    urls: list[str] = []
+    if candidate_urls is not None:
+        urls.extend(str(url) for url in candidate_urls if str(url or "").strip())
+    elif isinstance(state, dict):
+        fixture_urls = state.get(_STATE_FIXTURE_URLS_KEY)
+        if isinstance(fixture_urls, (list, tuple)):
+            urls.extend(str(url) for url in fixture_urls if str(url or "").strip())
+    return urls
+
+
+def parse_official_source_page(
+    command_text: str,
+    role: str,
+    url: str,
+    page_text: str,
+) -> list[dict[str, Any]]:
+    """Default parser placeholder for official source pages.
+
+    The default parser intentionally returns ``[]``.  Future phases may replace
+    it with source-specific parsing, but this skeleton never invents command
+    names, sources, or letterhead from page text.
+    """
+    return []
+
+
+class OfficialCommandLiveRetriever(OfficialCommandProvider):
+    """Disabled-by-default live retrieval boundary for official lookup.
+
+    This class combines deterministic URL discovery, allowed-domain precheck,
+    an injectable fetch abstraction, and an injectable parser.  It never reads
+    the adapter enable gate, never registers itself, never mutates state, and
+    performs no network activity unless constructed with ``enable_network=True``
+    and an explicit fetcher.
+    """
+
+    def __init__(
+        self,
+        *,
+        enable_network: bool = False,
+        candidate_urls: Iterable[str] | None = None,
+        fetcher: OfficialCommandFetcher | None = None,
+        parser: OfficialCommandParser | None = None,
+        timeout_seconds: Any = None,
+    ) -> None:
+        self.enable_network = bool(enable_network)
+        self._candidate_urls = list(candidate_urls or [])
+        self._fetcher = fetcher
+        self._parser = parser or parse_official_source_page
+        self.timeout_seconds = clamp_official_lookup_timeout(timeout_seconds)
+
+    def search(
+        self,
+        command_text: str,
+        role: str,
+        state: dict[str, Any],
+    ) -> Iterable[dict[str, Any]]:
+        """Return raw provider result dictionaries or ``[]`` fail-closed."""
+        role_key = _norm(role)
+        if role_key not in {"from", "to"}:
+            return []
+        if not _norm(command_text):
+            return []
+        if not self.enable_network or self._fetcher is None:
+            return []
+
+        results: list[dict[str, Any]] = []
+        urls = discover_candidate_urls(
+            command_text,
+            role_key,
+            state,
+            candidate_urls=self._candidate_urls if self._candidate_urls else None,
+        )
+        for url in urls:
+            if not is_allowed_official_source(url):
+                continue
+            try:
+                page_text = self._fetcher(url, self.timeout_seconds)
+            except (OfficialCommandRetrievalTimeout, TimeoutError):
+                continue
+            except Exception:
+                continue
+            if not page_text:
+                continue
+            try:
+                parsed = self._parser(command_text, role_key, url, page_text)
+            except Exception:
+                continue
+            for item in parsed or []:
+                if isinstance(item, dict):
+                    results.append(dict(item))
+        return results
+
+    def __call__(
+        self,
+        command_text: str,
+        role: str,
+        state: dict[str, Any],
+    ) -> Iterable[dict[str, Any]]:
+        return self.search(command_text, role, state)
+
+
+def build_live_retriever(
+    *,
+    enable_network: bool = False,
+    candidate_urls: Iterable[str] | None = None,
+    fetcher: OfficialCommandFetcher | None = None,
+    parser: OfficialCommandParser | None = None,
+    timeout_seconds: Any = None,
+) -> OfficialCommandLiveRetriever:
+    """Build a disabled-by-default live retriever skeleton.
+
+    The returned object is not registered with the adapter automatically.
+    """
+    return OfficialCommandLiveRetriever(
+        enable_network=enable_network,
+        candidate_urls=candidate_urls,
+        fetcher=fetcher,
+        parser=parser,
+        timeout_seconds=timeout_seconds,
+    )
+
+
+def build_live_provider(
+    *,
+    enable_network: bool = False,
+    candidate_urls: Iterable[str] | None = None,
+    fetcher: OfficialCommandFetcher | None = None,
+    parser: OfficialCommandParser | None = None,
+    timeout_seconds: Any = None,
+) -> OfficialCommandLiveRetriever:
+    """Build an OfficialCommandProvider-compatible live provider skeleton."""
+    return build_live_retriever(
+        enable_network=enable_network,
+        candidate_urls=candidate_urls,
+        fetcher=fetcher,
+        parser=parser,
+        timeout_seconds=timeout_seconds,
+    )
