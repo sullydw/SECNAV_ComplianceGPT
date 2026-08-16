@@ -5,6 +5,58 @@
 
 ---
 
+## L.32H — Official Provider Candidate URL Discovery Skeleton
+
+Added deterministic candidate-URL discovery helpers in
+`tools/official_command_provider.py` for future official-source lookup. No
+real web search, no filesystem access, no static command database, no
+environment gate reads, no adapter registration, and no state mutation.
+
+### Helpers
+
+| Helper | Purpose |
+|--------|---------|
+| `normalize_candidate_url(url)` | Lowercase, strip fragment/trailing slash |
+| `filter_candidate_urls(urls)` | Drop empty/pseudo/disallowed, dedupe, preserve order |
+| `discover_candidate_urls(command_text, role, state, *, candidate_urls)` | Ordered discovery across constructor/state sources |
+
+### Discovery Sources (priority order)
+
+1. explicit constructor `candidate_urls`
+2. `state["_official_lookup_fixture_urls"]`
+3. `state["_official_lookup_candidate_urls"]`
+
+A higher-priority source that is present shadows lower-priority sources.
+Invalid roles return `[]`.
+
+### Behavior
+
+| Rule | Behavior |
+|------|----------|
+| Allowed domains | `.mil` and `defense.gov` (and subdomains) only |
+| Pseudo URLs | `static://`, `localdb://`, `file://`, `data:` dropped |
+| Empty/whitespace | dropped |
+| Duplicates | deduped by normalized URL |
+| Order | first-seen order preserved |
+| State mutation | none |
+| Network/filesystem/search | none |
+
+### Proof Tests
+
+| Test | Checks | Result |
+|------|--------|--------|
+| L.32H candidate URL discovery skeleton smoke | 23/23 | PASS |
+
+### Regression
+
+L.32G (43/43), L.32F (48/48), L.32E (46/46), L.32D (65/65), L.32C (27/27),
+L.32B (40/40), L.31Z (78/78), L.31Y (77/77), L.31X-1 (44/44), L.31X (59/59),
+L.31W (37/37), L.31T (53/53), L.31S (37/37), L.31Q-1 (14/14), L.31Q (55/55),
+L.31P (30/30), L.31O-3 (12/12), L.31O-2 (10/10), L.31N, L.31M, L.31K — all
+PASS.
+
+---
+
 ## L.32D — Official Provider Source Filter Skeleton
 
 Added a deterministic source-filter and ranking skeleton for official provider

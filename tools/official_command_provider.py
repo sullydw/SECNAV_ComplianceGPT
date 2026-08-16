@@ -439,6 +439,7 @@ OfficialCommandParser = Callable[[str, str, str, str], Iterable[dict[str, Any]]]
 DEFAULT_OFFICIAL_LOOKUP_TIMEOUT_SECONDS = 3.0
 MAX_OFFICIAL_LOOKUP_TIMEOUT_SECONDS = 10.0
 _STATE_FIXTURE_URLS_KEY = "_official_lookup_fixture_urls"
+_STATE_CANDIDATE_URLS_KEY = "_official_lookup_candidate_urls"
 
 
 def clamp_official_lookup_timeout(timeout_seconds: Any = None) -> float:
@@ -456,6 +457,39 @@ def clamp_official_lookup_timeout(timeout_seconds: Any = None) -> float:
     return min(value, MAX_OFFICIAL_LOOKUP_TIMEOUT_SECONDS)
 
 
+def normalize_candidate_url(url: str) -> str:
+    """Normalize a candidate URL for deterministic comparison and dedup.
+
+    Lowercases, strips surrounding whitespace, drops any fragment, and
+    removes trailing slashes.  Returns ``""`` for empty/missing input.
+    """
+    return normalize_source_url(url)
+
+
+def filter_candidate_urls(urls: Iterable[str]) -> list[str]:
+    """Filter and dedupe candidate URLs deterministically.
+
+    Preserves first-seen order, drops empty/whitespace URLs, drops pseudo
+    URLs (``static://``, ``localdb://``, ``file://``, ``data:``), drops
+    disallowed domains, and dedupes by normalized URL.  Keeps only allowed
+    official domains (``.mil`` and ``defense.gov``).  No network, no
+    filesystem, no state mutation.
+    """
+    seen: set[str] = set()
+    out: list[str] = []
+    for url in urls:
+        normalized = normalize_candidate_url(url)
+        if not normalized:
+            continue
+        if not is_allowed_official_source(normalized):
+            continue
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        out.append(normalized)
+    return out
+
+
 def discover_candidate_urls(
     command_text: str,
     role: str,
@@ -465,18 +499,36 @@ def discover_candidate_urls(
 ) -> list[str]:
     """Return deterministic candidate URLs for the live retriever skeleton.
 
-    This placeholder performs no web search and contains no command database.
-    It returns explicit constructor-supplied URLs first; when none are supplied,
-    tests may provide URLs in ``state['_official_lookup_fixture_urls']``.
+    Discovery sources, in priority order:
+
+      1. explicit ``candidate_urls`` (constructor-supplied)
+      2. ``state["_official_lookup_fixture_urls"]``
+      3. ``state["_official_lookup_candidate_urls"]``
+
+    A higher-priority source that is present shadows lower-priority sources.
+    The gathered URLs are filtered and deduped via
+    :func:`filter_candidate_urls`.  Invalid roles return ``[]``.
+
+    No network, no filesystem, no search engine, no static command database,
+    no environment gate reads, no adapter registration, and no state
+    mutation.
     """
+    role_key = _norm(role)
+    if role_key not in {"from", "to"}:
+        return []
+
     urls: list[str] = []
     if candidate_urls is not None:
-        urls.extend(str(url) for url in candidate_urls if str(url or "").strip())
+        urls.extend(str(url) for url in candidate_urls)
     elif isinstance(state, dict):
         fixture_urls = state.get(_STATE_FIXTURE_URLS_KEY)
         if isinstance(fixture_urls, (list, tuple)):
-            urls.extend(str(url) for url in fixture_urls if str(url or "").strip())
-    return urls
+            urls.extend(str(url) for url in fixture_urls)
+        else:
+            candidate_state_urls = state.get(_STATE_CANDIDATE_URLS_KEY)
+            if isinstance(candidate_state_urls, (list, tuple)):
+                urls.extend(str(url) for url in candidate_state_urls)
+    return filter_candidate_urls(urls)
 
 
 # ---------------------------------------------------------------------------
