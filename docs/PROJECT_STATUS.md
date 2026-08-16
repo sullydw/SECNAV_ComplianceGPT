@@ -5,6 +5,33 @@
 
 ---
 
+## L.32I — Official Provider Retrieval Opt-In Wiring
+
+Added an explicit opt-in wiring helper in
+`tools/official_command_lookup_adapter.py` that builds and registers a live
+provider skeleton. Normal runtime remains disabled by default; this is still
+not real web lookup.
+
+### Helper
+
+| Helper | Purpose |
+|--------|---------|
+| `build_and_register_live_official_command_provider(...)` | Build a live provider via `build_live_provider`, register it with the adapter, return the instance |
+
+### Guarantees
+
+- Does **not** enable `SECNAV_ENABLE_OFFICIAL_COMMAND_LOOKUP`.
+- Does **not** perform network by default (`enable_network=False`).
+- Requires explicit `enable_network=True` before the fetcher can run.
+- Accepts `candidate_urls`, `fetcher`, `parser`, `timeout_seconds`.
+- No static command database; no Hermes state mutation; no auto-confirm/apply.
+- Adapter gate remains authoritative: gate unset → adapter returns `None`,
+  provider/fetcher never called.
+- No automatic runtime registration on import; no env var silently constructs
+  a live provider; no default network fetcher.
+
+---
+
 ## L.32H — Official Provider Candidate URL Discovery Skeleton
 
 Added deterministic candidate-URL discovery helpers in

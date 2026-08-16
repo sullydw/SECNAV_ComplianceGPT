@@ -79,6 +79,42 @@ def register_fixture_official_command_provider(
     return provider
 
 
+def build_and_register_live_official_command_provider(
+    *,
+    enable_network: bool = False,
+    candidate_urls: Iterable[str] | None = None,
+    fetcher: Any = None,
+    parser: Any = None,
+    timeout_seconds: Any = None,
+) -> Any:
+    """Build a live provider skeleton and register it with the adapter.
+
+    This is the explicit opt-in wiring path for the L.32F/L.32H live
+    provider skeleton.  It builds the provider via
+    :func:`official_command_provider.build_live_provider`, registers it with
+    the adapter, and returns the provider instance.
+
+    It does **not** enable ``SECNAV_ENABLE_OFFICIAL_COMMAND_LOOKUP``, does
+    **not** perform network by default (``enable_network`` defaults to
+    ``False``), does **not** contain a static command database, does **not**
+    mutate Hermes state, and does **not** auto-confirm/apply candidates.  The
+    adapter gate remains authoritative: with the gate unset the adapter
+    returns ``None`` and the provider/fetcher is never called.
+    """
+
+    from official_command_provider import build_live_provider  # noqa: PLC0415
+
+    provider = build_live_provider(
+        enable_network=enable_network,
+        candidate_urls=candidate_urls,
+        fetcher=fetcher,
+        parser=parser,
+        timeout_seconds=timeout_seconds,
+    )
+    set_official_command_search_provider(provider)
+    return provider
+
+
 def reset_official_command_lookup_cache() -> None:
     """Clear the tiny in-memory per-process lookup cache."""
 
