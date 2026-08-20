@@ -435,6 +435,7 @@ class OfficialCommandRetrievalTimeout(OfficialCommandRetrievalError, TimeoutErro
 OfficialCommandRetrievalResult = dict[str, Any]
 OfficialCommandFetcher = Callable[[str, float], str]
 OfficialCommandParser = Callable[[str, str, str, str], Iterable[dict[str, Any]]]
+OfficialCommandTransport = Callable[[str, float], str]
 
 DEFAULT_OFFICIAL_LOOKUP_TIMEOUT_SECONDS = 3.0
 MAX_OFFICIAL_LOOKUP_TIMEOUT_SECONDS = 10.0
@@ -455,6 +456,59 @@ def clamp_official_lookup_timeout(timeout_seconds: Any = None) -> float:
     if value <= 0:
         value = DEFAULT_OFFICIAL_LOOKUP_TIMEOUT_SECONDS
     return min(value, MAX_OFFICIAL_LOOKUP_TIMEOUT_SECONDS)
+
+
+class SafeOfficialCommandFetcher:
+    """Safe disabled-by-default fetcher stub for future official lookup.
+
+    The callable interface is ``fetcher(url, timeout_seconds) -> str``.
+    By default it returns ``""`` and performs no network behavior.  An
+    injected transport runs only when ``allow_network=True`` and the URL is an
+    allowed official source.  It does not read environment variables, mutate
+    state, register providers, or contain a command database.
+    """
+
+    def __init__(
+        self,
+        *,
+        allow_network: bool = False,
+        transport: OfficialCommandTransport | None = None,
+        timeout_seconds: Any = None,
+    ) -> None:
+        self.allow_network = bool(allow_network)
+        self._transport = transport
+        self.timeout_seconds = clamp_official_lookup_timeout(timeout_seconds)
+
+    def __call__(self, url: str, timeout_seconds: float | None = None) -> str:
+        if not self.allow_network or self._transport is None:
+            return ""
+        normalized = normalize_candidate_url(url)
+        if not normalized or not is_allowed_official_source(normalized):
+            return ""
+        timeout = clamp_official_lookup_timeout(
+            self.timeout_seconds if timeout_seconds is None else timeout_seconds
+        )
+        try:
+            text = self._transport(normalized, timeout)
+        except (OfficialCommandRetrievalTimeout, TimeoutError):
+            return ""
+        except Exception:
+            return ""
+        return str(text or "")
+
+
+def build_safe_official_command_fetcher(
+    *,
+    allow_network: bool = False,
+    transport: OfficialCommandTransport | None = None,
+    timeout_seconds: Any = None,
+) -> SafeOfficialCommandFetcher:
+    """Build a safe disabled-by-default official-command fetcher stub."""
+    return SafeOfficialCommandFetcher(
+        allow_network=allow_network,
+        transport=transport,
+        timeout_seconds=timeout_seconds,
+    )
 
 
 def normalize_candidate_url(url: str) -> str:
