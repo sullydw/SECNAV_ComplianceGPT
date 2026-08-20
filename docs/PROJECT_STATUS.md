@@ -3,6 +3,49 @@
 **Last Updated:** 2026-08-15
 **Accepted Baseline HEAD:** `7c1d899` — Docs: Lock accepted Hermes baseline
 
+|---
+
+## L.32J — Official Provider Safe Fetcher Stub
+
+Added a named safe fetcher stub, `SafeOfficialCommandFetcher`, in
+`tools/official_command_provider.py` for future official lookup retrieval.
+It performs no real network by default.
+
+### Helper
+
+| Helper | Purpose |
+|--------|---------|
+| `build_safe_official_command_fetcher(...)` | Build a fetcher callable with optional injected network transport and gating |
+
+### Guarantees
+
+- Default behavior returns `""`; no network is performed unless explicitly
+  enabled.
+- Network transport runs only when an explicit callable is injected **and**
+  `allow_network=True`.
+- Allowed official-source URL filtering is enforced before any transport call
+  (`is_allowed_official_source`).
+- Invalid, pseudo, or disallowed URLs fail closed and return `""`.
+- Timeout values are clamped with the existing
+  `clamp_official_lookup_timeout(...)` helper.
+- Transport exceptions (`RuntimeError`, `TimeoutError`, etc.) fail closed and
+  return `""`.
+- Compatible with `build_live_provider(...)`; `build_fixture_provider(...)` is
+  unaffected.
+- Adapter gate remains authoritative: gate unset → adapter returns `None`,
+  provider/fetcher never called.
+- No automatic provider registration on import.
+- No static command database; no direct imports of `requests`,
+  `urllib.request`, `http.client`, or `socket` in the fetcher.
+- No environment-variable reads or Hermes state mutation.
+
+### Validation
+
+- L.32J smoke: `36/36 PASS`.
+- Prior L.32 stack (I → B) all PASS.
+- L.31 stack and regression suite (Q-1, O-3, O-2, W, T, S, Q, P, N, M, K)
+  all PASS.
+
 ---
 
 ## L.32I — Official Provider Retrieval Opt-In Wiring
