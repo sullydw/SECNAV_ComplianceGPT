@@ -86,22 +86,54 @@ def _run_manager(args: list[str]) -> dict:
 
 
 def _extract_jsons(stdout: str) -> list[dict]:
+    """Parse every top-level JSON object from stdout, supporting pretty-printed
+    multi-line objects."""
     objs = []
-    buf = []
-    in_obj = False
-    for line in stdout.splitlines():
-        stripped = line.strip()
-        if not in_obj and stripped == "{":
-            in_obj = True
-            buf = [line]
-        elif in_obj:
-            buf.append(line)
-            if stripped == "}":
-                in_obj = False
-                try:
-                    objs.append(json.loads("\n".join(buf)))
-                except json.JSONDecodeError:
-                    pass
+    i = 0
+    text = stdout
+    while i < len(text):
+        # Skip non-JSON leading noise for this candidate position
+        while i < len(text) and text[i] not in "{[":
+            i += 1
+        if i >= len(text):
+            break
+        start = i
+        # Use a stack of matching braces/brackets
+        stack = [text[i]]
+        i += 1
+        in_string = False
+        escape = False
+        while i < len(text) and stack:
+            ch = text[i]
+            if in_string:
+                if escape:
+                    escape = False
+                elif ch == "\\":
+                    escape = True
+                elif ch == '"':
+                    in_string = False
+            else:
+                if ch == '"':
+                    in_string = True
+                elif ch in "{[":
+                    stack.append(ch)
+                elif ch in "}]":
+                    opener = stack.pop()
+                    if (opener == "{" and ch != "}") or (opener == "[" and ch != "]"):
+                        # mismatched; abort this candidate and keep scanning
+                        break
+            i += 1
+        if not stack:
+            candidate = text[start:i]
+            try:
+                parsed = json.loads(candidate)
+                if isinstance(parsed, (dict, list)):
+                    objs.append(parsed)
+            except json.JSONDecodeError:
+                pass
+        else:
+            # malformed candidate; advance one char to avoid getting stuck
+            i = start + 1
     return objs
 
 

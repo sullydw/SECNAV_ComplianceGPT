@@ -543,11 +543,19 @@ def _run_say(session_id: str, text: str, state: dict[str, Any]) -> dict[str, Any
 
 
 def _run_revise(session_id: str, text: str) -> dict[str, Any]:
+    """
+    Chat revise always routes through hermes_secnav_tool.py:cmd_revise.
+    The tool is the single authority for deciding whether a revision is
+    supported, applying it, and clearing prior approval state.
+    """
     before_ready = _run_manager(["ready", "--session", session_id])
     before_preview = _run_manager(["preview", "--session", session_id])
     before_hash = _digest(before_preview.get("payload") or {})
-    fields = _extract_revision_fields(text)
-    r = _run_manager(["apply", "--session", session_id, "--kv", _key_values_to_text(fields)]) if fields else _run_manager(["revise", "--session", session_id, "--text", text])
+    before_approved = bool(before_ready.get("approved_ready", False))
+
+    # Delegate entirely to the centralized revise command.
+    r = _run_manager(["revise", "--session", session_id, "--text", text])
+
     preview, ready, ph, step = _status(session_id)
     after_payload = r.get("payload") or preview.get("payload") or {}
     changed = r.get("payload_changed")
@@ -555,8 +563,17 @@ def _run_revise(session_id: str, text: str) -> dict[str, Any]:
         changed = _digest(after_payload) != before_hash
     cleared = r.get("approval_cleared")
     if cleared is None:
-        cleared = bool(before_ready.get("approved_ready") and changed and not ready.get("approved_ready", False))
-    resp = "I wasn't able to apply that change to the draft. Try a supported change such as changing the body, subject, signer, or date." if not r.get("success") else ("I understood the request, but nothing in the draft was changed. Try changing the body, subject, signer, or date." if not changed else _assistant_response(ph, ready, preview, action="revise"))
+        cleared = bool(r.get("success") and before_approved and not ready.get("approved_ready", False))
+
+    if r.get("success"):
+        if cleared:
+            resp = f"I've updated the draft and cleared the prior approval so you can review before finalizing. {step}"
+        elif changed:
+            resp = _assistant_response(ph, ready, preview, action="revise")
+        else:
+            resp = f"I applied the revision, but it didn't change the draft content. {step}"
+    else:
+        resp = "I wasn't able to apply that change to the draft. Try a supported change such as changing the body, subject, signer, or date."
     return {"success": r.get("success", False), "intent": "revise", "phase": ph, "message": f"Revised draft. Payload changed: {changed}. Approval cleared: {cleared}. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Revise failed"), "assistant_response": resp, "preview_text": preview.get("preview_text"), "next_step": step, "payload": after_payload, "approval_cleared": cleared, "payload_changed": changed, "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": r.get("error")}
 
 

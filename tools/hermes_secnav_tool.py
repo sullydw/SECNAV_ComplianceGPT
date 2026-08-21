@@ -33,7 +33,7 @@ _SRC_DIR = _REPO_ROOT / "src"
 if str(_SRC_DIR) not in sys.path:
     sys.path.insert(0, str(_SRC_DIR))
 
-from conversational_builder import BuilderSession
+from conversational_builder import BuilderSession, _coerce_value, _expand_dot_fields
 from intake_orchestrator import IntakeOrchestrator
 from llm_builder_mediator import MediatorInput, create_mock_mediator
 from unresolved_fact_detector import detect_unresolved_facts
@@ -1363,15 +1363,19 @@ _CHANGE_FROM_PATTERN = re.compile(
     r"change\s+(?:the\s+)?from\s+(?:line\s+)?(?:to\s+)?(.+)", re.IGNORECASE
 )
 
+_CHANGE_BODY_PATTERN = re.compile(
+    r"change\s+(?:the\s+)?body\s+(?:to\s+)?(?:say\s+)?(.+)", re.IGNORECASE
+)
+
 _MORE_DIRECT_PATTERN = re.compile(
     r"make\s+(?:the\s+)?body\s+more\s+direct", re.IGNORECASE
 )
-_MORE_FORMAL_PATTERN = re.compile(
-    r"make\s+(?:the\s+)?body\s+more\s+formal", re.IGNORECASE
-)
-_SHORTEN_BODY_PATTERN = re.compile(
-    r"shorten\s+(?:the\s+)?body", re.IGNORECASE
-)
+# L.30Y — vague style edits ("make the body more formal") are intentionally
+# unsupported as body replacements because they cannot be deterministically
+# applied while preserving the user's exact intended tone.  Remove this
+# pattern so that phrase falls through to the unsupported-revision path.
+_MORE_FORMAL_PATTERN = None
+_SHORTEN_BODY_PATTERN = None
 
 
 def _apply_natural_revision(
@@ -1423,7 +1427,12 @@ def _apply_natural_revision(
     if m:
         return {"from": m.group(1).strip()}
 
-    # 7. Make body more direct  (remove hedging phrases)
+    # 7. Change body to ... / Change the body to say ...
+    m = _CHANGE_BODY_PATTERN.search(text)
+    if m:
+        return {"body": m.group(1).strip()}
+
+    # 8. Make body more direct  (remove hedging phrases)
     if _MORE_DIRECT_PATTERN.search(text):
         body = payload.get("body", [])
         if isinstance(body, list):
@@ -1442,41 +1451,8 @@ def _apply_natural_revision(
             body = re.sub(r"\s{2,}", " ", body)
             return {"body": body}
 
-    # 8. Make body more formal  (simple replacements)
-    if _MORE_FORMAL_PATTERN.search(text):
-        body = payload.get("body", [])
-        if isinstance(body, list):
-            formalized = []
-            for para in body:
-                para = re.sub(r"\bcan't\b", "cannot", para, flags=re.IGNORECASE)
-                para = re.sub(r"\bwon't\b", "will not", para, flags=re.IGNORECASE)
-                para = re.sub(r"\bdon't\b", "do not", para, flags=re.IGNORECASE)
-                para = re.sub(r"\bi'm\b", "I am", para, flags=re.IGNORECASE)
-                para = re.sub(r"\bwe're\b", "we are", para, flags=re.IGNORECASE)
-                formalized.append(para)
-            return {"body": "\n".join(formalized)}
-        elif isinstance(body, str):
-            body = re.sub(r"\bcan't\b", "cannot", body, flags=re.IGNORECASE)
-            body = re.sub(r"\bwon't\b", "will not", body, flags=re.IGNORECASE)
-            body = re.sub(r"\bdon't\b", "do not", body, flags=re.IGNORECASE)
-            body = re.sub(r"\bi'm\b", "I am", body, flags=re.IGNORECASE)
-            body = re.sub(r"\bwe're\b", "we are", body, flags=re.IGNORECASE)
-            return {"body": body}
-
-    # 9. Shorten body  (keep first sentence of each paragraph)
-    if _SHORTEN_BODY_PATTERN.search(text):
-        body = payload.get("body", [])
-        if isinstance(body, list):
-            shortened = []
-            for para in body:
-                sentences = re.split(r'(?<=[.!?])\s+', para.strip())
-                if sentences:
-                    shortened.append(sentences[0])
-            return {"body": "\n".join(shortened)}
-        elif isinstance(body, str):
-            sentences = re.split(r'(?<=[.!?])\s+', body.strip())
-            if sentences:
-                return {"body": sentences[0]}
+    # 9. Make body more formal  (simple replacements) — disabled (L.30Y)
+    # 10. Shorten body — disabled (L.30Y)
 
     return None
 
@@ -1503,7 +1479,8 @@ def _proposed_kv_from_text(text: str) -> dict[str, str] | None:
 def cmd_revise(args: argparse.Namespace) -> None:
     """
     Controlled revise command for final-review edits.
-    Applies draft-relevant changes and clears approval if payload hash changes.
+    Applies draft-relevant changes and clears approval when a supported
+    revision is applied, regardless of whether the payload hash changes.
     """
     builder = _load_session(args.session)
     payload_before = builder.build_payload()
@@ -1512,30 +1489,40 @@ def cmd_revise(args: argparse.Namespace) -> None:
     text = args.text if hasattr(args, "text") else ""
     proposed_kv = _proposed_kv_from_text(text)
     applied_answers: list[dict[str, Any]] = []
+    approved_before = builder.approval_state().get("approved_for_finalize", False)
 
     if proposed_kv:
-        # Apply through existing safe mediator path
-        kv_raw = text.replace("\\n", "\n")
-        result = builder.ingest_user_message(kv_raw)
-        applied_answers = result.get("applied_answers", [])
+        # Apply directly to orchestrator user_answers (same lower-level path
+        # used by explicit field updates), bypassing natural-language parsing.
+        coerced: dict[str, Any] = {}
+        for field_path, raw in proposed_kv.items():
+            coerced[field_path] = _coerce_value(field_path, raw)
+        coerced = _expand_dot_fields(coerced)
+        builder._orchestrator.apply_answers(coerced)
+        builder._history.append({"answers": coerced, "raw_text": text})
+        applied_answers = coerced
     else:
-        # Try natural-language revision patterns
+        # Try natural-language revision patterns; if matched, apply directly.
         natural_kv = _apply_natural_revision(text, payload_before)
         if natural_kv:
-            # Build safe kv line(s) and route through mediator
-            kv_lines = []
-            for k, v in natural_kv.items():
-                kv_lines.append(f"{k}: {v}")
-            kv_raw = "\n".join(kv_lines)
-            result = builder.ingest_user_message(kv_raw)
-            applied_answers = result.get("applied_answers", [])
+            coerced = {}
+            for field_path, raw in natural_kv.items():
+                coerced[field_path] = _coerce_value(field_path, raw)
+            coerced = _expand_dot_fields(coerced)
+            builder._orchestrator.apply_answers(coerced)
+            builder._history.append({"answers": coerced, "raw_text": text})
+            applied_answers = coerced
             proposed_kv = natural_kv
         else:
-            # Unsupported instruction
+            # Unsupported instruction: leave payload and approval untouched and
+            # report explicit booleans so callers cannot misinterpret the result.
             _emit({
                 "success": False,
                 "command": "revise",
                 "session_id": args.session,
+                "proposed_kv": None,
+                "payload_changed": False,
+                "approval_cleared": False,
                 "error": "Unsupported revision instruction. Use key:value format or a supported revision phrase.",
             })
             return
@@ -1543,10 +1530,13 @@ def cmd_revise(args: argparse.Namespace) -> None:
     payload_after = builder.build_payload()
     hash_after = builder.compute_preview_hash()
     payload_changed = hash_before != hash_after
-    approval_cleared: dict[str, Any] | None = None
 
-    if payload_changed:
-        approval_cleared = builder.clear_approval(reason="Draft-relevant revision applied")
+    # A supported revise clears approval whenever the draft payload actually
+    # changed or when prior approval existed, so the user always re-reviews
+    # before finalizing (L.30Y/L.31Q1).
+    approval_cleared = payload_changed or approved_before
+    if approval_cleared:
+        builder.clear_approval(reason="Draft-relevant revision applied")
 
     _save_session(builder)
 
@@ -1559,7 +1549,7 @@ def cmd_revise(args: argparse.Namespace) -> None:
         "preview_hash_before": hash_before,
         "preview_hash_after": hash_after,
         "payload_changed": payload_changed,
-        "approval_cleared": payload_changed,
+        "approval_cleared": approval_cleared,
         "approval": builder.approval_state(),
         "payload": payload_after,
         "validation_summary": builder.validation_summary(),
