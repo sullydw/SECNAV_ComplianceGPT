@@ -5,6 +5,56 @@
 
 |---
 
+## L.32K — Official Provider Safe Fetcher Contract Hardening
+
+Hardened the `SafeOfficialCommandFetcher` contract in
+`tools/official_command_provider.py` without adding real network behavior.
+
+### Helper / constant
+
+| Helper | Purpose |
+|--------|---------|
+| `build_safe_official_command_fetcher(...)` | Build a fetcher callable with optional injected network transport and gating |
+
+| Constant | Purpose |
+|----------|---------|
+| `MAX_OFFICIAL_FETCH_RESPONSE_CHARS` | Upper bound on returned fetch text (1,000,000 characters) |
+
+### Contract guarantees
+
+- Transport must be callable; non-callable transport is ignored/fails closed.
+- Returned non-string values are safely converted to string.
+- Returned `None` becomes `""`.
+- Whitespace-only responses become `""`.
+- Oversized responses are deterministically truncated to
+  `MAX_OFFICIAL_FETCH_RESPONSE_CHARS`.
+- Timeout passed to the transport is always clamped via
+  `clamp_official_lookup_timeout(...)`.
+- URL passed to the transport is normalized.
+- Invalid timeout argument to `__call__` clamps/falls back safely.
+- Invalid URL argument returns `""`; transport is not called.
+- Disallowed or pseudo URLs (e.g., `static://`, `localdb://`) return `""` before
+  transport.
+- No state mutation, no environment-variable reads, no provider
+  registration, no real network imports, and no static command database.
+- Default behavior unchanged: `build_safe_official_command_fetcher()` returns a
+  callable that returns `""`; `allow_network` defaults to `False`.
+- Injected transport only runs with `allow_network=True` and an allowed official
+  URL.
+- Live-provider compatibility preserved.
+- Adapter gate remains authoritative: gate unset → adapter returns `None`,
+  provider/fetcher never called.
+
+### Validation
+
+- L.32K smoke: `41/41 PASS`.
+- L.32J smoke: `36/36 PASS`.
+- Prior L.32 stack (I → B) all PASS.
+- L.31 stack and regression suite (Q-1, O-3, O-2, W, T, S, Q, P, N, M, K)
+  all PASS.
+
+---
+
 ## L.32J — Official Provider Safe Fetcher Stub
 
 Added a named safe fetcher stub, `SafeOfficialCommandFetcher`, in

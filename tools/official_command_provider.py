@@ -439,8 +439,35 @@ OfficialCommandTransport = Callable[[str, float], str]
 
 DEFAULT_OFFICIAL_LOOKUP_TIMEOUT_SECONDS = 3.0
 MAX_OFFICIAL_LOOKUP_TIMEOUT_SECONDS = 10.0
+MAX_OFFICIAL_FETCH_RESPONSE_CHARS = 1_000_000
 _STATE_FIXTURE_URLS_KEY = "_official_lookup_fixture_urls"
 _STATE_CANDIDATE_URLS_KEY = "_official_lookup_candidate_urls"
+
+
+def _clean_transport_value(value: Any) -> str:
+    """Return a safe, bounded string from a transport return value.
+
+    - ``None`` -> ``""``.
+    - ``bytes`` -> decoded as UTF-8 with replacement, then stripped.
+    - non-string -> ``str(value)``.
+    - Whitespace-only -> ``""``.
+    - Oversized -> truncated to ``MAX_OFFICIAL_FETCH_RESPONSE_CHARS``.
+    """
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        try:
+            text = value.decode("utf-8", errors="replace")
+        except Exception:
+            text = str(value)
+    else:
+        text = str(value)
+    text = text.strip()
+    if not text:
+        return ""
+    if len(text) > MAX_OFFICIAL_FETCH_RESPONSE_CHARS:
+        text = text[:MAX_OFFICIAL_FETCH_RESPONSE_CHARS]
+    return text
 
 
 def clamp_official_lookup_timeout(timeout_seconds: Any = None) -> float:
@@ -464,7 +491,8 @@ class SafeOfficialCommandFetcher:
     The callable interface is ``fetcher(url, timeout_seconds) -> str``.
     By default it returns ``""`` and performs no network behavior.  An
     injected transport runs only when ``allow_network=True`` and the URL is an
-    allowed official source.  It does not read environment variables, mutate
+    allowed official source.  Transport return values are normalized to strings,
+    stripped, and bounded.  It does not read environment variables, mutate
     state, register providers, or contain a command database.
     """
 
@@ -476,7 +504,7 @@ class SafeOfficialCommandFetcher:
         timeout_seconds: Any = None,
     ) -> None:
         self.allow_network = bool(allow_network)
-        self._transport = transport
+        self._transport = transport if callable(transport) else None
         self.timeout_seconds = clamp_official_lookup_timeout(timeout_seconds)
 
     def __call__(self, url: str, timeout_seconds: float | None = None) -> str:
@@ -489,12 +517,12 @@ class SafeOfficialCommandFetcher:
             self.timeout_seconds if timeout_seconds is None else timeout_seconds
         )
         try:
-            text = self._transport(normalized, timeout)
+            raw = self._transport(normalized, timeout)
         except (OfficialCommandRetrievalTimeout, TimeoutError):
             return ""
         except Exception:
             return ""
-        return str(text or "")
+        return _clean_transport_value(raw)
 
 
 def build_safe_official_command_fetcher(
