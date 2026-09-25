@@ -47,10 +47,10 @@ Hardened the `SafeOfficialCommandFetcher` contract in
 
 ### Validation
 
+- L.32N smoke: `30/30 PASS` (non-intrusive suggestion mode smoke; new).
+- L.32M smoke: `31/31 PASS, 1 SKIP`.
+- L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
-- L.32L smoke: `29/29 PASS` (new end-to-end fixture confirmation smoke).
-- L.32M smoke: `31/31 PASS, 1 SKIP` (explicit official URL live lookup smoke;
-  real-network check skipped because network is unavailable in this run).
 - L.32J smoke: `36/36 PASS`.
 - Prior L.32 stack (I → B) all PASS.
 - L.31 stack and regression suite (Q-1, O-3, O-2, W, T, S, Q, P, N, M, K)
@@ -105,8 +105,44 @@ fetch when the gate and `enable_network` are both explicitly set.
 ### Validation
 
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
-- Regression: L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all
-  PASS.
+- Regression: L.32N `30/30`, L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U
+  `12/12` all PASS.
+
+---
+
+## L.32N — Official Lookup Non-Intrusive Suggestion Mode
+
+Added `tools/run_phase_l32n_official_lookup_nonintrusive_suggestion_smoke.py` to
+prove that clean high-confidence official lookup results appear as quiet
+pending suggestions rather than forced confirmation prompts, while still
+remaining candidate-only and never auto-applied.
+
+### Verified behavior
+
+- Clean high-confidence `From` result: candidate-only, no auto-apply, no forced
+  confirmation prompt; appears as quiet suggestion in `assistant_response`.
+- Conflicting or low-confidence official result: does not become a quiet
+  suggestion; fails closed or remains unresolved.
+- `From` candidate with complete letterhead suggests From + full letterhead;
+  incomplete letterhead suggests From only.
+- `To` candidate suggests To only; strips letterhead/unit identity.
+- User can still explicitly confirm/apply the pending candidate later.
+- No static command database, no open-ended web search, no auto-apply.
+- L.30Y approval/revise behavior preserved.
+- L.32M explicit-URL behavior preserved.
+
+### Files touched
+
+- `tools/hermes_chat_builder.py` (response formatting for quiet pending
+  suggestions).
+- `tools/run_phase_l32n_official_lookup_nonintrusive_suggestion_smoke.py`
+  (new).
+
+### Validation
+
+- L.32N smoke: `30/30 PASS`.
+- Regression: L.32M `31/31 PASS, 1 SKIP`, L.32L `29/29`, L.32K `41/41`,
+  L.30X `8/8`, L.30U `12/12` all PASS.
 
 ---
 
@@ -135,8 +171,8 @@ end-to-end after the L.30Y approval/revise cleanup.
 ### Validation
 
 - L.32L smoke: `29/29 PASS`.
-- Regression: L.32K `41/41`, L.30X `8/8`, L.30U `12/12`, L.31Q-1 `14/14` all
-  PASS.
+- Regression: L.32N `30/30`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12`, L.31Q-1
+  `14/14` all PASS.
 
 ---
 

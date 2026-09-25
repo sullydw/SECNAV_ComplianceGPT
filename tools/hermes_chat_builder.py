@@ -489,30 +489,65 @@ def _next_step(phase: str, ready: dict[str, Any], preview: dict[str, Any]) -> st
     return "Keep providing details to complete the letter."
 
 
-def _assistant_response(phase: str, ready: dict[str, Any], preview: dict[str, Any], *, action: str = "", pdf_path: str = "", blocked_reason: str = "", pending_candidate: dict[str, Any] | None = None) -> str:
-    if pending_candidate:
-        title = pending_candidate.get("source_title") or "source-backed result"
-        res = pending_candidate.get("resolved_value") or {}
-        field = pending_candidate.get("field") or "from"
-        val = res.get(field) or res.get("unit_identity") or "the command"
-        limitation = pending_candidate.get("source_limitation") or "Confirm before I apply it, or reject it and provide the full command name."
-        return f"I found a source-backed {field.capitalize()} candidate from {title}: {val}. {limitation}"
+def _quiet_suggestion(pending_candidate: dict[str, Any]) -> str:
+    """Return a non-intrusive note about a pending source-backed candidate."""
+    title = pending_candidate.get("source_title") or "source-backed result"
+    res = pending_candidate.get("resolved_value") or {}
+    field = pending_candidate.get("field") or "from"
+    val = res.get(field) or res.get("unit_identity") or "the command"
+    return (
+        f"I found a source-backed suggestion for {field.capitalize()}: {val} "
+        f"({title}). Say 'confirm candidate' to apply it, or keep editing the draft."
+    )
+
+
+def _phase_response(
+    phase: str,
+    ready: dict[str, Any],
+    preview: dict[str, Any],
+    *,
+    action: str = "",
+    blocked_reason: str = "",
+) -> str:
     if phase == "rendered":
-        return f"Done! Your PDF is ready at {pdf_path}. You can start a new chat if you need another letter."
+        return "Done! Your PDF is ready. You can start a new chat if you need another letter."
     if phase == "approved_ready":
         return "Your draft is approved and everything looks good. Say 'make the PDF' and I'll generate it."
     if phase == "draft_preview":
-        return "Your draft is approved. Say 'make the PDF' and I'll generate it." if (preview.get("approval") or {}).get("approval_current") else "Your draft is ready for review. You can say 'looks good' to approve it, or tell me what you'd like to change."
+        return (
+            "Your draft is approved. Say 'make the PDF' and I'll generate it."
+            if (preview.get("approval") or {}).get("approval_current")
+            else "Your draft is ready for review. You can say 'looks good' to approve it, or tell me what you'd like to change."
+        )
     if action == "approve":
         return "Your draft is approved! You can now say 'make the PDF' and I'll generate it."
     if action == "render":
-        return f"I can't make the PDF yet. {blocked_reason or 'The draft needs approval and all required fields must be ready.'} Review the draft and say 'looks good' to approve it first."
+        return (
+            f"I can't make the PDF yet. {blocked_reason or 'The draft needs approval and all required fields must be ready.'} "
+            "Review the draft and say 'looks good' to approve it first."
+        )
     if action == "revise":
         return "I've updated the draft. Please review the preview and say 'looks good' when you're ready to approve it."
     missing = (ready.get("render_gate") or {}).get("missing", [])
     if missing:
         return _missing_prompt(missing)
     return "Got it. Keep providing details and I'll build the draft for you."
+
+
+def _assistant_response(
+    phase: str,
+    ready: dict[str, Any],
+    preview: dict[str, Any],
+    *,
+    action: str = "",
+    pdf_path: str = "",
+    blocked_reason: str = "",
+    pending_candidate: dict[str, Any] | None = None,
+) -> str:
+    base = _phase_response(phase, ready, preview, action=action, blocked_reason=blocked_reason)
+    if pending_candidate:
+        return _quiet_suggestion(pending_candidate) + "\n\n" + base
+    return base
 
 
 def _status(session_id: str) -> tuple[dict[str, Any], dict[str, Any], str, str]:
