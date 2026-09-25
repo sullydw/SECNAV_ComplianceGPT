@@ -48,10 +48,48 @@ Hardened the `SafeOfficialCommandFetcher` contract in
 ### Validation
 
 - L.32K smoke: `41/41 PASS`.
+- L.32L smoke: `29/29 PASS` (new end-to-end fixture confirmation smoke).
 - L.32J smoke: `36/36 PASS`.
 - Prior L.32 stack (I → B) all PASS.
 - L.31 stack and regression suite (Q-1, O-3, O-2, W, T, S, Q, P, N, M, K)
   all PASS.
+
+### Bug fix found during L.32L
+
+- `tools/hermes_secnav_tool.py` line 1444: fixed invalid regex
+  `r"\b{2,}"` to `r"\s{2,}"` in the "make the body more direct" natural
+  revision path. The bad regex raised `nothing to repeat at position 2` and
+  broke supported body revisions.
+
+---
+
+## L.32L — Official Lookup Fixture Confirmation End-to-End
+
+Added `tools/run_phase_l32l_official_lookup_fixture_confirmation_smoke.py` to
+prove the fixture-backed official lookup candidate workflow still works
+end-to-end after the L.30Y approval/revise cleanup.
+
+### Verified behavior
+
+- Fixture official `From` candidate appears only as a pending candidate.
+- No auto-apply before confirmation.
+- Confirming `From` applies both `from` and the complete command letterhead.
+- Fixture official `To` candidate is created with letterhead fields stripped.
+- Confirming `To` mutates only the `to` field, not letterhead.
+- Approval/render workflow still passes after confirmation.
+- L.30Y approval/revise behavior remains intact (approval is cleared after a
+  body change and re-approval/render succeeds).
+
+### Files touched
+
+- `tools/run_phase_l32l_official_lookup_fixture_confirmation_smoke.py` (new).
+- `tools/hermes_secnav_tool.py` (regex fix above).
+
+### Validation
+
+- L.32L smoke: `29/29 PASS`.
+- Regression: L.32K `41/41`, L.30X `8/8`, L.30U `12/12`, L.31Q-1 `14/14` all
+  PASS.
 
 ---
 

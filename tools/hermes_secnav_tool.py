@@ -1441,7 +1441,7 @@ def _apply_natural_revision(
                 para = re.sub(r"\bI believe that\b", "", para, flags=re.IGNORECASE).strip()
                 para = re.sub(r"\bIt is suggested that\b", "", para, flags=re.IGNORECASE).strip()
                 para = re.sub(r"\bIn my opinion,?\b", "", para, flags=re.IGNORECASE).strip()
-                para = re.sub(r"\b{2,}", " ", para)
+                para = re.sub(r"\s{2,}", " ", para)
                 cleaned.append(para)
             return {"body": "\n".join(cleaned)}
         elif isinstance(body, str):
