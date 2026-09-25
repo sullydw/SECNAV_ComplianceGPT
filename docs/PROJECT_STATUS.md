@@ -49,6 +49,8 @@ Hardened the `SafeOfficialCommandFetcher` contract in
 
 - L.32K smoke: `41/41 PASS`.
 - L.32L smoke: `29/29 PASS` (new end-to-end fixture confirmation smoke).
+- L.32M smoke: `31/31 PASS, 1 SKIP` (explicit official URL live lookup smoke;
+  real-network check skipped because network is unavailable in this run).
 - L.32J smoke: `36/36 PASS`.
 - Prior L.32 stack (I → B) all PASS.
 - L.31 stack and regression suite (Q-1, O-3, O-2, W, T, S, Q, P, N, M, K)
@@ -60,6 +62,51 @@ Hardened the `SafeOfficialCommandFetcher` contract in
   `r"\b{2,}"` to `r"\s{2,}"` in the "make the body more direct" natural
   revision path. The bad regex raised `nothing to repeat at position 2` and
   broke supported body revisions.
+
+---
+
+## L.32M — Explicit Official URL Live Lookup Smoke
+
+Added `tools/run_phase_l32m_explicit_official_url_live_lookup_smoke.py` to
+prove the live official lookup path with one explicit allowed official URL.
+Live lookup remains disabled by default; the smoke only exercises network
+fetch when the gate and `enable_network` are both explicitly set.
+
+### Verified behavior
+
+- Live lookup disabled by default: adapter returns `None` and never fetches.
+- Gate set but `enable_network=False` still blocks all network activity.
+- Explicit `From` candidate with complete source-backed letterhead includes all
+  three letterhead fields and requires confirmation.
+- Explicit `To` candidate strips `letterhead_*` and `unit_identity` fields.
+- Parser fail-closed: an official page without explicit From/To/letterhead
+  labels produces no candidate.
+- End-to-end through the chat builder: candidate is pending, confirmation
+  applies `from` and complete letterhead.
+- No static command database and no open-ended web search.
+
+### Explicit URL used
+
+- `https://www.marines.mil/` (single allowed official domain; trailing slash
+  normalized by the provider).
+
+### Network behavior
+
+- Real network fetch is attempted only in one optional check. When network is
+  unavailable, that check is skipped with a clear message; all default-disabled
+  and deterministic checks still pass.
+- When the real fetch succeeds, the provider's parser fails closed because the
+  homepage does not contain explicit command/letterhead labels.
+
+### Files touched
+
+- `tools/run_phase_l32m_explicit_official_url_live_lookup_smoke.py` (new).
+
+### Validation
+
+- L.32M smoke: `31/31 PASS, 1 SKIP`.
+- Regression: L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all
+  PASS.
 
 ---
 
