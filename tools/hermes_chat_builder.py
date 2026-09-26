@@ -58,7 +58,8 @@ _RENDER_INTENTS = {
 _PREVIEW_INTENTS = {"show me", "view draft", "what does it look like", "current draft", "show draft", "preview"}
 _STATUS_INTENTS = {"status", "where are we", "what is the status", "current status", "are we ready", "check status", "progress"}
 _CONFIRM_CANDIDATE_INTENTS = {"confirm candidate", "apply candidate", "use candidate", "yes use it", "yes apply it", "confirm it"}
-_REJECT_CANDIDATE_INTENTS = {"reject candidate", "do not use", "don't use", "no don't", "reject it"}
+_REJECT_CANDIDATE_INTENTS = {"reject candidate", "do not use", "don't use", "no don't", "reject it", "dismiss candidate", "clear candidate", "forget candidate"}
+_SHOW_CANDIDATE_INTENTS = {"show candidate", "view candidate", "pending candidate", "what candidate", "display candidate"}
 
 _OPTIONAL_FIELDS = {"ssic", "originator_code", "originator code", "office_code", "office code"}
 _PLAIN_MISSING = {
@@ -180,6 +181,8 @@ def _classify_intent(text: str) -> str:
         return "confirm_candidate"
     if _contains_any(t, _REJECT_CANDIDATE_INTENTS):
         return "reject_candidate"
+    if _contains_any(t, _SHOW_CANDIDATE_INTENTS):
+        return "show_candidate"
     new_match = _contains_any(t, _NEW_INTENTS)
     revise_match = _contains_any(t, _REVISE_INTENTS)
     if new_match and revise_match:
@@ -392,6 +395,8 @@ def _maybe_add_source_candidate(state: dict[str, Any], fields: dict[str, str]) -
     text = fields.get("from")
     if not text or _is_controlled_alias(text) or _SOURCE_BACKED_LOOKUP_ADAPTER is None:
         return None
+    if _is_dismissed_input(state, text):
+        return None
     try:
         res = _SOURCE_BACKED_LOOKUP_ADAPTER(text, "from", state)
     except Exception:
@@ -408,6 +413,8 @@ def _maybe_add_source_candidate(state: dict[str, Any], fields: dict[str, str]) -
     }
     cands = _ensure_cands(state)
     if any(c.get("candidate_id") == cand["candidate_id"] for c in cands["rejected"]):
+        return None
+    if _is_dismissed_input(state, text):
         return None
     if not any(c.get("candidate_id") == cand["candidate_id"] for c in cands["pending"]):
         cands["pending"].append(cand)
@@ -436,10 +443,29 @@ def _apply_candidate(session_id: str, state: dict[str, Any], cand: dict[str, Any
 
 def _reject_candidate(state: dict[str, Any], cand: dict[str, Any]) -> None:
     cands = _ensure_cands(state)
-    cands["pending"] = [c for c in cands["pending"] if c.get("candidate_id") != cand.get("candidate_id")]
-    rej = dict(cand); rej["status"] = "rejected"
-    if not any(c.get("candidate_id") == rej["candidate_id"] for c in cands["rejected"]):
+    cid = cand.get("candidate_id")
+    cands["pending"] = [c for c in cands["pending"] if c.get("candidate_id") != cid]
+    rej = dict(cand)
+    rej["status"] = "rejected"
+    if not any(c.get("candidate_id") == cid for c in cands["rejected"]):
         cands["rejected"].append(rej)
+    # L.32O: remember the input_text in rejected_inputs so the same suggestion
+    # is not immediately recreated on the next normal turn.
+    if cand.get("input_text"):
+        cands.setdefault("rejected_inputs", []).append(_clean(cand["input_text"]).lower())
+
+
+def _is_dismissed_input(state: dict[str, Any], text: str) -> bool:
+    cands = state.get("source_backed_candidates") or {}
+    rejected = cands.get("rejected_inputs") or []
+    clean_text = _clean(text).lower()
+    if clean_text in rejected:
+        return True
+    # Also suppress based on candidate_id for candidates already in rejected list.
+    for rej in cands.get("rejected") or []:
+        if clean_text == _clean(rej.get("input_text") or "").lower():
+            return True
+    return False
 
 
 def _plain_missing(missing: list[Any]) -> list[str]:
@@ -637,8 +663,18 @@ def _run_reject_candidate(session_id: str, state: dict[str, Any]) -> dict[str, A
     if cand:
         _reject_candidate(state, cand)
     preview, ready, ph, step = _status(session_id)
-    msg = "Rejected source-backed candidate. Please provide the full command name or letterhead." if cand else "No pending source-backed candidate to reject."
-    return {"success": bool(cand), "intent": "reject_candidate", "phase": ph, "message": msg, "assistant_response": msg, "preview_text": preview.get("preview_text"), "next_step": step, "rejected_candidate": cand, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None if cand else "No pending candidate."}
+    msg = "Dismissed source-backed candidate." if cand else "No pending source-backed candidate to dismiss."
+    return {"success": bool(cand), "intent": "reject_candidate", "phase": ph, "message": msg, "assistant_response": msg + " " + step if cand else msg, "preview_text": preview.get("preview_text"), "next_step": step, "rejected_candidate": cand, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None if cand else "No pending candidate."}
+
+
+def _run_show_candidate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
+    cand = _pending(state)
+    preview, ready, ph, step = _status(session_id)
+    if not cand:
+        msg = "There is no pending source-backed candidate."
+        return {"success": False, "intent": "show_candidate", "phase": ph, "message": msg, "assistant_response": msg, "preview_text": preview.get("preview_text"), "next_step": step, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": "No pending candidate."}
+    ar = _quiet_suggestion(cand) + "\n\nYou can say 'confirm candidate' to apply it or 'dismiss candidate' to clear it."
+    return {"success": True, "intent": "show_candidate", "phase": ph, "message": "Current pending source-backed candidate.", "assistant_response": ar, "preview_text": preview.get("preview_text"), "next_step": "Confirm or dismiss the pending source-backed candidate.", "pending_candidate": cand, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None}
 
 
 def _run_approve(session_id: str) -> dict[str, Any]:
@@ -682,6 +718,7 @@ def _process_turn(chat_id: str, text: str, state: dict[str, Any]) -> dict[str, A
     state["history"] = state["history"][-20:]
     if intent == "confirm_candidate": result = _run_confirm_candidate(sid, state)
     elif intent == "reject_candidate": result = _run_reject_candidate(sid, state)
+    elif intent == "show_candidate": result = _run_show_candidate(sid, state)
     elif intent == "revise": result = _run_revise(sid, text)
     elif intent == "approve": result = _run_approve(sid)
     elif intent == "preview": result = _run_preview(sid)
@@ -699,7 +736,7 @@ def _start_chat(out: str | None = None) -> dict[str, Any]:
     if not r.get("success"):
         return {"success": False, "command": "start", "message": f"Failed to create session: {r.get('error')}", "error": r.get("error")}
     chat_id = f"chat-{uuid.uuid4().hex[:12]}"
-    state = {"chat_id": chat_id, "session_id": r["session_id"], "created_at": r.get("message", ""), "history": [], "last_pdf_path": None, "rendered_at": None, "source_backed_candidates": {"pending": [], "confirmed": [], "rejected": []}}
+    state = {"chat_id": chat_id, "session_id": r["session_id"], "created_at": r.get("message", ""), "history": [], "last_pdf_path": None, "rendered_at": None, "source_backed_candidates": {"pending": [], "confirmed": [], "rejected": [], "rejected_inputs": []}}
     if out: state["out_path"] = str(out)
     _save_state(chat_id, state)
     return {"success": True, "command": "start", "chat_id": chat_id, "session_id": r["session_id"], "message": "Chat started.", "next_step": "Tell me what letter you need.", "source_backed_candidates": state["source_backed_candidates"], "error": None}
@@ -729,7 +766,7 @@ def _reset_chat(chat_id: str) -> dict[str, Any]:
     except FileNotFoundError as exc: return {"success": False, "command": "reset", "error": str(exc)}
     r = _run_manager(["new"])
     if not r.get("success"): return {"success": False, "command": "reset", "error": f"Failed to create new session: {r.get('error')}"}
-    state.update({"session_id": r["session_id"], "history": [], "last_pdf_path": None, "rendered_at": None, "source_backed_candidates": {"pending": [], "confirmed": [], "rejected": []}})
+    state.update({"session_id": r["session_id"], "history": [], "last_pdf_path": None, "rendered_at": None, "source_backed_candidates": {"pending": [], "confirmed": [], "rejected": [], "rejected_inputs": []}})
     _save_state(chat_id, state)
     return {"success": True, "command": "reset", "chat_id": chat_id, "session_id": r["session_id"], "message": f"Chat reset with new session {r['session_id']}.", "assistant_response": "I've reset the chat. You can start a new letter request whenever you're ready.", "next_step": "Tell me what letter you need.", "source_backed_candidates": state["source_backed_candidates"], "error": None}
 

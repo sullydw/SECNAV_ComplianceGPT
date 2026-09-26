@@ -47,7 +47,8 @@ Hardened the `SafeOfficialCommandFetcher` contract in
 
 ### Validation
 
-- L.32N smoke: `30/30 PASS` (non-intrusive suggestion mode smoke; new).
+- L.32O smoke: `42/42 PASS` (official candidate suggestion commands; new).
+- L.32N smoke: `30/30 PASS`.
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
@@ -105,8 +106,49 @@ fetch when the gate and `enable_network` are both explicitly set.
 ### Validation
 
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
-- Regression: L.32N `30/30`, L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U
-  `12/12` all PASS.
+- Regression: L.32O `42/42`, L.32N `30/30`, L.32L `29/29`, L.32K `41/41`,
+  L.30X `8/8`, L.30U `12/12` all PASS.
+
+---
+
+## L.32O — Official Candidate Suggestion Commands
+
+Added `tools/run_phase_l32o_official_candidate_suggestion_commands_smoke.py`
+and wired chat commands to manage quiet official lookup suggestions.
+
+### Verified behavior
+
+- `show candidate`: displays the current pending official candidate,
+  including field, resolved value, source title, source tier, and source
+  limitation, without applying anything.
+- `confirm candidate`: preserves existing behavior, applies the pending
+  candidate, and clears the pending list.
+- `dismiss candidate`: clears the pending candidate without applying anything;
+  a follow-up chat does not immediately re-suggest the same dismissed candidate.
+- With no pending candidate, `show`, `confirm`, and `dismiss` all respond
+  truthfully that there is no pending official candidate.
+- `To` candidates still mutate only the `to` field.
+- `From` candidates still apply letterhead only when complete.
+- L.32N quiet suggestion behavior preserved.
+- L.30Y approval/revise behavior preserved.
+- No static command database, no open-ended web search, no auto-apply.
+
+### Files touched
+
+- `tools/hermes_chat_builder.py`:
+  - new `_SHOW_CANDIDATE_INTENTS` and `show_candidate` intent classification
+  - new `_run_show_candidate` helper
+  - extended `_REJECT_CANDIDATE_INTENTS` to cover `dismiss candidate`
+  - rejection now tracks `rejected_inputs` so the same dismissed suggestion is
+    not immediately recreated
+- `tools/run_phase_l32o_official_candidate_suggestion_commands_smoke.py`
+  (new).
+
+### Validation
+
+- L.32O smoke: `42/42 PASS`.
+- Regression: L.32N `30/30`, L.32M `31/31 PASS, 1 SKIP`, L.32L `29/29`,
+  L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
 
 ---
 
@@ -134,15 +176,18 @@ remaining candidate-only and never auto-applied.
 ### Files touched
 
 - `tools/hermes_chat_builder.py` (response formatting for quiet pending
-  suggestions).
+  suggestions; new `show_candidate` intent and `_run_show_candidate`; extended
+  `dismiss candidate` handling and rejection suppression).
 - `tools/run_phase_l32n_official_lookup_nonintrusive_suggestion_smoke.py`
+  (new).
+- `tools/run_phase_l32o_official_candidate_suggestion_commands_smoke.py`
   (new).
 
 ### Validation
 
 - L.32N smoke: `30/30 PASS`.
-- Regression: L.32M `31/31 PASS, 1 SKIP`, L.32L `29/29`, L.32K `41/41`,
-  L.30X `8/8`, L.30U `12/12` all PASS.
+- Regression: L.32O `42/42`, L.32M `31/31 PASS, 1 SKIP`, L.32L `29/29`,
+  L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
 
 ---
 
@@ -171,8 +216,8 @@ end-to-end after the L.30Y approval/revise cleanup.
 ### Validation
 
 - L.32L smoke: `29/29 PASS`.
-- Regression: L.32N `30/30`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12`, L.31Q-1
-  `14/14` all PASS.
+- Regression: L.32O `42/42`, L.32N `30/30`, L.32K `41/41`, L.30X `8/8`,
+  L.30U `12/12`, L.31Q-1 `14/14` all PASS.
 
 ---
 
@@ -213,7 +258,7 @@ It performs no real network by default.
 ### Validation
 
 - L.32J smoke: `36/36 PASS`.
-- Prior L.32 stack (I → B) all PASS.
+- Prior L.32 stack (O → B) all PASS.
 - L.31 stack and regression suite (Q-1, O-3, O-2, W, T, S, Q, P, N, M, K)
   all PASS.
 
