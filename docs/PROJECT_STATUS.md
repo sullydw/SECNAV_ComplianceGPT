@@ -1,7 +1,57 @@
 # SECNAV ComplianceGPT - Project Status
 
 **Last Updated:** 2026-09-26
-**Accepted Baseline HEAD:** `c5f178d` — Tools: Add dual natural lookup suggestions
+**Accepted Baseline HEAD:** `ee380a4` — Tools: Add field-specific candidate commands
+
+---
+
+## L.32T — AI-Assisted Candidate Intent Routing
+
+Added a lightweight AI-assisted intent routing layer for source-backed
+command candidates. Natural-language responses are mapped only to the
+existing safe, deterministic candidate command paths.
+
+### Verified behavior
+
+- The router (`_route_candidate_intent`) returns only known safe intents:
+  `show_candidate`, `confirm_candidate`, `dismiss_candidate`, and their
+  field-specific variants, or `unclear`.
+- The router is a pure function: it never mutates state or the draft payload.
+- Natural phrases route correctly:
+  - `yes use that` / `use the official one` → `confirm_candidate`
+  - `apply the sender suggestion` → `confirm_from_candidate`
+  - `use the recipient one` → `confirm_to_candidate`
+  - `show me what you found` → `show_candidate`
+  - `show the sender suggestion` → `show_from_candidate`
+  - `ignore that` → `reject_candidate`
+  - `skip the recipient suggestion` → `reject_to_candidate`
+  - `hmm maybe later` → `unclear` (no application)
+- Field-specific natural intents affect only the requested field.
+- Exact commands (`show candidate`, `confirm candidate`, `dismiss candidate`,
+  field-specific variants) still work.
+- No auto-apply, no static command database, no open-ended web search.
+- L.30Y approval/revise behavior is preserved.
+
+### Files touched
+
+- `tools/hermes_chat_builder.py`:
+  - New `_route_candidate_intent` heuristic router with registered natural phrases.
+  - `_CANDIDATE_ROUTER_INTENTS` and `_CANDIDATE_NATURAL_INTENTS` provide the
+    structured plug-in point for a future AI/LLM classifier.
+  - `_classify_intent` now consults the router before falling back to exact
+    command matching.
+- `tools/run_phase_l32t_ai_candidate_intent_routing_smoke.py` (new).
+
+### Validation
+
+- L.32T smoke: `46/46 PASS`.
+- L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
+- L.32R smoke: `32/32 PASS`; L.32T smoke: `46/46 PASS`.
+- L.32Q smoke: `27/27 PASS`; L.32T smoke: `46/46 PASS`.
+- L.32P smoke: `27/27 PASS`; L.32T smoke: `46/46 PASS`.
+- L.32O smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
+- L.30X smoke: `8/8 PASS`.
+- L.30U smoke: `12/12 PASS`.
 
 ---
 
@@ -50,10 +100,10 @@ multiple candidates are pending.
 - L.32Q smoke: `27/27 PASS`; L.32S smoke: `42/42 PASS`.
 - L.32P smoke: `27/27 PASS`; L.32S smoke: `42/42 PASS`.
 - L.32O smoke: `42/42 PASS`; L.32S smoke: `42/42 PASS`.
-- L.32N smoke: `30/30 PASS`; L.32S smoke: `42/42 PASS`.
-- L.32M smoke: `31/31 PASS, 1 SKIP`; L.32S smoke: `42/42 PASS`.
-- L.32L smoke: `29/29 PASS`; L.32S smoke: `42/42 PASS`.
-- L.32K smoke: `41/41 PASS`; L.32S smoke: `42/42 PASS`.
+- L.32N smoke: `30/30 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
+- L.32M smoke: `31/31 PASS, 1 SKIP`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
+- L.32L smoke: `29/29 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
+- L.32K smoke: `41/41 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -167,7 +217,7 @@ Hardened the `SafeOfficialCommandFetcher` contract in
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
-- L.32J smoke: `36/36 PASS`; L.32S smoke: `42/42 PASS`.
+- L.32J smoke: `36/36 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
 - Prior L.32 stack (I → B) all PASS.
 - L.31 stack and regression suite (Q-1, O-3, O-2, W, T, S, Q, P, N, M, K)
   all PASS.

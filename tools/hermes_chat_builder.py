@@ -67,6 +67,145 @@ _SHOW_CANDIDATE_INTENTS = {"show candidate", "view candidate", "pending candidat
 _SHOW_FROM_CANDIDATE_INTENTS = {"show from candidate", "view from candidate", "display from candidate"}
 _SHOW_TO_CANDIDATE_INTENTS = {"show to candidate", "view to candidate", "display to candidate"}
 
+# L.32T — heuristic AI-assisted candidate-intent routing maps natural language to
+# one of the safe deterministic intents above.  The layer is intentionally small
+# and structured so an LLM-based classifier can later replace the heuristic.
+_CANDIDATE_ROUTER_INTENTS = {
+    "show_candidate",
+    "confirm_candidate",
+    "reject_candidate",
+    "show_from_candidate",
+    "confirm_from_candidate",
+    "reject_from_candidate",
+    "show_to_candidate",
+    "confirm_to_candidate",
+    "reject_to_candidate",
+    "unclear",
+}
+
+# L.32T natural-language phrases grouped by target safe intent.
+_CANDIDATE_NATURAL_INTENTS: dict[str, list[str]] = {
+    "confirm_candidate": [
+        "yes use that",
+        "yes apply that",
+        "use the official one",
+        "use the official command",
+        "apply the official one",
+        "apply the official command",
+        "that one looks right",
+        "go with that",
+    ],
+    "confirm_from_candidate": [
+        "apply the sender suggestion",
+        "use the sender suggestion",
+        "use the from suggestion",
+        "apply the from suggestion",
+        "confirm the sender",
+        "confirm from",
+    ],
+    "confirm_to_candidate": [
+        "apply the recipient suggestion",
+        "use the recipient suggestion",
+        "use the to suggestion",
+        "apply the to suggestion",
+        "confirm the recipient",
+        "confirm to",
+    ],
+    "show_candidate": [
+        "show me what you found",
+        "what did you find",
+        "what candidates",
+        "list candidates",
+        "display candidates",
+    ],
+    "show_from_candidate": [
+        "show the sender suggestion",
+        "show the from suggestion",
+        "display the sender suggestion",
+    ],
+    "show_to_candidate": [
+        "show the recipient suggestion",
+        "show the to suggestion",
+        "display the recipient suggestion",
+    ],
+    "reject_candidate": [
+        "ignore that",
+        "skip that",
+        "dismiss that",
+        "forget that",
+        "not that one",
+        "reject that",
+        "clear that",
+    ],
+    "reject_from_candidate": [
+        "ignore the sender suggestion",
+        "skip the sender suggestion",
+        "dismiss the sender suggestion",
+        "forget the sender suggestion",
+        "not the sender",
+    ],
+    "reject_to_candidate": [
+        "ignore the recipient suggestion",
+        "skip the recipient suggestion",
+        "dismiss the recipient suggestion",
+        "forget the recipient suggestion",
+        "not the recipient",
+    ],
+}
+
+_CANDIDATE_CONFIRM_KEYWORDS = {"use", "apply", "confirm", "go with", "looks right", "yes"}
+_CANDIDATE_SHOW_KEYWORDS = {"show", "display", "what", "list", "found"}
+_CANDIDATE_REJECT_KEYWORDS = {"ignore", "skip", "dismiss", "forget", "reject", "not", "no", "clear"}
+_CANDIDATE_FROM_KEYWORDS = {"from", "sender"}
+_CANDIDATE_TO_KEYWORDS = {"to", "recipient"}
+
+
+def _route_candidate_intent(text: str, *, pending_fields: set[str] | None = None) -> str:
+    """Return a safe candidate intent string; never mutates state or payload."""
+    t = text.lower().strip()
+
+    # Exact registered natural phrases first.
+    for intent, phrases in _CANDIDATE_NATURAL_INTENTS.items():
+        for phrase in phrases:
+            if re.search(re.escape(phrase), t):
+                return intent
+
+    # Generic exact commands still work.
+    if _contains_any(t, _CONFIRM_CANDIDATE_INTENTS):
+        return "confirm_candidate"
+    if _contains_any(t, _REJECT_CANDIDATE_INTENTS):
+        return "reject_candidate"
+    if _contains_any(t, _SHOW_CANDIDATE_INTENTS):
+        return "show_candidate"
+
+    # Fallback heuristic: classify by keyword groups, but only when there is a
+    # clear candidate context and a clear action word.  Avoids false positives on
+    # ordinary draft-building turns.
+    pending_fields = pending_fields or {"from", "to"}
+    has_confirm = any(re.search(re.escape(k), t) for k in _CANDIDATE_CONFIRM_KEYWORDS)
+    has_show = any(re.search(re.escape(k), t) for k in _CANDIDATE_SHOW_KEYWORDS)
+    has_reject = any(re.search(re.escape(k), t) for k in _CANDIDATE_REJECT_KEYWORDS)
+    has_from = any(re.search(re.escape(k), t) for k in _CANDIDATE_FROM_KEYWORDS)
+    has_to = any(re.search(re.escape(k), t) for k in _CANDIDATE_TO_KEYWORDS)
+
+    action_count = sum([has_confirm, has_show, has_reject])
+    if action_count != 1:
+        return "unclear"
+
+    if has_from and "from" not in pending_fields:
+        return "unclear"
+    if has_to and "to" not in pending_fields:
+        return "unclear"
+
+    if has_confirm:
+        return "confirm_from_candidate" if has_from else ("confirm_to_candidate" if has_to else "confirm_candidate")
+    if has_show:
+        return "show_from_candidate" if has_from else ("show_to_candidate" if has_to else "show_candidate")
+    if has_reject:
+        return "reject_from_candidate" if has_from else ("reject_to_candidate" if has_to else "reject_candidate")
+
+    return "unclear"
+
 _OPTIONAL_FIELDS = {"ssic", "originator_code", "originator code", "office_code", "office code"}
 _PLAIN_MISSING = {
     "letterhead_top_line": "command letterhead", "letterhead_activity": "command letterhead",
@@ -184,18 +323,9 @@ def _contains_any(text: str, needles: set[str]) -> bool:
 
 def _classify_intent(text: str) -> str:
     t = text.lower().strip()
-    if _contains_any(t, _CONFIRM_FROM_CANDIDATE_INTENTS):
-        return "confirm_from_candidate"
-    if _contains_any(t, _CONFIRM_TO_CANDIDATE_INTENTS):
-        return "confirm_to_candidate"
-    if _contains_any(t, _REJECT_FROM_CANDIDATE_INTENTS):
-        return "reject_from_candidate"
-    if _contains_any(t, _REJECT_TO_CANDIDATE_INTENTS):
-        return "reject_to_candidate"
-    if _contains_any(t, _SHOW_FROM_CANDIDATE_INTENTS):
-        return "show_from_candidate"
-    if _contains_any(t, _SHOW_TO_CANDIDATE_INTENTS):
-        return "show_to_candidate"
+    candidate_intent = _route_candidate_intent(t)
+    if candidate_intent in _CANDIDATE_ROUTER_INTENTS and candidate_intent != "unclear":
+        return candidate_intent
     if _contains_any(t, _CONFIRM_CANDIDATE_INTENTS):
         return "confirm_candidate"
     if _contains_any(t, _REJECT_CANDIDATE_INTENTS):
