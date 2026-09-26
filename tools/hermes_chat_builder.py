@@ -58,8 +58,14 @@ _RENDER_INTENTS = {
 _PREVIEW_INTENTS = {"show me", "view draft", "what does it look like", "current draft", "show draft", "preview"}
 _STATUS_INTENTS = {"status", "where are we", "what is the status", "current status", "are we ready", "check status", "progress"}
 _CONFIRM_CANDIDATE_INTENTS = {"confirm candidate", "apply candidate", "use candidate", "yes use it", "yes apply it", "confirm it"}
+_CONFIRM_FROM_CANDIDATE_INTENTS = {"confirm from candidate", "apply from candidate", "use from candidate", "confirm from", "apply from"}
+_CONFIRM_TO_CANDIDATE_INTENTS = {"confirm to candidate", "apply to candidate", "use to candidate", "confirm to", "apply to"}
 _REJECT_CANDIDATE_INTENTS = {"reject candidate", "do not use", "don't use", "no don't", "reject it", "dismiss candidate", "clear candidate", "forget candidate"}
+_REJECT_FROM_CANDIDATE_INTENTS = {"reject from candidate", "dismiss from candidate", "clear from candidate", "forget from candidate", "reject from", "dismiss from", "clear from"}
+_REJECT_TO_CANDIDATE_INTENTS = {"reject to candidate", "dismiss to candidate", "clear to candidate", "forget to candidate", "reject to", "dismiss to", "clear to"}
 _SHOW_CANDIDATE_INTENTS = {"show candidate", "view candidate", "pending candidate", "what candidate", "display candidate"}
+_SHOW_FROM_CANDIDATE_INTENTS = {"show from candidate", "view from candidate", "display from candidate"}
+_SHOW_TO_CANDIDATE_INTENTS = {"show to candidate", "view to candidate", "display to candidate"}
 
 _OPTIONAL_FIELDS = {"ssic", "originator_code", "originator code", "office_code", "office code"}
 _PLAIN_MISSING = {
@@ -172,11 +178,24 @@ def _emit(result: dict[str, Any]) -> None:
 
 
 def _contains_any(text: str, needles: set[str]) -> bool:
-    return any(re.search(r"\b" + re.escape(k) + r"\b", text) for k in needles)
+    t = text.lower()
+    return any(re.search(re.escape(k), t) for k in needles)
 
 
 def _classify_intent(text: str) -> str:
     t = text.lower().strip()
+    if _contains_any(t, _CONFIRM_FROM_CANDIDATE_INTENTS):
+        return "confirm_from_candidate"
+    if _contains_any(t, _CONFIRM_TO_CANDIDATE_INTENTS):
+        return "confirm_to_candidate"
+    if _contains_any(t, _REJECT_FROM_CANDIDATE_INTENTS):
+        return "reject_from_candidate"
+    if _contains_any(t, _REJECT_TO_CANDIDATE_INTENTS):
+        return "reject_to_candidate"
+    if _contains_any(t, _SHOW_FROM_CANDIDATE_INTENTS):
+        return "show_from_candidate"
+    if _contains_any(t, _SHOW_TO_CANDIDATE_INTENTS):
+        return "show_to_candidate"
     if _contains_any(t, _CONFIRM_CANDIDATE_INTENTS):
         return "confirm_candidate"
     if _contains_any(t, _REJECT_CANDIDATE_INTENTS):
@@ -641,7 +660,8 @@ def _assistant_response_with_pending(
 
 
 def _pending_list(state: dict[str, Any]) -> list[dict[str, Any]]:
-    return list(_ensure_cands(state).get("pending", []))
+    cands = _ensure_cands(state)
+    return list(cands.get("pending", []))
 
 
 def _status(session_id: str) -> tuple[dict[str, Any], dict[str, Any], str, str]:
@@ -708,44 +728,66 @@ def _run_revise(session_id: str, text: str) -> dict[str, Any]:
     return {"success": r.get("success", False), "intent": "revise", "phase": ph, "message": f"Revised draft. Payload changed: {changed}. Approval cleared: {cleared}. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Revise failed"), "assistant_response": resp, "preview_text": preview.get("preview_text"), "next_step": step, "payload": after_payload, "approval_cleared": cleared, "payload_changed": changed, "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": r.get("error")}
 
 
-def _run_confirm_candidate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
-    cand = _pending(state)
+def _pending_by_field(state: dict[str, Any], field: str) -> dict[str, Any] | None:
+    for cand in _pending_list(state):
+        if cand.get("field") == field:
+            return cand
+    return None
+
+
+def _run_confirm_candidate(session_id: str, state: dict[str, Any], *, field: str | None = None) -> dict[str, Any]:
+    cand = _pending_by_field(state, field) if field else _pending(state)
     if not cand:
         preview, ready, ph, step = _status(session_id)
-        return {"success": False, "intent": "confirm_candidate", "phase": ph, "message": "No pending source-backed candidate to confirm.", "assistant_response": "I don't have a pending source-backed command candidate to apply.", "next_step": step, "source_backed_candidates": _ensure_cands(state), "error": "No pending candidate."}
+        return {"success": False, "intent": f"confirm_{field}_candidate" if field else "confirm_candidate", "phase": ph, "message": "No pending source-backed candidate to confirm." if not field else f"No pending {field} candidate to confirm.", "assistant_response": "I don't have a pending source-backed command candidate to apply." if not field else f"I don't have a pending {field} candidate to apply.", "next_step": step, "source_backed_candidates": _ensure_cands(state), "error": "No pending candidate."}
     r = _apply_candidate(session_id, state, cand)
     ssic, ssic_r = _maybe_infer_and_apply_ssic(session_id, r.get("payload"))
     if ssic_r and ssic_r.get("success"):
         r = ssic_r
     preview, ready, ph, step = _status(session_id)
-    # Normalize missing-detail prompt after candidate confirmation:
-    # when date, signer, and body are all still missing, use the
-    # accepted combined plain-English prompt instead of the raw
-    # next_action question (which may only mention body).
     payload = r.get("payload") or {}
     if ph == "build_status" and not payload.get("date") and not payload.get("signature") and not payload.get("body"):
         step = "I have the routing basics. What date should I use, who will sign it, and what should the body say?"
-    return {"success": r.get("success", False), "intent": "confirm_candidate", "phase": ph, "message": f"Confirmed source-backed candidate. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Candidate apply failed"), "assistant_response": "I've applied the confirmed source-backed command result. " + step if r.get("success") else "I couldn't apply that source-backed candidate.", "preview_text": preview.get("preview_text"), "next_step": step, "payload": payload, "confirmed_candidate": cand, "source_backed_candidates": _ensure_cands(state), "ssic_inference": ssic, "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": r.get("error")}
+    return {"success": r.get("success", False), "intent": f"confirm_{field}_candidate" if field else "confirm_candidate", "phase": ph, "message": f"Confirmed source-backed candidate. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Candidate apply failed"), "assistant_response": "I've applied the confirmed source-backed command result. " + step if r.get("success") else "I couldn't apply that source-backed candidate.", "preview_text": preview.get("preview_text"), "next_step": step, "payload": payload, "confirmed_candidate": cand, "source_backed_candidates": _ensure_cands(state), "ssic_inference": ssic, "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": r.get("error")}
 
 
-def _run_reject_candidate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
-    pending = _pending_list(state)
-    if pending:
-        for cand in pending:
+def _run_reject_candidate(session_id: str, state: dict[str, Any], *, field: str | None = None) -> dict[str, Any]:
+    if field:
+        cand = _pending_by_field(state, field)
+        if cand:
             _reject_candidate(state, cand)
+        pending = _pending_list(state)
+    else:
+        pending = _pending_list(state)
+        if pending:
+            for cand in pending:
+                _reject_candidate(state, cand)
     preview, ready, ph, step = _status(session_id)
-    msg = "Dismissed all pending source-backed candidates." if pending else "No pending source-backed candidate to dismiss."
-    return {"success": bool(pending), "intent": "reject_candidate", "phase": ph, "message": msg, "assistant_response": msg + " " + step if pending else msg, "preview_text": preview.get("preview_text"), "next_step": step, "rejected_candidate": pending[-1] if pending else None, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None if pending else "No pending candidate."}
+    if field:
+        msg = f"Dismissed pending {field} candidate." if cand else f"No pending {field} source-backed candidate to dismiss."
+    else:
+        msg = "Dismissed all pending source-backed candidates." if pending else "No pending source-backed candidate to dismiss."
+    return {"success": bool(cand if field else pending), "intent": f"reject_{field}_candidate" if field else "reject_candidate", "phase": ph, "message": msg, "assistant_response": msg + " " + step if (cand if field else pending) else msg, "preview_text": preview.get("preview_text"), "next_step": step, "rejected_candidate": (cand if field else pending[-1]) if (cand if field else pending) else None, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None if (cand if field else pending) else "No pending candidate."}
 
 
-def _run_show_candidate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
-    pending = _pending_list(state)
+def _run_show_candidate(session_id: str, state: dict[str, Any], *, field: str | None = None) -> dict[str, Any]:
+    all_pending = _pending_list(state)
+    if field:
+        pending = [c for c in all_pending if c.get("field") == field]
+        intent = f"show_{field}_candidate"
+    else:
+        pending = all_pending
+        intent = "show_candidate"
     preview, ready, ph, step = _status(session_id)
     if not pending:
-        msg = "There is no pending source-backed candidate."
-        return {"success": False, "intent": "show_candidate", "phase": ph, "message": msg, "assistant_response": msg, "preview_text": preview.get("preview_text"), "next_step": step, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": "No pending candidate."}
-    ar = _quiet_suggestions(pending) + "\n\nSay 'confirm candidate' to apply the next one or 'dismiss candidate' to clear it."
-    return {"success": True, "intent": "show_candidate", "phase": ph, "message": "Current pending source-backed candidates.", "assistant_response": ar, "preview_text": preview.get("preview_text"), "next_step": "Confirm or dismiss the pending source-backed candidates.", "pending_candidate": pending[-1], "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None}
+        msg = f"There is no pending {field} source-backed candidate." if field else "There is no pending source-backed candidate."
+        return {"success": False, "intent": intent, "phase": ph, "message": msg, "assistant_response": msg, "preview_text": preview.get("preview_text"), "next_step": step, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": "No pending candidate."}
+    ar = _quiet_suggestions(pending) + "\n\nSay 'confirm candidate' to apply it or 'dismiss candidate' to clear it."
+    cands = dict(_ensure_cands(state))
+    cands["pending"] = pending
+    return {"success": True, "intent": intent, "phase": ph, "message": "Current pending source-backed candidates.", "assistant_response": ar, "preview_text": preview.get("preview_text"), "next_step": "Confirm or dismiss the pending source-backed candidates.", "pending_candidate": pending[-1], "source_backed_candidates": cands, "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None}
+
+
 
 
 def _run_approve(session_id: str) -> dict[str, Any]:
@@ -788,8 +830,14 @@ def _process_turn(chat_id: str, text: str, state: dict[str, Any]) -> dict[str, A
     state.setdefault("history", []).append({"role": "user", "text": text, "intent": intent})
     state["history"] = state["history"][-20:]
     if intent == "confirm_candidate": result = _run_confirm_candidate(sid, state)
+    elif intent == "confirm_from_candidate": result = _run_confirm_candidate(sid, state, field="from")
+    elif intent == "confirm_to_candidate": result = _run_confirm_candidate(sid, state, field="to")
     elif intent == "reject_candidate": result = _run_reject_candidate(sid, state)
+    elif intent == "reject_from_candidate": result = _run_reject_candidate(sid, state, field="from")
+    elif intent == "reject_to_candidate": result = _run_reject_candidate(sid, state, field="to")
     elif intent == "show_candidate": result = _run_show_candidate(sid, state)
+    elif intent == "show_from_candidate": result = _run_show_candidate(sid, state, field="from")
+    elif intent == "show_to_candidate": result = _run_show_candidate(sid, state, field="to")
     elif intent == "revise": result = _run_revise(sid, text)
     elif intent == "approve": result = _run_approve(sid)
     elif intent == "preview": result = _run_preview(sid)

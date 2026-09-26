@@ -1,7 +1,61 @@
 # SECNAV ComplianceGPT - Project Status
 
 **Last Updated:** 2026-09-26
-**Accepted Baseline HEAD:** `ac9a46d` — Tools: Add natural sender lookup suggestions
+**Accepted Baseline HEAD:** `c5f178d` — Tools: Add dual natural lookup suggestions
+
+---
+
+## L.32S — Field-Specific Candidate Commands
+
+Added field-specific commands to manage quiet official lookup suggestions when
+multiple candidates are pending.
+
+### Verified behavior
+
+- `show From candidate` / `show To candidate`: display only the pending candidate
+  for that field, without applying anything.
+- `confirm From candidate` / `confirm To candidate`: apply only the pending
+  candidate for that field; leave other pending candidates intact.
+  - From candidate applies complete letterhead only if complete.
+  - To candidate mutates only the To field.
+- `dismiss From candidate` / `dismiss To candidate`: clear only that field's
+  pending candidate; leave other pending candidates intact; do not apply
+  anything; do not immediately recreate the dismissed field suggestion from the
+  same input.
+- Generic commands still work as before:
+  - `show candidate` shows all pending candidates.
+  - `confirm candidate` applies the default/most recent candidate.
+  - `dismiss candidate` clears all pending candidates.
+- Field-specific commands respond truthfully when no candidate exists for that
+  field.
+- L.30Y approval/revise behavior is preserved.
+- No static command database, no open-ended web search, no auto-apply.
+
+### Files touched
+
+- `tools/hermes_chat_builder.py`:
+  - New intent sets for `confirm From/To candidate`, `dismiss From/To candidate`,
+    and `show From/To candidate`.
+  - `_classify_intent` now resolves field-specific commands before generic ones.
+  - `_run_confirm_candidate`, `_run_reject_candidate`, and `_run_show_candidate`
+    accept an optional `field` argument; `show` returns a filtered copy of the
+    candidate list in the response so the response reflects only the requested
+    field.
+- `tools/run_phase_l32s_field_specific_candidate_commands_smoke.py` (new).
+
+### Validation
+
+- L.32S smoke: `42/42 PASS`.
+- L.32R smoke: `32/32 PASS`; L.32S smoke: `42/42 PASS`.
+- L.32Q smoke: `27/27 PASS`; L.32S smoke: `42/42 PASS`.
+- L.32P smoke: `27/27 PASS`; L.32S smoke: `42/42 PASS`.
+- L.32O smoke: `42/42 PASS`; L.32S smoke: `42/42 PASS`.
+- L.32N smoke: `30/30 PASS`; L.32S smoke: `42/42 PASS`.
+- L.32M smoke: `31/31 PASS, 1 SKIP`; L.32S smoke: `42/42 PASS`.
+- L.32L smoke: `29/29 PASS`; L.32S smoke: `42/42 PASS`.
+- L.32K smoke: `41/41 PASS`; L.32S smoke: `42/42 PASS`.
+- L.30X smoke: `8/8 PASS`.
+- L.30U smoke: `12/12 PASS`.
 
 ---
 
@@ -113,7 +167,7 @@ Hardened the `SafeOfficialCommandFetcher` contract in
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
-- L.32J smoke: `36/36 PASS`.
+- L.32J smoke: `36/36 PASS`; L.32S smoke: `42/42 PASS`.
 - Prior L.32 stack (I → B) all PASS.
 - L.31 stack and regression suite (Q-1, O-3, O-2, W, T, S, Q, P, N, M, K)
   all PASS.
