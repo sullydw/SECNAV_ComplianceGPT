@@ -384,6 +384,8 @@ def _ensure_cands(state: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
     c = state.setdefault("source_backed_candidates", {})
     for k in ("pending", "confirmed", "rejected"):
         c.setdefault(k, [])
+    c.setdefault("rejected_inputs", [])
+    c.setdefault("rejected_fields", {})
     return c
 
 
@@ -400,7 +402,7 @@ def _maybe_add_source_candidate(state: dict[str, Any], fields: dict[str, str]) -
         text = fields.get(role)
         if not text:
             continue
-        if _is_dismissed_input(state, text):
+        if _is_dismissed_input(state, text) or _is_dismissed_field(state, role, text):
             continue
         try:
             ctx = dict(state)
@@ -427,7 +429,7 @@ def _maybe_add_source_candidate(state: dict[str, Any], fields: dict[str, str]) -
         cands = _ensure_cands(state)
         if any(c.get("candidate_id") == cand["candidate_id"] for c in cands["rejected"]):
             continue
-        if _is_dismissed_input(state, text):
+        if _is_dismissed_input(state, text) or _is_dismissed_field(state, role, text):
             continue
         if not any(c.get("candidate_id") == cand["candidate_id"] for c in cands["pending"]):
             cands["pending"].append(cand)
@@ -443,6 +445,10 @@ def _pending(state: dict[str, Any]) -> dict[str, Any] | None:
 def _apply_candidate(session_id: str, state: dict[str, Any], cand: dict[str, Any]) -> dict[str, Any]:
     resolved = dict(cand.get("resolved_value") or {})
     if cand.get("field") != "from" or cand.get("source_tier") != "official_live":
+        for k in ("letterhead_top_line", "letterhead_activity", "letterhead_address"):
+            resolved.pop(k, None)
+    # Incomplete From candidate: do not apply invented letterhead.
+    if cand.get("field") == "from" and "letterhead_top_line" not in resolved:
         for k in ("letterhead_top_line", "letterhead_activity", "letterhead_address"):
             resolved.pop(k, None)
     r = _run_manager(["apply", "--session", session_id, "--kv", _key_values_to_text({k: str(v) for k, v in resolved.items() if v})])
@@ -467,6 +473,11 @@ def _reject_candidate(state: dict[str, Any], cand: dict[str, Any]) -> None:
     # is not immediately recreated on the next normal turn.
     if cand.get("input_text"):
         cands.setdefault("rejected_inputs", []).append(_clean(cand["input_text"]).lower())
+    # L.32R: also remember per-field so the same text from a dual From/To draft
+    # does not immediately recreate the suggestion.
+    field = cand.get("field")
+    if field:
+        cands.setdefault("rejected_fields", {})[field] = _clean(cand.get("input_text") or "").lower()
 
 
 def _is_dismissed_input(state: dict[str, Any], text: str) -> bool:
@@ -480,6 +491,12 @@ def _is_dismissed_input(state: dict[str, Any], text: str) -> bool:
         if clean_text == _clean(rej.get("input_text") or "").lower():
             return True
     return False
+
+
+def _is_dismissed_field(state: dict[str, Any], field: str, text: str) -> bool:
+    cands = state.get("source_backed_candidates") or {}
+    rejected_fields = cands.get("rejected_fields") or {}
+    return rejected_fields.get(field) == _clean(text).lower()
 
 
 def _plain_missing(missing: list[Any]) -> list[str]:
@@ -531,13 +548,30 @@ def _next_step(phase: str, ready: dict[str, Any], preview: dict[str, Any]) -> st
 
 def _quiet_suggestion(pending_candidate: dict[str, Any]) -> str:
     """Return a non-intrusive note about a pending source-backed candidate."""
-    title = pending_candidate.get("source_title") or "source-backed result"
-    res = pending_candidate.get("resolved_value") or {}
-    field = pending_candidate.get("field") or "from"
-    val = res.get(field) or res.get("unit_identity") or "the command"
+    return _quiet_suggestions([pending_candidate])
+
+
+def _quiet_suggestions(pending: list[dict[str, Any]]) -> str:
+    """Return a non-intrusive note summarizing pending source-backed candidates."""
+    if not pending:
+        return ""
+    lines: list[str] = []
+    for cand in pending:
+        title = cand.get("source_title") or "source-backed result"
+        res = cand.get("resolved_value") or {}
+        field = cand.get("field") or "from"
+        val = res.get(field) or res.get("unit_identity") or "the command"
+        lines.append(f"- {field.capitalize()}: {val} ({title})")
+    if len(pending) == 1:
+        return (
+            "I found a source-backed suggestion:\n"
+            + "\n".join(lines)
+            + "\nSay 'confirm candidate' to apply it, or 'dismiss candidate' to clear it."
+        )
     return (
-        f"I found a source-backed suggestion for {field.capitalize()}: {val} "
-        f"({title}). Say 'confirm candidate' to apply it, or keep editing the draft."
+        "I found source-backed suggestions for the following fields:\n"
+        + "\n".join(lines)
+        + "\nSay 'confirm candidate' to apply the next one, 'dismiss candidate' to clear it, or 'show candidate' to review."
     )
 
 
@@ -590,6 +624,26 @@ def _assistant_response(
     return base
 
 
+def _assistant_response_with_pending(
+    phase: str,
+    ready: dict[str, Any],
+    preview: dict[str, Any],
+    pending: list[dict[str, Any]],
+    *,
+    action: str = "",
+    pdf_path: str = "",
+    blocked_reason: str = "",
+) -> str:
+    base = _phase_response(phase, ready, preview, action=action, blocked_reason=blocked_reason)
+    if pending:
+        return _quiet_suggestions(pending) + "\n\n" + base
+    return base
+
+
+def _pending_list(state: dict[str, Any]) -> list[dict[str, Any]]:
+    return list(_ensure_cands(state).get("pending", []))
+
+
 def _status(session_id: str) -> tuple[dict[str, Any], dict[str, Any], str, str]:
     preview = _run_manager(["preview", "--session", session_id])
     ready = _run_manager(["ready", "--session", session_id])
@@ -603,7 +657,7 @@ def _digest(payload: Any) -> str:
 
 def _run_say(session_id: str, text: str, state: dict[str, Any]) -> dict[str, Any]:
     fields = _merge_mixed_intake_fields(text)
-    pending = _maybe_add_source_candidate(state, fields) if fields else None
+    pending_cand = _maybe_add_source_candidate(state, fields) if fields else None
     if fields:
         r = _run_manager(["apply", "--session", session_id, "--kv", _key_values_to_text(fields)])
     elif _looks_like_key_value(text):
@@ -614,7 +668,9 @@ def _run_say(session_id: str, text: str, state: dict[str, Any]) -> dict[str, Any
     if ssic_r and ssic_r.get("success"):
         r = ssic_r
     preview, ready, ph, step = _status(session_id)
-    return {"success": r.get("success", False), "intent": "say", "phase": ph, "message": f"I've noted that. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Say failed"), "assistant_response": _assistant_response(ph, ready, preview, pending_candidate=pending), "preview_text": preview.get("preview_text"), "next_step": step, "payload": r.get("payload"), "validation_summary": r.get("validation_summary"), "warning_summary": r.get("warning_summary"), "proposed_kv": r.get("proposed_kv"), "extracted_kv": fields or None, "ssic_inference": ssic, "source_backed_candidate": pending, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "render_gate": ready.get("render_gate"), "error": r.get("error")}
+    pending = _pending_list(state)
+    ar = _assistant_response_with_pending(ph, ready, preview, pending)
+    return {"success": r.get("success", False), "intent": "say", "phase": ph, "message": f"I've noted that. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Say failed"), "assistant_response": ar, "preview_text": preview.get("preview_text"), "next_step": step, "payload": r.get("payload"), "validation_summary": r.get("validation_summary"), "warning_summary": r.get("warning_summary"), "proposed_kv": r.get("proposed_kv"), "extracted_kv": fields or None, "ssic_inference": ssic, "source_backed_candidate": pending_cand, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "render_gate": ready.get("render_gate"), "error": r.get("error")}
 
 
 def _run_revise(session_id: str, text: str) -> dict[str, Any]:
@@ -673,22 +729,23 @@ def _run_confirm_candidate(session_id: str, state: dict[str, Any]) -> dict[str, 
 
 
 def _run_reject_candidate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
-    cand = _pending(state)
-    if cand:
-        _reject_candidate(state, cand)
+    pending = _pending_list(state)
+    if pending:
+        for cand in pending:
+            _reject_candidate(state, cand)
     preview, ready, ph, step = _status(session_id)
-    msg = "Dismissed source-backed candidate." if cand else "No pending source-backed candidate to dismiss."
-    return {"success": bool(cand), "intent": "reject_candidate", "phase": ph, "message": msg, "assistant_response": msg + " " + step if cand else msg, "preview_text": preview.get("preview_text"), "next_step": step, "rejected_candidate": cand, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None if cand else "No pending candidate."}
+    msg = "Dismissed all pending source-backed candidates." if pending else "No pending source-backed candidate to dismiss."
+    return {"success": bool(pending), "intent": "reject_candidate", "phase": ph, "message": msg, "assistant_response": msg + " " + step if pending else msg, "preview_text": preview.get("preview_text"), "next_step": step, "rejected_candidate": pending[-1] if pending else None, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None if pending else "No pending candidate."}
 
 
 def _run_show_candidate(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
-    cand = _pending(state)
+    pending = _pending_list(state)
     preview, ready, ph, step = _status(session_id)
-    if not cand:
+    if not pending:
         msg = "There is no pending source-backed candidate."
         return {"success": False, "intent": "show_candidate", "phase": ph, "message": msg, "assistant_response": msg, "preview_text": preview.get("preview_text"), "next_step": step, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": "No pending candidate."}
-    ar = _quiet_suggestion(cand) + "\n\nYou can say 'confirm candidate' to apply it or 'dismiss candidate' to clear it."
-    return {"success": True, "intent": "show_candidate", "phase": ph, "message": "Current pending source-backed candidate.", "assistant_response": ar, "preview_text": preview.get("preview_text"), "next_step": "Confirm or dismiss the pending source-backed candidate.", "pending_candidate": cand, "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None}
+    ar = _quiet_suggestions(pending) + "\n\nSay 'confirm candidate' to apply the next one or 'dismiss candidate' to clear it."
+    return {"success": True, "intent": "show_candidate", "phase": ph, "message": "Current pending source-backed candidates.", "assistant_response": ar, "preview_text": preview.get("preview_text"), "next_step": "Confirm or dismiss the pending source-backed candidates.", "pending_candidate": pending[-1], "source_backed_candidates": _ensure_cands(state), "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": None}
 
 
 def _run_approve(session_id: str) -> dict[str, Any]:
