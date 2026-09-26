@@ -47,7 +47,8 @@ Hardened the `SafeOfficialCommandFetcher` contract in
 
 ### Validation
 
-- L.32O smoke: `42/42 PASS` (official candidate suggestion commands; new).
+- L.32P smoke: `27/27 PASS` (natural recipient lookup suggestion; new).
+- L.32O smoke: `42/42 PASS`.
 - L.32N smoke: `30/30 PASS`.
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
@@ -106,12 +107,48 @@ fetch when the gate and `enable_network` are both explicitly set.
 ### Validation
 
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
-- Regression: L.32O `42/42`, L.32N `30/30`, L.32L `29/29`, L.32K `41/41`,
-  L.30X `8/8`, L.30U `12/12` all PASS.
+- Regression: L.32P `27/27`, L.32O `42/42`, L.32N `30/30`, L.32L `29/29`,
+  L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
 
 ---
 
-## L.32O — Official Candidate Suggestion Commands
+## L.32P — Natural Recipient Lookup Suggestion Workflow
+
+Added `tools/run_phase_l32p_natural_recipient_lookup_suggestion_smoke.py` to
+prove that a natural first-turn draft with a recipient phrase like
+"to 2d Marine Division" quietly surfaces an official lookup suggestion
+without interrupting the draft flow.
+
+### Verified behavior
+
+- Natural first-turn draft extracts the literal To value.
+- When official lookup is enabled and a clean source-backed To candidate exists,
+  it is stored as a quiet pending suggestion while the draft flow continues.
+- Suggestion appears as a note, not a forced confirmation prompt, mentioning
+  that it can be applied with `confirm candidate`.
+- The To suggestion does not auto-apply.
+- Confirming the To suggestion mutates only the To field; letterhead/unit
+  identity from the To candidate is not applied.
+- When official lookup is disabled, the natural draft still works and no
+  provider call happens.
+- Dismissing the candidate prevents the same input from immediately recreating
+  the same suggestion.
+- From candidate suggestions continue to work alongside To suggestions.
+- L.30Y approval/revise behavior is preserved.
+- No static command database, no open-ended web search.
+
+### Files touched
+
+- `tools/hermes_chat_builder.py`:
+  - `_maybe_add_source_candidate` now considers both `from` and `to` fields,
+    creating source-backed candidates for natural recipient phrases.
+- `tools/run_phase_l32p_natural_recipient_lookup_suggestion_smoke.py` (new).
+
+### Validation
+
+- L.32P smoke: `27/27 PASS`.
+- Regression: L.32O `42/42`, L.32N `30/30`, L.32M `31/31 PASS, 1 SKIP`,
+  L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
 
 Added `tools/run_phase_l32o_official_candidate_suggestion_commands_smoke.py`
 and wired chat commands to manage quiet official lookup suggestions.
@@ -147,8 +184,8 @@ and wired chat commands to manage quiet official lookup suggestions.
 ### Validation
 
 - L.32O smoke: `42/42 PASS`.
-- Regression: L.32N `30/30`, L.32M `31/31 PASS, 1 SKIP`, L.32L `29/29`,
-  L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
+- Regression: L.32P `27/27`, L.32N `30/30`, L.32M `31/31 PASS, 1 SKIP`,
+  L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
 
 ---
 
@@ -177,7 +214,8 @@ remaining candidate-only and never auto-applied.
 
 - `tools/hermes_chat_builder.py` (response formatting for quiet pending
   suggestions; new `show_candidate` intent and `_run_show_candidate`; extended
-  `dismiss candidate` handling and rejection suppression).
+  `dismiss candidate` handling and rejection suppression; `_maybe_add_source_candidate`
+  now also creates To candidates for natural recipient phrases).
 - `tools/run_phase_l32n_official_lookup_nonintrusive_suggestion_smoke.py`
   (new).
 - `tools/run_phase_l32o_official_candidate_suggestion_commands_smoke.py`
@@ -186,8 +224,8 @@ remaining candidate-only and never auto-applied.
 ### Validation
 
 - L.32N smoke: `30/30 PASS`.
-- Regression: L.32O `42/42`, L.32M `31/31 PASS, 1 SKIP`, L.32L `29/29`,
-  L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
+- Regression: L.32P `27/27`, L.32O `42/42`, L.32M `31/31 PASS, 1 SKIP`,
+  L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
 
 ---
 
@@ -216,8 +254,8 @@ end-to-end after the L.30Y approval/revise cleanup.
 ### Validation
 
 - L.32L smoke: `29/29 PASS`.
-- Regression: L.32O `42/42`, L.32N `30/30`, L.32K `41/41`, L.30X `8/8`,
-  L.30U `12/12`, L.31Q-1 `14/14` all PASS.
+- Regression: L.32P `27/27`, L.32O `42/42`, L.32N `30/30`, L.32K `41/41`,
+  L.30X `8/8`, L.30U `12/12`, L.31Q-1 `14/14` all PASS.
 
 ---
 

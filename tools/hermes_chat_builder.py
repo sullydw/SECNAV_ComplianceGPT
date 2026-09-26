@@ -392,33 +392,52 @@ def _candidate_id(role: str, text: str, url: str = "") -> str:
 
 
 def _maybe_add_source_candidate(state: dict[str, Any], fields: dict[str, str]) -> dict[str, Any] | None:
-    text = fields.get("from")
-    if not text or _is_controlled_alias(text) or _SOURCE_BACKED_LOOKUP_ADAPTER is None:
+    """Try to add source-backed candidates for From and/or To fields."""
+    if _SOURCE_BACKED_LOOKUP_ADAPTER is None:
         return None
-    if _is_dismissed_input(state, text):
-        return None
-    try:
-        res = _SOURCE_BACKED_LOOKUP_ADAPTER(text, "from", state)
-    except Exception:
-        return None
-    if not isinstance(res, dict) or not isinstance(res.get("resolved_value"), dict):
-        return None
-    cand = {
-        "candidate_id": res.get("candidate_id") or _candidate_id("from", text, str(res.get("source_url") or "")),
-        "candidate_type": res.get("candidate_type") or "command_expansion",
-        "input_text": _clean(text), "field": "from", "resolved_value": dict(res.get("resolved_value") or {}),
-        "source_title": res.get("source_title") or "Source-backed command result", "source_url": str(res.get("source_url") or ""),
-        "source_tier": res.get("source_tier") or "unresolved", "source_limitation": res.get("source_limitation") or "Candidate requires user confirmation before applying.",
-        "confidence": res.get("confidence", 0), "requires_user_confirmation": True, "status": "pending",
-    }
-    cands = _ensure_cands(state)
-    if any(c.get("candidate_id") == cand["candidate_id"] for c in cands["rejected"]):
-        return None
-    if _is_dismissed_input(state, text):
-        return None
-    if not any(c.get("candidate_id") == cand["candidate_id"] for c in cands["pending"]):
-        cands["pending"].append(cand)
-    return cand
+    pending: dict[str, Any] | None = None
+    for role in ("from", "to"):
+        text = fields.get(role)
+        if not text:
+            continue
+        if role == "from" and _is_controlled_alias(text):
+            continue
+        if _is_dismissed_input(state, text):
+            continue
+        try:
+            res = _SOURCE_BACKED_LOOKUP_ADAPTER(text, role, state)
+        except Exception:
+            continue
+        if not isinstance(res, dict) or not isinstance(res.get("resolved_value"), dict):
+            continue
+        if role == "to":
+            # L.32P: do not re-suggest a To candidate that matches a previously
+            # dismissed From input (cross-field suppression is overkill; we only
+            # suppress exact same-text inputs).
+            pass
+        cand: dict[str, Any] = {
+            "candidate_id": res.get("candidate_id") or _candidate_id(role, text, str(res.get("source_url") or "")),
+            "candidate_type": res.get("candidate_type") or "command_expansion",
+            "input_text": _clean(text),
+            "field": role,
+            "resolved_value": dict(res.get("resolved_value") or {}),
+            "source_title": res.get("source_title") or "Source-backed command result",
+            "source_url": str(res.get("source_url") or ""),
+            "source_tier": res.get("source_tier") or "unresolved",
+            "source_limitation": res.get("source_limitation") or "Candidate requires user confirmation before applying.",
+            "confidence": res.get("confidence", 0),
+            "requires_user_confirmation": True,
+            "status": "pending",
+        }
+        cands = _ensure_cands(state)
+        if any(c.get("candidate_id") == cand["candidate_id"] for c in cands["rejected"]):
+            continue
+        if _is_dismissed_input(state, text):
+            continue
+        if not any(c.get("candidate_id") == cand["candidate_id"] for c in cands["pending"]):
+            cands["pending"].append(cand)
+        pending = cand
+    return pending
 
 
 def _pending(state: dict[str, Any]) -> dict[str, Any] | None:
