@@ -47,7 +47,8 @@ Hardened the `SafeOfficialCommandFetcher` contract in
 
 ### Validation
 
-- L.32P smoke: `27/27 PASS` (natural recipient lookup suggestion; new).
+- L.32Q smoke: `27/27 PASS` (natural sender lookup suggestion; new).
+- L.32P smoke: `27/27 PASS`.
 - L.32O smoke: `42/42 PASS`.
 - L.32N smoke: `30/30 PASS`.
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
@@ -107,8 +108,8 @@ fetch when the gate and `enable_network` are both explicitly set.
 ### Validation
 
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
-- Regression: L.32P `27/27`, L.32O `42/42`, L.32N `30/30`, L.32L `29/29`,
-  L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
+- Regression: L.32Q `27/27`, L.32P `27/27`, L.32O `42/42`, L.32N `30/30`,
+  L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
 
 ---
 
@@ -147,8 +148,55 @@ without interrupting the draft flow.
 ### Validation
 
 - L.32P smoke: `27/27 PASS`.
-- Regression: L.32O `42/42`, L.32N `30/30`, L.32M `31/31 PASS, 1 SKIP`,
+- Regression: L.32Q `27/27`, L.32O `42/42`, L.32N `30/30`, L.32M `31/31 PASS, 1 SKIP`,
   L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
+
+---
+
+## L.32Q — Natural Sender Lookup Suggestion Workflow
+
+Added `tools/run_phase_l32q_natural_sender_lookup_suggestion_smoke.py` to
+prove that a natural first-turn draft with a sender phrase like
+"from MCAS New River" quietly surfaces an official lookup From/letterhead
+suggestion without interrupting the draft flow.
+
+### Verified behavior
+
+- Natural first-turn draft extracts the literal From value.
+- When official lookup is enabled and a clean source-backed From candidate
+  exists, it is stored as a quiet pending suggestion while the draft flow
+  continues normally.
+- Complete From candidate may suggest From + complete letterhead, but does not
+  auto-apply; it is applied only after `confirm candidate`.
+- Incomplete From candidate suggests From only and does not invent letterhead.
+- When official lookup is disabled, the natural draft still works and no
+  provider call happens.
+- Dismissing the candidate prevents the same sender text from immediately
+  recreating the same suggestion.
+- L.30Y approval/revise behavior is preserved.
+- No static command database, no open-ended web search, no auto-apply.
+
+### Files touched
+
+- `tools/hermes_chat_builder.py`:
+  - `_maybe_add_source_candidate` now bypasses the adapter's controlled-alias
+    lookup suppression when it intentionally asks for a source-backed
+    candidate (via a transient `bypass_controlled_alias_lookup` flag).
+- `tools/official_command_lookup_adapter.py`:
+  - `official_command_lookup` honors `bypass_controlled_alias_lookup` in the
+    passed state, allowing the chat builder to request source-backed
+    candidates even for controlled-alias phrases.
+- `tools/run_phase_l32q_natural_sender_lookup_suggestion_smoke.py` (new).
+
+### Validation
+
+- L.32Q smoke: `27/27 PASS`.
+- Regression: L.32P `27/27`, L.32O `42/42`, L.32N `30/30`, L.32M `31/31 PASS, 1 SKIP`,
+  L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
+
+---
+
+## L.32O — Official Candidate Suggestion Commands
 
 Added `tools/run_phase_l32o_official_candidate_suggestion_commands_smoke.py`
 and wired chat commands to manage quiet official lookup suggestions.
@@ -184,7 +232,7 @@ and wired chat commands to manage quiet official lookup suggestions.
 ### Validation
 
 - L.32O smoke: `42/42 PASS`.
-- Regression: L.32P `27/27`, L.32N `30/30`, L.32M `31/31 PASS, 1 SKIP`,
+- Regression: L.32Q `27/27`, L.32P `27/27`, L.32N `30/30`, L.32M `31/31 PASS, 1 SKIP`,
   L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
 
 ---
@@ -224,7 +272,7 @@ remaining candidate-only and never auto-applied.
 ### Validation
 
 - L.32N smoke: `30/30 PASS`.
-- Regression: L.32P `27/27`, L.32O `42/42`, L.32M `31/31 PASS, 1 SKIP`,
+- Regression: L.32Q `27/27`, L.32P `27/27`, L.32O `42/42`, L.32M `31/31 PASS, 1 SKIP`,
   L.32L `29/29`, L.32K `41/41`, L.30X `8/8`, L.30U `12/12` all PASS.
 
 ---
@@ -254,8 +302,8 @@ end-to-end after the L.30Y approval/revise cleanup.
 ### Validation
 
 - L.32L smoke: `29/29 PASS`.
-- Regression: L.32P `27/27`, L.32O `42/42`, L.32N `30/30`, L.32K `41/41`,
-  L.30X `8/8`, L.30U `12/12`, L.31Q-1 `14/14` all PASS.
+- Regression: L.32Q `27/27`, L.32P `27/27`, L.32O `42/42`, L.32N `30/30`,
+  L.32K `41/41`, L.30X `8/8`, L.30U `12/12`, L.31Q-1 `14/14` all PASS.
 
 ---
 
@@ -296,7 +344,7 @@ It performs no real network by default.
 ### Validation
 
 - L.32J smoke: `36/36 PASS`.
-- Prior L.32 stack (O → B) all PASS.
+- Prior L.32 stack (Q → B) all PASS.
 - L.31 stack and regression suite (Q-1, O-3, O-2, W, T, S, Q, P, N, M, K)
   all PASS.
 

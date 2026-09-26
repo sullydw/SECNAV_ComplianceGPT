@@ -400,21 +400,16 @@ def _maybe_add_source_candidate(state: dict[str, Any], fields: dict[str, str]) -
         text = fields.get(role)
         if not text:
             continue
-        if role == "from" and _is_controlled_alias(text):
-            continue
         if _is_dismissed_input(state, text):
             continue
         try:
-            res = _SOURCE_BACKED_LOOKUP_ADAPTER(text, role, state)
+            ctx = dict(state)
+            ctx["bypass_controlled_alias_lookup"] = True
+            res = _SOURCE_BACKED_LOOKUP_ADAPTER(text, role, ctx)
         except Exception:
             continue
         if not isinstance(res, dict) or not isinstance(res.get("resolved_value"), dict):
             continue
-        if role == "to":
-            # L.32P: do not re-suggest a To candidate that matches a previously
-            # dismissed From input (cross-field suppression is overkill; we only
-            # suppress exact same-text inputs).
-            pass
         cand: dict[str, Any] = {
             "candidate_id": res.get("candidate_id") or _candidate_id(role, text, str(res.get("source_url") or "")),
             "candidate_type": res.get("candidate_type") or "command_expansion",

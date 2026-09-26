@@ -505,7 +505,7 @@ def official_command_lookup(
     ctx: dict[str, Any] = state if isinstance(state, dict) else {}
     if not official_lookup_enabled(ctx):
         return None
-    if _matches_existing_controlled_alias(text, ctx):
+    if _matches_existing_controlled_alias(text, ctx) and not ctx.get("bypass_controlled_alias_lookup"):
         return None
 
     cache_key = (field, text.lower())
