@@ -5,6 +5,59 @@
 
 ---
 
+## L.32U — Natural Missing-Detail Guidance With Official Suggestions
+
+Improved assistant responses so that when a natural first-turn draft creates
+quiet official lookup suggestions, the response also clearly states the
+remaining required details. Confirming a From or To candidate updates that
+guidance without blocking the normal draft flow.
+
+### Verified behavior
+
+- Natural first-turn draft (`I need a letter from MCAS New River to 2d Marine Division`)
+  extracts available fields, creates quiet source-backed suggestions when lookup
+  is enabled, and lists the remaining missing details (subject, body, date,
+  signer, letterhead).
+- Pending official suggestions do not replace the missing-detail prompt.
+- Assistant response includes both the quiet suggestion note and the missing-detail
+  guidance.
+- Confirming a complete From candidate applies letterhead and removes
+  "command letterhead details" from the guidance.
+- Confirming an incomplete From candidate leaves letterhead in the guidance.
+- Confirming a To candidate updates only the To field and does not falsely remove
+  letterhead from the guidance.
+- With lookup disabled, the natural draft still produces normal missing-detail
+  guidance, no provider call happens, and no pending candidate appears.
+- No auto-apply, no static command database, no open-ended web search.
+- L.30Y approval/revise behavior is preserved.
+
+### Files touched
+
+- `tools/hermes_chat_builder.py`:
+  - Added `_missing_guidance` to produce a clear itemized list of remaining
+    required details from the render gate, next-action question, and current
+    payload.
+  - `_phase_response` now prepends missing-detail guidance before the normal
+    next-step prompt when fields remain.
+  - `_run_confirm_candidate` merges the applied/preview payload into ready
+    state and includes `_missing_guidance` in its assistant response.
+  - `_assistant_response_with_pending` merges preview payload for guidance so
+    applying a candidate immediately updates the guidance.
+- `tools/run_phase_l32u_missing_detail_guidance_with_suggestions_smoke.py` (new).
+
+### Validation
+
+- L.32U smoke: `20/20 PASS`.
+- L.32T smoke: `46/46 PASS`; L.32U smoke: `20/20 PASS`.
+- L.32S smoke: `42/42 PASS`; L.32U smoke: `20/20 PASS`.
+- L.32R smoke: `32/32 PASS`; L.32U smoke: `20/20 PASS`.
+- L.32Q smoke: `27/27 PASS`; L.32U smoke: `20/20 PASS`.
+- L.32P smoke: `27/27 PASS`; L.32U smoke: `20/20 PASS`.
+- L.30X smoke: `8/8 PASS`.
+- L.30U smoke: `12/12 PASS`.
+
+---
+
 ## L.32T — AI-Assisted Candidate Intent Routing
 
 Added a lightweight AI-assisted intent routing layer for source-backed
@@ -49,7 +102,7 @@ existing safe, deterministic candidate command paths.
 - L.32R smoke: `32/32 PASS`; L.32T smoke: `46/46 PASS`.
 - L.32Q smoke: `27/27 PASS`; L.32T smoke: `46/46 PASS`.
 - L.32P smoke: `27/27 PASS`; L.32T smoke: `46/46 PASS`.
-- L.32O smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
+- L.32O smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`; L.32U smoke: `20/20 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -100,10 +153,10 @@ multiple candidates are pending.
 - L.32Q smoke: `27/27 PASS`; L.32S smoke: `42/42 PASS`.
 - L.32P smoke: `27/27 PASS`; L.32S smoke: `42/42 PASS`.
 - L.32O smoke: `42/42 PASS`; L.32S smoke: `42/42 PASS`.
-- L.32N smoke: `30/30 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
-- L.32M smoke: `31/31 PASS, 1 SKIP`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
-- L.32L smoke: `29/29 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
-- L.32K smoke: `41/41 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
+- L.32N smoke: `30/30 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`; L.32U smoke: `20/20 PASS`.
+- L.32M smoke: `31/31 PASS, 1 SKIP`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`; L.32U smoke: `20/20 PASS`.
+- L.32L smoke: `29/29 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`; L.32U smoke: `20/20 PASS`.
+- L.32K smoke: `41/41 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`; L.32U smoke: `20/20 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -217,7 +270,7 @@ Hardened the `SafeOfficialCommandFetcher` contract in
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
-- L.32J smoke: `36/36 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`.
+- L.32J smoke: `36/36 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`; L.32U smoke: `20/20 PASS`.
 - Prior L.32 stack (I → B) all PASS.
 - L.31 stack and regression suite (Q-1, O-3, O-2, W, T, S, Q, P, N, M, K)
   all PASS.

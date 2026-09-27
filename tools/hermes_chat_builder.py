@@ -669,6 +669,70 @@ def _missing_prompt(missing: list[Any]) -> str:
     return f"I have part of the letter. I still need: {', '.join(plain[:5])}."
 
 
+def _missing_guidance(ready: dict[str, Any]) -> str:
+    """Return a clear, itemized list of remaining required details, or ''."""
+    missing = (ready.get("render_gate") or {}).get("missing", [])
+    plain: set[str] = set()
+    if missing:
+        plain.update(_plain_missing(missing))
+    payload = ready.get("payload") or {}
+    # Augment with concrete checks against the current draft payload.
+    if not payload.get("subj") and not payload.get("subject"):
+        plain.add("subject line")
+    if not payload.get("body") and not payload.get("body_paragraphs"):
+        plain.add("body text")
+    if not payload.get("date"):
+        plain.add("date")
+    if not payload.get("signature"):
+        plain.add("who will sign it")
+    if not payload.get("letterhead_top_line"):
+        plain.add("command letterhead details")
+    if not plain and (ready.get("render_gate") or {}).get("recommended_remaining", 0) > 0:
+        # Use next_action question to infer the current missing detail.
+        q = (ready.get("next_action") or {}).get("question") or ""
+        q_lower = q.lower()
+        if "subject" in q_lower or "subj" in q_lower:
+            plain.add("subject line")
+        elif "body" in q_lower:
+            plain.add("body text")
+        elif "date" in q_lower:
+            plain.add("date")
+        elif "signer" in q_lower or "signature" in q_lower or "who will sign" in q_lower:
+            plain.add("who will sign it")
+        elif "letterhead" in q_lower:
+            plain.add("command letterhead details")
+        elif "originator" in q_lower:
+            plain.add("originator code")
+        elif "ssic" in q_lower or "standard subject" in q_lower:
+            plain.add("SSIC")
+        else:
+            plain.add("more details")
+    if not plain:
+        return ""
+    # Normalize display names to be user-friendly.
+    display: list[str] = []
+    for item in plain:
+        if "letterhead" in item:
+            display.append("command letterhead details")
+        elif item == "who will sign it":
+            display.append("who will sign it")
+        elif item == "body text":
+            display.append("body text")
+        elif item == "subj":
+            display.append("subject line")
+        elif item == "ssic":
+            display.append("SSIC")
+        elif item == "originator code":
+            display.append("originator code")
+        elif item == "date":
+            display.append("date")
+        else:
+            display.append(item)
+    if len(display) == 1:
+        return f"I still need: {display[0]}."
+    return f"I still need: {', '.join(display[:-1])}, and {display[-1]}."
+
+
 def _phase(ready: dict[str, Any], preview: dict[str, Any]) -> str:
     if ready.get("approved_ready"):
         return "approved_ready"
@@ -752,8 +816,12 @@ def _phase_response(
     if action == "revise":
         return "I've updated the draft. Please review the preview and say 'looks good' when you're ready to approve it."
     missing = (ready.get("render_gate") or {}).get("missing", [])
+    guidance = _missing_guidance(ready)
     if missing:
-        return _missing_prompt(missing)
+        base = _missing_prompt(missing)
+        return f"{guidance}\n\n{base}" if guidance else base
+    if guidance:
+        return guidance
     return "Got it. Keep providing details and I'll build the draft for you."
 
 
@@ -783,6 +851,10 @@ def _assistant_response_with_pending(
     pdf_path: str = "",
     blocked_reason: str = "",
 ) -> str:
+    # Merge preview payload into ready so missing-detail guidance can inspect
+    # concrete field presence after a candidate apply.
+    if not (ready.get("payload") or {}).get("letterhead_top_line") and (preview.get("payload") or {}).get("letterhead_top_line"):
+        ready.setdefault("payload", {}).update(preview.get("payload") or {})
     base = _phase_response(phase, ready, preview, action=action, blocked_reason=blocked_reason)
     if pending:
         return _quiet_suggestions(pending) + "\n\n" + base
@@ -875,10 +947,19 @@ def _run_confirm_candidate(session_id: str, state: dict[str, Any], *, field: str
     if ssic_r and ssic_r.get("success"):
         r = ssic_r
     preview, ready, ph, step = _status(session_id)
-    payload = r.get("payload") or {}
+    payload = r.get("payload") or preview.get("payload") or {}
+    # Merge applied/preview payload into ready for missing-detail guidance.
+    if payload:
+        ready.setdefault("payload", {}).update(payload)
     if ph == "build_status" and not payload.get("date") and not payload.get("signature") and not payload.get("body"):
         step = "I have the routing basics. What date should I use, who will sign it, and what should the body say?"
-    return {"success": r.get("success", False), "intent": f"confirm_{field}_candidate" if field else "confirm_candidate", "phase": ph, "message": f"Confirmed source-backed candidate. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Candidate apply failed"), "assistant_response": "I've applied the confirmed source-backed command result. " + step if r.get("success") else "I couldn't apply that source-backed candidate.", "preview_text": preview.get("preview_text"), "next_step": step, "payload": payload, "confirmed_candidate": cand, "source_backed_candidates": _ensure_cands(state), "ssic_inference": ssic, "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": r.get("error")}
+    guidance = _missing_guidance(ready)
+    resp = "I've applied the confirmed source-backed command result. "
+    if guidance:
+        resp += guidance + "\n\n" + step
+    else:
+        resp += step
+    return {"success": r.get("success", False), "intent": f"confirm_{field}_candidate" if field else "confirm_candidate", "phase": ph, "message": f"Confirmed source-backed candidate. Current phase: {ph.replace('_', ' ')}. {step}" if r.get("success") else r.get("error", "Candidate apply failed"), "assistant_response": resp if r.get("success") else "I couldn't apply that source-backed candidate.", "preview_text": preview.get("preview_text"), "next_step": step, "payload": payload, "confirmed_candidate": cand, "source_backed_candidates": _ensure_cands(state), "ssic_inference": ssic, "validation_ready": ready.get("validation_ready", False), "approved_ready": ready.get("approved_ready", False), "error": r.get("error")}
 
 
 def _run_reject_candidate(session_id: str, state: dict[str, Any], *, field: str | None = None) -> dict[str, Any]:
