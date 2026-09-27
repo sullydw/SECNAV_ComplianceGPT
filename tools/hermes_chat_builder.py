@@ -177,11 +177,25 @@ def _route_candidate_intent(text: str, *, pending_fields: set[str] | None = None
         return "reject_candidate"
     if _contains_any(t, _SHOW_CANDIDATE_INTENTS):
         return "show_candidate"
+    # Field-specific exact commands must still route even when there are no
+    # pending candidates; the handler returns a truthful "no pending" reply.
+    if _contains_any(t, _CONFIRM_FROM_CANDIDATE_INTENTS):
+        return "confirm_from_candidate"
+    if _contains_any(t, _CONFIRM_TO_CANDIDATE_INTENTS):
+        return "confirm_to_candidate"
+    if _contains_any(t, _REJECT_FROM_CANDIDATE_INTENTS):
+        return "reject_from_candidate"
+    if _contains_any(t, _REJECT_TO_CANDIDATE_INTENTS):
+        return "reject_to_candidate"
+    if _contains_any(t, _SHOW_FROM_CANDIDATE_INTENTS):
+        return "show_from_candidate"
+    if _contains_any(t, _SHOW_TO_CANDIDATE_INTENTS):
+        return "show_to_candidate"
 
     # Fallback heuristic: classify by keyword groups, but only when there is a
     # clear candidate context and a clear action word.  Avoids false positives on
     # ordinary draft-building turns.
-    pending_fields = pending_fields or {"from", "to"}
+    pending_fields = pending_fields or set()
     has_confirm = any(re.search(re.escape(k), t) for k in _CANDIDATE_CONFIRM_KEYWORDS)
     has_show = any(re.search(re.escape(k), t) for k in _CANDIDATE_SHOW_KEYWORDS)
     has_reject = any(re.search(re.escape(k), t) for k in _CANDIDATE_REJECT_KEYWORDS)
@@ -192,6 +206,11 @@ def _route_candidate_intent(text: str, *, pending_fields: set[str] | None = None
     if action_count != 1:
         return "unclear"
 
+    # Heuristic candidate intents require at least one pending candidate in the
+    # referenced field; otherwise ordinary draft words like "from" and "use"
+    # would be misclassified (e.g. "From Commanding Officer... currently in use").
+    if not pending_fields:
+        return "unclear"
     if has_from and "from" not in pending_fields:
         return "unclear"
     if has_to and "to" not in pending_fields:
@@ -321,9 +340,11 @@ def _contains_any(text: str, needles: set[str]) -> bool:
     return any(re.search(re.escape(k), t) for k in needles)
 
 
-def _classify_intent(text: str) -> str:
+def _classify_intent(text: str, state: dict[str, Any] | None = None) -> str:
     t = text.lower().strip()
-    candidate_intent = _route_candidate_intent(t)
+    pending = state.get("source_backed_candidates", {}).get("pending", []) if state else []
+    pending_fields = {c.get("field") for c in pending}
+    candidate_intent = _route_candidate_intent(t, pending_fields=pending_fields)
     if candidate_intent in _CANDIDATE_ROUTER_INTENTS and candidate_intent != "unclear":
         return candidate_intent
     if _contains_any(t, _CONFIRM_CANDIDATE_INTENTS):
@@ -383,8 +404,24 @@ def _normalize_subject(v: str) -> str:
     return v if v.isupper() else v.upper()
 
 
-def _normalize_body(v: str) -> str:
+def _normalize_body(v: str) -> str | list[str]:
     v = re.sub(r"^(?:about|that)\s+", "", _clean(v), flags=re.IGNORECASE).strip()
+    if not v:
+        return v
+    # Preserve JSON-array body paragraphs so multi-paragraph input stays intact.
+    stripped = v.strip()
+    if stripped.startswith("[") and stripped.endswith("]"):
+        try:
+            parsed = json.loads(stripped)
+            if isinstance(parsed, list):
+                return [(_normalize_single_body_paragraph(p) if isinstance(p, str) else str(p)) for p in parsed]
+        except json.JSONDecodeError:
+            pass
+    return _normalize_single_body_paragraph(v)
+
+
+def _normalize_single_body_paragraph(v: str) -> str:
+    v = v.strip()
     if not v:
         return v
     if re.match(r"^(implementing|reviewing|updating|establishing|creating)\b", v, re.IGNORECASE):
@@ -509,8 +546,12 @@ def _merge_mixed_intake_fields(text: str) -> dict[str, str]:
 
 def _key_values_to_text(fields: dict[str, str]) -> str:
     order = ["letterhead_top_line", "letterhead_activity", "letterhead_address", "ssic", "originator_code", "from", "to", "date", "subj", "body", "signature"]
-    lines = [f"{k}: {fields[k]}" for k in order if k in fields]
-    lines.extend(f"{k}: {v}" for k, v in fields.items() if k not in order)
+    def _fmt(k: str, v) -> str:
+        if isinstance(v, list):
+            return json.dumps(v, ensure_ascii=False)
+        return str(v)
+    lines = [f"{k}: {_fmt(k, fields[k])}" for k in order if k in fields]
+    lines.extend(f"{k}: {_fmt(k, v)}" for k, v in fields.items() if k not in order)
     return "\n".join(lines)
 
 
@@ -1045,7 +1086,7 @@ def _run_render(session_id: str, state: dict[str, Any]) -> dict[str, Any]:
 
 def _process_turn(chat_id: str, text: str, state: dict[str, Any]) -> dict[str, Any]:
     sid = state["session_id"]
-    intent = _classify_intent(text)
+    intent = _classify_intent(text, state)
     state.setdefault("history", []).append({"role": "user", "text": text, "intent": intent})
     state["history"] = state["history"][-20:]
     if intent == "confirm_candidate": result = _run_confirm_candidate(sid, state)

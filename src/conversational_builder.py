@@ -131,6 +131,50 @@ def _today_military() -> str:
     return d.strftime("%d %B %Y")
 
 
+
+
+def _normalize_body_markers(body_lines: list[str]) -> list[str]:
+    """
+    Tolerate common user subparagraph mistakes without changing validation rules.
+
+    Users often type ``(a)`` and ``(b)`` when they mean direct subparagraphs
+    under a numbered paragraph. In SECNAV hierarchy ``(a)`` is level 4
+    (sub-subparagraph) and ``a.`` is level 2 (direct subparagraph). When a
+    level-4 marker directly follows a level-1 parent with no intervening
+    level-2 or level-3 siblings, rewrite it to the level-2 form so the draft
+    reflects the user's intent.
+    """
+    if not body_lines:
+        return body_lines
+    from body_v6_parse import detect_marker_level
+
+    result: list[str] = []
+    prev_level = 0
+    in_tolerant_block = False
+    for i, line in enumerate(body_lines):
+        level, marker, text = detect_marker_level(line)
+        if level is None:
+            level = 1
+            marker = ""
+            text = line
+
+        rewritten = line
+        effective_level = level
+        # Direct (a)/(b)/(c) ... under 1./2./3. (or immediately following a
+        # sibling we already normalized) -> a./b./c.
+        if level == 4 and (prev_level == 1 or (prev_level == 2 and in_tolerant_block)):
+            inner = marker.strip("()")
+            if inner and inner.isalpha() and len(inner) == 1:
+                rewritten = f"{inner}. {text}".strip()
+                effective_level = 2
+                in_tolerant_block = True
+
+        result.append(rewritten)
+        prev_level = effective_level
+        if level != 4:
+            in_tolerant_block = False
+    return result
+
 def _coerce_value(field_path: str, raw: Any, data_type: str | None = None) -> Any:
     """Coerce a raw user input into the expected type for a field."""
     if raw is None:
@@ -155,6 +199,8 @@ def _coerce_value(field_path: str, raw: Any, data_type: str | None = None) -> An
     list_fields = {"via", "ref", "encl", "copy_to", "distribution", "body", "commands"}
     if data_type == "list" or field_path in list_fields:
         if isinstance(raw, list):
+            if field_path == "body":
+                return _normalize_body_markers([str(line) for line in raw if str(line).strip()])
             return raw
         if isinstance(raw, str):
             stripped = raw.strip()
@@ -162,11 +208,13 @@ def _coerce_value(field_path: str, raw: Any, data_type: str | None = None) -> An
                 try:
                     parsed = json.loads(stripped)
                     if isinstance(parsed, list):
+                        if field_path == "body":
+                            return _normalize_body_markers([str(line) for line in parsed if str(line).strip()])
                         return parsed
                 except json.JSONDecodeError:
                     pass
             if field_path == "body":
-                return [line for line in stripped.splitlines() if line.strip()]
+                return _normalize_body_markers([line for line in stripped.splitlines() if line.strip()])
             return [raw] if raw.strip() else []
         return [str(raw)] if raw else []
 
