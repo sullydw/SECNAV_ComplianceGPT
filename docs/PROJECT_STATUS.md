@@ -1,7 +1,7 @@
 # SECNAV ComplianceGPT - Project Status
 
-**Last Updated:** 2026-09-26
-**Accepted Baseline HEAD:** `ee380a4` — Tools: Add field-specific candidate commands
+**Last Updated:** 2026-09-27
+**Accepted Baseline HEAD:** `cac258c` — Tools: Improve missing-detail guidance with suggestions
 
 ---
 
@@ -12,7 +12,10 @@ quiet official lookup suggestions, the response also clearly states the
 remaining required details. Confirming a From or To candidate updates that
 guidance without blocking the normal draft flow.
 
-### Verified behavior
+
+---
+
+## Verified behavior
 
 - Natural first-turn draft (`I need a letter from MCAS New River to 2d Marine Division`)
   extracts available fields, creates quiet source-backed suggestions when lookup
@@ -53,8 +56,30 @@ guidance without blocking the normal draft flow.
 - L.32R smoke: `32/32 PASS`; L.32U smoke: `20/20 PASS`.
 - L.32Q smoke: `27/27 PASS`; L.32U smoke: `20/20 PASS`.
 - L.32P smoke: `27/27 PASS`; L.32U smoke: `20/20 PASS`.
+- L.32V smoke: `27/27 PASS`.
+- L.32V smoke: `27/27 PASS`.
+- L.32V smoke: `27/27 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
+- L.32V smoke: `27/27 PASS`.
+
+## L.32V — Ready-to-Approve Guidance With Pending Suggestions
+
+**Status:** PASS
+
+**Files touched:** `tools/hermes_chat_builder.py`, `tools/run_phase_l32v_ready_to_approve_guidance_with_suggestions_smoke.py`, `docs/PROJECT_STATUS.md`
+
+**What changed:** Extended `_assistant_response` / `_phase_response` to detect when a draft is otherwise complete (`validation_ready=True` / no missing fields). In that state the assistant now says the draft is ready for review and approval is required before rendering. When pending source-backed suggestions exist, the response keeps the quiet suggestion note and adds the ready-for-review message, making the suggestion optional. Approval proceeds while preserving pending candidates; render is blocked until explicit approval; a later revision clears approval and blocks render again.
+
+**Behavior:**
+- Complete draft without pending candidate: `Your draft is ready for review. You can say 'looks good' to approve it...` and approval reminder.
+- Complete draft with pending candidates: suggestion note followed by `Your draft is otherwise ready for review...` plus approve/confirm/dismiss options.
+- Approval with pending candidates: preserves pending candidates, sets `approved_ready=True`, and prompts to `make the PDF`.
+- Render before approval is blocked with an approval reminder.
+- Render after approval succeeds; a subsequent revise clears approval and blocks render again.
+- Disabled lookup gives the same ready-for-review message with no pending suggestions and no provider call.
+
+**Validation:** L.32V `27/27 PASS`; L.32U `20/20 PASS`; L.32T `46/46 PASS`; L.32S `42/42 PASS`; L.32R `32/32 PASS`; L.30X `8/8 PASS`; L.30U `12/12 PASS`.
 
 ---
 
@@ -103,6 +128,7 @@ existing safe, deterministic candidate command paths.
 - L.32Q smoke: `27/27 PASS`; L.32T smoke: `46/46 PASS`.
 - L.32P smoke: `27/27 PASS`; L.32T smoke: `46/46 PASS`.
 - L.32O smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`; L.32U smoke: `20/20 PASS`.
+- L.32V smoke: `27/27 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -157,6 +183,7 @@ multiple candidates are pending.
 - L.32M smoke: `31/31 PASS, 1 SKIP`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`; L.32U smoke: `20/20 PASS`.
 - L.32L smoke: `29/29 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`; L.32U smoke: `20/20 PASS`.
 - L.32K smoke: `41/41 PASS`; L.32S smoke: `42/42 PASS`; L.32T smoke: `46/46 PASS`; L.32U smoke: `20/20 PASS`.
+- L.32V smoke: `27/27 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -215,6 +242,7 @@ fields without interrupting the draft flow.
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
+- L.32V smoke: `27/27 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -331,6 +359,7 @@ fetch when the gate and `enable_network` are both explicitly set.
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
+- L.32V smoke: `27/27 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -378,6 +407,7 @@ without interrupting the draft flow.
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
+- L.32V smoke: `27/27 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -428,6 +458,7 @@ suggestion without interrupting the draft flow.
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
+- L.32V smoke: `27/27 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -476,6 +507,7 @@ and wired chat commands to manage quiet official lookup suggestions.
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
+- L.32V smoke: `27/27 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -523,6 +555,7 @@ remaining candidate-only and never auto-applied.
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
+- L.32V smoke: `27/27 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -560,6 +593,7 @@ end-to-end after the L.30Y approval/revise cleanup.
 - L.32M smoke: `31/31 PASS, 1 SKIP`.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
+- L.32V smoke: `27/27 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 
@@ -610,6 +644,7 @@ It performs no real network by default.
 - L.32L smoke: `29/29 PASS`.
 - L.32K smoke: `41/41 PASS`.
 - L.32J smoke: `36/36 PASS`.
+- L.32V smoke: `27/27 PASS`.
 - L.30X smoke: `8/8 PASS`.
 - L.30U smoke: `12/12 PASS`.
 - Prior L.32 stack (I → B) all PASS.

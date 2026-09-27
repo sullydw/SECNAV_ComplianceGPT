@@ -856,9 +856,17 @@ def _assistant_response_with_pending(
     if not (ready.get("payload") or {}).get("letterhead_top_line") and (preview.get("payload") or {}).get("letterhead_top_line"):
         ready.setdefault("payload", {}).update(preview.get("payload") or {})
     base = _phase_response(phase, ready, preview, action=action, blocked_reason=blocked_reason)
-    if pending:
-        return _quiet_suggestions(pending) + "\n\n" + base
-    return base
+    if not pending:
+        return base
+    suggestion = _quiet_suggestions(pending)
+    if phase in {"draft_preview", "approved_ready"}:
+        return (
+            suggestion
+            + "\n\nYour draft is otherwise ready for review. "
+            + "You can say 'looks good' to approve it as-is, 'confirm candidate' to apply the suggestion, "
+            + "or 'dismiss candidate' to clear it."
+        )
+    return suggestion + "\n\n" + base
 
 
 def _pending_list(state: dict[str, Any]) -> list[dict[str, Any]]:
@@ -1088,7 +1096,8 @@ def _get_chat_status(chat_id: str) -> dict[str, Any]:
     except FileNotFoundError as exc: return {"success": False, "command": "status", "error": str(exc)}
     _ensure_cands(state)
     preview, ready, ph, step = _status(state["session_id"])
-    return {"success": True, "command": "status", "chat_id": chat_id, "session_id": state["session_id"], "phase": ph, "message": f"Current phase: {ph.replace('_', ' ')}. {step}", "assistant_response": _assistant_response(ph, ready, preview, pending_candidate=_pending(state)), "preview_text": preview.get("preview_text"), "next_step": step, "approved_ready": ready.get("approved_ready", False), "validation_ready": ready.get("validation_ready", False), "last_pdf_path": state.get("last_pdf_path"), "history_count": len(state.get("history", [])), "source_backed_candidates": state.get("source_backed_candidates"), "error": None}
+    pending = _pending_list(state)
+    return {"success": True, "command": "status", "chat_id": chat_id, "session_id": state["session_id"], "phase": ph, "message": f"Current phase: {ph.replace('_', ' ')}. {step}", "assistant_response": _assistant_response_with_pending(ph, ready, preview, pending), "preview_text": preview.get("preview_text"), "next_step": step, "approved_ready": ready.get("approved_ready", False), "validation_ready": ready.get("validation_ready", False), "last_pdf_path": state.get("last_pdf_path"), "history_count": len(state.get("history", [])), "source_backed_candidates": state.get("source_backed_candidates"), "error": None}
 
 
 def _reset_chat(chat_id: str) -> dict[str, Any]:
