@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
-Phase L.33A — Direct Subparagraph Marker Normalization Smoke
+Phase L.33A — Direct Alpha Subparagraph Marker Normalization Smoke
 
-Proves that when a user types level-4 style markers ``(a)`` and ``(b)``
+Proves that when a user types level-4 style alpha markers ``(a)`` and ``(b)``
 directly under a level-1 numbered paragraph, the intake layer normalizes
 them to level-2 ``a.`` / ``b.`` so the body validates against SECNAV
-M-5216.5 paragraph numbering (C7-014) and renders at the correct
-indentation.
+M-5216.5 paragraph numbering (C7-014) and renders at the correct indentation.
+
+Numeric parenthetical markers such as ``(1)`` and ``(2)`` are intentionally
+preserved by L.33A.  Direct numeric-parenthetical correction is deferred until
+a separate, explicitly scoped phase defines the intended hierarchy.
 """
 
 from __future__ import annotations
@@ -28,15 +31,28 @@ def check(name: str, cond: bool, detail: str = "") -> None:
         sys.exit(1)
 
 
-def test_normalize_direct_subparagraphs() -> None:
+def test_normalize_direct_alpha_subparagraphs() -> None:
     raw = [
         "1. Main paragraph.",
         "(a) First sub.",
         "(b) Second sub.",
+        "(c) Third sub.",
     ]
     normalized = _normalize_body_markers(raw)
     check("L33A direct (a) -> a.", normalized[1].startswith("a."), normalized[1])
     check("L33A direct (b) -> b.", normalized[2].startswith("b."), normalized[2])
+    check("L33A direct (c) -> c.", normalized[3].startswith("c."), normalized[3])
+
+
+def test_preserve_direct_numeric_parentheticals() -> None:
+    raw = [
+        "1. Main paragraph.",
+        "(1) Numeric marker is not part of L.33A normalization.",
+        "(2) Numeric marker remains deferred.",
+    ]
+    normalized = _normalize_body_markers(raw)
+    check("L33A preserve direct (1)", normalized[1].startswith("(1)"), normalized[1])
+    check("L33A preserve direct (2)", normalized[2].startswith("(2)"), normalized[2])
 
 
 def test_keep_proper_deep_hierarchy() -> None:
@@ -60,7 +76,7 @@ def test_body_validation_passes_after_normalization() -> None:
     ]
     normalized = _normalize_body_markers(raw)
     errors = validate_body({"body": normalized})
-    check("L33A C7-014 passes after normalization", not errors, str(errors))
+    check("L33A C7-014 passes after alpha normalization", not errors, str(errors))
 
 
 def test_coerce_value_json_array_normalizes() -> None:
@@ -82,9 +98,10 @@ def test_coerce_value_string_json_normalizes() -> None:
 
 
 if __name__ == "__main__":
-    test_normalize_direct_subparagraphs()
+    test_normalize_direct_alpha_subparagraphs()
+    test_preserve_direct_numeric_parentheticals()
     test_keep_proper_deep_hierarchy()
     test_body_validation_passes_after_normalization()
     test_coerce_value_json_array_normalizes()
     test_coerce_value_string_json_normalizes()
-    print("\nL.33A direct subparagraph marker normalization smoke: all checks passed")
+    print("\nL.33A direct alpha subparagraph marker normalization smoke: all checks passed")
